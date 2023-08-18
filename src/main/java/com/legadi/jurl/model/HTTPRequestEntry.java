@@ -1,17 +1,18 @@
 package com.legadi.jurl.model;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public final class HTTPRequestEntry extends RequestEntry {
 
     private String method;
-    private Charset bodyCharset;
+    private Charset bodyCharset = StandardCharsets.UTF_8;
     private String bodyContent;
-    private String bodyFile;
-    private String requestFile;
+    private String bodyFilePath;
     private Map<String, String> headers;
     private Map<String, String> queryParams;
+    private HTTPRequestFileEntry requestFile;
 
     public String getMethod() {
         return method;
@@ -37,20 +38,12 @@ public final class HTTPRequestEntry extends RequestEntry {
         this.bodyContent = bodyContent;
     }
 
-    public String getBodyFile() {
-        return bodyFile;
+    public String getBodyFilePath() {
+        return bodyFilePath;
     }
 
-    public void setBodyFile(String bodyFile) {
-        this.bodyFile = bodyFile;
-    }
-
-    public String getRequestFile() {
-        return requestFile;
-    }
-
-    public void setRequestFile(String requestFile) {
-        this.requestFile = requestFile;
+    public void setBodyFilePath(String bodyFilePath) {
+        this.bodyFilePath = bodyFilePath;
     }
 
     public Map<String, String> getHeaders() {
@@ -67,5 +60,13 @@ public final class HTTPRequestEntry extends RequestEntry {
 
     public void setQueryParams(Map<String, String> queryParams) {
         this.queryParams = queryParams;
+    }
+
+    public HTTPRequestFileEntry getRequestFile() {
+        return requestFile;
+    }
+
+    public void setRequestFile(HTTPRequestFileEntry requestFile) {
+        this.requestFile = requestFile;
     }
 }

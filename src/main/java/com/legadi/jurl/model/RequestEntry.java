@@ -1,12 +1,10 @@
 package com.legadi.jurl.model;
 
-import java.net.URL;
-
 public class RequestEntry {
 
     protected String name;
     protected String source;
-    protected URL url;
+    protected String url;
 
     public String getName() {
         return name;
@@ -24,11 +22,11 @@ public class RequestEntry {
         this.source = source;
     }
 
-    public URL getUrl() {
+    public String getUrl() {
         return url;
     }
 
-    public void setUrl(URL url) {
+    public void setUrl(String url) {
         this.url = url;
     }
 

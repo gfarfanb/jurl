@@ -1,9 +1,9 @@
-package com.legadi.jurl.util;
+package com.legadi.jurl.common;
 
 public class StringUtils {
 
     public static boolean isNotBlank(String value) {
-        return value != null && !value.isBlank();
+        return value != null && !value.trim().isEmpty();
     }
 
     public static boolean isBlank(String value) {

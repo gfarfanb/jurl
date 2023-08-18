@@ -4,6 +4,9 @@
         "context": "..",
         "dockerfile": "../Dockerfile"
     },
+    "features": {
+        "ghcr.io/devcontainers/features/git:1.1.5": {}
+    },
     "customizations": {
         "vscode": {
             "extensions": [

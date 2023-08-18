@@ -1,9 +1,9 @@
-# https://hub.docker.com/r/adoptopenjdk/maven-openjdk11
-FROM adoptopenjdk/maven-openjdk11:latest
+# https://hub.docker.com/r/adoptopenjdk/maven-openjdk8
+FROM adoptopenjdk/maven-openjdk8:latest
 
 WORKDIR /app
 
 COPY pom.xml ./
 COPY src ./src
 
-RUN mvn clean install
+RUN mvn clean package -U
