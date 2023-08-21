@@ -1,10 +1,8 @@
 package com.legadi.jurl.executor;
 
 import com.legadi.jurl.common.CurlBuilder;
-import com.legadi.jurl.common.ExecutionTag;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.exception.RequestException;
-import com.legadi.jurl.exception.WriteOnOutputStreamException;
 import com.legadi.jurl.model.HTTPRequestEntry;
 import com.legadi.jurl.model.HTTPRequestFileEntry;
 import com.legadi.jurl.model.HTTPResponseEntry;
@@ -36,16 +34,13 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HTTPResponseEntry> {
 
-    private Logger logger = LoggerFactory.getLogger(HTTPRequestExecutor.class);
-
-    private Settings settings = new Settings();
+    private final Logger logger = Logger.getLogger(HTTPRequestExecutor.class.getName());
 
     @Override
     public boolean accepts(RequestEntry request) {
@@ -53,7 +48,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     }
 
     @Override
-    public HTTPResponseEntry executeRequest(ExecutionTag executionTag, HTTPRequestEntry request) throws RequestException {
+    public HTTPResponseEntry executeRequest(Settings settings, HTTPRequestEntry request) throws RequestException {
         HttpURLConnection connection = createConnection(request);
         CurlBuilder curlBuilder = new CurlBuilder(connection);
 
@@ -66,7 +61,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             sendBody(connection, request, curlBuilder);
         }
 
-        Path responsePath = readOutput(executionTag, connection);
+        Path responsePath = readOutput(settings, connection);
 
         return buildResponse(responsePath, connection, request, curlBuilder);
     }
@@ -174,11 +169,9 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
                 return;
             }
 
-            throw new IllegalArgumentException("request.bodyContent or request.bodyFile is null or empty");
+            throw new RequestException(request, "request.bodyContent or request.bodyFile is null or empty");
         } catch(IOException ex) {
-            throw new RequestException(request, "Unable to create output stream for request body");
-        } catch(IllegalArgumentException | WriteOnOutputStreamException ex) {
-            throw new RequestException(request, ex.getMessage());
+            throw new IllegalStateException("Unable to create output stream for request body", ex);
         }
     }
 
@@ -242,14 +235,12 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             curlBuilder.setFile(requestFile.getField(), requestFile.getPath(), filename, requestFile.getMineType());
             formData.forEach((field, value) -> curlBuilder.addForm(field, value));
         } catch(IOException ex) {
-            logger.error("Unable to create output stream for request file: " + requestFile.getPath(), ex);
-            throw new RequestException(request, "Unable to create output stream for request file: " + requestFile.getPath());
+            throw new IllegalStateException("Unable to create output stream for request file: " + requestFile.getPath(), ex);
         }
     }
 
-    private Path readOutput(ExecutionTag executionTag, HttpURLConnection connection) {
-        Path outputPath = Paths.get(settings.get("application.execution.output.path"));
-        File responseFile = outputPath.resolve(executionTag + ".response").toFile();
+    private Path readOutput(Settings settings, HttpURLConnection connection) {
+        File responseFile = settings.getOutputPath().resolve(settings.getExecutionTag() + ".response").toFile();
 
         try(BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                 FileWriter responseWriter = new FileWriter(responseFile)) {
@@ -261,7 +252,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
 
             return responseFile.toPath();
         } catch(IOException ex) {
-            logger.debug("Error on reading response", ex);
+            logger.log(Level.FINE, "Error on reading response", ex);
             return null;
         }
     }
@@ -286,8 +277,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
 
             return response;
         } catch(IOException ex) {
-            logger.error("Error on creating response", ex);
-            throw new RequestException(request, "Error on creating response");
+            throw new IllegalStateException("Error on creating response", ex);
         }
     }
 
@@ -304,13 +294,12 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         return requestFile;
     }
 
-    private void writeLine(DataOutputStream dataOutputStream, String line, Charset charset) throws WriteOnOutputStreamException {
+    private void writeLine(DataOutputStream dataOutputStream, String line, Charset charset) {
         try {
             byte[] input = line.getBytes(charset);
             dataOutputStream.write(input, 0, input.length);
         } catch(IOException ex) {
-            logger.error("Unable to write line", ex);
-            throw new WriteOnOutputStreamException("Unable to write line - " + ex.getMessage());
+            throw new IllegalStateException("Unable to write line", ex);
         }
     }
 }

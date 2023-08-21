@@ -1,27 +1,66 @@
 package com.legadi.jurl.common;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Properties;
+import java.io.Reader;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 public class Settings {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Settings.class);
-    private static final Properties APP_PROPERTIES = new Properties();
+    private static final Map<String, String> SETTINGS = new HashMap<>();
 
     static {
-        String rootPath = Thread.currentThread().getContextClassLoader().getResource("").getPath();
+        Path settingsPath;
 
         try {
-            APP_PROPERTIES.load(new FileInputStream(rootPath + "application.properties"));
-        } catch(IOException ex) {
-            LOGGER.error("Error on loading properties", ex);
-            throw new IllegalStateException("Error on loading properties");
+            settingsPath = Paths.get(
+                Thread
+                    .currentThread()
+                    .getContextClassLoader()
+                    .getResource("settings.json")
+                    .toURI()
+            );
+        } catch(URISyntaxException ex) {
+            throw new IllegalStateException("Unable to obtain settings file path");
         }
+
+        try(Reader reader = Files.newBufferedReader(settingsPath)) {
+            Gson gson = new Gson();
+            Map<String, String> settings = gson.fromJson(reader, new TypeToken<Map<String, String>>() {}.getType());
+            SETTINGS.putAll(settings);
+        } catch(IOException ex) {
+            throw new IllegalAccessError("Unable to read default settings");
+        }
+    }
+
+    private final Map<String, String> properties;
+    private final ExecutionTag executionTag;
+
+    public Settings() {
+        this.properties = new HashMap<>(SETTINGS);
+        this.executionTag = new ExecutionTag();
+        this.properties.put("executionTag", executionTag.toString());
+    }
+
+    public ExecutionTag getExecutionTag() {
+        return executionTag;
+    }
+
+    public Path getOutputPath() {
+        return Paths.get(getValue("executionOutputPath"));
+    }
+
+    public Settings put(String propertyName, String value) {
+        SETTINGS.put(propertyName, value);
+        return this;
     }
 
     public String get(String propertyName) {
@@ -46,7 +85,7 @@ public class Settings {
     }
 
     private String getValue(String propertyName) {
-        String value = APP_PROPERTIES.getProperty(propertyName);
+        String value = getValueNoValidation(propertyName);
         if(value == null) {
             throw new IllegalArgumentException("Property not found: " + propertyName);
         }
@@ -54,6 +93,11 @@ public class Settings {
     }
 
     private String getValueNoValidation(String propertyName) {
-        return APP_PROPERTIES.getProperty(propertyName);
+        return properties.get(propertyName);
+    }
+
+    @Override
+    public String toString() {
+        return properties.toString();
     }
 }
