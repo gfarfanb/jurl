@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Constructor;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -34,13 +35,14 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static java.util.logging.Level.FINE;
+
 public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HTTPResponseEntry> {
 
-    private final Logger logger = Logger.getLogger(HTTPRequestExecutor.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(HTTPRequestExecutor.class.getName());
 
     @Override
     public boolean accepts(RequestEntry request) {
@@ -49,8 +51,8 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
 
     @Override
     public HTTPResponseEntry executeRequest(Settings settings, HTTPRequestEntry request) throws RequestException {
-        HttpURLConnection connection = createConnection(request);
-        CurlBuilder curlBuilder = new CurlBuilder(connection);
+        CurlBuilder curlBuilder = new CurlBuilder();
+        HttpURLConnection connection = createConnection(settings, request, curlBuilder);
 
         addHeaders(connection, request, curlBuilder);
 
@@ -66,7 +68,8 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         return buildResponse(responsePath, connection, request, curlBuilder);
     }
 
-    private HttpURLConnection createConnection(HTTPRequestEntry request) {
+    private HttpURLConnection createConnection(Settings settings,
+            HTTPRequestEntry request, CurlBuilder curlBuilder) {
         if(isBlank(request.getUrl())) {
             throw new RequestException(request, "HTTP resource not defined");
         }
@@ -103,12 +106,33 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
 
         try {
             URL url = new URL(urlPart.toString());
-            return (HttpURLConnection) url.openConnection();
+
+            curlBuilder.setUrl(url);
+
+            return createConnection(settings, request, url);
         } catch(MalformedURLException ex) {
             throw new RequestException(request, "Malformed HTTP resource: " + urlPart);
         } catch(IOException ex) {
             throw new RequestException(request, "Unable to create HTTP connection: " + urlPart);
         }
+    }
+
+    private HttpURLConnection createConnection(Settings settings, HTTPRequestEntry request, URL url) throws IOException {
+        if(isNotBlank(settings.getMockRequestClass())) {
+            try {
+                Class<?> connectionClass = Class.forName(settings.getMockRequestClass());
+                Constructor<?> constructor = connectionClass.getConstructor();
+                return (HttpURLConnection) constructor.newInstance();
+            } catch(Exception ex) {
+                throw new RequestException(request, "Invalid mock definition class: " + settings.getMockRequestClass());
+            }
+        }
+
+        if(settings.isCurlRequest() || settings.isMockRequest()) {
+            return new HTTPMockConnection();
+        }
+
+        return (HttpURLConnection) url.openConnection();
     }
 
     private void addMethod(HttpURLConnection connection, HTTPRequestEntry request, CurlBuilder curlBuilder) {
@@ -252,7 +276,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
 
             return responseFile.toPath();
         } catch(IOException ex) {
-            logger.log(Level.FINE, "Error on reading response", ex);
+            LOGGER.log(FINE, "Error on reading response", ex);
             return null;
         }
     }

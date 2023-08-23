@@ -2,7 +2,6 @@ package com.legadi.jurl.common;
 
 import static com.legadi.jurl.common.StringUtils.isNotBlank;
 
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,10 +15,6 @@ public class CurlBuilder {
     private String method;
     private String file;
     private String data;
-
-    public CurlBuilder(HttpURLConnection connection) {
-        this.url = connection.getURL().toString();
-    }
 
     public CurlBuilder setUrl(URL url) {
         this.url = url.toString();

@@ -1,53 +1,46 @@
 package com.legadi.jurl.common;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.legadi.jurl.exception.CommandException;
+import com.legadi.jurl.model.AuthorizationType;
+import com.legadi.jurl.model.Credential;
+
+import static com.legadi.jurl.common.Loader.loadCredentials;
+import static com.legadi.jurl.common.Loader.loadInternalJsonProperties;
+import static com.legadi.jurl.common.Loader.loadJsonProperties;
+import static com.legadi.jurl.common.SettingsConstants.*;
+import static com.legadi.jurl.common.StringUtils.isNotBlank;
 
 public class Settings {
 
     private static final Map<String, String> SETTINGS = new HashMap<>();
+    private static final Map<String, String> OVERRIDE_SETTINGS = new HashMap<>();
+    private static final Map<String, Credential> CREDENTIALS = new HashMap<>();
+    private static final Map<String, Credential> OVERRIDE_CREDENTIALS = new HashMap<>();
 
     static {
-        Path settingsPath;
-
-        try {
-            settingsPath = Paths.get(
-                Thread
-                    .currentThread()
-                    .getContextClassLoader()
-                    .getResource("settings.json")
-                    .toURI()
-            );
-        } catch(URISyntaxException ex) {
-            throw new IllegalStateException("Unable to obtain settings file path");
-        }
-
-        try(Reader reader = Files.newBufferedReader(settingsPath)) {
-            Gson gson = new Gson();
-            Map<String, String> settings = gson.fromJson(reader, new TypeToken<Map<String, String>>() {}.getType());
-            SETTINGS.putAll(settings);
-        } catch(IOException ex) {
-            throw new IllegalAccessError("Unable to read default settings");
-        }
+        SETTINGS.putAll(loadInternalJsonProperties("settings.default.json", true));
+        SETTINGS.putAll(loadJsonProperties("./config.json", true));
+        CREDENTIALS.putAll(loadCredentials("./credentials.json", true));
     }
 
     private final Map<String, String> properties;
+    private final Map<String, Credential> credentials;
     private final ExecutionTag executionTag;
 
     public Settings() {
         this.properties = new HashMap<>(SETTINGS);
+        this.credentials = new HashMap<>(CREDENTIALS);
         this.executionTag = new ExecutionTag();
-        this.properties.put("executionTag", executionTag.toString());
+        this.properties.put(PROP_EXECUTION_TAG, executionTag.toString());
+
+        this.properties.putAll(OVERRIDE_SETTINGS);
+        this.credentials.putAll(OVERRIDE_CREDENTIALS);
     }
 
     public ExecutionTag getExecutionTag() {
@@ -55,12 +48,48 @@ public class Settings {
     }
 
     public Path getOutputPath() {
-        return Paths.get(getValue("executionOutputPath"));
+        return Paths.get(getValue(PROP_EXECUTION_OUTPUT_PATH));
     }
 
-    public Settings put(String propertyName, String value) {
-        SETTINGS.put(propertyName, value);
-        return this;
+    public String[] getAddOnOptionClasses() {
+        return get(PROP_ADD_ON_OPTION_CLASSES, "").split(",");
+    }
+
+    public String getOpenEditorCommand() {
+        return getValue(PROP_OPEN_EDITOR_COMMAND);
+    }
+
+    public Credential getCredential() {
+        String credentialId = getValue(PROP_REQUEST_CREDENTIAL_ID);
+        Credential credential = credentials.get(credentialId);
+        if(credential == null) {
+            throw new CommandException("Credential not found [" + PROP_REQUEST_CREDENTIAL_ID + "]: " + credentialId);
+        }
+        return credential;
+    }
+
+    public AuthorizationType getAuthorizationType() {
+        return AuthorizationType.valueOf(getValue(PROP_REQUEST_AUTHORIZATION_TYPE));
+    }
+
+    public boolean isCurlRequest() {
+        return get(PROP_CURL_REQUEST, Boolean::valueOf);
+    }
+
+    public boolean isMockRequest() {
+        return get(PROP_MOCK_REQUEST, Boolean::valueOf);
+    }
+
+    public String getMockRequestClass() {
+        return getValue(PROP_MOCK_REQUEST_CLASS);
+    }
+
+    public boolean isOpenOutputInEditor() {
+        return get(PROP_OPEN_EDITOR_COMMAND, Boolean::valueOf);
+    }
+
+    public int getTimes() {
+        return get(PROP_EXECUTION_TIMES, Integer::parseInt);
     }
 
     public String get(String propertyName) {
@@ -87,7 +116,7 @@ public class Settings {
     private String getValue(String propertyName) {
         String value = getValueNoValidation(propertyName);
         if(value == null) {
-            throw new IllegalArgumentException("Property not found: " + propertyName);
+            throw new CommandException("Property not found: " + propertyName);
         }
         return value;
     }
@@ -99,5 +128,32 @@ public class Settings {
     @Override
     public String toString() {
         return properties.toString();
+    }
+
+    public static void mergeProperties(Map<String, String> properties) {
+        OVERRIDE_SETTINGS.putAll(properties);
+    }
+
+    public static void putProperty(String propertyName, String propertyValue) {
+        OVERRIDE_SETTINGS.put(propertyName, propertyValue);
+    }
+
+    public static void mergeCredentials(Map<String, Credential> credentials) {
+        String credentialIdFound = credentials.keySet()
+            .stream()
+            .filter(CREDENTIALS::containsKey)
+            .findFirst()
+            .orElse(null);
+
+        if(isNotBlank(credentialIdFound)) {
+            throw new CommandException("Credential ID already exists: " + credentialIdFound);
+        } else {
+            CREDENTIALS.putAll(credentials);
+        }
+    }
+
+    public static void clearSettings() {
+        OVERRIDE_SETTINGS.clear();
+        OVERRIDE_CREDENTIALS.clear();
     }
 }

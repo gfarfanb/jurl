@@ -1,7 +1,8 @@
 package com.legadi.jurl.common;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoField;
+
+import static java.time.temporal.ChronoField.MILLI_OF_DAY;
 
 public class ExecutionTag {
 
@@ -17,6 +18,6 @@ public class ExecutionTag {
 
     @Override
     public String toString() {
-        return currentExecution.toLocalDate() + "." + currentExecution.toLocalTime().getLong(ChronoField.MILLI_OF_DAY);
+        return currentExecution.toLocalDate() + "." + currentExecution.toLocalTime().getLong(MILLI_OF_DAY);
     }
 }

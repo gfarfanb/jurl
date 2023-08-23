@@ -3,20 +3,33 @@ package com.legadi.jurl.options;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Logger;
 
+import com.legadi.jurl.common.Pair;
+import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.exception.CommandException;
+
+import static com.legadi.jurl.common.StringUtils.isBlank;
+import static com.legadi.jurl.common.StringUtils.isNotBlank;
+import static com.legadi.jurl.options.OptionsRegistry.getOptionByArg;
+import static com.legadi.jurl.options.OptionsRegistry.registerAddOn;
+import static com.legadi.jurl.options.OptionsRegistry.registerOption;
 
 public class OptionsProcessor {
 
-    private final Map<Option, String[]> options;
+    private static final Logger LOGGER = Logger.getLogger(OptionsProcessor.class.getName());
+
+    private final List<OptionEntry> optionEntries = new LinkedList<>();
     private final Path specPath;
 
     public OptionsProcessor(String[] args) {
         validateArgs(args);
-        this.specPath = extractSpecPath(args);
-        this.options = extractOptions(args);
+        registerOptions();
+
+        this.specPath = extractOptionsAndSpecPath(args);
     }
 
     private void validateArgs(String[] args) {
@@ -25,44 +38,112 @@ public class OptionsProcessor {
         }
     }
 
-    private Path extractSpecPath(String[] args) {
-        return Paths.get(args[args.length - 1]);
+    private void registerOptions() {
+        registerOption(new AuthorizationBasicOption());
+        registerOption(new AuthorizationTokenOption());
+        registerOption(new CurlPrintOption());
+        registerOption(new EnvironmentOption());
+        registerOption(new HelpOption());
+        registerOption(new MockDefinitionOption());
+        registerOption(new MockRequestOption());
+        registerOption(new OpenOutputOption());
+        registerOption(new SetValueOption());
+        registerOption(new TimesRepeatOption());
     }
 
-    private Map<Option, String[]> extractOptions(String[] args) {
-        String[] options = new String[args.length - 1];
-        System.arraycopy(args, 0, options, 0, args.length - 1);
-
-        Map<Option, String[]> argsByOption = new HashMap<>();
+    private Path extractOptionsAndSpecPath(String[] args) {
         int index = 0;
+        String lastArg = null;
 
-        while(index < options.length) {
+        while(index < args.length) {
+            Option option = null;
+
             try {
-                Option option = Option.valueOfOpt(options[index]);
+                option = getOptionByArg(args[index]);
+
+                if(option == null) {
+                    lastArg = args[index];
+                    index++;
+                    continue;
+                }
+
+                String[] optionArgs = option.getArgs();
                 String arguments[];
 
-                if(option.getNumArgs() > 0) {
-                    arguments = new String[option.getNumArgs()];
-                    System.arraycopy(options, index + 1, arguments, 0, option.getNumArgs());
+                if(optionArgs.length > 0) {
+                    arguments = new String[optionArgs.length];
+                    System.arraycopy(args, index + 1, arguments, 0, optionArgs.length);
                 } else {
                     arguments = new String[0];
                 }
 
-                argsByOption.put(option, arguments);
+                optionEntries.add(new OptionEntry(option, arguments));
+
                 index += arguments.length + 1;
-            } catch(IndexOutOfBoundsException ex) {
-                throw new CommandException("Invalid options: " + Arrays.toString(options));
+            } catch(Exception ex) {
+                if(option != null) {
+                    throw new CommandException("Invalid option definition: " + option);
+                } else {
+                    throw new CommandException("Invalid options: " + Arrays.toString(args));
+                }
             }
         }
 
-        return argsByOption;
+        optionEntries.sort(new OptionComparator());
+
+        if(isNotBlank(lastArg)) {
+            return Paths.get(lastArg);
+        } else {
+            return null;
+        }
     }
 
-    public Map<Option, String[]> getOptions() {
-        return options;
+    @SuppressWarnings("unchecked")
+    public void registerAddOnOptions() {
+        Settings settings = new Settings();
+        String[] addOnOptions = settings.getAddOnOptionClasses();
+
+        if(addOnOptions.length > 0) {
+
+            for(String addOnOption : addOnOptions) {
+
+                if(isBlank(addOnOption)) {
+                    continue;
+                }
+
+                try {
+                    Option option = registerAddOn((Class<Option>) Class.forName(addOnOption.trim()));
+                    LOGGER.info("Add-on registered: class=" + addOnOption
+                        + " opt=" + option.getOpt()
+                        + " alias=" + option.getAlias());
+                } catch(ClassCastException | ClassNotFoundException ex) {
+                    throw new CommandException("Unable to load add-on: " + addOnOption);
+                }
+            }
+        }
+    }
+
+    public List<OptionEntry> getOptionEntries() {
+        return optionEntries;
     }
 
     public Path getSpecPath() {
         return specPath;
+    }
+
+    public static class OptionEntry extends Pair<Option, String[]> {
+
+        public OptionEntry(Option option, String[] arguments) {
+            super(option, arguments);
+        }
+    }
+
+    public static class OptionComparator implements Comparator<OptionEntry> {
+
+        @Override
+        public int compare(OptionEntry o1, OptionEntry o2) {
+            return o1.getLeft().getPriority() - o2.getLeft().getPriority();
+        }
+        
     }
 }

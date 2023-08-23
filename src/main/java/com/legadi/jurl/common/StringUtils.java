@@ -1,6 +1,10 @@
 package com.legadi.jurl.common;
 
+import com.google.gson.Gson;
+
 public class StringUtils {
+
+    private static final Gson GSON = new Gson();
 
     public static boolean isNotBlank(String value) {
         return value != null && !value.trim().isEmpty();
@@ -53,5 +57,9 @@ public class StringUtils {
             }
         }
         return value.substring(0, index);
+    }
+
+    public static String toJsonString(Object value) {
+        return GSON.toJson(value);
     }
 }

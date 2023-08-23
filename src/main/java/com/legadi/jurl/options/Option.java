@@ -1,45 +1,51 @@
 package com.legadi.jurl.options;
 
-public enum Option {
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
-    ENV("--env", "-e", 1),
-    CURL("--curl", "-c", 1),
-    SET("--set", "-s", 2),
-    AUTH_BASIC("--auth-basic", "-ab", 1),
-    AUTH_TOKEN("--auth-token", "-at", 1),
-    TIMES("--times", "-t", 1),
-    OPEN("--open", "-o", 0),
-    MOCK("--mock", "-m", 0),
-    HELP("--help", "-h", 0);
+import static com.legadi.jurl.common.StringUtils.isNotBlank;
 
-    private final String opt;
-    private final String alias;
-    private final int numArgs;
+public abstract class Option {
 
-    private Option(String opt, String alias, int numArgs) {
-        this.opt = opt;
-        this.alias = alias;
-        this.numArgs = numArgs;
+    public abstract String getOpt();
+
+    public abstract String getAlias();
+
+    public abstract String[] getArgs();
+
+    public abstract String getDescription();
+
+    public int getPriority() {
+        return 0;
     }
 
-    public String getOpt() {
-        return opt;
+    public abstract boolean execute(String[] args);
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getOpt(), getAlias());
     }
 
-    public String getAlias() {
-        return alias;
-    }
-
-    public int getNumArgs() {
-        return numArgs;
-    }
-
-    public static Option valueOfOpt(String opt) {
-        for(Option option : values()) {
-            if(option.opt.equals(opt) || option.alias.equals(opt)) {
-                return option;
-            }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
         }
-        return null;
+        if (!(obj instanceof Option)) {
+            return false;
+        }
+        Option other = (Option) obj;
+        return Objects.equals(getOpt(), other.getOpt())
+                && Objects.equals(getAlias(), other.getAlias());
+    }
+
+    @Override
+    public String toString() {
+        return getOpt()
+            + (isNotBlank(getAlias()) ? ", " + getAlias() : "")
+            + (getArgs().length < 1 ? "" : " " + Arrays.stream(getArgs())
+                .map(arg -> "<" + arg + ">")
+                .collect(Collectors.joining(" ")));
     }
 }

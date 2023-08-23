@@ -1,0 +1,12 @@
+{
+    "executionOutputPath": "executions/",
+    "addOnOptionClasses": "",
+    "openEditorCommand": "",
+    "requestCredentialId": "",
+    "requestAuthorizationType": "",
+    "curlRequest": false,
+    "mockRequest": false,
+    "mockRequestClass": "",
+    "openOutputInEditor": false,
+    "executionTimes": 1
+}
