@@ -8,5 +8,10 @@
     "mockRequest": false,
     "mockRequestClass": "",
     "openOutputInEditor": false,
-    "executionTimes": 1
+    "executionTimes": 1,
+    "settingsParamRegex": "(?:\\{\\{get:[\\w\\[.\\-\\]\\\\]+\\}\\})",
+    "settingsParamRegexMask": "\\{\\{get:<param-name>\\}\\}",
+    "settingsParamRegexReplace": "<param-name>",
+    "settingsParamStartAt": 6,
+    "settingsParamEndAtLengthMinus": 2
 }

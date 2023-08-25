@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.model.Credential;
@@ -96,25 +97,37 @@ public class Loader {
                 throw new IllegalStateException("Unable to read credentials file: " + credentialsPath, ex);
             }
         } else {
-            LOGGER.warning("Credentials file not found: " + credentialsPath);
+            if(silent) {
+                LOGGER.fine("Credentials file not found: " + credentialsPath);
+            } else {
+                LOGGER.warning("Credentials file not found: " + credentialsPath);
+            }
             return new HashMap<>();
         }
     }
 
-    public static String loadRawJsonFile(String filePath) {
+    public static <T> T loadJsonFile(String filePath, Class<T> type) {
         File jsonFile = new File(filePath);
 
         if(jsonFile.exists()) {
             try(Reader reader = Files.newBufferedReader(jsonFile.toPath())) {
-                String rawJson = GSON.fromJson(reader, String.class);
+                T input = GSON.fromJson(reader, type);
 
-                LOGGER.info("Loaded raw JSON file: " + filePath);
-                return rawJson;
+                LOGGER.info("Loaded JSON file: " + filePath);
+                return input;
             } catch(IOException ex) {
-                throw new IllegalStateException("Unable to read raw JSON file: " + filePath, ex);
+                throw new IllegalStateException("Unable to read JSON file: " + filePath, ex);
             }
         } else {
-            throw new CommandException("Raw JSON file not found: " + filePath);
+            throw new CommandException("JSON file not found: " + filePath);
+        }
+    }
+
+    public static <T> T jsonToObject(String json, Class<T> type) {
+        try {
+            return GSON.fromJson(json, type);
+        } catch(JsonSyntaxException ex) {
+            throw new IllegalStateException("Invalid JSON: " + json, ex);
         }
     }
 }

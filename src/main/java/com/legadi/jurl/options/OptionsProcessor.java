@@ -1,7 +1,5 @@
 package com.legadi.jurl.options;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -23,13 +21,13 @@ public class OptionsProcessor {
     private static final Logger LOGGER = Logger.getLogger(OptionsProcessor.class.getName());
 
     private final List<OptionEntry> optionEntries = new LinkedList<>();
-    private final Path specPath;
+    private final String requestInputPath;
 
     public OptionsProcessor(String[] args) {
         validateArgs(args);
         registerOptions();
 
-        this.specPath = extractOptionsAndSpecPath(args);
+        this.requestInputPath = extractOptionsAndRequestInputPath(args);
     }
 
     private void validateArgs(String[] args) {
@@ -51,7 +49,7 @@ public class OptionsProcessor {
         registerOption(new TimesRepeatOption());
     }
 
-    private Path extractOptionsAndSpecPath(String[] args) {
+    private String extractOptionsAndRequestInputPath(String[] args) {
         int index = 0;
         String lastArg = null;
 
@@ -92,7 +90,7 @@ public class OptionsProcessor {
         optionEntries.sort(new OptionComparator());
 
         if(isNotBlank(lastArg)) {
-            return Paths.get(lastArg);
+            return lastArg;
         } else {
             return null;
         }
@@ -127,8 +125,8 @@ public class OptionsProcessor {
         return optionEntries;
     }
 
-    public Path getSpecPath() {
-        return specPath;
+    public String getRequestInputPath() {
+        return requestInputPath;
     }
 
     public static class OptionEntry extends Pair<Option, String[]> {

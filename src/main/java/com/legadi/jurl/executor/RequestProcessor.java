@@ -2,11 +2,18 @@ package com.legadi.jurl.executor;
 
 import java.util.List;
 
+import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.exception.SkipExecutionException;
+import com.legadi.jurl.model.RequestDefinition;
+import com.legadi.jurl.model.RequestInputRaw;
+import com.legadi.jurl.model.StepDefinition;
 import com.legadi.jurl.options.OptionsProcessor;
 import com.legadi.jurl.options.OptionsProcessor.OptionEntry;
 
-import static com.legadi.jurl.common.Settings.clearSettings;
+import static com.legadi.jurl.common.Loader.jsonToObject;
+import static com.legadi.jurl.common.Loader.loadJsonFile;
+import static com.legadi.jurl.common.Settings.mergeProperties;
+import static com.legadi.jurl.common.StringUtils.isNotBlank;
 
 public class RequestProcessor {
 
@@ -20,9 +27,7 @@ public class RequestProcessor {
 
     public void execute() {
         executeOptions();
-        executeRequest();
-        processResults();
-        clearSettings();
+        executeInput();
     }
 
     private void executeOptions() {
@@ -35,8 +40,39 @@ public class RequestProcessor {
         }
     }
 
-    private void executeRequest() {
+    private void executeInput() {
+        RequestInputRaw requestInput = loadJsonFile(optionsProcessor.getRequestInputPath(), RequestInputRaw.class);
 
+        if(requestInput.getConfig() != null) {
+            mergeProperties(requestInput.getConfig());
+        }
+
+        Settings settings = new Settings();
+
+        if(isNotBlank(requestInput.getRequest())) {
+            RequestDefinition request = jsonToObject(
+                settings.replaceAllInContent(requestInput.getRequest()),
+                RequestDefinition.class
+            );
+
+            executeRequest(request);
+        }
+
+        if(requestInput.getSteps() != null) {
+            requestInput.getSteps()
+                .stream()
+                .map(step -> settings.replaceAllInContent(step))
+                .map(step -> jsonToObject(step, StepDefinition.class))
+                .forEach(this::executeStep);
+        }
+    }
+
+    private void executeRequest(RequestDefinition request) {
+        processResults();
+    }
+
+    private void executeStep(StepDefinition step) {
+        processResults();
     }
 
     private void processResults() {

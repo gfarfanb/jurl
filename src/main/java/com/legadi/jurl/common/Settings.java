@@ -1,22 +1,26 @@
 package com.legadi.jurl.common;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static java.time.temporal.ChronoField.MILLI_OF_DAY;
 
 import com.legadi.jurl.exception.CommandException;
-import com.legadi.jurl.model.AuthorizationType;
 import com.legadi.jurl.model.Credential;
 
 import static com.legadi.jurl.common.Loader.loadCredentials;
 import static com.legadi.jurl.common.Loader.loadInternalJsonProperties;
 import static com.legadi.jurl.common.Loader.loadJsonProperties;
-import static com.legadi.jurl.common.SettingsConstants.*;
+import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_TAG;
 import static com.legadi.jurl.common.StringUtils.isNotBlank;
 
-public class Settings {
+public class Settings implements SettingsDefaults {
 
     private static final Map<String, String> SETTINGS = new HashMap<>();
     private static final Map<String, String> OVERRIDE_SETTINGS = new HashMap<>();
@@ -31,81 +35,36 @@ public class Settings {
 
     private final Map<String, String> properties;
     private final Map<String, Credential> credentials;
-    private final ExecutionTag executionTag;
+    private final LocalDateTime timestamp;
 
     public Settings() {
         this.properties = new HashMap<>(SETTINGS);
         this.credentials = new HashMap<>(CREDENTIALS);
-        this.executionTag = new ExecutionTag();
-        this.properties.put(PROP_EXECUTION_TAG, executionTag.toString());
+        this.timestamp = LocalDateTime.now();
 
+        this.properties.put(PROP_EXECUTION_TAG,
+            timestamp.toLocalDate() + "."  + timestamp.toLocalTime().getLong(MILLI_OF_DAY));
         this.properties.putAll(OVERRIDE_SETTINGS);
         this.credentials.putAll(OVERRIDE_CREDENTIALS);
     }
 
-    public ExecutionTag getExecutionTag() {
-        return executionTag;
-    }
-
-    public Path getOutputPath() {
-        return Paths.get(getValue(PROP_EXECUTION_OUTPUT_PATH));
-    }
-
-    public String[] getAddOnOptionClasses() {
-        return get(PROP_ADD_ON_OPTION_CLASSES, "").split(",");
-    }
-
-    public String getOpenEditorCommand() {
-        return getValue(PROP_OPEN_EDITOR_COMMAND);
-    }
-
-    public Credential getCredential() {
-        String credentialId = getValue(PROP_REQUEST_CREDENTIAL_ID);
-        Credential credential = credentials.get(credentialId);
-        if(credential == null) {
-            throw new CommandException("Credential not found [" + PROP_REQUEST_CREDENTIAL_ID + "]: " + credentialId);
-        }
-        return credential;
-    }
-
-    public AuthorizationType getAuthorizationType() {
-        return AuthorizationType.valueOf(getValue(PROP_REQUEST_AUTHORIZATION_TYPE));
-    }
-
-    public boolean isCurlRequest() {
-        return get(PROP_CURL_REQUEST, Boolean::valueOf);
-    }
-
-    public boolean isMockRequest() {
-        return get(PROP_MOCK_REQUEST, Boolean::valueOf);
-    }
-
-    public String getMockRequestClass() {
-        return getValue(PROP_MOCK_REQUEST_CLASS);
-    }
-
-    public boolean isOpenOutputInEditor() {
-        return get(PROP_OPEN_EDITOR_COMMAND, Boolean::valueOf);
-    }
-
-    public int getTimes() {
-        return get(PROP_EXECUTION_TIMES, Integer::parseInt);
-    }
-
-    public String get(String propertyName) {
-        return getValue(propertyName);
-    }
-
-    public String get(String propertyName, String defaultValue) {
-        return getValueNoValidation(propertyName);
-    }
-
+    @Override
     public <T> T get(String propertyName, Function<String, T> mapper) {
-        return mapper.apply(getValue(propertyName));
+        return mapper.apply(get(propertyName));
     }
 
-    public <T> T get(String propertyName, T defaultValue, Function<String, T> mapper) {
-        String value = getValueNoValidation(propertyName);
+    @Override
+    public String get(String propertyName) {
+        String value = properties.get(propertyName);
+        if(value == null) {
+            throw new CommandException("Property not found: " + propertyName);
+        }
+        return value;
+    }
+
+    @Override
+    public <T> T getOrDefault(String propertyName, T defaultValue, Function<String, T> mapper) {
+        String value = getOrDefault(propertyName, null);
         if(value == null) {
             return defaultValue;
         } else {
@@ -113,16 +72,46 @@ public class Settings {
         }
     }
 
-    private String getValue(String propertyName) {
-        String value = getValueNoValidation(propertyName);
-        if(value == null) {
-            throw new CommandException("Property not found: " + propertyName);
-        }
-        return value;
+    @Override
+    public String getOrDefault(String propertyName, String defaultValue) {
+        return properties.getOrDefault(propertyName, defaultValue);
     }
 
-    private String getValueNoValidation(String propertyName) {
-        return properties.get(propertyName);
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public Credential getCredential() {
+        String credentialId = getCredentialId();
+        Credential credential = credentials.get(credentialId);
+        if(credential == null) {
+            throw new CommandException("Credential not found: " + credentialId);
+        }
+        return credential;
+    }
+
+    public String replaceAllInContent(String content) {
+        Pattern pattern = Pattern.compile(getSettingsParamRegex());
+        Matcher matcher = pattern.matcher(content);
+        Set<String> paramTags = new HashSet<>();
+
+        while(matcher.find()) {
+            String paramTag = matcher.group(0);
+            
+            if(!paramTags.contains(paramTag)) {
+                String paramName = paramTag.substring(
+                    getSettingsParamStartAt(),
+                    paramTag.length() - getSettingsParamEndAtLengthMinus()
+                );
+                String paramRegex = getSettingsParamRegexMask().replace(getSettingsParamRegexReplace(), paramName);
+                
+                content = content.replaceAll(paramRegex, get(paramName));
+
+                paramTags.add(paramTag);
+            }
+        }
+
+        return content;
     }
 
     @Override
@@ -150,10 +139,5 @@ public class Settings {
         } else {
             CREDENTIALS.putAll(credentials);
         }
-    }
-
-    public static void clearSettings() {
-        OVERRIDE_SETTINGS.clear();
-        OVERRIDE_CREDENTIALS.clear();
     }
 }
