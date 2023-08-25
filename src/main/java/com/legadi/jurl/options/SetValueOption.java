@@ -1,6 +1,6 @@
 package com.legadi.jurl.options;
 
-import static com.legadi.jurl.common.Settings.putProperty;
+import com.legadi.jurl.common.SettingsSetter;
 
 public class SetValueOption extends Option {
 
@@ -30,8 +30,8 @@ public class SetValueOption extends Option {
     }
 
     @Override
-    public boolean execute(String[] args) {
-        putProperty(args[0], args[1]);
+    public boolean execute(SettingsSetter settings, String[] args) {
+        settings.put(args[0], args[1]);
         return true;
     }
 }

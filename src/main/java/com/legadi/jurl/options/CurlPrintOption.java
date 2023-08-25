@@ -1,7 +1,8 @@
 package com.legadi.jurl.options;
 
-import static com.legadi.jurl.common.Settings.putProperty;
 import static com.legadi.jurl.common.SettingsConstants.PROP_CURL_REQUEST;
+
+import com.legadi.jurl.common.SettingsSetter;
 
 public class CurlPrintOption extends Option {
 
@@ -26,8 +27,8 @@ public class CurlPrintOption extends Option {
     }
 
     @Override
-    public boolean execute(String[] args) {
-        putProperty(PROP_CURL_REQUEST, Boolean.TRUE.toString());
+    public boolean execute(SettingsSetter settings, String[] args) {
+        settings.put(PROP_CURL_REQUEST, Boolean.TRUE.toString());
         return true;
     }
 }

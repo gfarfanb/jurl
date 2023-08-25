@@ -1,7 +1,8 @@
 package com.legadi.jurl.options;
 
-import static com.legadi.jurl.common.Settings.putProperty;
 import static com.legadi.jurl.common.SettingsConstants.PROP_OPEN_OUTPUT_IN_EDITOR;
+
+import com.legadi.jurl.common.SettingsSetter;
 
 public class OpenOutputOption extends Option {
 
@@ -26,8 +27,8 @@ public class OpenOutputOption extends Option {
     }
 
     @Override
-    public boolean execute(String[] args) {
-        putProperty(PROP_OPEN_OUTPUT_IN_EDITOR, Boolean.TRUE.toString());
+    public boolean execute(SettingsSetter settings, String[] args) {
+        settings.put(PROP_OPEN_OUTPUT_IN_EDITOR, Boolean.TRUE.toString());
         return true;
     }
 }

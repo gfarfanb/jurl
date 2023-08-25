@@ -4,6 +4,7 @@
     "openEditorCommand": "",
     "requestCredentialId": "",
     "requestAuthorizationType": "",
+    "executionAsFlow": false,
     "curlRequest": false,
     "mockRequest": false,
     "mockRequestClass": "",

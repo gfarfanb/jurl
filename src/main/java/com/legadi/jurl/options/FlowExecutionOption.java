@@ -1,19 +1,19 @@
 package com.legadi.jurl.options;
 
-import static com.legadi.jurl.common.SettingsConstants.PROP_MOCK_REQUEST;
+import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_AS_FLOW;
 
 import com.legadi.jurl.common.SettingsSetter;
 
-public class MockRequestOption extends Option {
+public class FlowExecutionOption extends Option {
 
     @Override
     public String getOpt() {
-        return "--mock";
+        return "--flow";
     }
 
     @Override
     public String getAlias() {
-        return "-m";
+        return "-f";
     }
 
     @Override
@@ -23,12 +23,13 @@ public class MockRequestOption extends Option {
 
     @Override
     public String getDescription() {
-        return "Tells request not to connect with the remote host but mock the request.";
+        return "Tells request to execute as flow. The request file can defines\na request or a sequential execution of several requests (flow).";
     }
 
     @Override
     public boolean execute(SettingsSetter settings, String[] args) {
-        settings.put(PROP_MOCK_REQUEST, Boolean.TRUE.toString());
+        settings.put(PROP_EXECUTION_AS_FLOW, Boolean.TRUE.toString());
         return true;
     }
+    
 }

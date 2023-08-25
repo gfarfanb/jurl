@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import com.legadi.jurl.common.Pair;
@@ -41,6 +42,7 @@ public class OptionsProcessor {
         registerOption(new AuthorizationTokenOption());
         registerOption(new CurlPrintOption());
         registerOption(new EnvironmentOption());
+        registerOption(new FlowExecutionOption());
         registerOption(new HelpOption());
         registerOption(new MockDefinitionOption());
         registerOption(new MockRequestOption());
@@ -80,7 +82,7 @@ public class OptionsProcessor {
                 index += arguments.length + 1;
             } catch(Exception ex) {
                 if(option != null) {
-                    throw new CommandException("Invalid option definition: " + option);
+                    throw new CommandException("Invalid option definition: " + Arrays.toString(args) + " - " + option);
                 } else {
                     throw new CommandException("Invalid options: " + Arrays.toString(args));
                 }
@@ -127,6 +129,33 @@ public class OptionsProcessor {
 
     public String getRequestInputPath() {
         return requestInputPath;
+    }
+
+    public List<OptionEntry> mapToOptionEntries(Map<String, String[]> options) {
+        List<OptionEntry> optionEntries = new LinkedList<>();
+
+        if(options == null) {
+            return optionEntries;
+        }
+
+        for(Map.Entry<String, String[]> opt : options.entrySet()) {
+            Option option = getOptionByArg(opt.getKey());
+
+            if(option == null) {
+                throw new CommandException("Option not found: " + opt.getKey());
+            }
+            if(option.getArgs().length > 0
+                    && (opt.getValue() == null || opt.getValue().length < option.getArgs().length)) {
+                throw new CommandException("Invalid args length for option: "
+                    + Arrays.toString(opt.getValue()) + " - " + option);
+            }
+
+            optionEntries.add(new OptionEntry(option, opt.getValue()));
+        }
+
+        optionEntries.sort(new OptionComparator());
+
+        return optionEntries;
     }
 
     public static class OptionEntry extends Pair<Option, String[]> {

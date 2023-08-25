@@ -42,6 +42,10 @@ public interface SettingsDefaults {
         return AuthorizationType.valueOf(get(PROP_REQUEST_AUTHORIZATION_TYPE));
     }
 
+    default boolean isExecutionAsFlow() {
+        return get(PROP_EXECUTION_AS_FLOW, Boolean::valueOf);
+    }
+
     default boolean isCurlRequest() {
         return get(PROP_CURL_REQUEST, Boolean::valueOf);
     }

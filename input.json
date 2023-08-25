@@ -1,6 +1,12 @@
 {
     "config": {},
-    "request": "",
+    "request": {
+        
+    },
     "steps:": [
+        {
+            "requestInputPath": "",
+            "options": {}
+        }
     ]
 }

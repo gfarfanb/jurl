@@ -18,14 +18,11 @@ import static com.legadi.jurl.common.Loader.loadCredentials;
 import static com.legadi.jurl.common.Loader.loadInternalJsonProperties;
 import static com.legadi.jurl.common.Loader.loadJsonProperties;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_TAG;
-import static com.legadi.jurl.common.StringUtils.isNotBlank;
 
 public class Settings implements SettingsDefaults {
 
     private static final Map<String, String> SETTINGS = new HashMap<>();
-    private static final Map<String, String> OVERRIDE_SETTINGS = new HashMap<>();
     private static final Map<String, Credential> CREDENTIALS = new HashMap<>();
-    private static final Map<String, Credential> OVERRIDE_CREDENTIALS = new HashMap<>();
 
     static {
         SETTINGS.putAll(loadInternalJsonProperties("settings.default.json", true));
@@ -34,18 +31,24 @@ public class Settings implements SettingsDefaults {
     }
 
     private final Map<String, String> properties;
+    private final Map<String, String> overrideProperties;
     private final Map<String, Credential> credentials;
+    private final Map<String, Credential> overrideCredentials;
     private final LocalDateTime timestamp;
 
     public Settings() {
-        this.properties = new HashMap<>(SETTINGS);
-        this.credentials = new HashMap<>(CREDENTIALS);
+        this(SETTINGS, CREDENTIALS);
+    }
+
+    private Settings(Map<String, String> properties, Map<String, Credential> credentials) {
+        this.properties = new HashMap<>(properties);
+        this.overrideProperties = new HashMap<>();
+        this.credentials = new HashMap<>(credentials);
+        this.overrideCredentials = new HashMap<>();
         this.timestamp = LocalDateTime.now();
 
         this.properties.put(PROP_EXECUTION_TAG,
             timestamp.toLocalDate() + "."  + timestamp.toLocalTime().getLong(MILLI_OF_DAY));
-        this.properties.putAll(OVERRIDE_SETTINGS);
-        this.credentials.putAll(OVERRIDE_CREDENTIALS);
     }
 
     @Override
@@ -55,7 +58,7 @@ public class Settings implements SettingsDefaults {
 
     @Override
     public String get(String propertyName) {
-        String value = properties.get(propertyName);
+        String value = overrideProperties.getOrDefault(propertyName, properties.get(propertyName));
         if(value == null) {
             throw new CommandException("Property not found: " + propertyName);
         }
@@ -74,7 +77,23 @@ public class Settings implements SettingsDefaults {
 
     @Override
     public String getOrDefault(String propertyName, String defaultValue) {
-        return properties.getOrDefault(propertyName, defaultValue);
+        return overrideProperties.getOrDefault(propertyName, properties.getOrDefault(propertyName, defaultValue));
+    }
+
+    public void put(String propertyName, String propertyValue) {
+        this.properties.put(propertyName, propertyValue);
+    }
+
+    public void putOverride(String propertyName, String propertyValue) {
+        this.overrideProperties.put(propertyName, propertyValue);
+    }
+
+    public void mergeOverrideProperties(Map<String, String> properties) {
+        this.overrideProperties.putAll(properties);
+    }
+
+    public void mergeOverrideCredentials(Map<String, Credential> credentials) {
+        this.overrideCredentials.putAll(credentials);
     }
 
     public LocalDateTime getTimestamp() {
@@ -83,7 +102,7 @@ public class Settings implements SettingsDefaults {
 
     public Credential getCredential() {
         String credentialId = getCredentialId();
-        Credential credential = credentials.get(credentialId);
+        Credential credential = overrideCredentials.getOrDefault(credentialId, credentials.get(credentialId));
         if(credential == null) {
             throw new CommandException("Credential not found: " + credentialId);
         }
@@ -114,30 +133,24 @@ public class Settings implements SettingsDefaults {
         return content;
     }
 
+    public Settings createForNextExecution() {
+        return new Settings(properties, credentials);
+    }
+
     @Override
     public String toString() {
         return properties.toString();
     }
 
-    public static void mergeProperties(Map<String, String> properties) {
-        OVERRIDE_SETTINGS.putAll(properties);
+    public static void putPropertyToGlobal(String propertyName, String propertyValue) {
+        SETTINGS.put(propertyName, propertyValue);
     }
 
-    public static void putProperty(String propertyName, String propertyValue) {
-        OVERRIDE_SETTINGS.put(propertyName, propertyValue);
+    public static void mergePropertiesToGlobal(Map<String, String> properties) {
+        SETTINGS.putAll(properties);
     }
 
-    public static void mergeCredentials(Map<String, Credential> credentials) {
-        String credentialIdFound = credentials.keySet()
-            .stream()
-            .filter(CREDENTIALS::containsKey)
-            .findFirst()
-            .orElse(null);
-
-        if(isNotBlank(credentialIdFound)) {
-            throw new CommandException("Credential ID already exists: " + credentialIdFound);
-        } else {
-            CREDENTIALS.putAll(credentials);
-        }
+    public static void mergeCredentialsToGlobal(Map<String, Credential> credentials) {
+        CREDENTIALS.putAll(credentials);
     }
 }
