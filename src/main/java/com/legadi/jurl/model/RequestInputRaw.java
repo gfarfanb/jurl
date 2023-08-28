@@ -3,15 +3,20 @@ package com.legadi.jurl.model;
 import java.util.Map;
 
 import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.JsonAdapter;
+import com.legadi.jurl.model.adapter.FlowsDeserializer;
+import com.legadi.jurl.model.adapter.RequestsDeserializer;
 
 public class RequestInputRaw {
 
-    @Expose (serialize = false, deserialize = false)
+    @Expose(serialize = false, deserialize = false)
     private String path;
     private Map<String, Map<String, String>> configs;
     private String defaultRequest;
     private String defaultFlow;
+    @JsonAdapter(RequestsDeserializer.class)
     private Map<String, String> requests;
+    @JsonAdapter(FlowsDeserializer.class)
     private Map<String, String[]> flows;
 
     public String getPath() {

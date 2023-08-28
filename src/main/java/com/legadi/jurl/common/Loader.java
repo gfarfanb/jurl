@@ -128,9 +128,9 @@ public class Loader {
         }
     }
 
-    public static <T> T jsonToObject(String json, Class<T> type) {
+    public static <T> T jsonToObject(String json, TypeToken<T> type) {
         try {
-            return GSON.fromJson(json, type);
+            return GSON.fromJson(json, type.getType());
         } catch(JsonSyntaxException ex) {
             throw new IllegalStateException("Invalid JSON: " + json, ex);
         }

@@ -11,6 +11,7 @@ public class RequestUtils {
     public static final int MULTIPART_MAX_BUFFER_SIZE = 1 * 1024 * 1024;
 
     public static boolean isHTTP(RequestEntry request) {
-        return isNotBlank(request.getUrl()) && (request.getUrl().startsWith("http"));
+        return (isNotBlank(request.getUrl()) && request.getUrl().startsWith("http"))
+            || (isNotBlank(request.getProtocol()) && request.getProtocol().startsWith("http"));
     }
 }

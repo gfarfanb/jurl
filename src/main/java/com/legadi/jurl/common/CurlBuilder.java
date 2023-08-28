@@ -8,8 +8,8 @@ import java.util.List;
 
 public class CurlBuilder {
 
-    private List<String> headers = new LinkedList<>();
-    private List<String> formFields = new LinkedList<>();
+    private final List<String> headers = new LinkedList<>();
+    private final List<String> formFields = new LinkedList<>();
 
     private String url;
     private String method;
@@ -61,12 +61,13 @@ public class CurlBuilder {
     }
 
     public String build() {
-        return "curl"
-            + (isNotBlank(method) ? " " + method : "")
-            + (!headers.isEmpty() ? " " + String.join(" ", headers) : "")
-            + (!formFields.isEmpty() ? " " + String.join(" ", formFields) : "")
-            + (isNotBlank(file) ? " " + file : "")
-            + (isNotBlank(data) ? " " + data : "")
-            + (isNotBlank(url) ? " " + url : "");
+        return new StringBuilder("curl")
+            .append(isNotBlank(method) ? " " + method : "")
+            .append(!headers.isEmpty() ? " " + String.join(" ", headers) : "")
+            .append(!formFields.isEmpty() ? " " + String.join(" ", formFields) : "")
+            .append(isNotBlank(file) ? " " + file : "")
+            .append(isNotBlank(data) ? " " + data : "")
+            .append(isNotBlank(url) ? " " + url : "")
+            .toString();
     }
 }

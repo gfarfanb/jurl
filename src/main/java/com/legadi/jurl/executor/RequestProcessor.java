@@ -15,9 +15,10 @@ import com.legadi.jurl.common.SettingsSetter;
 import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.exception.SkipExecutionException;
-import com.legadi.jurl.model.RequestDefinition;
+import com.legadi.jurl.model.RequestEntry;
 import com.legadi.jurl.model.RequestInputRaw;
-import com.legadi.jurl.model.StepDefinition;
+import com.legadi.jurl.model.ResponseEntry;
+import com.legadi.jurl.model.StepEntry;
 import com.legadi.jurl.options.OptionsProcessor;
 import com.legadi.jurl.options.OptionsProcessor.OptionEntry;
 
@@ -27,6 +28,7 @@ import static com.legadi.jurl.common.Loader.loadJsonFile;
 import static com.legadi.jurl.common.Loader.loadJsonProperties;
 import static com.legadi.jurl.common.StringUtils.isBlank;
 import static com.legadi.jurl.common.StringUtils.isNotBlank;
+import static com.legadi.jurl.executor.RequestExecutorRegistry.getExecutor;
 
 public class RequestProcessor {
 
@@ -111,21 +113,24 @@ public class RequestProcessor {
         }
 
         AtomicReference<Settings> stepSettings = new AtomicReference<>(settingsSetter.getSettings());
-        List<StepDefinition> steps = Arrays.stream(flowDef.getRight())
+        List<StepEntry> steps = Arrays.stream(flowDef.getRight())
             .parallel()
             .map(step -> stepSettings.get().replaceAllInContent(step))
-            .map(step -> jsonToObject(step, StepDefinition.class))
+            .map(step -> jsonToObject(step, new TypeToken<StepEntry>() {}))
             .collect(Collectors.toList());
         int stepIndex = 1;
 
-        for(StepDefinition step : steps) {
+        for(StepEntry step : steps) {
+            step.setFlowName(flowDef.getLeft());
             stepSettings.set(stepSettings.get().createForNextExecution());
 
             try {
-                executeStep(flowDef.getLeft(), stepSettings.get(), step);
+                executeStep(stepSettings.get(), step);
             } catch(CommandException | RequestException ex) {
-                throw new CommandException("[" + requestInput.getPath()
-                    + "] step(" + stepIndex + "/" + steps.size() + ") " + ex.getMessage());
+                throw new CommandException(
+                    "[" + requestInput.getPath() + "/" + step.getFlowName() + "]"
+                    + " step("+ stepIndex + "/" + steps.size() + ") "
+                    + ex.getMessage());
             }
 
             stepIndex++;
@@ -145,7 +150,7 @@ public class RequestProcessor {
         }
     }
 
-    private void executeStep(String flowName, Settings settings, StepDefinition step) {
+    private void executeStep(Settings settings, StepEntry step) {
         SettingsSetter settingsSetter = new SettingsSetter(settings);
 
         if(isBlank(step.getRequestInputPath())) {
@@ -167,15 +172,18 @@ public class RequestProcessor {
                 + requestDef.getLeft() + " - " + requestInput.getPath());
         }
 
-        RequestDefinition request = jsonToObject(
-            settingsSetter.getSettings().replaceAllInContent(requestDef.getRight()),
-            RequestDefinition.class
-        );
+        String requestRaw = settingsSetter.getSettings().replaceAllInContent(requestDef.getRight());
+        RequestEntry requestEntry = jsonToObject(requestRaw, new TypeToken<RequestEntry>() {});
+
+        requestEntry.setName(requestDef.getLeft());
 
         try {
-            executeRequest(requestDef.getLeft(), settingsSetter.getSettings().createForNextExecution(), request);
+            executeRequest(settingsSetter.getSettings().createForNextExecution(),
+                requestEntry, requestRaw);
         } catch(CommandException | RequestException ex) {
-            throw new CommandException("[" + requestInput.getPath() + "] " + ex.getMessage());
+            throw new CommandException(
+                "[" + requestInput.getPath() + "/" + requestEntry.getName() + "] "
+                + ex.getMessage());
         }
     }
 
@@ -192,13 +200,15 @@ public class RequestProcessor {
         }
     }
 
-    private void executeRequest(String requestName, Settings settings, RequestDefinition request) {
-        processResults();
+    private void executeRequest(Settings settings, RequestEntry requestEntry, String requestRaw) {
+        RequestExecutor<?, ?> executor = getExecutor(requestEntry);
+        RequestEntry request = jsonToObject(requestRaw, executor.type());
+        ResponseEntry response = executor.execute(settings, request);
+
+        processResults(response);
     }
 
-    private void processResults() {
-        
-    }
+    private void processResults(ResponseEntry response) {
 
-    
+    }
 }

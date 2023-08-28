@@ -1,7 +1,9 @@
 package com.legadi.jurl.executor;
 
+import com.google.gson.reflect.TypeToken;
 import com.legadi.jurl.common.CurlBuilder;
 import com.legadi.jurl.common.Settings;
+import com.legadi.jurl.common.URLBuilder;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.model.HTTPRequestEntry;
 import com.legadi.jurl.model.HTTPRequestFileEntry;
@@ -14,7 +16,6 @@ import static com.legadi.jurl.common.RequestUtils.MULTIPART_TWO_HYPHENS;
 import static com.legadi.jurl.common.RequestUtils.isHTTP;
 import static com.legadi.jurl.common.StringUtils.isBlank;
 import static com.legadi.jurl.common.StringUtils.isNotBlank;
-import static com.legadi.jurl.common.StringUtils.stripEnd;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -28,13 +29,11 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -47,6 +46,11 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     @Override
     public boolean accepts(RequestEntry request) {
         return isHTTP(request);
+    }
+
+    @Override
+    public TypeToken<HTTPRequestEntry> type() {
+        return new TypeToken<HTTPRequestEntry>() {};
     }
 
     @Override
@@ -70,50 +74,25 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
 
     private HttpURLConnection createConnection(Settings settings,
             HTTPRequestEntry request, CurlBuilder curlBuilder) {
-        if(isBlank(request.getUrl())) {
-            throw new RequestException(request, "HTTP resource not defined");
-        }
-
-        String urlBase = stripEnd(request.getUrl().toString(), "?&");
-        StringBuilder urlPart = new StringBuilder(urlBase);
-
-        if(urlBase.contains("?")) {
-            request.getQueryParams().entrySet()
-                .forEach(param -> urlPart
-                    .append('&')
-                    .append(param.getKey())
-                    .append('=')
-                    .append(param.getValue()));
-        } else {
-            AtomicBoolean first = new AtomicBoolean(true);
-            request.getQueryParams().entrySet()
-                .forEach(param -> {
-                    if(first.get()) {
-                        first.set(false);
-                        urlPart
-                            .append(param.getKey())
-                            .append('=')
-                            .append(param.getValue());
-                    } else {
-                        urlPart
-                            .append('&')
-                            .append(param.getKey())
-                            .append('=')
-                            .append(param.getValue());
-                    }
-                });
-        }
+        URLBuilder urlBuilder = new URLBuilder()
+            .setUrl(request.getUrl())
+            .setProtocol(request.getProtocol())
+            .setDomain(request.getDomain())
+            .setPort(request.getPort())
+            .setBasePath(request.getBasePath())
+            .setEndpoint(request.getEndpoint())
+            .addAllQueryParams(request.getQueryParams());
 
         try {
-            URL url = new URL(urlPart.toString());
+            URL url = new URL(urlBuilder.build());
 
             curlBuilder.setUrl(url);
 
             return createConnection(settings, request, url);
         } catch(MalformedURLException ex) {
-            throw new RequestException(request, "Malformed HTTP resource: " + urlPart);
+            throw new RequestException(request, "Malformed HTTP resource: " + request.getUrl());
         } catch(IOException ex) {
-            throw new RequestException(request, "Unable to create HTTP connection: " + urlPart);
+            throw new RequestException(request, "Unable to create HTTP connection: " + request.getUrl());
         }
     }
 
@@ -281,7 +260,8 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         }
     }
 
-    private HTTPResponseEntry buildResponse(Path responsePath, HttpURLConnection connection, HTTPRequestEntry request, CurlBuilder curlBuilder) {
+    private HTTPResponseEntry buildResponse(Path responsePath, HttpURLConnection connection,
+            HTTPRequestEntry request, CurlBuilder curlBuilder) {
         HTTPResponseEntry response = new HTTPResponseEntry();
 
         try {
@@ -318,7 +298,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         return requestFile;
     }
 
-    private void writeLine(DataOutputStream dataOutputStream, String line, Charset charset) {
+    private void writeLine(DataOutputStream dataOutputStream, String line, String charset) {
         try {
             byte[] input = line.getBytes(charset);
             dataOutputStream.write(input, 0, input.length);

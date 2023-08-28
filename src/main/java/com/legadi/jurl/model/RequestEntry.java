@@ -1,9 +1,17 @@
 package com.legadi.jurl.model;
 
+import com.google.gson.annotations.Expose;
+
 public class RequestEntry {
 
+    @Expose(serialize = false, deserialize = false)
     protected String name;
     protected String url;
+    protected String protocol;
+    protected String domain;
+    protected int port;
+    protected String basePath;
+    protected String endpoint;
 
     public String getName() {
         return name;
@@ -21,4 +29,43 @@ public class RequestEntry {
         this.url = url;
     }
 
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public void setDomain(String domain) {
+        this.domain = domain;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public String getBasePath() {
+        return basePath;
+    }
+
+    public void setBasePath(String basePath) {
+        this.basePath = basePath;
+    }
+
+    public String getEndpoint() {
+        return endpoint;
+    }
+
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
+    }
 }

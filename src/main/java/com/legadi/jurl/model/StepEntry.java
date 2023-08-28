@@ -2,10 +2,22 @@ package com.legadi.jurl.model;
 
 import java.util.Map;
 
-public class StepDefinition {
+import com.google.gson.annotations.Expose;
 
+public class StepEntry {
+
+    @Expose(serialize = false, deserialize = false)
+    private String flowName;
     private String requestInputPath;
     private Map<String, String[]> options;
+
+    public String getFlowName() {
+        return flowName;
+    }
+
+    public void setFlowName(String flowName) {
+        this.flowName = flowName;
+    }
 
     public String getRequestInputPath() {
         return requestInputPath;

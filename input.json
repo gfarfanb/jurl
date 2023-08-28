@@ -8,7 +8,13 @@
     "defaultFlow": "flow-def",
     "requests": {
         "request-def": {
-            
+            "url": "",
+            "protocol": "https",
+            "domain": "",
+            "port": 0,
+            "basePath": "",
+            "endpoint": "",
+            "method": ""
         }
     },
     "flows": {
