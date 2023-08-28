@@ -28,7 +28,7 @@ public class CurlPrintOption extends Option {
 
     @Override
     public boolean execute(SettingsSetter settings, String[] args) {
-        settings.put(PROP_CURL_REQUEST, Boolean.TRUE.toString());
+        settings.put(getOpt(), PROP_CURL_REQUEST, Boolean.TRUE.toString());
         return true;
     }
 }

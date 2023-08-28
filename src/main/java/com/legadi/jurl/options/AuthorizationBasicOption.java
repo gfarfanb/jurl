@@ -30,8 +30,8 @@ public class AuthorizationBasicOption extends Option {
 
     @Override
     public boolean execute(SettingsSetter settings, String[] args) {
-        settings.put(PROP_REQUEST_CREDENTIAL_ID, args[0]);
-        settings.put(PROP_REQUEST_AUTHORIZATION_TYPE, BASIC.name());
+        settings.put(getOpt(), PROP_REQUEST_CREDENTIAL_ID, args[0]);
+        settings.put(getOpt(), PROP_REQUEST_AUTHORIZATION_TYPE, BASIC.name());
         return true;
     }
 }

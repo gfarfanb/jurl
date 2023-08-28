@@ -22,7 +22,9 @@ import com.legadi.jurl.options.OptionsProcessor;
 import com.legadi.jurl.options.OptionsProcessor.OptionEntry;
 
 import static com.legadi.jurl.common.Loader.jsonToObject;
+import static com.legadi.jurl.common.Loader.loadCredentials;
 import static com.legadi.jurl.common.Loader.loadJsonFile;
+import static com.legadi.jurl.common.Loader.loadJsonProperties;
 import static com.legadi.jurl.common.StringUtils.isBlank;
 import static com.legadi.jurl.common.StringUtils.isNotBlank;
 
@@ -39,8 +41,10 @@ public class RequestProcessor {
     }
 
     public void execute() {
-        executeOptions(new SettingsSetter(), optionsProcessor.getOptionEntries());
-        executeInput(new SettingsSetter(), optionsProcessor.getRequestInputPath());
+        SettingsSetter settingsSetter = new SettingsSetter();
+
+        executeOptions(settingsSetter, optionsProcessor.getOptionEntries());
+        executeInput(settingsSetter, optionsProcessor.getRequestInputPath());
     }
 
     private void executeOptions(SettingsSetter settingsSetter, List<OptionEntry> optionEntries) {
@@ -65,33 +69,45 @@ public class RequestProcessor {
         
         registeredInputPaths.add(requestInputPath);
 
-        RequestInputRaw requestInput = loadJsonFile(requestInputPath, new TypeToken<RequestInputRaw>() {}, false);
+        RequestInputRaw requestInput = loadJsonFile(requestInputPath,
+            new TypeToken<RequestInputRaw>() {}, false);
 
-        if(requestInput.getConfigs() != null) {
-            settingsSetter.mergeProperties(requestInput.getConfigs().getOrDefault(
-                settingsSetter.getSettings().getEnvironment(), new HashMap<>()
-            ));
-        }
+        requestInput.setPath(requestInputPath);
 
-        settingsSetter.loadPriorityConfig();
+        loadConfig(requestInput, settingsSetter);
 
         if(settingsSetter.getSettings().isExecutionAsFlow()) {
-            processFlow(requestInput, settingsSetter, requestInputPath);
+            processFlow(requestInput, settingsSetter);
         } else {
-            processRequest(requestInput, settingsSetter, requestInputPath);
+            processRequest(requestInput, settingsSetter);
         }
     }
 
-    private void processFlow(RequestInputRaw requestInput, SettingsSetter settingsSetter, String requestInputPath) {
-        if(requestInput.getFlows() == null || requestInput.getFlows().isEmpty()) {
-            throw new CommandException("No flows are defined in the request file: " + requestInputPath);
+    private void loadConfig(RequestInputRaw requestInput, SettingsSetter settingsSetter) {
+        String env = settingsSetter.getSettings().getEnvironment();
+        String fileConfig = "./config." + env + ".json";
+
+        settingsSetter.mergeProperties(fileConfig, loadJsonProperties(fileConfig, false));
+        settingsSetter.mergeCredentials(loadCredentials("./credentials." + env + ".json", false));
+
+        if(requestInput.getConfigs() != null) {
+            settingsSetter.mergeProperties(requestInput.getPath(), 
+                requestInput.getConfigs().getOrDefault(env, new HashMap<>()));
         }
 
-        Pair<String, String[]> flowDef = pickFlow(requestInput);
+        settingsSetter.loadPriorityConfig();
+    }
+
+    private void processFlow(RequestInputRaw requestInput, SettingsSetter settingsSetter) {
+        if(requestInput.getFlows() == null || requestInput.getFlows().isEmpty()) {
+            throw new CommandException("No flows are defined in the request file: " + requestInput.getPath());
+        }
+
+        Pair<String, String[]> flowDef = pickFlow(requestInput, settingsSetter);
 
         if(flowDef.getRight() == null || flowDef.getRight().length < 1) {
             throw new CommandException("No steps defined for the flow: "
-                + flowDef.getLeft() + " - " + requestInputPath);
+                + flowDef.getLeft() + " - " + requestInput.getPath());
         }
 
         AtomicReference<Settings> stepSettings = new AtomicReference<>(settingsSetter.getSettings());
@@ -108,7 +124,7 @@ public class RequestProcessor {
             try {
                 executeStep(flowDef.getLeft(), stepSettings.get(), step);
             } catch(CommandException | RequestException ex) {
-                throw new CommandException("[" + requestInputPath
+                throw new CommandException("[" + requestInput.getPath()
                     + "] step(" + stepIndex + "/" + steps.size() + ") " + ex.getMessage());
             }
 
@@ -116,12 +132,13 @@ public class RequestProcessor {
         }
     }
 
-    private Pair<String, String[]> pickFlow(RequestInputRaw requestInput) {
-        if(isNotBlank(requestInput.getDefaultFlow())) {
-            return new Pair<>(
-                requestInput.getDefaultFlow(),
-                requestInput.getFlows().get(requestInput.getDefaultFlow())
-            );
+    private Pair<String, String[]> pickFlow(RequestInputRaw requestInput, SettingsSetter settingsSetter) {
+        String name = isNotBlank(settingsSetter.getSettings().getInputName())
+            ? settingsSetter.getSettings().getInputName()
+            : requestInput.getDefaultFlow();
+
+        if(isNotBlank(name)) {
+            return new Pair<>(name, requestInput.getFlows().get(name));
         } else {
             String flowName = requestInput.getFlows().keySet().stream().findFirst().get();
             return new Pair<>(flowName, requestInput.getFlows().get(flowName));
@@ -139,15 +156,15 @@ public class RequestProcessor {
         executeInput(settingsSetter, step.getRequestInputPath());
     }
 
-    private void processRequest(RequestInputRaw requestInput, SettingsSetter settingsSetter, String requestInputPath) {
+    private void processRequest(RequestInputRaw requestInput, SettingsSetter settingsSetter) {
         if(requestInput.getRequests() == null || requestInput.getRequests().isEmpty()) {
-            throw new CommandException("No requests are defined in the request file: " + requestInputPath);
+            throw new CommandException("No requests are defined in the request file: " + requestInput.getPath());
         }
 
-        Pair<String, String> requestDef = pickRequest(requestInput);
+        Pair<String, String> requestDef = pickRequest(requestInput, settingsSetter);
         if(isBlank(requestDef.getRight())) {
             throw new CommandException("No request defined for name: "
-                + requestDef.getLeft() + " - " + requestInputPath);
+                + requestDef.getLeft() + " - " + requestInput.getPath());
         }
 
         RequestDefinition request = jsonToObject(
@@ -158,16 +175,17 @@ public class RequestProcessor {
         try {
             executeRequest(requestDef.getLeft(), settingsSetter.getSettings().createForNextExecution(), request);
         } catch(CommandException | RequestException ex) {
-            throw new CommandException("[" + requestInputPath + "] " + ex.getMessage());
+            throw new CommandException("[" + requestInput.getPath() + "] " + ex.getMessage());
         }
     }
 
-    private Pair<String, String> pickRequest(RequestInputRaw requestInput) {
-        if(isNotBlank(requestInput.getDefaultRequest())) {
-            return new Pair<>(
-                requestInput.getDefaultRequest(),
-                requestInput.getRequests().get(requestInput.getDefaultRequest())
-            );
+    private Pair<String, String> pickRequest(RequestInputRaw requestInput, SettingsSetter settingsSetter) {
+        String name = isNotBlank(settingsSetter.getSettings().getInputName())
+            ? settingsSetter.getSettings().getInputName()
+            : requestInput.getDefaultRequest();
+
+        if(isNotBlank(name)) {
+            return new Pair<>(name, requestInput.getRequests().get(name));
         } else {
             String requestName = requestInput.getRequests().keySet().stream().findFirst().get();
             return new Pair<>(requestName, requestInput.getRequests().get(requestName));
@@ -181,4 +199,6 @@ public class RequestProcessor {
     private void processResults() {
         
     }
+
+    
 }

@@ -28,7 +28,7 @@ public class TimesRepeatOption extends Option {
 
     @Override
     public boolean execute(SettingsSetter settings, String[] args) {
-        settings.put(PROP_EXECUTION_TIMES, args[0]);
+        settings.put(getOpt(), PROP_EXECUTION_TIMES, args[0]);
         return true;
     }
 }

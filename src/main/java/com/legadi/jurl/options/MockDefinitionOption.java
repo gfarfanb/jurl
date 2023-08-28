@@ -30,7 +30,7 @@ public class MockDefinitionOption extends Option {
 
     @Override
     public boolean execute(SettingsSetter settings, String[] args) {
-        settings.put(PROP_MOCK_REQUEST_CLASS, args[0]);
+        settings.put(getOpt(), PROP_MOCK_REQUEST_CLASS, args[0]);
         return true;
     }
     

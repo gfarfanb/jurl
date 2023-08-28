@@ -15,6 +15,7 @@ public class SettingsConstants {
     public static final String PROP_MOCK_REQUEST_CLASS = "mockRequestClass";
     public static final String PROP_OPEN_OUTPUT_IN_EDITOR = "openOutputInEditor";
     public static final String PROP_EXECUTION_TIMES = "executionTimes";
+    public static final String PROP_INPUT_NAME = "inputName";
     public static final String PROP_SETTINGS_PARAM_REGEX = "settingsParamRegex";
     public static final String PROP_SETTINGS_PARAM_REGEX_MASK = "settingsParamRegexMask";
     public static final String PROP_SETTINGS_PARAM_REGEX_REPLACE = "settingsParamRegexReplace";

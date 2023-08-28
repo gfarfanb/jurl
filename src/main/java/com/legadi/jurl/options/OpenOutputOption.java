@@ -28,7 +28,7 @@ public class OpenOutputOption extends Option {
 
     @Override
     public boolean execute(SettingsSetter settings, String[] args) {
-        settings.put(PROP_OPEN_OUTPUT_IN_EDITOR, Boolean.TRUE.toString());
+        settings.put(getOpt(), PROP_OPEN_OUTPUT_IN_EDITOR, Boolean.TRUE.toString());
         return true;
     }
 }

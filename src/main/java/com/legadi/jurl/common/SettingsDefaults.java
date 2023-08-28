@@ -70,6 +70,10 @@ public interface SettingsDefaults {
         return get(PROP_EXECUTION_TIMES, Integer::parseInt);
     }
 
+    default String getInputName() {
+        return get(PROP_INPUT_NAME);
+    }
+
     default String getSettingsParamRegex() {
         return get(PROP_SETTINGS_PARAM_REGEX);
     }

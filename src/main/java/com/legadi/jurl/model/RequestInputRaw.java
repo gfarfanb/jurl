@@ -2,13 +2,25 @@ package com.legadi.jurl.model;
 
 import java.util.Map;
 
+import com.google.gson.annotations.Expose;
+
 public class RequestInputRaw {
 
+    @Expose (serialize = false, deserialize = false)
+    private String path;
     private Map<String, Map<String, String>> configs;
     private String defaultRequest;
     private String defaultFlow;
     private Map<String, String> requests;
     private Map<String, String[]> flows;
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
 
     public Map<String, Map<String, String>> getConfigs() {
         return configs;

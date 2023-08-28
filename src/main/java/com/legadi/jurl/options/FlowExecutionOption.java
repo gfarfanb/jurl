@@ -28,7 +28,7 @@ public class FlowExecutionOption extends Option {
 
     @Override
     public boolean execute(SettingsSetter settings, String[] args) {
-        settings.put(PROP_EXECUTION_AS_FLOW, Boolean.TRUE.toString());
+        settings.put(getOpt(), PROP_EXECUTION_AS_FLOW, Boolean.TRUE.toString());
         return true;
     }
     

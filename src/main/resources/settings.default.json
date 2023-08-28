@@ -11,6 +11,7 @@
     "mockRequestClass": "",
     "openOutputInEditor": false,
     "executionTimes": 1,
+    "inputName": "",
     "settingsParamRegex": "(?:\\{\\{get:[\\w\\[.\\-\\]\\\\]+\\}\\})",
     "settingsParamRegexMask": "\\{\\{get:<param-name>\\}\\}",
     "settingsParamRegexReplace": "<param-name>",

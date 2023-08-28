@@ -16,7 +16,6 @@ import static com.legadi.jurl.common.StringUtils.isBlank;
 import static com.legadi.jurl.common.StringUtils.isNotBlank;
 import static com.legadi.jurl.options.OptionsRegistry.getOptionByArg;
 import static com.legadi.jurl.options.OptionsRegistry.registerAddOn;
-import static com.legadi.jurl.options.OptionsRegistry.registerOption;
 
 public class OptionsProcessor {
 
@@ -26,33 +25,12 @@ public class OptionsProcessor {
     private final String requestInputPath;
 
     public OptionsProcessor(String[] args) {
-        validateArgs(args);
-        registerOptions();
-
         this.requestInputPath = extractOptionsAndRequestInputPath(args);
     }
 
-    private void validateArgs(String[] args) {
-        if(args == null || args.length < 1) {
-            throw new CommandException("No args in the command, please use [--help] option");
-        }
-    }
-
-    private void registerOptions() {
-        registerOption(new AuthorizationBasicOption());
-        registerOption(new AuthorizationTokenOption());
-        registerOption(new CurlPrintOption());
-        registerOption(new EnvironmentOption());
-        registerOption(new FlowExecutionOption());
-        registerOption(new HelpOption());
-        registerOption(new MockDefinitionOption());
-        registerOption(new MockRequestOption());
-        registerOption(new OpenOutputOption());
-        registerOption(new SetValueOption());
-        registerOption(new TimesRepeatOption());
-    }
-
     private String extractOptionsAndRequestInputPath(String[] args) {
+        validateArgs(args);
+
         int index = 0;
         String lastArg = null;
 
@@ -96,6 +74,12 @@ public class OptionsProcessor {
             return lastArg;
         } else {
             return null;
+        }
+    }
+
+    private void validateArgs(String[] args) {
+        if(args == null || args.length < 1) {
+            throw new CommandException("No args in the command, please use [--help] option");
         }
     }
 

@@ -16,6 +16,21 @@ public class OptionsRegistry {
     private static final Map<String, Option> REGISTERED_OPTIONS = new HashMap<>();
     private static final Map<String, Option> ADD_ON_OPTIONS = new HashMap<>();
 
+    static {
+        registerOption(new AuthorizationBasicOption());
+        registerOption(new AuthorizationTokenOption());
+        registerOption(new CurlPrintOption());
+        registerOption(new EnvironmentOption());
+        registerOption(new FlowExecutionOption());
+        registerOption(new HelpOption());
+        registerOption(new MockDefinitionOption());
+        registerOption(new MockRequestOption());
+        registerOption(new OpenOutputOption());
+        registerOption(new SetInputNameOption());
+        registerOption(new SetValueOption());
+        registerOption(new TimesRepeatOption());
+    }
+
     public static Option registerAddOn(Class<Option> optionClass) {
         try {
             Constructor<Option> constructor = optionClass.getConstructor();
@@ -25,7 +40,7 @@ public class OptionsRegistry {
         }
     }
 
-    public static Option registerOption(Option option) {
+    private static Option registerOption(Option option) {
         return registerOption(option, false);
     }
 
