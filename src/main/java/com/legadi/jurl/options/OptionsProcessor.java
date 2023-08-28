@@ -1,5 +1,6 @@
 package com.legadi.jurl.options;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -21,7 +22,7 @@ public class OptionsProcessor {
 
     private static final Logger LOGGER = Logger.getLogger(OptionsProcessor.class.getName());
 
-    private final List<OptionEntry> optionEntries = new LinkedList<>();
+    private final List<OptionEntry> optionEntries = new ArrayList<>();
     private final String requestInputPath;
 
     public OptionsProcessor(String[] args) {

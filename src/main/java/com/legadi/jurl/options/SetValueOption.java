@@ -1,8 +1,14 @@
 package com.legadi.jurl.options;
 
+import static com.legadi.jurl.common.SettingsConstants.PROP_ENVIRONMENT;
+
+import java.util.logging.Logger;
+
 import com.legadi.jurl.common.SettingsSetter;
 
 public class SetValueOption extends Option {
+
+    private static final Logger LOGGER = Logger.getLogger(SetValueOption.class.getName());
 
     @Override
     public String getOpt() {
@@ -25,13 +31,13 @@ public class SetValueOption extends Option {
     }
 
     @Override
-    public int getPriority() {
-        return Integer.MAX_VALUE - 2;
-    }
-
-    @Override
     public boolean execute(SettingsSetter settings, String[] args) {
-        settings.put(args[0], args[1]);
+        if(PROP_ENVIRONMENT.equals(args[0])) {
+            LOGGER.warning("Property [" + args[0] + "] can't be modified use [--env] option instead");
+            return true;
+        }
+
+        settings.putPriority(args[0], args[1]);
         return true;
     }
 }

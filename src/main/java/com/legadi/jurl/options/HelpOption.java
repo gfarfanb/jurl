@@ -13,7 +13,7 @@ import com.legadi.jurl.common.SettingsSetter;
 
 public class HelpOption extends Option {
 
-    private static final Logger LOGGER = Logger.getLogger("");
+    private static final Logger LOGGER = Logger.getLogger(HelpOption.class.getName());
 
     private static final int TAB_LENGTH = 2;
 

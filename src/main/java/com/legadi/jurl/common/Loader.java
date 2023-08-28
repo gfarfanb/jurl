@@ -58,7 +58,7 @@ public class Loader {
 
     private static Map<String, String> readJsonProperties(String jsonPath, InputStream jsonInputStream, boolean silent) {
         try(Reader reader = new InputStreamReader(jsonInputStream)) {
-            Map<String, String> jsonProperties = GSON.fromJson(reader, new TypeToken<Map<String, String>>() {}.getType());
+            Map<String, String> jsonProperties = GSON.fromJson(reader, new TypeToken<Map<String, String>>() {});
 
             if(silent) {
                 LOGGER.fine("Loaded JSON properties file: " + jsonPath);
@@ -106,12 +106,12 @@ public class Loader {
         }
     }
 
-    public static <T> T loadJsonFile(String filePath, Class<T> type) {
+    public static <T> T loadJsonFile(String filePath, TypeToken<T> type, boolean silent) {
         File jsonFile = new File(filePath);
 
         if(jsonFile.exists()) {
             try(Reader reader = Files.newBufferedReader(jsonFile.toPath())) {
-                T input = GSON.fromJson(reader, type);
+                T input = GSON.fromJson(reader, type.getType());
 
                 LOGGER.info("Loaded JSON file: " + filePath);
                 return input;
@@ -119,7 +119,12 @@ public class Loader {
                 throw new IllegalStateException("Unable to read JSON file: " + filePath, ex);
             }
         } else {
-            throw new CommandException("JSON file not found: " + filePath);
+            if(silent) {
+                LOGGER.fine("JSON file not found: " + filePath);
+                return null;
+            } else {
+                throw new CommandException("JSON file not found: " + filePath);
+            }
         }
     }
 

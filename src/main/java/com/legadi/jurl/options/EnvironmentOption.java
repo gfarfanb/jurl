@@ -2,6 +2,7 @@ package com.legadi.jurl.options;
 
 import static com.legadi.jurl.common.Loader.loadCredentials;
 import static com.legadi.jurl.common.Loader.loadJsonProperties;
+import static com.legadi.jurl.common.SettingsConstants.PROP_ENVIRONMENT;
 
 import com.legadi.jurl.common.SettingsSetter;
 
@@ -34,6 +35,7 @@ public class EnvironmentOption extends Option {
 
     @Override
     public boolean execute(SettingsSetter settings, String[] args) {
+        settings.put(PROP_ENVIRONMENT, args[0]);
         settings.mergeProperties(loadJsonProperties("./config." + args[0] + ".json", false));
         settings.mergeCredentials(loadCredentials("./credentials." + args[0] + ".json", false));
         return true;

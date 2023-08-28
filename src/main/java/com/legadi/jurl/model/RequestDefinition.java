@@ -4,7 +4,6 @@ import java.util.Map;
 
 public class RequestDefinition {
 
-    private String name;
     private String url;
     private String protocol;
     private String domain;

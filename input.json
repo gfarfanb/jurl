@@ -1,12 +1,26 @@
 {
-    "config": {},
-    "request": {
-        
-    },
-    "steps:": [
-        {
-            "requestInputPath": "",
-            "options": {}
+    "configs": {
+        "default": {
+            "property": "value"
         }
-    ]
+    },
+    "defaultRequest": "request-def",
+    "defaultFlow": "flow-def",
+    "requests": {
+        "request-def": {
+            
+        }
+    },
+    "flows": {
+        "flow-def": [
+            {
+                "requestInputPath": "path/flow.json",
+                "options": {
+                    "--env": [
+                        "default"
+                    ]
+                }
+            }
+        ]
+    }
 }

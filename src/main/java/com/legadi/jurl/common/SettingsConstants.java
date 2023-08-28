@@ -3,6 +3,7 @@ package com.legadi.jurl.common;
 public class SettingsConstants {
 
     public static final String PROP_EXECUTION_TAG = "executionTag";
+    public static final String PROP_ENVIRONMENT = "environment";
     public static final String PROP_EXECUTION_OUTPUT_PATH = "executionOutputPath";
     public static final String PROP_ADD_ON_OPTION_CLASSES = "addOnOptionClasses";
     public static final String PROP_OPEN_EDITOR_COMMAND = "openEditorCommand";
