@@ -33,7 +33,6 @@ public class JsonOutputReader implements OutputReader<Map<String, String>> {
 
             while (!complete && jsonReader.hasNext()) {
                 JsonToken nextToken = jsonReader.peek();
-                String value = null;
 
                 switch (nextToken) {
                     case BEGIN_OBJECT:
@@ -51,19 +50,19 @@ public class JsonOutputReader implements OutputReader<Map<String, String>> {
                         break;
                     case BOOLEAN:
                         elements.peekLast().incrementArrayCount();
-                        value = Boolean.toString(jsonReader.nextBoolean());
-                        setValue(paramPrefix, elements, params, output, value);
+                        setValue(paramPrefix, elements, params, output,
+                            Boolean.toString(jsonReader.nextBoolean()));
                         break;
                     case NUMBER:
                     case STRING:
                         elements.peekLast().incrementArrayCount();
-                        value = jsonReader.nextString();
-                        setValue(paramPrefix, elements, params, output, value);
+                        setValue(paramPrefix, elements, params, output,
+                            jsonReader.nextString());
                         break;
                     case NULL:
                         elements.peekLast().incrementArrayCount();
                         jsonReader.nextNull();
-                        setValue(paramPrefix, elements, params, output, value);
+                        setValue(paramPrefix, elements, params, output, "");
                         break;
                     case END_ARRAY:
                         jsonReader.endArray();
@@ -123,28 +122,70 @@ public class JsonOutputReader implements OutputReader<Map<String, String>> {
     private void setValue(String paramPrefix, Deque<Element> elements, Set<String> params,
             Map<String, String> output, String value) {
         Consumer<String> setter = param -> output.put(param, value);
-        String lastElement;
-        String param;
+        Element[] elementArray = elements.toArray(new Element[elements.size()]);
+        StringBuilder paramBuilder = new StringBuilder(paramPrefix);
 
-        // [first]
-        // []
-        // [any]
-        // [last]
-        // [n]
+        setParamValue(paramBuilder, elementArray, setter);
     }
 
-    private String buildParamPart(String prefix, Iterable<String> parts) {
-        StringBuilder paramBuilder = new StringBuilder();
+    private void setParamValue(StringBuilder paramBuilder, Element[] elements, Consumer<String> setter) {
+        int index = -1;
 
-        if (isNotBlank(prefix)) {
-            paramBuilder.append(prefix);
+        for(Element element : elements) {
+            index++;
+
+            if(!element.isArray()) {
+                paramBuilder.append(element.getName()).append('.');
+                continue;
+            }
+
+            String paramPart = paramBuilder.toString() +
+                (isNotBlank(element.getName()) ? element.getName() : "");
+
+            if(index == elements.length - 1) {
+                setter.accept(paramPart + "[" + index + "]");
+
+                if(element.getArrayCount() == 0) {
+                    setter.accept(paramPart + "[first]");
+                    setter.accept(paramPart + "[]");
+                    setter.accept(paramPart + "[any]");
+                } else if(element.getArrayAny() == 0 && random.nextBoolean()) {
+                    element.setArrayAny(element.getArrayCount());
+                    setter.accept(paramPart + "[]");
+                    setter.accept(paramPart + "[any]");
+                } else {
+                    setter.accept(paramPart + "[]");
+                    setter.accept(paramPart + "[any]");
+                }
+
+                setter.accept(paramPart + "[last]");
+
+                return;
+            } else {
+                Element[] next = new Element[elements.length - index - 1];
+                System.arraycopy(elements, index + 1, next, 0, next.length);
+
+                setParamValue(new StringBuilder(paramPart + "[" + index + "]").append('.'), next, setter);
+
+                if(element.getArrayCount() == 0) {
+                    setParamValue(new StringBuilder(paramPart + "[first]").append('.'), next, setter);
+                    setParamValue(new StringBuilder(paramPart + "[]").append('.'), next, setter);
+                    setParamValue(new StringBuilder(paramPart + "[any]").append('.'), next, setter);
+                } else if(element.getArrayAny() == 0 && random.nextBoolean()) {
+                    element.setArrayAny(element.getArrayCount());
+                    setParamValue(new StringBuilder(paramPart + "[]").append('.'), next, setter);
+                    setParamValue(new StringBuilder(paramPart + "[any]").append('.'), next, setter);
+                } else {
+                    setParamValue(new StringBuilder(paramPart + "[]").append('.'), next, setter);
+                    setParamValue(new StringBuilder(paramPart + "[any]").append('.'), next, setter);
+                }
+
+                setParamValue(new StringBuilder(paramPart + "[last]").append('.'), next, setter);
+            }
         }
 
-        for (String part : parts) {
-            paramBuilder.append(part).append('.');
-        }
-
-        return paramBuilder.toString();
+        paramBuilder.deleteCharAt(paramBuilder.length() - 1);
+        setter.accept(paramBuilder.toString());
     }
 
     public static class Element {
@@ -152,6 +193,7 @@ public class JsonOutputReader implements OutputReader<Map<String, String>> {
         private final boolean array;
 
         private String name;
+        private int arrayAny = 0;
         private int arrayCount = -1;
 
         public Element(boolean array) {
@@ -173,6 +215,14 @@ public class JsonOutputReader implements OutputReader<Map<String, String>> {
 
         public void setName(String name) {
             this.name = name;
+        }
+
+        public int getArrayAny() {
+            return arrayAny;
+        }
+
+        public void setArrayAny(int arrayAny) {
+            this.arrayAny = arrayAny;
         }
 
         public int getArrayCount() {
