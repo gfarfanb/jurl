@@ -1,6 +1,7 @@
 package com.legadi.jurl.model;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 
 public class HTTPRequestEntry extends RequestEntry {
@@ -12,8 +13,9 @@ public class HTTPRequestEntry extends RequestEntry {
     private String bodyContent;
     private String bodyFilePath;
     private HTTPRequestFileEntry requestFile;
-    private AuthorizationType authType;
-    private String authCredentialId;
+    private OutputType outputType = OutputType.JSON;
+    private Map<String, String> outputMappings;
+    private List<AssertEntry> asserts;
 
     public String getMethod() {
         return method;
@@ -71,19 +73,27 @@ public class HTTPRequestEntry extends RequestEntry {
         this.requestFile = requestFile;
     }
 
-    public AuthorizationType getAuthType() {
-        return authType;
+    public OutputType getOutputType() {
+        return outputType;
     }
 
-    public void setAuthType(AuthorizationType authType) {
-        this.authType = authType;
+    public void setOutputType(OutputType outputType) {
+        this.outputType = outputType;
     }
 
-    public String getAuthCredentialId() {
-        return authCredentialId;
+    public Map<String, String> getOutputMappings() {
+        return outputMappings;
     }
 
-    public void setAuthCredentialId(String authCredentialId) {
-        this.authCredentialId = authCredentialId;
+    public void setOutputMappings(Map<String, String> outputMappings) {
+        this.outputMappings = outputMappings;
+    }
+
+    public List<AssertEntry> getAsserts() {
+        return asserts;
+    }
+
+    public void setAsserts(List<AssertEntry> asserts) {
+        this.asserts = asserts;
     }
 }

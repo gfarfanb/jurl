@@ -21,4 +21,6 @@ public class SettingsConstants {
     public static final String PROP_SETTINGS_PARAM_REGEX_REPLACE = "settingsParamRegexReplace";
     public static final String PROP_SETTINGS_PARAM_START_AT = "settingsParamStartAt";
     public static final String PROP_SETTINGS_PARAM_END_AT_LENGTH_MINUS = "settingsParamEndAtLengthMinus";
+
+    private SettingsConstants() {}
 }

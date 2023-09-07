@@ -2,13 +2,22 @@ package com.legadi.jurl.model;
 
 public class ResponseEntry {
 
-    protected String curl;
+    protected String requestUrl;
+    protected String curlCommand;
 
-    public String getCurl() {
-        return curl;
+    public String getRequestUrl() {
+        return requestUrl;
     }
 
-    public void setCurl(String curl) {
-        this.curl = curl;
+    public void setRequestUrl(String requestUrl) {
+        this.requestUrl = requestUrl;
+    }
+
+    public String getCurlCommand() {
+        return curlCommand;
+    }
+
+    public void setCurlCommand(String curlCommand) {
+        this.curlCommand = curlCommand;
     }
 }

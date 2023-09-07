@@ -79,7 +79,7 @@ public class OptionsRegistry {
         return new HashSet<>(ADD_ON_OPTIONS.values());
     }
 
-    public static Option getOptionByArg(String arg) {
+    public static Option findByArg(String arg) {
         return REGISTERED_OPTIONS.getOrDefault(arg.toLowerCase(), ADD_ON_OPTIONS.get(arg.toLowerCase()));
     }
 }

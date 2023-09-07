@@ -14,17 +14,17 @@ import com.legadi.jurl.exception.CommandException;
 
 import static com.legadi.jurl.common.StringUtils.isBlank;
 import static com.legadi.jurl.common.StringUtils.isNotBlank;
-import static com.legadi.jurl.options.OptionsRegistry.getOptionByArg;
+import static com.legadi.jurl.options.OptionsRegistry.findByArg;
 import static com.legadi.jurl.options.OptionsRegistry.registerAddOn;
 
-public class OptionsProcessor {
+public class OptionsReader {
 
-    private static final Logger LOGGER = Logger.getLogger(OptionsProcessor.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(OptionsReader.class.getName());
 
     private final List<OptionEntry> optionEntries = new ArrayList<>();
     private final String requestInputPath;
 
-    public OptionsProcessor(String[] args) {
+    public OptionsReader(String[] args) {
         this.requestInputPath = extractOptionsAndRequestInputPath(args);
     }
 
@@ -38,7 +38,7 @@ public class OptionsProcessor {
             Option option = null;
 
             try {
-                option = getOptionByArg(args[index]);
+                option = findByArg(args[index]);
 
                 if(option == null) {
                     lastArg = args[index];
@@ -124,7 +124,7 @@ public class OptionsProcessor {
         }
 
         for(Map.Entry<String, String[]> opt : options.entrySet()) {
-            Option option = getOptionByArg(opt.getKey());
+            Option option = findByArg(opt.getKey());
 
             if(option == null) {
                 throw new CommandException("Option not found: " + opt.getKey());

@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,11 +20,12 @@ public class HTTPMockConnection extends HttpURLConnection {
 
     private static final Logger LOGGER = Logger.getLogger(HTTPMockConnection.class.getName());
 
+    private URL url;
     private String responseContent;
     private int responseCode;
     private Map<String, List<String>> responseHeaders;
 
-    public HTTPMockConnection() {
+    public HTTPMockConnection(URL url) {
         super(null);
     }
 
@@ -33,6 +35,11 @@ public class HTTPMockConnection extends HttpURLConnection {
 
     public void setResponseCode(int responseCode) {
         this.responseCode = responseCode;
+    }
+
+    @Override
+    public URL getURL() {
+        return url;
     }
 
     @Override

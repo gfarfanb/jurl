@@ -2,21 +2,17 @@ package com.legadi.jurl.common;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static java.time.temporal.ChronoField.MILLI_OF_DAY;
 
 import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.model.Credential;
 
-import static com.legadi.jurl.common.Loader.loadCredentials;
-import static com.legadi.jurl.common.Loader.loadInternalJsonProperties;
-import static com.legadi.jurl.common.Loader.loadJsonProperties;
+import static com.legadi.jurl.common.LoaderUtils.loadCredentials;
+import static com.legadi.jurl.common.LoaderUtils.loadInternalJsonProperties;
+import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_TAG;
 
 public class Settings implements SettingsDefaults {
@@ -24,10 +20,19 @@ public class Settings implements SettingsDefaults {
     private static final Map<String, String> SETTINGS = new HashMap<>();
     private static final Map<String, Credential> CREDENTIALS = new HashMap<>();
 
+    private static final String DEFAULT_ENVIRONMENT = "default";
+    private static final String DEFAULT_CONFIG_FILE = "./config.json";
+    private static final String DEFAULT_OVERRIDE_FILE = "./.override.json";
+    private static final String DEFAULT_CREDENTIALS_FILE = "./credentials.json";
+    private static final String FORMAT_CONFIG_FILE = "./config.%s.json";
+    private static final String FORMAT_OVERRIDE_FILE = "./.override.%s.json";
+    private static final String FORMAT_CREDENTIALS_FILE = "./credentials.%s.json";
+
     static {
         SETTINGS.putAll(loadInternalJsonProperties("settings.default.json", true));
-        SETTINGS.putAll(loadJsonProperties("./config.json", true));
-        CREDENTIALS.putAll(loadCredentials("./credentials.json", true));
+        SETTINGS.putAll(loadJsonProperties(DEFAULT_CONFIG_FILE, true));
+        SETTINGS.putAll(loadJsonProperties(DEFAULT_OVERRIDE_FILE, true));
+        CREDENTIALS.putAll(loadCredentials(DEFAULT_CREDENTIALS_FILE, true));
     }
 
     private final Map<String, String> properties;
@@ -80,8 +85,38 @@ public class Settings implements SettingsDefaults {
         return overrideProperties.getOrDefault(propertyName, properties.getOrDefault(propertyName, defaultValue));
     }
 
-    public void put(String propertyName, String propertyValue) {
-        this.properties.put(propertyName, propertyValue);
+    public String getConfigFileName() {
+        String env = getEnvironment();
+
+        if(DEFAULT_ENVIRONMENT.equals(env)) {
+            return DEFAULT_CONFIG_FILE;
+        } else {
+            return String.format(FORMAT_CONFIG_FILE, env);
+        }
+    }
+
+    public String getOverrideFileName() {
+        String env = getEnvironment();
+
+        if(DEFAULT_ENVIRONMENT.equals(env)) {
+            return DEFAULT_OVERRIDE_FILE;
+        } else {
+            return String.format(FORMAT_OVERRIDE_FILE, env);
+        }
+    }
+
+    public String getCredentialsFileName() {
+        String env = getEnvironment();
+
+        if(DEFAULT_ENVIRONMENT.equals(env)) {
+            return DEFAULT_CREDENTIALS_FILE;
+        } else {
+            return String.format(FORMAT_CREDENTIALS_FILE, env);
+        }
+    }
+
+    public void putProperties(Map<String, String> properties) {
+        this.properties.putAll(properties);
     }
 
     public void putOverride(String propertyName, String propertyValue) {
@@ -107,30 +142,6 @@ public class Settings implements SettingsDefaults {
             throw new CommandException("Credential not found: " + credentialId);
         }
         return credential;
-    }
-
-    public String replaceAllInContent(String content) {
-        Pattern pattern = Pattern.compile(getSettingsParamRegex());
-        Matcher matcher = pattern.matcher(content);
-        Set<String> paramTags = new HashSet<>();
-
-        while(matcher.find()) {
-            String paramTag = matcher.group(0);
-            
-            if(!paramTags.contains(paramTag)) {
-                String paramName = paramTag.substring(
-                    getSettingsParamStartAt(),
-                    paramTag.length() - getSettingsParamEndAtLengthMinus()
-                );
-                String paramRegex = getSettingsParamRegexMask().replace(getSettingsParamRegexReplace(), paramName);
-                
-                content = content.replaceAll(paramRegex, get(paramName));
-
-                paramTags.add(paramTag);
-            }
-        }
-
-        return content;
     }
 
     public Settings createForNextExecution() {

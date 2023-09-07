@@ -4,7 +4,7 @@
     "addOnOptionClasses": "",
     "openEditorCommand": "",
     "requestCredentialId": "",
-    "requestAuthorizationType": "",
+    "requestAuthorizationType": "EMPTY",
     "executionAsFlow": false,
     "curlRequest": false,
     "mockRequest": false,
@@ -12,9 +12,9 @@
     "openOutputInEditor": false,
     "executionTimes": 1,
     "inputName": "",
-    "settingsParamRegex": "(?:\\{\\{get:[\\w\\[.\\-\\]\\\\]+\\}\\})",
-    "settingsParamRegexMask": "\\{\\{get:<param-name>\\}\\}",
+    "settingsParamRegex": "(?:\\{\\{[\\w\\[:.\\-\\]\\\\]+\\}\\})",
+    "settingsParamRegexMask": "\\{\\{<param-name>\\}\\}",
     "settingsParamRegexReplace": "<param-name>",
-    "settingsParamStartAt": 6,
+    "settingsParamStartAt": 2,
     "settingsParamEndAtLengthMinus": 2
 }

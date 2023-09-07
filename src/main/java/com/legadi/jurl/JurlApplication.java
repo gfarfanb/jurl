@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.exception.SkipExecutionException;
-import com.legadi.jurl.executor.RequestProcessor;
+import com.legadi.jurl.executor.RequestCommand;
 
 public class JurlApplication {
 
@@ -20,7 +20,7 @@ public class JurlApplication {
             System.setProperty("java.util.logging.SimpleFormatter.format", "%5$s%6$s%n");
             System.setProperty("java.util.logging.ConsoleHandler.level", "INFO");
 
-            new RequestProcessor(args).execute();
+            new RequestCommand(args).execute();
         } catch(SkipExecutionException ex) {
             System.exit(0);
         } catch(CommandException | RequestException ex) {

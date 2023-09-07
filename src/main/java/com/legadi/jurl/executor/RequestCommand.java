@@ -19,34 +19,35 @@ import com.legadi.jurl.model.RequestEntry;
 import com.legadi.jurl.model.RequestInputRaw;
 import com.legadi.jurl.model.ResponseEntry;
 import com.legadi.jurl.model.StepEntry;
-import com.legadi.jurl.options.OptionsProcessor;
-import com.legadi.jurl.options.OptionsProcessor.OptionEntry;
+import com.legadi.jurl.options.OptionsReader;
+import com.legadi.jurl.options.OptionsReader.OptionEntry;
 
-import static com.legadi.jurl.common.Loader.jsonToObject;
-import static com.legadi.jurl.common.Loader.loadCredentials;
-import static com.legadi.jurl.common.Loader.loadJsonFile;
-import static com.legadi.jurl.common.Loader.loadJsonProperties;
+import static com.legadi.jurl.common.LoaderUtils.jsonToObject;
+import static com.legadi.jurl.common.LoaderUtils.loadCredentials;
+import static com.legadi.jurl.common.LoaderUtils.loadJsonFile;
+import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
 import static com.legadi.jurl.common.StringUtils.isBlank;
 import static com.legadi.jurl.common.StringUtils.isNotBlank;
-import static com.legadi.jurl.executor.RequestExecutorRegistry.getExecutor;
+import static com.legadi.jurl.common.StringUtils.replaceAllInContent;
+import static com.legadi.jurl.executor.RequestHandlersRegistry.findByRequest;
 
-public class RequestProcessor {
+public class RequestCommand {
 
-    private final OptionsProcessor optionsProcessor;
+    private final OptionsReader optionsReader;
     private final Set<String> registeredInputPaths;
 
-    public RequestProcessor(String[] args) {
-        this.optionsProcessor = new OptionsProcessor(args);
+    public RequestCommand(String[] args) {
+        this.optionsReader = new OptionsReader(args);
         this.registeredInputPaths = new HashSet<>();
 
-        optionsProcessor.registerAddOnOptions();
+        optionsReader.registerAddOnOptions();
     }
 
     public void execute() {
         SettingsSetter settingsSetter = new SettingsSetter();
 
-        executeOptions(settingsSetter, optionsProcessor.getOptionEntries());
-        executeInput(settingsSetter, optionsProcessor.getRequestInputPath());
+        executeOptions(settingsSetter, optionsReader.getOptionEntries());
+        executeInput(settingsSetter, optionsReader.getRequestInputPath());
     }
 
     private void executeOptions(SettingsSetter settingsSetter, List<OptionEntry> optionEntries) {
@@ -87,10 +88,11 @@ public class RequestProcessor {
 
     private void loadConfig(RequestInputRaw requestInput, SettingsSetter settingsSetter) {
         String env = settingsSetter.getSettings().getEnvironment();
-        String fileConfig = "./config." + env + ".json";
+        String configFile = settingsSetter.getSettings().getConfigFileName();
+        String credentialsFile = settingsSetter.getSettings().getCredentialsFileName();
 
-        settingsSetter.mergeProperties(fileConfig, loadJsonProperties(fileConfig, false));
-        settingsSetter.mergeCredentials(loadCredentials("./credentials." + env + ".json", false));
+        settingsSetter.mergeProperties(configFile, loadJsonProperties(configFile, false));
+        settingsSetter.mergeCredentials(loadCredentials(credentialsFile, false));
 
         if(requestInput.getConfigs() != null) {
             settingsSetter.mergeProperties(requestInput.getPath(), 
@@ -115,7 +117,7 @@ public class RequestProcessor {
         AtomicReference<Settings> stepSettings = new AtomicReference<>(settingsSetter.getSettings());
         List<StepEntry> steps = Arrays.stream(flowDef.getRight())
             .parallel()
-            .map(step -> stepSettings.get().replaceAllInContent(step))
+            .map(step -> replaceAllInContent(stepSettings.get(), step))
             .map(step -> jsonToObject(step, new TypeToken<StepEntry>() {}))
             .collect(Collectors.toList());
         int stepIndex = 1;
@@ -157,7 +159,7 @@ public class RequestProcessor {
             throw new CommandException("Request input path is null or empty");
         }
 
-        executeOptions(settingsSetter, optionsProcessor.mapToOptionEntries(step.getOptions()));
+        executeOptions(settingsSetter, optionsReader.mapToOptionEntries(step.getOptions()));
         executeInput(settingsSetter, step.getRequestInputPath());
     }
 
@@ -172,7 +174,7 @@ public class RequestProcessor {
                 + requestDef.getLeft() + " - " + requestInput.getPath());
         }
 
-        String requestRaw = settingsSetter.getSettings().replaceAllInContent(requestDef.getRight());
+        String requestRaw = replaceAllInContent(settingsSetter.getSettings(), requestDef.getRight());
         RequestEntry requestEntry = jsonToObject(requestRaw, new TypeToken<RequestEntry>() {});
 
         requestEntry.setName(requestDef.getLeft());
@@ -201,14 +203,15 @@ public class RequestProcessor {
     }
 
     private void executeRequest(Settings settings, RequestEntry requestEntry, String requestRaw) {
-        RequestExecutor<?, ?> executor = getExecutor(requestEntry);
+        Pair<RequestExecutor<?, ?>, ResponseProcessor<?, ?>> handlers = findByRequest(requestEntry);
+        RequestExecutor<?, ?> executor = handlers.getLeft();
+        ResponseProcessor<?, ?> processor = handlers.getRight();
         RequestEntry request = jsonToObject(requestRaw, executor.type());
+
+        long beginTime = System.nanoTime();
         ResponseEntry response = executor.execute(settings, request);
+        long endTime = System.nanoTime();
 
-        processResults(response);
-    }
-
-    private void processResults(ResponseEntry response) {
-
+        processor.process(settings, request, response, endTime - beginTime);
     }
 }

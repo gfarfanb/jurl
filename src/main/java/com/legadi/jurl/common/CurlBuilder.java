@@ -3,13 +3,14 @@ package com.legadi.jurl.common;
 import static com.legadi.jurl.common.StringUtils.isNotBlank;
 
 import java.net.URL;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class CurlBuilder {
 
-    private final List<String> headers = new LinkedList<>();
-    private final List<String> formFields = new LinkedList<>();
+    private final Map<String, String> headers = new HashMap<>();
+    private final Map<String, String> formFields = new HashMap<>();
 
     private String url;
     private String method;
@@ -50,24 +51,44 @@ public class CurlBuilder {
         return this;
     }
 
-    public CurlBuilder addHeader(String header, String headerValue) {
-        headers.add("-H " + header + ": " + headerValue);
+    public CurlBuilder addHeader(String headerKey, String headerValue) {
+        headers.put(headerKey, headerValue);
         return this;
     }
 
-    public CurlBuilder addForm(String fieldName, String fieldContent) {
-        formFields.add("-F \"" + fieldName + "=" + fieldContent + "\"");
+    public CurlBuilder addForm(String fieldName, String fieldValue) {
+        formFields.put(fieldName, fieldValue);
         return this;
     }
 
     public String build() {
         return new StringBuilder("curl")
             .append(isNotBlank(method) ? " " + method : "")
-            .append(!headers.isEmpty() ? " " + String.join(" ", headers) : "")
-            .append(!formFields.isEmpty() ? " " + String.join(" ", formFields) : "")
+            .append(buildHeaders())
+            .append(buildFormFields())
             .append(isNotBlank(file) ? " " + file : "")
             .append(isNotBlank(data) ? " " + data : "")
             .append(isNotBlank(url) ? " " + url : "")
             .toString();
+    }
+
+    private String buildHeaders() {
+        if(headers.isEmpty()) {
+            return "";
+        }
+        return " " + headers.entrySet()
+            .stream()
+            .map(e -> "-H \"" + e.getKey() + ": " + e.getValue() + "\"")
+            .collect(Collectors.joining(" "));
+    }
+
+    private String buildFormFields() {
+        if(formFields.isEmpty()) {
+            return "";
+        }
+        return " " + formFields.entrySet()
+            .stream()
+            .map(e -> "-F \"" + e.getKey() + "=" + e.getValue() + "\"")
+            .collect(Collectors.joining(" "));
     }
 }

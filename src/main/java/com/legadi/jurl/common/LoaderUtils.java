@@ -20,9 +20,9 @@ import com.google.gson.reflect.TypeToken;
 import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.model.Credential;
 
-public class Loader {
+public class LoaderUtils {
 
-    private static final Logger LOGGER = Logger.getLogger(Loader.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(LoaderUtils.class.getName());
 
     private static final Gson GSON = new Gson();
 

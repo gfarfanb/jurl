@@ -5,15 +5,12 @@ import com.legadi.jurl.common.CurlBuilder;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.common.URLBuilder;
 import com.legadi.jurl.exception.RequestException;
+import com.legadi.jurl.model.Credential;
 import com.legadi.jurl.model.HTTPRequestEntry;
 import com.legadi.jurl.model.HTTPRequestFileEntry;
 import com.legadi.jurl.model.HTTPResponseEntry;
 import com.legadi.jurl.model.RequestEntry;
 
-import static com.legadi.jurl.common.RequestUtils.MULTIPART_LINE_END;
-import static com.legadi.jurl.common.RequestUtils.MULTIPART_MAX_BUFFER_SIZE;
-import static com.legadi.jurl.common.RequestUtils.MULTIPART_TWO_HYPHENS;
-import static com.legadi.jurl.common.RequestUtils.isHTTP;
 import static com.legadi.jurl.common.StringUtils.isBlank;
 import static com.legadi.jurl.common.StringUtils.isNotBlank;
 
@@ -32,6 +29,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -43,9 +41,14 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
 
     private static final Logger LOGGER = Logger.getLogger(HTTPRequestExecutor.class.getName());
 
+    private static final String MULTIPART_LINE_END = "\r\n";
+    private static final String MULTIPART_TWO_HYPHENS = "--";
+    private static final int MULTIPART_MAX_BUFFER_SIZE = 1 * 1024 * 1024;
+
     @Override
     public boolean accepts(RequestEntry request) {
-        return isHTTP(request);
+        return (isNotBlank(request.getUrl()) && request.getUrl().startsWith("http"))
+            || (isNotBlank(request.getProtocol()) && request.getProtocol().startsWith("http"));
     }
 
     @Override
@@ -58,7 +61,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         CurlBuilder curlBuilder = new CurlBuilder();
         HttpURLConnection connection = createConnection(settings, request, curlBuilder);
 
-        addHeaders(connection, request, curlBuilder);
+        addHeaders(connection, settings, request, curlBuilder);
 
         if(request.getRequestFile() != null) {
             sendFile(connection, request, curlBuilder);
@@ -108,7 +111,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         }
 
         if(settings.isCurlRequest() || settings.isMockRequest()) {
-            return new HTTPMockConnection();
+            return new HTTPMockConnection(url);
         }
 
         return (HttpURLConnection) url.openConnection();
@@ -139,7 +142,8 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         }
     }
 
-    private void addHeaders(HttpURLConnection connection, HTTPRequestEntry request, CurlBuilder curlBuilder) {
+    private void addHeaders(HttpURLConnection connection, Settings settings,
+            HTTPRequestEntry request, CurlBuilder curlBuilder) {
         if(request.getHeaders() == null) {
             return;
         }
@@ -150,6 +154,24 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
                 curlBuilder.addHeader(header, value);
             }
         );
+
+        switch(settings.getAuthorizationType()) {
+            case BASIC:
+                Credential basicCredential = settings.getCredential();
+                String basicDecoded = basicCredential.getUsername() + ":" + basicCredential.getPassword();
+                String basicValue = Base64.getEncoder().encodeToString(basicDecoded.getBytes());
+                connection.setRequestProperty("Authorization", "Basic " + basicValue);
+                curlBuilder.addHeader("Authorization", "Basic " + basicValue);
+                break;
+            case TOKEN:
+                Credential tokenCredential = settings.getCredential();
+                connection.setRequestProperty("Authorization", "Bearer " + tokenCredential.getToken());
+                curlBuilder.addHeader("Authorization", "Bearer " + tokenCredential.getToken());
+                break;
+            default:
+                LOGGER.fine("Authorization type not specified");
+                break;
+        }
     }
 
     private void sendBody(HttpURLConnection connection, HTTPRequestEntry request, CurlBuilder culrBuilder) {
@@ -265,7 +287,8 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         HTTPResponseEntry response = new HTTPResponseEntry();
 
         try {
-            response.setCurl(curlBuilder.build());
+            response.setRequestUrl(connection.getURL().toString());
+            response.setCurlCommand(curlBuilder.build());
             response.setResponsePath(responsePath);
             response.setStatusCode(connection.getResponseCode());
             response.setResponseHeaders(connection.getHeaderFields()
