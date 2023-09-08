@@ -153,7 +153,7 @@ public class JsonOutputReader implements OutputReader<Map<String, String>> {
                     element.setArrayAny(element.getArrayCount());
                     setter.accept(paramPart + "[]");
                     setter.accept(paramPart + "[any]");
-                } else {
+                } else if(element.getArrayAny() == element.getArrayCount()) {
                     setter.accept(paramPart + "[]");
                     setter.accept(paramPart + "[any]");
                 }
@@ -175,7 +175,7 @@ public class JsonOutputReader implements OutputReader<Map<String, String>> {
                     element.setArrayAny(element.getArrayCount());
                     setParamValue(new StringBuilder(paramPart + "[]").append('.'), next, setter);
                     setParamValue(new StringBuilder(paramPart + "[any]").append('.'), next, setter);
-                } else {
+                } else if(element.getArrayAny() == element.getArrayCount()) {
                     setParamValue(new StringBuilder(paramPart + "[]").append('.'), next, setter);
                     setParamValue(new StringBuilder(paramPart + "[any]").append('.'), next, setter);
                 }
