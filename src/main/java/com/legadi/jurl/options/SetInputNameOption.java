@@ -2,7 +2,7 @@ package com.legadi.jurl.options;
 
 import static com.legadi.jurl.common.SettingsConstants.PROP_INPUT_NAME;
 
-import com.legadi.jurl.common.SettingsSetter;
+import com.legadi.jurl.common.Settings;
 
 public class SetInputNameOption extends Option {
 
@@ -27,9 +27,12 @@ public class SetInputNameOption extends Option {
     }
 
     @Override
-    public boolean execute(SettingsSetter settings, String[] args) {
-        settings.put(getOpt(), PROP_INPUT_NAME, args[0]);
+    public boolean execute(Settings settings, String[] args) {
+        setInputName(settings, args[0]);
         return true;
     }
-    
+
+    public static void setInputName(Settings settings, String inputName) {
+        settings.putOverride(PROP_INPUT_NAME, inputName);
+    }
 }

@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.common.Settings;
@@ -117,30 +118,30 @@ public class OptionsReader {
     }
 
     public List<OptionEntry> mapToOptionEntries(Map<String, String[]> options) {
-        List<OptionEntry> optionEntries = new LinkedList<>();
-
         if(options == null) {
-            return optionEntries;
+            return new LinkedList<>();
         }
 
-        for(Map.Entry<String, String[]> opt : options.entrySet()) {
-            Option option = findByArg(opt.getKey());
+        return options.entrySet()
+            .stream()
+            .map(e -> mapToOptionEntry(e.getKey(), e.getValue()))
+            .sorted(new OptionComparator())
+            .collect(Collectors.toList());
+    }
 
-            if(option == null) {
-                throw new CommandException("Option not found: " + opt.getKey());
-            }
-            if(option.getArgs().length > 0
-                    && (opt.getValue() == null || opt.getValue().length < option.getArgs().length)) {
-                throw new CommandException("Invalid args length for option: "
-                    + Arrays.toString(opt.getValue()) + " - " + option);
-            }
+    public OptionEntry mapToOptionEntry(String opt, String[] arguments) {
+        Option option = findByArg(opt);
 
-            optionEntries.add(new OptionEntry(option, opt.getValue()));
+        if(option == null) {
+            throw new CommandException("Option not found: " + opt);
+        }
+        if(option.getArgs().length > 0
+                && (arguments == null || arguments.length < option.getArgs().length)) {
+            throw new CommandException("Invalid args length for option: "
+                + Arrays.toString(arguments) + " - " + option);
         }
 
-        optionEntries.sort(new OptionComparator());
-
-        return optionEntries;
+        return new OptionEntry(option, arguments);
     }
 
     public static class OptionEntry extends Pair<Option, String[]> {

@@ -4,7 +4,7 @@ import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_CREDENTIAL_I
 import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_AUTHORIZATION_TYPE;
 import static com.legadi.jurl.model.AuthorizationType.TOKEN;
 
-import com.legadi.jurl.common.SettingsSetter;
+import com.legadi.jurl.common.Settings;
 
 public class AuthorizationTokenOption extends Option {
 
@@ -29,9 +29,9 @@ public class AuthorizationTokenOption extends Option {
     }
 
     @Override
-    public boolean execute(SettingsSetter settings, String[] args) {
-        settings.put(getOpt(), PROP_REQUEST_CREDENTIAL_ID, args[0]);
-        settings.put(getOpt(), PROP_REQUEST_AUTHORIZATION_TYPE, TOKEN.name());
+    public boolean execute(Settings settings, String[] args) {
+        settings.putOverride(PROP_REQUEST_CREDENTIAL_ID, args[0]);
+        settings.putOverride(PROP_REQUEST_AUTHORIZATION_TYPE, TOKEN.name());
         return true;
     }
 }

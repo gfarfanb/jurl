@@ -2,7 +2,7 @@ package com.legadi.jurl.options;
 
 import static com.legadi.jurl.common.SettingsConstants.PROP_MOCK_REQUEST;
 
-import com.legadi.jurl.common.SettingsSetter;
+import com.legadi.jurl.common.Settings;
 
 public class MockRequestOption extends Option {
 
@@ -27,8 +27,8 @@ public class MockRequestOption extends Option {
     }
 
     @Override
-    public boolean execute(SettingsSetter settings, String[] args) {
-        settings.put(getOpt(), PROP_MOCK_REQUEST, Boolean.TRUE.toString());
+    public boolean execute(Settings settings, String[] args) {
+        settings.putOverride(PROP_MOCK_REQUEST, Boolean.TRUE.toString());
         return true;
     }
 }

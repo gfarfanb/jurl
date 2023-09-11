@@ -1,6 +1,5 @@
 {
     "executionOutputPath": "executions/",
-    "environment": "default",
     "addOnOptionClasses": "",
     "openEditorCommand": "",
     "requestCredentialId": "",

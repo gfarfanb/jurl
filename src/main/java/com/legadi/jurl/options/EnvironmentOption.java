@@ -1,6 +1,6 @@
 package com.legadi.jurl.options;
 
-import com.legadi.jurl.common.SettingsSetter;
+import com.legadi.jurl.common.Settings;
 
 public class EnvironmentOption extends Option {
 
@@ -25,8 +25,8 @@ public class EnvironmentOption extends Option {
     }
 
     @Override
-    public boolean execute(SettingsSetter settings, String[] args) {
-        settings.putEnvironment(args[0]);
+    public boolean execute(Settings settings, String[] args) {
+        settings.setEnvironment(args[0]);
         return true;
     }
 }

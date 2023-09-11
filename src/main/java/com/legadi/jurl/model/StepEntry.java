@@ -7,16 +7,25 @@ import com.google.gson.annotations.Expose;
 public class StepEntry {
 
     @Expose(serialize = false, deserialize = false)
-    private String flowName;
+    private String name;
+    private String requestInputName;
     private String requestInputPath;
     private Map<String, String[]> options;
 
-    public String getFlowName() {
-        return flowName;
+    public String getName() {
+        return name;
     }
 
-    public void setFlowName(String flowName) {
-        this.flowName = flowName;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getRequestInputName() {
+        return requestInputName;
+    }
+
+    public void setRequestInputName(String requestInputName) {
+        this.requestInputName = requestInputName;
     }
 
     public String getRequestInputPath() {

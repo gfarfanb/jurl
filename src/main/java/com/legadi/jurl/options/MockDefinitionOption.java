@@ -4,7 +4,7 @@ import static com.legadi.jurl.common.SettingsConstants.PROP_MOCK_REQUEST_CLASS;
 
 import java.net.HttpURLConnection;
 
-import com.legadi.jurl.common.SettingsSetter;
+import com.legadi.jurl.common.Settings;
 
 public class MockDefinitionOption extends Option {
 
@@ -29,8 +29,8 @@ public class MockDefinitionOption extends Option {
     }
 
     @Override
-    public boolean execute(SettingsSetter settings, String[] args) {
-        settings.put(getOpt(), PROP_MOCK_REQUEST_CLASS, args[0]);
+    public boolean execute(Settings settings, String[] args) {
+        settings.putOverride(PROP_MOCK_REQUEST_CLASS, args[0]);
         return true;
     }
     

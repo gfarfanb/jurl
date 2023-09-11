@@ -18,14 +18,6 @@ public interface SettingsDefaults {
 
     String getOrDefault(String propertyName, String defaultValue);
 
-    default String getExecutionTag() {
-        return get(PROP_EXECUTION_TAG);
-    }
-
-    default String getEnvironment() {
-        return get(PROP_ENVIRONMENT);
-    }
-
     default Path getOutputPath() {
         return Paths.get(get(PROP_EXECUTION_OUTPUT_PATH));
     }

@@ -91,7 +91,7 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
                 HashMap::new
             ));
 
-        settings.putProperties(outputProperties);
+        Settings.mergeProperties(settings.getEnvironment(), outputProperties);
 
         String overrideFile = settings.getOverrideFileName();
         Map<String, String> overrideProperties = loadJsonProperties(overrideFile, true);

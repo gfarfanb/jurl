@@ -4,14 +4,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import com.google.gson.reflect.TypeToken;
 import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.common.Settings;
-import com.legadi.jurl.common.SettingsSetter;
 import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.exception.SkipExecutionException;
@@ -21,6 +20,7 @@ import com.legadi.jurl.model.ResponseEntry;
 import com.legadi.jurl.model.StepEntry;
 import com.legadi.jurl.options.OptionsReader;
 import com.legadi.jurl.options.OptionsReader.OptionEntry;
+import com.legadi.jurl.options.SetInputNameOption;
 
 import static com.legadi.jurl.common.LoaderUtils.jsonToObject;
 import static com.legadi.jurl.common.LoaderUtils.loadCredentials;
@@ -44,16 +44,16 @@ public class RequestCommand {
     }
 
     public void execute() {
-        SettingsSetter settingsSetter = new SettingsSetter();
+        Settings settings = new Settings();
 
-        executeOptions(settingsSetter, optionsReader.getOptionEntries());
-        executeInput(settingsSetter, optionsReader.getRequestInputPath());
+        executeOptions(settings, optionsReader.getOptionEntries());
+        executeInput(settings, optionsReader.getRequestInputPath(), true);
     }
 
-    private void executeOptions(SettingsSetter settingsSetter, List<OptionEntry> optionEntries) {
+    private void executeOptions(Settings settings, List<OptionEntry> optionEntries) {
         for(OptionEntry optionEntry : optionEntries) {
             boolean canContinue = optionEntry.getLeft().execute(
-                settingsSetter, optionEntry.getRight()
+                settings, optionEntry.getRight()
             );
 
             if(!canContinue) {
@@ -62,14 +62,14 @@ public class RequestCommand {
         }
     }
 
-    private void executeInput(SettingsSetter settingsSetter, String requestInputPath) {
+    private void executeInput(Settings settings, String requestInputPath, boolean isMainInput) {
         if(isBlank(requestInputPath)) {
             throw new CommandException("Request input path is null or empty");
         }
         if(registeredInputPaths.contains(requestInputPath)) {
-            throw new CommandException("Request input was already executed: " + requestInputPath);
+            throw new CommandException("Request input was already processed: " + requestInputPath);
         }
-        
+
         registeredInputPaths.add(requestInputPath);
 
         RequestInputRaw requestInput = loadJsonFile(requestInputPath,
@@ -77,60 +77,65 @@ public class RequestCommand {
 
         requestInput.setPath(requestInputPath);
 
-        loadConfig(requestInput, settingsSetter);
+        executeInput(settings, requestInput, isMainInput);
+    }
 
-        if(settingsSetter.getSettings().isExecutionAsFlow()) {
-            processFlow(requestInput, settingsSetter);
+    private void executeInput(Settings settings, RequestInputRaw requestInput, boolean isMainInput) {
+        loadConfig(requestInput, settings, isMainInput);
+
+        if(settings.isExecutionAsFlow()) {
+            processFlow(requestInput, settings);
         } else {
-            processRequest(requestInput, settingsSetter);
+            processRequest(requestInput, settings);
         }
     }
 
-    private void loadConfig(RequestInputRaw requestInput, SettingsSetter settingsSetter) {
-        String env = settingsSetter.getSettings().getEnvironment();
-        String configFile = settingsSetter.getSettings().getConfigFileName();
-        String credentialsFile = settingsSetter.getSettings().getCredentialsFileName();
+    private void loadConfig(RequestInputRaw requestInput, Settings settings, boolean isMainInput) {
+        String environment = settings.getEnvironment();
+        String configFile = settings.getConfigFileName();
+        String credentialsFile = settings.getCredentialsFileName();
 
-        settingsSetter.mergeProperties(configFile, loadJsonProperties(configFile, false));
-        settingsSetter.mergeCredentials(loadCredentials(credentialsFile, false));
+        Settings.mergeProperties(environment, loadJsonProperties(configFile, false));
+        Settings.mergeCredentials(environment, loadCredentials(credentialsFile, false));
 
         if(requestInput.getConfigs() != null) {
-            settingsSetter.mergeProperties(requestInput.getPath(), 
-                requestInput.getConfigs().getOrDefault(env, new HashMap<>()));
-        }
+            Map<String, String> fileConfig = requestInput.getConfigs().getOrDefault(environment, new HashMap<>());
 
-        settingsSetter.loadPriorityConfig();
+            if(isMainInput) {
+                Settings.mergeProperties(environment, fileConfig);
+            } else {
+                settings.mergeOverrideProperties(fileConfig);
+            }
+        }
     }
 
-    private void processFlow(RequestInputRaw requestInput, SettingsSetter settingsSetter) {
+    private void processFlow(RequestInputRaw requestInput, Settings settings) {
         if(requestInput.getFlows() == null || requestInput.getFlows().isEmpty()) {
             throw new CommandException("No flows are defined in the request file: " + requestInput.getPath());
         }
 
-        Pair<String, String[]> flowDef = pickFlow(requestInput, settingsSetter);
+        Pair<String, String[]> flowDef = pickFlow(requestInput, settings);
 
         if(flowDef.getRight() == null || flowDef.getRight().length < 1) {
             throw new CommandException("No steps defined for the flow: "
                 + flowDef.getLeft() + " - " + requestInput.getPath());
         }
 
-        AtomicReference<Settings> stepSettings = new AtomicReference<>(settingsSetter.getSettings());
         List<StepEntry> steps = Arrays.stream(flowDef.getRight())
             .parallel()
-            .map(step -> replaceAllInContent(stepSettings.get(), step))
+            .map(step -> replaceAllInContent(settings, step))
             .map(step -> jsonToObject(step, new TypeToken<StepEntry>() {}))
             .collect(Collectors.toList());
         int stepIndex = 1;
 
         for(StepEntry step : steps) {
-            step.setFlowName(flowDef.getLeft());
-            stepSettings.set(stepSettings.get().createForNextExecution());
+            step.setName(flowDef.getLeft());
 
             try {
-                executeStep(stepSettings.get(), step);
+                executeStep(settings.createForNextExecution(), step, requestInput);
             } catch(CommandException | RequestException ex) {
                 throw new CommandException(
-                    "[" + requestInput.getPath() + "/" + step.getFlowName() + "]"
+                    "[" + requestInput.getPath() + "/" + step.getName() + "]"
                     + " step("+ stepIndex + "/" + steps.size() + ") "
                     + ex.getMessage());
             }
@@ -139,9 +144,9 @@ public class RequestCommand {
         }
     }
 
-    private Pair<String, String[]> pickFlow(RequestInputRaw requestInput, SettingsSetter settingsSetter) {
-        String name = isNotBlank(settingsSetter.getSettings().getInputName())
-            ? settingsSetter.getSettings().getInputName()
+    private Pair<String, String[]> pickFlow(RequestInputRaw requestInput, Settings settings) {
+        String name = isNotBlank(settings.getInputName())
+            ? settings.getInputName()
             : requestInput.getDefaultFlow();
 
         if(isNotBlank(name)) {
@@ -152,35 +157,39 @@ public class RequestCommand {
         }
     }
 
-    private void executeStep(Settings settings, StepEntry step) {
-        SettingsSetter settingsSetter = new SettingsSetter(settings);
-
+    private void executeStep(Settings settings, StepEntry step, RequestInputRaw requestInput) {
         if(isBlank(step.getRequestInputPath())) {
             throw new CommandException("Request input path is null or empty");
         }
 
-        executeOptions(settingsSetter, optionsReader.mapToOptionEntries(step.getOptions()));
-        executeInput(settingsSetter, step.getRequestInputPath());
+        executeOptions(settings, optionsReader.mapToOptionEntries(step.getOptions()));
+
+        if(isNotBlank(step.getRequestInputName())) {
+            SetInputNameOption.setInputName(settings, step.getRequestInputName());
+            executeInput(settings, requestInput, false);
+        } else {
+            executeInput(settings, step.getRequestInputPath(), false);
+        }
     }
 
-    private void processRequest(RequestInputRaw requestInput, SettingsSetter settingsSetter) {
+    private void processRequest(RequestInputRaw requestInput, Settings settings) {
         if(requestInput.getRequests() == null || requestInput.getRequests().isEmpty()) {
             throw new CommandException("No requests are defined in the request file: " + requestInput.getPath());
         }
 
-        Pair<String, String> requestDef = pickRequest(requestInput, settingsSetter);
+        Pair<String, String> requestDef = pickRequest(requestInput, settings);
         if(isBlank(requestDef.getRight())) {
             throw new CommandException("No request defined for name: "
                 + requestDef.getLeft() + " - " + requestInput.getPath());
         }
 
-        String requestRaw = replaceAllInContent(settingsSetter.getSettings(), requestDef.getRight());
+        String requestRaw = replaceAllInContent(settings, requestDef.getRight());
         RequestEntry requestEntry = jsonToObject(requestRaw, new TypeToken<RequestEntry>() {});
 
         requestEntry.setName(requestDef.getLeft());
 
         try {
-            executeRequest(settingsSetter.getSettings().createForNextExecution(),
+            executeRequest(settings.createForNextExecution(),
                 requestEntry, requestRaw);
         } catch(CommandException | RequestException ex) {
             throw new CommandException(
@@ -189,9 +198,9 @@ public class RequestCommand {
         }
     }
 
-    private Pair<String, String> pickRequest(RequestInputRaw requestInput, SettingsSetter settingsSetter) {
-        String name = isNotBlank(settingsSetter.getSettings().getInputName())
-            ? settingsSetter.getSettings().getInputName()
+    private Pair<String, String> pickRequest(RequestInputRaw requestInput, Settings settings) {
+        String name = isNotBlank(settings.getInputName())
+            ? settings.getInputName()
             : requestInput.getDefaultRequest();
 
         if(isNotBlank(name)) {

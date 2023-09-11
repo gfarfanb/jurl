@@ -9,7 +9,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import com.legadi.jurl.common.SettingsSetter;
+import com.legadi.jurl.common.Settings;
 
 public class HelpOption extends Option {
 
@@ -43,7 +43,7 @@ public class HelpOption extends Option {
     }
 
     @Override
-    public boolean execute(SettingsSetter settings, String[] args) {
+    public boolean execute(Settings settings, String[] args) {
         StringBuilder helpMessage = new StringBuilder();
         helpMessage.append("Simple API development environment by command line and Java.\n\n");
         helpMessage.append("Usage: ");

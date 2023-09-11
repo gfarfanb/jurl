@@ -13,12 +13,11 @@ import com.legadi.jurl.model.Credential;
 import static com.legadi.jurl.common.LoaderUtils.loadCredentials;
 import static com.legadi.jurl.common.LoaderUtils.loadInternalJsonProperties;
 import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
-import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_TAG;
 
 public class Settings implements SettingsDefaults {
 
-    private static final Map<String, String> SETTINGS = new HashMap<>();
-    private static final Map<String, Credential> CREDENTIALS = new HashMap<>();
+    private static final EnvironmentResource<String> SETTINGS = new EnvironmentResource<>();
+    private static final EnvironmentResource<Credential> CREDENTIALS = new EnvironmentResource<>();
 
     private static final String DEFAULT_ENVIRONMENT = "default";
     private static final String DEFAULT_CONFIG_FILE = "./config.json";
@@ -29,31 +28,42 @@ public class Settings implements SettingsDefaults {
     private static final String FORMAT_CREDENTIALS_FILE = "./credentials.%s.json";
 
     static {
-        SETTINGS.putAll(loadInternalJsonProperties("settings.default.json", true));
-        SETTINGS.putAll(loadJsonProperties(DEFAULT_CONFIG_FILE, true));
-        SETTINGS.putAll(loadJsonProperties(DEFAULT_OVERRIDE_FILE, true));
-        CREDENTIALS.putAll(loadCredentials(DEFAULT_CREDENTIALS_FILE, true));
+        SETTINGS.putAll(DEFAULT_ENVIRONMENT, loadInternalJsonProperties("settings.default.json", true));
+        SETTINGS.putAll(DEFAULT_ENVIRONMENT, loadJsonProperties(DEFAULT_CONFIG_FILE, true));
+        SETTINGS.putAll(DEFAULT_ENVIRONMENT, loadJsonProperties(DEFAULT_OVERRIDE_FILE, true));
+        CREDENTIALS.putAll(DEFAULT_ENVIRONMENT, loadCredentials(DEFAULT_CREDENTIALS_FILE, true));
     }
 
-    private final Map<String, String> properties;
     private final Map<String, String> overrideProperties;
-    private final Map<String, Credential> credentials;
-    private final Map<String, Credential> overrideCredentials;
     private final LocalDateTime timestamp;
+    private final String executionTag;
+
+    private String environment;
 
     public Settings() {
-        this(SETTINGS, CREDENTIALS);
+        this(DEFAULT_ENVIRONMENT, new HashMap<>());
     }
 
-    private Settings(Map<String, String> properties, Map<String, Credential> credentials) {
-        this.properties = new HashMap<>(properties);
-        this.overrideProperties = new HashMap<>();
-        this.credentials = new HashMap<>(credentials);
-        this.overrideCredentials = new HashMap<>();
+    private Settings(String environment, Map<String, String> overrideProperties) {
+        this.overrideProperties = new HashMap<>(overrideProperties);
         this.timestamp = LocalDateTime.now();
+        this.executionTag = timestamp.toLocalDate() + "."  + timestamp.toLocalTime().getLong(MILLI_OF_DAY);
+    }
 
-        this.properties.put(PROP_EXECUTION_TAG,
-            timestamp.toLocalDate() + "."  + timestamp.toLocalTime().getLong(MILLI_OF_DAY));
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+    
+    public String getExecutionTag() {
+        return executionTag;
+    }
+
+    public String getEnvironment() {
+        return environment;
+    }
+
+    public void setEnvironment(String environment) {
+        this.environment = environment;
     }
 
     @Override
@@ -63,7 +73,8 @@ public class Settings implements SettingsDefaults {
 
     @Override
     public String get(String propertyName) {
-        String value = overrideProperties.getOrDefault(propertyName, properties.get(propertyName));
+        String value = overrideProperties.getOrDefault(propertyName,
+            SETTINGS.get(environment, propertyName));
         if(value == null) {
             throw new CommandException("Property not found: " + propertyName);
         }
@@ -82,7 +93,8 @@ public class Settings implements SettingsDefaults {
 
     @Override
     public String getOrDefault(String propertyName, String defaultValue) {
-        return overrideProperties.getOrDefault(propertyName, properties.getOrDefault(propertyName, defaultValue));
+        return overrideProperties.getOrDefault(propertyName,
+            SETTINGS.getOrDefault(environment, propertyName, defaultValue));
     }
 
     public String getConfigFileName() {
@@ -115,10 +127,6 @@ public class Settings implements SettingsDefaults {
         }
     }
 
-    public void putProperties(Map<String, String> properties) {
-        this.properties.putAll(properties);
-    }
-
     public void putOverride(String propertyName, String propertyValue) {
         this.overrideProperties.put(propertyName, propertyValue);
     }
@@ -127,17 +135,9 @@ public class Settings implements SettingsDefaults {
         this.overrideProperties.putAll(properties);
     }
 
-    public void mergeOverrideCredentials(Map<String, Credential> credentials) {
-        this.overrideCredentials.putAll(credentials);
-    }
-
-    public LocalDateTime getTimestamp() {
-        return timestamp;
-    }
-
     public Credential getCredential() {
         String credentialId = getCredentialId();
-        Credential credential = overrideCredentials.getOrDefault(credentialId, credentials.get(credentialId));
+        Credential credential = CREDENTIALS.get(environment, credentialId);
         if(credential == null) {
             throw new CommandException("Credential not found: " + credentialId);
         }
@@ -145,23 +145,14 @@ public class Settings implements SettingsDefaults {
     }
 
     public Settings createForNextExecution() {
-        return new Settings(properties, credentials);
+        return new Settings(environment, overrideProperties);
     }
 
-    @Override
-    public String toString() {
-        return properties.toString();
+    public static void mergeProperties(String environment, Map<String, String> properties) {
+        SETTINGS.putAll(environment, properties);
     }
 
-    public static void putPropertyToGlobal(String propertyName, String propertyValue) {
-        SETTINGS.put(propertyName, propertyValue);
-    }
-
-    public static void mergePropertiesToGlobal(Map<String, String> properties) {
-        SETTINGS.putAll(properties);
-    }
-
-    public static void mergeCredentialsToGlobal(Map<String, Credential> credentials) {
-        CREDENTIALS.putAll(credentials);
+    public static void mergeCredentials(String environment, Map<String, Credential> credentials) {
+        CREDENTIALS.putAll(environment, credentials);
     }
 }

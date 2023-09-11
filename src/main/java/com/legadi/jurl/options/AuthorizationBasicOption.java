@@ -4,7 +4,7 @@ import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_CREDENTIAL_I
 import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_AUTHORIZATION_TYPE;
 import static com.legadi.jurl.model.AuthorizationType.BASIC;
 
-import com.legadi.jurl.common.SettingsSetter;
+import com.legadi.jurl.common.Settings;
 
 public class AuthorizationBasicOption extends Option {
 
@@ -29,9 +29,9 @@ public class AuthorizationBasicOption extends Option {
     }
 
     @Override
-    public boolean execute(SettingsSetter settings, String[] args) {
-        settings.put(getOpt(), PROP_REQUEST_CREDENTIAL_ID, args[0]);
-        settings.put(getOpt(), PROP_REQUEST_AUTHORIZATION_TYPE, BASIC.name());
+    public boolean execute(Settings settings, String[] args) {
+        settings.putOverride(PROP_REQUEST_CREDENTIAL_ID, args[0]);
+        settings.putOverride(PROP_REQUEST_AUTHORIZATION_TYPE, BASIC.name());
         return true;
     }
 }

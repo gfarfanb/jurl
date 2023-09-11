@@ -2,7 +2,7 @@ package com.legadi.jurl.options;
 
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_TIMES;
 
-import com.legadi.jurl.common.SettingsSetter;
+import com.legadi.jurl.common.Settings;
 
 public class TimesRepeatOption extends Option {
 
@@ -27,8 +27,8 @@ public class TimesRepeatOption extends Option {
     }
 
     @Override
-    public boolean execute(SettingsSetter settings, String[] args) {
-        settings.put(getOpt(), PROP_EXECUTION_TIMES, args[0]);
+    public boolean execute(Settings settings, String[] args) {
+        settings.putOverride(PROP_EXECUTION_TIMES, args[0]);
         return true;
     }
 }

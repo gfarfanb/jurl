@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.legadi.jurl.common.SettingsSetter;
+import com.legadi.jurl.common.Settings;
 
 import static com.legadi.jurl.common.StringUtils.isNotBlank;
 
@@ -22,7 +22,7 @@ public abstract class Option {
         return 0;
     }
 
-    public abstract boolean execute(SettingsSetter settings, String[] args);
+    public abstract boolean execute(Settings settings, String[] args);
 
     @Override
     public int hashCode() {
