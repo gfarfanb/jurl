@@ -1,3 +1,5 @@
 #! /usr/bin/env bash
 
-find . -type f -name 'jurl-*.jar' -exec java -jar {} $* \; >&2
+JURL=$(find . -type f -name 'jurl-*.jar')
+
+java -cp ${JURL%/*} -jar $JURL $* >&2
