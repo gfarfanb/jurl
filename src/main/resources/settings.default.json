@@ -15,5 +15,6 @@
     "settingsParamRegexMask": "\\{\\{<param-name>\\}\\}",
     "settingsParamRegexReplace": "<param-name>",
     "settingsParamStartAt": 2,
-    "settingsParamEndAtLengthMinus": 2
+    "settingsParamEndAtLengthMinus": 2,
+    "skipAssertions": false
 }

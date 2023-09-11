@@ -15,7 +15,7 @@ public class HTTPRequestEntry extends RequestEntry {
     private HTTPRequestFileEntry requestFile;
     private OutputType outputType = OutputType.JSON;
     private Map<String, String> outputMappings;
-    private List<AssertEntry> asserts;
+    private List<AssertionEntry> assertions;
 
     public String getMethod() {
         return method;
@@ -89,11 +89,11 @@ public class HTTPRequestEntry extends RequestEntry {
         this.outputMappings = outputMappings;
     }
 
-    public List<AssertEntry> getAsserts() {
-        return asserts;
+    public List<AssertionEntry> getAssertions() {
+        return assertions;
     }
 
-    public void setAsserts(List<AssertEntry> asserts) {
-        this.asserts = asserts;
+    public void setAssertions(List<AssertionEntry> assertions) {
+        this.assertions = assertions;
     }
 }

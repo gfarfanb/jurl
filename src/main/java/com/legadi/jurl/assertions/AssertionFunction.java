@@ -1,8 +1,8 @@
-package com.legadi.jurl.asserts;
+package com.legadi.jurl.assertions;
 
 import com.legadi.jurl.exception.AssertException;
 
-public interface AssertFunction {
+public interface AssertionFunction {
 
     boolean accepts(String name);
 

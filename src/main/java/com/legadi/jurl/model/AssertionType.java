@@ -1,6 +1,6 @@
 package com.legadi.jurl.model;
 
-public enum AssertType {
+public enum AssertionType {
 
     IS_TRUE,
     IS_FALSE,

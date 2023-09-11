@@ -8,20 +8,20 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import com.legadi.jurl.asserts.AssertFunction;
+import com.legadi.jurl.assertions.AssertionFunction;
 import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.exception.AssertException;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.executor.reader.JsonOutputReader;
 import com.legadi.jurl.executor.reader.XmlOutputReader;
-import com.legadi.jurl.model.AssertEntry;
+import com.legadi.jurl.model.AssertionEntry;
 import com.legadi.jurl.model.HTTPRequestEntry;
 import com.legadi.jurl.model.HTTPResponseEntry;
 import com.legadi.jurl.model.OutputType;
 
-import static com.legadi.jurl.asserts.AssertsRegistry.findByName;
-import static com.legadi.jurl.asserts.AssertsRegistry.registerAssertFunction;
+import static com.legadi.jurl.assertions.AssertionsRegistry.findByName;
+import static com.legadi.jurl.assertions.AssertionsRegistry.registerAssertFunction;
 import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
 import static com.legadi.jurl.common.StringUtils.replaceAllInContent;
 import static com.legadi.jurl.common.StringUtils.scanParamsInContent;
@@ -45,7 +45,7 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
 
         mapOutput(settings, response);
         saveOutput(settings, request, response);
-        evaluate(settings, request.getAsserts());
+        evaluate(settings, request.getAssertions());
     }
 
     private void mapOutput(Settings settings, HTTPResponseEntry response) {
@@ -122,14 +122,14 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
         }
     }
 
-    private void evaluate(Settings settings, List<AssertEntry> asserts) {
-        if(asserts == null) {
+    private void evaluate(Settings settings, List<AssertionEntry> assertions) {
+        if(assertions == null || settings.isSkipAssertions()) {
             return;
         }
 
         try {
-            for(AssertEntry assertEntry : asserts) {
-                AssertFunction function;
+            for(AssertionEntry assertEntry : assertions) {
+                AssertionFunction function;
 
                 if(assertEntry.getType() != null) {
                     function = findByName(assertEntry.getType().name());

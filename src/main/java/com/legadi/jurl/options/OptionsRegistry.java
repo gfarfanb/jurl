@@ -29,6 +29,7 @@ public class OptionsRegistry {
         registerOption(new SetInputNameOption());
         registerOption(new SetValueOption());
         registerOption(new TimesRepeatOption());
+        registerOption(new SkipAssertionsOption());
     }
 
     public static Option registerAddOn(Class<Option> optionClass) {

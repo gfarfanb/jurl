@@ -1,17 +1,17 @@
 package com.legadi.jurl.model;
 
-public class AssertEntry {
+public class AssertionEntry {
 
-    private AssertType type;
+    private AssertionType type;
     private String assertClass;
     private String message;
     private String[] args;
 
-    public AssertType getType() {
+    public AssertionType getType() {
         return type;
     }
 
-    public void setType(AssertType type) {
+    public void setType(AssertionType type) {
         this.type = type;
     }
 

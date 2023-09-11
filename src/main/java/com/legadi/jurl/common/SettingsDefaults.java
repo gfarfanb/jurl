@@ -85,4 +85,8 @@ public interface SettingsDefaults {
     default int getSettingsParamEndAtLengthMinus() {
         return get(PROP_SETTINGS_PARAM_END_AT_LENGTH_MINUS, Integer::parseInt);
     }
+
+    default boolean isSkipAssertions() {
+        return get(PROP_SKIP_ASSERTIONS, Boolean::valueOf);
+    }
 }
