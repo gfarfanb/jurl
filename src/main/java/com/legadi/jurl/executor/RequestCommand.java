@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import com.google.gson.reflect.TypeToken;
 import com.legadi.jurl.common.Pair;
@@ -83,11 +84,17 @@ public class RequestCommand {
     private void executeInput(Settings settings, RequestInputRaw requestInput, boolean isMainInput) {
         loadConfig(requestInput, settings, isMainInput);
 
-        if(settings.isExecutionAsFlow()) {
-            processFlow(requestInput, settings);
-        } else {
-            processRequest(requestInput, settings);
-        }
+        int times = settings.getTimes() > 0 ? settings.getTimes() : 1;
+
+        IntStream.range(0, times)
+            .parallel()
+            .forEach(index -> {
+                if(settings.isExecutionAsFlow()) {
+                    processFlow(index, requestInput, settings.createForNextExecution());
+                } else {
+                    processRequest(index, requestInput, settings.createForNextExecution());
+                }
+            });
     }
 
     private void loadConfig(RequestInputRaw requestInput, Settings settings, boolean isMainInput) {
@@ -109,7 +116,7 @@ public class RequestCommand {
         }
     }
 
-    private void processFlow(RequestInputRaw requestInput, Settings settings) {
+    private void processFlow(int index, RequestInputRaw requestInput, Settings settings) {
         if(requestInput.getFlows() == null || requestInput.getFlows().isEmpty()) {
             throw new CommandException("No flows are defined in the request file: " + requestInput.getPath());
         }
@@ -136,6 +143,7 @@ public class RequestCommand {
             } catch(CommandException | RequestException ex) {
                 throw new CommandException(
                     "[" + requestInput.getPath() + "/" + step.getName() + "]"
+                    + (settings.getTimes() > 1 ? " index=" + index + " ": "")
                     + " step("+ stepIndex + "/" + steps.size() + ") "
                     + ex.getMessage());
             }
@@ -172,7 +180,7 @@ public class RequestCommand {
         }
     }
 
-    private void processRequest(RequestInputRaw requestInput, Settings settings) {
+    private void processRequest(int index, RequestInputRaw requestInput, Settings settings) {
         if(requestInput.getRequests() == null || requestInput.getRequests().isEmpty()) {
             throw new CommandException("No requests are defined in the request file: " + requestInput.getPath());
         }
@@ -189,11 +197,11 @@ public class RequestCommand {
         requestEntry.setName(requestDef.getLeft());
 
         try {
-            executeRequest(settings.createForNextExecution(),
-                requestEntry, requestRaw);
+            executeRequest(settings, requestEntry, requestRaw);
         } catch(CommandException | RequestException ex) {
             throw new CommandException(
                 "[" + requestInput.getPath() + "/" + requestEntry.getName() + "] "
+                + (settings.getTimes() > 1 ? " index=" + index + " ": "")
                 + ex.getMessage());
         }
     }

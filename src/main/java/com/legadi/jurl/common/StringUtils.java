@@ -12,6 +12,7 @@ import com.google.gson.Gson;
 public class StringUtils {
 
     private static final Gson GSON = new Gson();
+    private static Pattern NUMBER_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
 
     private StringUtils() {}
 
@@ -122,5 +123,12 @@ public class StringUtils {
         }
 
         return paramNames;
+    }
+
+    public static boolean isNumeric(String value) {
+        if (value == null) {
+            return false; 
+        }
+        return NUMBER_PATTERN.matcher(value).matches();
     }
 }
