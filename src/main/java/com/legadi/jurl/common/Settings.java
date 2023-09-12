@@ -127,12 +127,16 @@ public class Settings implements SettingsDefaults {
         }
     }
 
+    public boolean containsOverride(String propertyName) {
+        return overrideProperties.containsKey(propertyName);
+    }
+
     public void putOverride(String propertyName, String propertyValue) {
-        this.overrideProperties.put(propertyName, propertyValue);
+        overrideProperties.put(propertyName, propertyValue);
     }
 
     public void mergeOverrideProperties(Map<String, String> properties) {
-        this.overrideProperties.putAll(properties);
+        overrideProperties.putAll(properties);
     }
 
     public Credential getCredential() {

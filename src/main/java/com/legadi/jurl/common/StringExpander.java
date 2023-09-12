@@ -49,12 +49,16 @@ public class StringExpander {
                 );
                 String value;
 
-                if(paramName.startsWith(INPUT_PREFIX)) {
+                if(paramName.startsWith(INPUT_PREFIX) || !settings.containsOverride(paramName)) {
                     value = console.readLine(extractMessage(INPUT_PREFIX, paramName));
-                } else if(paramName.startsWith(PASSWORD_PREFIX)) {
+
+                    settings.putOverride(paramName, value);
+                } else if(paramName.startsWith(PASSWORD_PREFIX) || !settings.containsOverride(paramName)) {
                     value = String.valueOf(
                         console.readPassword(extractMessage(PASSWORD_PREFIX, paramName))
                     );
+
+                    settings.putOverride(paramName, value);
                 } else {
                     value = values.getOrDefault(paramName,
                         settings.getOrDefault(paramName, ""));
