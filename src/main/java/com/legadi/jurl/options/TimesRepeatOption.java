@@ -5,7 +5,7 @@ import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_TIMES;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.exception.CommandException;
 
-import static com.legadi.jurl.common.StringUtils.isNumeric;
+import static com.legadi.jurl.common.CommonUtils.isNumeric;
 
 public class TimesRepeatOption extends Option {
 

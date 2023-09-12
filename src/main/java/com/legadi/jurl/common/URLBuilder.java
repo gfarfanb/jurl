@@ -1,9 +1,9 @@
 package com.legadi.jurl.common;
 
-import static com.legadi.jurl.common.StringUtils.isNotBlank;
-import static com.legadi.jurl.common.StringUtils.strip;
-import static com.legadi.jurl.common.StringUtils.stripEnd;
-import static com.legadi.jurl.common.StringUtils.stripStart;
+import static com.legadi.jurl.common.CommonUtils.isNotBlank;
+import static com.legadi.jurl.common.CommonUtils.strip;
+import static com.legadi.jurl.common.CommonUtils.stripEnd;
+import static com.legadi.jurl.common.CommonUtils.stripStart;
 
 import java.util.HashMap;
 import java.util.Map;

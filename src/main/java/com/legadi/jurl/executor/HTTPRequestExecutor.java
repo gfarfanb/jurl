@@ -11,8 +11,8 @@ import com.legadi.jurl.model.HTTPRequestFileEntry;
 import com.legadi.jurl.model.HTTPResponseEntry;
 import com.legadi.jurl.model.RequestEntry;
 
-import static com.legadi.jurl.common.StringUtils.isBlank;
-import static com.legadi.jurl.common.StringUtils.isNotBlank;
+import static com.legadi.jurl.common.CommonUtils.isBlank;
+import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;

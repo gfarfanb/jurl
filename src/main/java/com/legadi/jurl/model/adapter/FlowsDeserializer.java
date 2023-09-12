@@ -10,7 +10,7 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 
-import com.legadi.jurl.common.StringUtils;
+import com.legadi.jurl.common.CommonUtils;
 
 public class FlowsDeserializer implements JsonDeserializer<Map<String, String[]>> {
 
@@ -30,7 +30,7 @@ public class FlowsDeserializer implements JsonDeserializer<Map<String, String[]>
     private String[] toArray(JsonElement json) {
         return json.getAsJsonArray().asList()
             .stream()
-            .map(StringUtils::toJsonString)
+            .map(CommonUtils::toJsonString)
             .toArray(String[]::new);
     }
 }

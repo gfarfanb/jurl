@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import com.legadi.jurl.common.Settings;
 
-import static com.legadi.jurl.common.StringUtils.isNotBlank;
+import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 
 public abstract class Option {
 

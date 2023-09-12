@@ -5,6 +5,7 @@ import static java.util.logging.Level.SEVERE;
 import java.util.logging.Logger;
 
 import com.legadi.jurl.exception.CommandException;
+import com.legadi.jurl.exception.InvalidAssertionsFoundException;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.exception.SkipExecutionException;
 import com.legadi.jurl.executor.RequestCommand;
@@ -23,6 +24,8 @@ public class JurlApplication {
             new RequestCommand(args).execute();
         } catch(SkipExecutionException ex) {
             System.exit(0);
+        } catch(InvalidAssertionsFoundException ex) {
+            System.exit(1);
         } catch(CommandException | RequestException ex) {
             LOGGER.log(SEVERE, ex.getMessage());
             System.exit(1);

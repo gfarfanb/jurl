@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 
-import static com.legadi.jurl.common.StringUtils.isNotBlank;
+import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 
 public class JsonOutputReader implements OutputReader<Map<String, String>> {
 

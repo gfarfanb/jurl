@@ -11,7 +11,8 @@ import java.util.stream.Collectors;
 import com.legadi.jurl.assertions.AssertionFunction;
 import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.common.Settings;
-import com.legadi.jurl.exception.AssertException;
+import com.legadi.jurl.exception.AssertionException;
+import com.legadi.jurl.exception.InvalidAssertionsFoundException;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.executor.reader.JsonOutputReader;
 import com.legadi.jurl.executor.reader.XmlOutputReader;
@@ -21,10 +22,10 @@ import com.legadi.jurl.model.HTTPResponseEntry;
 import com.legadi.jurl.model.OutputType;
 
 import static com.legadi.jurl.assertions.AssertionsRegistry.findByName;
-import static com.legadi.jurl.assertions.AssertionsRegistry.registerAssertFunction;
+import static com.legadi.jurl.assertions.AssertionsRegistry.registerAssertionFunction;
 import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
-import static com.legadi.jurl.common.StringUtils.replaceAllInContent;
-import static com.legadi.jurl.common.StringUtils.scanParamsInContent;
+import static com.legadi.jurl.common.CommonUtils.replaceAllInContent;
+import static com.legadi.jurl.common.CommonUtils.scanParamsInContent;
 import static com.legadi.jurl.common.WriterUtils.writeJsonFile;
 
 public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry, HTTPResponseEntry> {
@@ -127,14 +128,16 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
             return;
         }
 
-        try {
-            for(AssertionEntry assertEntry : assertions) {
+        boolean skip = false;
+
+        for(AssertionEntry assertEntry : assertions) {
+            try {
                 AssertionFunction function;
 
                 if(assertEntry.getType() != null) {
                     function = findByName(assertEntry.getType().name());
                 } else {
-                    function = registerAssertFunction(assertEntry.getAssertClass());
+                    function = registerAssertionFunction(assertEntry.getAssertClass());
                 }
 
                 String message = replaceAllInContent(settings, assertEntry.getMessage());
@@ -143,10 +146,15 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
                     .map(arg -> replaceAllInContent(settings, arg))
                     .toArray(String[]::new);
 
-                function.apply(message, args);
+                function.evaluate(message, args);
+            } catch(AssertionException ex) {
+                LOGGER.info(ex.getMessage());
+                skip = true;
             }
-        } catch(AssertException ex) {
+        }
 
+        if(skip) {
+            throw new InvalidAssertionsFoundException();
         }
     }
 }

@@ -9,12 +9,12 @@ import java.util.regex.Pattern;
 
 import com.google.gson.Gson;
 
-public class StringUtils {
+public class CommonUtils {
 
     private static final Gson GSON = new Gson();
     private static Pattern NUMBER_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
 
-    private StringUtils() {}
+    private CommonUtils() {}
 
     public static boolean isNotBlank(String value) {
         return value != null && !value.trim().isEmpty();
@@ -130,5 +130,13 @@ public class StringUtils {
             return false; 
         }
         return NUMBER_PATTERN.matcher(value).matches();
+    }
+
+    public static <T> T getOrDefault(T value, T defaultValue) {
+        if(value == null) {
+            return defaultValue;
+        } else {
+            return value;
+        }
     }
 }

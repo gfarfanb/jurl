@@ -14,19 +14,40 @@ public class AssertionsRegistry {
     private static final Map<String, AssertionFunction> REGISTERED = new HashMap<>();
 
     static {
-
+        ASSERTIONS.add(new ContainsAssertionFunction());
+        ASSERTIONS.add(new DoesNotContainsAssertionFunction());
+        ASSERTIONS.add(new DoesNotMatchAssertionFunction());
+        ASSERTIONS.add(new EndsWithAssertionFunction());
+        ASSERTIONS.add(new EqualsToAssertionFunction());
+        ASSERTIONS.add(new GreaterThanAssertionFunction());
+        ASSERTIONS.add(new GreaterThanOrEqualsToAssertionFunction());
+        ASSERTIONS.add(new IsBetweenAssertionFunction());
+        ASSERTIONS.add(new IsBlankAssertionFunction());
+        ASSERTIONS.add(new IsFalseAssertionFunction());
+        ASSERTIONS.add(new IsInAssertionFunction());
+        ASSERTIONS.add(new IsNotBetweenAssertionFunction());
+        ASSERTIONS.add(new IsNotBlankAssertionFunction());
+        ASSERTIONS.add(new IsNotInAssertionFunction());
+        ASSERTIONS.add(new IsNotNullAssertionFunction());
+        ASSERTIONS.add(new IsNullAssertionFunction());
+        ASSERTIONS.add(new IsTrueAssertionFunction());
+        ASSERTIONS.add(new LessThanAssertionFunction());
+        ASSERTIONS.add(new LessThanOrEqualsToAssertionFunction());
+        ASSERTIONS.add(new MatchesAssertionFunction());
+        ASSERTIONS.add(new NotEqualsToAssertionFunction());
+        ASSERTIONS.add(new StartsWithAssertionFunction());
     }
 
     public static AssertionFunction findByName(String name) {
         return ASSERTIONS
             .stream()
-            .filter(function -> function.accepts(name))
+            .filter(function -> function.name().equalsIgnoreCase(name))
             .findFirst()
             .orElseThrow(() -> new CommandException("Unable to obtain assertion function: " + name));
     }
 
     @SuppressWarnings("unchecked")
-    public static AssertionFunction registerAssertFunction(String assertionClass) {
+    public static AssertionFunction registerAssertionFunction(String assertionClass) {
         try {
             if(REGISTERED.containsKey(assertionClass)) {
                 return REGISTERED.get(assertionClass);

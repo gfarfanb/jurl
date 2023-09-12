@@ -13,8 +13,8 @@ import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.exception.CommandException;
 
-import static com.legadi.jurl.common.StringUtils.isBlank;
-import static com.legadi.jurl.common.StringUtils.isNotBlank;
+import static com.legadi.jurl.common.CommonUtils.isBlank;
+import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.options.OptionsRegistry.findByArg;
 import static com.legadi.jurl.options.OptionsRegistry.registerAddOn;
 

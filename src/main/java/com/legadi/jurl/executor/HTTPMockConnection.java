@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import static com.legadi.jurl.common.StringUtils.isNotBlank;
-import static com.legadi.jurl.common.StringUtils.toJsonString;
+import static com.legadi.jurl.common.CommonUtils.isNotBlank;
+import static com.legadi.jurl.common.CommonUtils.toJsonString;
 
 public class HTTPMockConnection extends HttpURLConnection {
 

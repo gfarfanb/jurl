@@ -27,9 +27,9 @@ import static com.legadi.jurl.common.LoaderUtils.jsonToObject;
 import static com.legadi.jurl.common.LoaderUtils.loadCredentials;
 import static com.legadi.jurl.common.LoaderUtils.loadJsonFile;
 import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
-import static com.legadi.jurl.common.StringUtils.isBlank;
-import static com.legadi.jurl.common.StringUtils.isNotBlank;
-import static com.legadi.jurl.common.StringUtils.replaceAllInContent;
+import static com.legadi.jurl.common.CommonUtils.isBlank;
+import static com.legadi.jurl.common.CommonUtils.isNotBlank;
+import static com.legadi.jurl.common.CommonUtils.replaceAllInContent;
 import static com.legadi.jurl.executor.RequestHandlersRegistry.findByRequest;
 
 public class RequestCommand {
