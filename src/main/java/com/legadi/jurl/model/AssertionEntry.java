@@ -3,9 +3,9 @@ package com.legadi.jurl.model;
 public class AssertionEntry {
 
     private AssertionType type;
-    private String assertClass;
+    private String assertionClass;
     private String message;
-    private String[] args;
+    private String[] args = new String[0];
 
     public AssertionType getType() {
         return type;
@@ -15,12 +15,12 @@ public class AssertionEntry {
         this.type = type;
     }
 
-    public String getAssertClass() {
-        return assertClass;
+    public String getAssertionClass() {
+        return assertionClass;
     }
 
-    public void setAssertClass(String assertClass) {
-        this.assertClass = assertClass;
+    public void setAssertionClass(String assertionClass) {
+        this.assertionClass = assertionClass;
     }
 
     public String getMessage() {

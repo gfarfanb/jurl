@@ -2,6 +2,8 @@ package com.legadi.jurl.executor;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,7 +13,9 @@ import java.util.stream.Collectors;
 import com.legadi.jurl.assertions.AssertionFunction;
 import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.common.Settings;
+import com.legadi.jurl.common.StringExpander;
 import com.legadi.jurl.exception.AssertionException;
+import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.exception.InvalidAssertionsFoundException;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.executor.reader.JsonOutputReader;
@@ -23,9 +27,8 @@ import com.legadi.jurl.model.OutputType;
 
 import static com.legadi.jurl.assertions.AssertionsRegistry.findByName;
 import static com.legadi.jurl.assertions.AssertionsRegistry.registerAssertionFunction;
+import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
-import static com.legadi.jurl.common.CommonUtils.replaceAllInContent;
-import static com.legadi.jurl.common.CommonUtils.scanParamsInContent;
 import static com.legadi.jurl.common.WriterUtils.writeJsonFile;
 
 public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry, HTTPResponseEntry> {
@@ -45,8 +48,13 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
         }
 
         mapOutput(settings, response);
-        saveOutput(settings, request, response);
-        evaluate(settings, request.getAssertions());
+
+        StringExpander stringExpander = new StringExpander(settings);
+        Set<String> outputParams = scanOutputParams(stringExpander, request);
+        Map<String, String> values = readOutputValues(request.getOutputType(), response, outputParams);
+
+        saveOutput(stringExpander, values, request, response);
+        evaluate(stringExpander, values, request.getAssertions());
     }
 
     private void mapOutput(Settings settings, HTTPResponseEntry response) {
@@ -65,25 +73,54 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
         }
     }
 
-    private void saveOutput(Settings settings, HTTPRequestEntry request, HTTPResponseEntry response) {
+    private Set<String> scanOutputParams(StringExpander stringExpander, HTTPRequestEntry request) {
+        Set<String> outputParams = new HashSet<>();
+
+        if(request.getOutputMappings() != null) {
+            outputParams.addAll(
+                request.getOutputMappings().entrySet()
+                    .parallelStream()
+                    .map(Map.Entry::getValue)
+                    .map(stringExpander::scanParamsInContent)
+                    .flatMap(Set::stream)
+                    .filter(param -> param.startsWith(OUTPUT_PREFIX))
+                    .collect(Collectors.toSet())
+            );
+        }
+
+        if(request.getAssertions() != null) {
+            outputParams.addAll(
+                request.getAssertions()
+                    .parallelStream()
+                    .map(assertion -> {
+                        List<String> elements = new LinkedList<>();
+                        elements.add(assertion.getAssertionClass());
+                        elements.add(assertion.getMessage());
+                        elements.addAll(Arrays.asList(assertion.getArgs()));
+                        return elements;
+                    })
+                    .flatMap(List::stream)
+                    .map(stringExpander::scanParamsInContent)
+                    .flatMap(Set::stream)
+                    .filter(param -> param.startsWith(OUTPUT_PREFIX))
+                    .collect(Collectors.toSet())
+            );
+        }
+
+        return outputParams;
+    }
+
+    private void saveOutput(StringExpander stringExpander, Map<String, String> values,
+            HTTPRequestEntry request, HTTPResponseEntry response) {
         if(request.getOutputMappings() == null) {
             return;
         }
 
-        Set<String> outputParams = request.getOutputMappings().entrySet()
-            .parallelStream()
-            .map(Map.Entry::getValue)
-            .map(value -> scanParamsInContent(settings, value))
-            .flatMap(Set::stream)
-            .filter(param -> param.startsWith(OUTPUT_PREFIX))
-            .collect(Collectors.toSet());
-
-        Map<String, String> values = readOutputValues(request.getOutputType(), response, outputParams);
         Map<String, String> outputProperties = request.getOutputMappings().entrySet()
             .parallelStream()
             .map(e -> new Pair<>(
                 e.getKey(),
-                replaceAllInContent(settings, values, e.getValue())
+                stringExpander.replaceAllInContent(values, e.getValue())
             ))
             .collect(Collectors.toMap(
                 Pair::getLeft,
@@ -92,10 +129,10 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
                 HashMap::new
             ));
 
-        Settings.mergeProperties(settings.getEnvironment(), outputProperties);
+        Settings.mergeProperties(stringExpander.getSettings().getEnvironment(), outputProperties);
 
-        String overrideFile = settings.getOverrideFileName();
-        Map<String, String> overrideProperties = loadJsonProperties(overrideFile, true);
+        String overrideFile = stringExpander.getSettings().getOverrideFileName();
+        Map<String, String> overrideProperties = loadJsonProperties(overrideFile);
 
         overrideProperties.putAll(outputProperties);
 
@@ -123,27 +160,32 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
         }
     }
 
-    private void evaluate(Settings settings, List<AssertionEntry> assertions) {
-        if(assertions == null || settings.isSkipAssertions()) {
+    private void evaluate(StringExpander stringExpander, Map<String, String> values,
+            List<AssertionEntry> assertions) {
+        if(assertions == null || stringExpander.getSettings().isSkipAssertions()) {
             return;
         }
 
         boolean skip = false;
 
-        for(AssertionEntry assertEntry : assertions) {
+        for(AssertionEntry assertionEntry : assertions) {
             try {
-                AssertionFunction function;
+                AssertionFunction function = null;
 
-                if(assertEntry.getType() != null) {
-                    function = findByName(assertEntry.getType().name());
+                if(assertionEntry.getType() != null) {
+                    function = findByName(assertionEntry.getType().name());
+                } else if(isBlank(assertionEntry.getAssertionClass())) {
+                    throw new CommandException("Assertion class is null or empty, please specify a 'type' or an 'assertionClass'");
                 } else {
-                    function = registerAssertionFunction(assertEntry.getAssertClass());
+                    String assertionClass = stringExpander.replaceAllInContent(values,
+                        assertionEntry.getAssertionClass());
+                    function = registerAssertionFunction(assertionClass);
                 }
 
-                String message = replaceAllInContent(settings, assertEntry.getMessage());
-                String[] args = Arrays.stream(assertEntry.getArgs())
+                String message = stringExpander.replaceAllInContent(values, assertionEntry.getMessage());
+                String[] args = Arrays.stream(assertionEntry.getArgs())
                     .parallel()
-                    .map(arg -> replaceAllInContent(settings, arg))
+                    .map(arg -> stringExpander.replaceAllInContent(values, arg))
                     .toArray(String[]::new);
 
                 function.evaluate(message, args);

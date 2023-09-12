@@ -28,10 +28,10 @@ public class Settings implements SettingsDefaults {
     private static final String FORMAT_CREDENTIALS_FILE = "./credentials.%s.json";
 
     static {
-        SETTINGS.putAll(DEFAULT_ENVIRONMENT, loadInternalJsonProperties("settings.default.json", true));
-        SETTINGS.putAll(DEFAULT_ENVIRONMENT, loadJsonProperties(DEFAULT_CONFIG_FILE, true));
-        SETTINGS.putAll(DEFAULT_ENVIRONMENT, loadJsonProperties(DEFAULT_OVERRIDE_FILE, true));
-        CREDENTIALS.putAll(DEFAULT_ENVIRONMENT, loadCredentials(DEFAULT_CREDENTIALS_FILE, true));
+        SETTINGS.putAll(DEFAULT_ENVIRONMENT, loadInternalJsonProperties("settings.default.json"));
+        SETTINGS.putAll(DEFAULT_ENVIRONMENT, loadJsonProperties(DEFAULT_CONFIG_FILE));
+        SETTINGS.putAll(DEFAULT_ENVIRONMENT, loadJsonProperties(DEFAULT_OVERRIDE_FILE));
+        CREDENTIALS.putAll(DEFAULT_ENVIRONMENT, loadCredentials(DEFAULT_CREDENTIALS_FILE));
     }
 
     private final Map<String, String> overrideProperties;

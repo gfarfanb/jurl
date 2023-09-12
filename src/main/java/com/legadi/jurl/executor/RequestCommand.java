@@ -12,6 +12,7 @@ import java.util.stream.IntStream;
 import com.google.gson.reflect.TypeToken;
 import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.common.Settings;
+import com.legadi.jurl.common.StringExpander;
 import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.exception.SkipExecutionException;
@@ -29,7 +30,6 @@ import static com.legadi.jurl.common.LoaderUtils.loadJsonFile;
 import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
 import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
-import static com.legadi.jurl.common.CommonUtils.replaceAllInContent;
 import static com.legadi.jurl.executor.RequestHandlersRegistry.findByRequest;
 
 public class RequestCommand {
@@ -90,9 +90,9 @@ public class RequestCommand {
             .parallel()
             .forEach(index -> {
                 if(settings.isExecutionAsFlow()) {
-                    processFlow(index, requestInput, settings.createForNextExecution());
+                    processFlow(index, requestInput, new StringExpander(settings.createForNextExecution()));
                 } else {
-                    processRequest(index, requestInput, settings.createForNextExecution());
+                    processRequest(index, requestInput, new StringExpander(settings.createForNextExecution()));
                 }
             });
     }
@@ -102,8 +102,8 @@ public class RequestCommand {
         String configFile = settings.getConfigFileName();
         String credentialsFile = settings.getCredentialsFileName();
 
-        Settings.mergeProperties(environment, loadJsonProperties(configFile, false));
-        Settings.mergeCredentials(environment, loadCredentials(credentialsFile, false));
+        Settings.mergeProperties(environment, loadJsonProperties(configFile));
+        Settings.mergeCredentials(environment, loadCredentials(credentialsFile));
 
         if(requestInput.getConfigs() != null) {
             Map<String, String> fileConfig = requestInput.getConfigs().getOrDefault(environment, new HashMap<>());
@@ -116,11 +116,12 @@ public class RequestCommand {
         }
     }
 
-    private void processFlow(int index, RequestInputRaw requestInput, Settings settings) {
+    private void processFlow(int index, RequestInputRaw requestInput, StringExpander stringExpander) {
         if(requestInput.getFlows() == null || requestInput.getFlows().isEmpty()) {
             throw new CommandException("No flows are defined in the request file: " + requestInput.getPath());
         }
 
+        Settings settings = stringExpander.getSettings();
         Pair<String, String[]> flowDef = pickFlow(requestInput, settings);
 
         if(flowDef.getRight() == null || flowDef.getRight().length < 1) {
@@ -130,7 +131,7 @@ public class RequestCommand {
 
         List<StepEntry> steps = Arrays.stream(flowDef.getRight())
             .parallel()
-            .map(step -> replaceAllInContent(settings, step))
+            .map(stringExpander::replaceAllInContent)
             .map(step -> jsonToObject(step, new TypeToken<StepEntry>() {}))
             .collect(Collectors.toList());
         int stepIndex = 1;
@@ -180,18 +181,19 @@ public class RequestCommand {
         }
     }
 
-    private void processRequest(int index, RequestInputRaw requestInput, Settings settings) {
+    private void processRequest(int index, RequestInputRaw requestInput, StringExpander stringExpander) {
         if(requestInput.getRequests() == null || requestInput.getRequests().isEmpty()) {
             throw new CommandException("No requests are defined in the request file: " + requestInput.getPath());
         }
 
+        Settings settings = stringExpander.getSettings();
         Pair<String, String> requestDef = pickRequest(requestInput, settings);
         if(isBlank(requestDef.getRight())) {
             throw new CommandException("No request defined for name: "
                 + requestDef.getLeft() + " - " + requestInput.getPath());
         }
 
-        String requestRaw = replaceAllInContent(settings, requestDef.getRight());
+        String requestRaw = stringExpander.replaceAllInContent(requestDef.getRight());
         RequestEntry requestEntry = jsonToObject(requestRaw, new TypeToken<RequestEntry>() {});
 
         requestEntry.setName(requestDef.getLeft());
