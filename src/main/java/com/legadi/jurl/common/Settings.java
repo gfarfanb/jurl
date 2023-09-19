@@ -1,18 +1,17 @@
 package com.legadi.jurl.common;
 
+import static com.legadi.jurl.common.LoaderUtils.loadCredentials;
+import static com.legadi.jurl.common.LoaderUtils.loadInternalJsonProperties;
+import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
+import static java.time.temporal.ChronoField.MILLI_OF_DAY;
+
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import static java.time.temporal.ChronoField.MILLI_OF_DAY;
-
 import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.model.Credential;
-
-import static com.legadi.jurl.common.LoaderUtils.loadCredentials;
-import static com.legadi.jurl.common.LoaderUtils.loadInternalJsonProperties;
-import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
 
 public class Settings implements SettingsDefaults {
 

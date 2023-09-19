@@ -1,6 +1,7 @@
 package com.legadi.jurl.common;
 
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
+import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.CommonUtils.strip;
 import static com.legadi.jurl.common.CommonUtils.stripEnd;
 import static com.legadi.jurl.common.CommonUtils.stripStart;
@@ -51,7 +52,7 @@ public class URLBuilder {
     }
 
     public URLBuilder addAllQueryParams(Map<String, String> queryParams) {
-        if(queryParams != null) {
+        if(isNotEmpty(queryParams)) {
             this.queryParams.putAll(queryParams);
         }
         return this;

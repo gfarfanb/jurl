@@ -1,12 +1,32 @@
 package com.legadi.jurl.common;
 
+import static com.legadi.jurl.common.SettingsConstants.PROP_ADD_ON_OPTION_CLASSES;
+import static com.legadi.jurl.common.SettingsConstants.PROP_CURL_REQUEST;
+import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_AS_FLOW;
+import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_OUTPUT_PATH;
+import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_TIMES;
+import static com.legadi.jurl.common.SettingsConstants.PROP_INPUT_NAME;
+import static com.legadi.jurl.common.SettingsConstants.PROP_MOCK_REQUEST;
+import static com.legadi.jurl.common.SettingsConstants.PROP_MOCK_REQUEST_CLASS;
+import static com.legadi.jurl.common.SettingsConstants.PROP_OPEN_EDITOR_COMMAND;
+import static com.legadi.jurl.common.SettingsConstants.PROP_OVERRIDE_REQUEST_FILE;
+import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_AUTHORIZATION_TYPE;
+import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_CREDENTIAL_ID;
+import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_END_AT_LENGTH_MINUS;
+import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX;
+import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX_MASK;
+import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX_REPLACE;
+import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_START_AT;
+import static com.legadi.jurl.common.SettingsConstants.PROP_SKIP_ASSERTIONS;
+import static com.legadi.jurl.common.SettingsConstants.PROP_TEMPORAL_PATH;
+
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.function.Function;
 
 import com.legadi.jurl.model.AuthorizationType;
-
-import static com.legadi.jurl.common.SettingsConstants.*;
 
 public interface SettingsDefaults {
 
@@ -19,7 +39,23 @@ public interface SettingsDefaults {
     String getOrDefault(String propertyName, String defaultValue);
 
     default Path getOutputPath() {
-        return Paths.get(get(PROP_EXECUTION_OUTPUT_PATH));
+        Path path = Paths.get(get(PROP_EXECUTION_OUTPUT_PATH));
+        try {
+            Files.createDirectories(path);
+        } catch(IOException ex) {
+            throw new IllegalStateException("Unable to create output directory: " + path, ex);
+        }
+        return path;
+    }
+
+    default Path getTemporalPath() {
+        Path path = Paths.get(get(PROP_TEMPORAL_PATH));
+        try {
+            Files.createDirectories(path);
+        } catch(IOException ex) {
+            throw new IllegalStateException("Unable to create temporal directory: " + path, ex);
+        }
+        return path;
     }
 
     default String[] getAddOnOptionClasses() {
@@ -88,5 +124,9 @@ public interface SettingsDefaults {
 
     default boolean isSkipAssertions() {
         return get(PROP_SKIP_ASSERTIONS, Boolean::valueOf);
+    }
+
+    default String getOverrideRequestFile() {
+        return get(PROP_OVERRIDE_REQUEST_FILE);
     }
 }

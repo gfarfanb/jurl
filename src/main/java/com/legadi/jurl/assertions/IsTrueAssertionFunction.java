@@ -1,8 +1,8 @@
 package com.legadi.jurl.assertions;
 
-import com.legadi.jurl.exception.AssertionException;
-
 import static com.legadi.jurl.model.AssertionType.IS_TRUE;
+
+import com.legadi.jurl.exception.AssertionException;
 
 public class IsTrueAssertionFunction implements AssertionFunction {
 

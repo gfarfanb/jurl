@@ -1,5 +1,8 @@
 package com.legadi.jurl.options;
 
+import static com.legadi.jurl.common.CommonUtils.isBlank;
+import static com.legadi.jurl.common.CommonUtils.isNotBlank;
+
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -7,9 +10,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.legadi.jurl.exception.CommandException;
-
-import static com.legadi.jurl.common.CommonUtils.isBlank;
-import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 
 public class OptionsRegistry {
 
@@ -26,10 +26,11 @@ public class OptionsRegistry {
         registerOption(new MockDefinitionOption());
         registerOption(new MockRequestOption());
         registerOption(new OpenOutputOption());
+        registerOption(new OverrideRequestOption());
         registerOption(new SetInputNameOption());
         registerOption(new SetValueOption());
-        registerOption(new TimesRepeatOption());
         registerOption(new SkipAssertionsOption());
+        registerOption(new TimesRepeatOption());
     }
 
     public static Option registerAddOn(Class<Option> optionClass) {

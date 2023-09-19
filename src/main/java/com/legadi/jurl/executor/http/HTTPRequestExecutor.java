@@ -1,18 +1,10 @@
-package com.legadi.jurl.executor;
-
-import com.google.gson.reflect.TypeToken;
-import com.legadi.jurl.common.CurlBuilder;
-import com.legadi.jurl.common.Settings;
-import com.legadi.jurl.common.URLBuilder;
-import com.legadi.jurl.exception.RequestException;
-import com.legadi.jurl.model.Credential;
-import com.legadi.jurl.model.HTTPRequestEntry;
-import com.legadi.jurl.model.HTTPRequestFileEntry;
-import com.legadi.jurl.model.HTTPResponseEntry;
-import com.legadi.jurl.model.RequestEntry;
+package com.legadi.jurl.executor.http;
 
 import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
+import static com.legadi.jurl.common.CommonUtils.isEmpty;
+import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
+import static java.util.logging.Level.FINE;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -35,7 +27,17 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static java.util.logging.Level.FINE;
+import com.google.gson.reflect.TypeToken;
+import com.legadi.jurl.common.CurlBuilder;
+import com.legadi.jurl.common.Settings;
+import com.legadi.jurl.common.URLBuilder;
+import com.legadi.jurl.exception.RequestException;
+import com.legadi.jurl.executor.RequestExecutor;
+import com.legadi.jurl.model.Credential;
+import com.legadi.jurl.model.HTTPRequestEntry;
+import com.legadi.jurl.model.HTTPRequestFileEntry;
+import com.legadi.jurl.model.HTTPResponseEntry;
+import com.legadi.jurl.model.RequestEntry;
 
 public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HTTPResponseEntry> {
 
@@ -73,6 +75,37 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         Path responsePath = readOutput(settings, connection);
 
         return buildResponse(responsePath, connection, request, curlBuilder);
+    }
+
+    @Override
+    public void overrideRequest(Settings settings, HTTPRequestEntry request, String filename) {
+        HTTPRequestParser parser = new HTTPRequestParser(settings);
+        HTTPRequestEntry overrideRequest = parser.parseRequest(filename);
+
+        if(isNotEmpty(request.getHeaders())) {
+            request.getHeaders().putAll(overrideRequest.getHeaders());
+        } else {
+            request.setHeaders(overrideRequest.getHeaders());
+        }
+
+        if(isNotEmpty(request.getQueryParams())) {
+            request.getQueryParams().putAll(overrideRequest.getQueryParams());
+        } else {
+            request.setQueryParams(overrideRequest.getQueryParams());
+        }
+
+        if(isNotEmpty(overrideRequest.getAssertions())) {
+            request.setAssertions(overrideRequest.getAssertions());
+        }
+
+        if(isNotEmpty(overrideRequest.getOutputMappings())) {
+            request.setOutputMappings(overrideRequest.getOutputMappings());
+        }
+
+        if(isNotBlank(overrideRequest.getBodyFilePath())) {
+            request.setBodyContent(null);
+            request.setBodyFilePath(overrideRequest.getBodyFilePath());
+        }
     }
 
     private HttpURLConnection createConnection(Settings settings,
@@ -144,7 +177,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
 
     private void addHeaders(HttpURLConnection connection, Settings settings,
             HTTPRequestEntry request, CurlBuilder curlBuilder) {
-        if(request.getHeaders() == null) {
+        if(isEmpty(request.getHeaders())) {
             return;
         }
 
@@ -205,7 +238,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         String boundary = "*****" + Long.toString(System.currentTimeMillis()) + "*****";
         String[] pathParts = requestFile.getPath().split("/");
         String filename = isNotBlank(requestFile.getName()) ? requestFile.getName() : pathParts[pathParts.length - 1];
-        Map<String, String> formData = requestFile.getFormData() != null ? requestFile.getFormData() : new HashMap<>();
+        Map<String, String> formData = isNotEmpty(requestFile.getFormData()) ? requestFile.getFormData() : new HashMap<>();
 
         connection.setDoInput(true);
         connection.setDoOutput(true);

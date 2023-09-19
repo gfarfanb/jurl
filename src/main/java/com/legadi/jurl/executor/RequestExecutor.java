@@ -22,4 +22,10 @@ public interface RequestExecutor<T extends RequestEntry, R extends ResponseEntry
     }
 
     R executeRequest(Settings settings, T request) throws RequestException;
+
+    default void overrideWithFile(Settings settings, RequestEntry request, String filename) {
+        overrideRequest(settings, cast(request), filename);
+    }
+
+    void overrideRequest(Settings settings, T request, String filename);
 }

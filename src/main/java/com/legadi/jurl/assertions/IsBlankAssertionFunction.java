@@ -1,9 +1,9 @@
 package com.legadi.jurl.assertions;
 
-import com.legadi.jurl.exception.AssertionException;
-
 import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.model.AssertionType.IS_BLANK;
+
+import com.legadi.jurl.exception.AssertionException;
 
 public class IsBlankAssertionFunction implements AssertionFunction {
 

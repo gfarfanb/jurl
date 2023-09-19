@@ -23,5 +23,14 @@ public enum AssertionType {
     IS_BETWEEN,
     IS_NOT_BETWEEN,
     IS_IN,
-    IS_NOT_IN
+    IS_NOT_IN;
+
+    public static AssertionType valueOfName(String name) {
+        for(AssertionType type : values()) {
+            if(type.name().equalsIgnoreCase(name)) {
+                return type;
+            }
+        }
+        return null;
+    }
 }

@@ -1,11 +1,11 @@
 package com.legadi.jurl.assertions;
 
-import com.legadi.jurl.exception.AssertionException;
-
 import static com.legadi.jurl.model.AssertionType.IS_IN;
 
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import com.legadi.jurl.exception.AssertionException;
 
 public class IsInAssertionFunction implements AssertionFunction {
 

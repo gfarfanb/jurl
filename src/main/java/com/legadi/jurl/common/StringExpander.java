@@ -1,5 +1,7 @@
 package com.legadi.jurl.common;
 
+import static com.legadi.jurl.common.CommonUtils.isNotBlank;
+
 import java.io.Console;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -7,8 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 
 public class StringExpander {
 

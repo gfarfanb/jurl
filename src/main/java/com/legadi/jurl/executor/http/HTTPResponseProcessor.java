@@ -1,4 +1,12 @@
-package com.legadi.jurl.executor;
+package com.legadi.jurl.executor.http;
+
+import static com.legadi.jurl.assertions.AssertionsRegistry.findByName;
+import static com.legadi.jurl.assertions.AssertionsRegistry.registerAssertionFunction;
+import static com.legadi.jurl.common.CommonUtils.isBlank;
+import static com.legadi.jurl.common.CommonUtils.isEmpty;
+import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
+import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
+import static com.legadi.jurl.common.WriterUtils.writeJsonFile;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,18 +26,13 @@ import com.legadi.jurl.exception.AssertionException;
 import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.exception.InvalidAssertionsFoundException;
 import com.legadi.jurl.exception.RequestException;
+import com.legadi.jurl.executor.ResponseProcessor;
 import com.legadi.jurl.executor.reader.JsonOutputReader;
 import com.legadi.jurl.executor.reader.XmlOutputReader;
 import com.legadi.jurl.model.AssertionEntry;
 import com.legadi.jurl.model.HTTPRequestEntry;
 import com.legadi.jurl.model.HTTPResponseEntry;
 import com.legadi.jurl.model.OutputType;
-
-import static com.legadi.jurl.assertions.AssertionsRegistry.findByName;
-import static com.legadi.jurl.assertions.AssertionsRegistry.registerAssertionFunction;
-import static com.legadi.jurl.common.CommonUtils.isBlank;
-import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
-import static com.legadi.jurl.common.WriterUtils.writeJsonFile;
 
 public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry, HTTPResponseEntry> {
 
@@ -66,7 +69,7 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
             settings.putOverride(HTTP_PREFIX + "response.path", response.getResponsePath().toString());
         }
 
-        if(response.getResponseHeaders() !=null) {
+        if(isNotEmpty(response.getResponseHeaders())) {
             for(Map.Entry<String, String> headerEntry : response.getResponseHeaders().entrySet()) {
                 settings.putOverride(HTTP_PREFIX + "header." + headerEntry.getKey(), headerEntry.getValue());
             }
@@ -76,7 +79,7 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
     private Set<String> scanOutputParams(StringExpander stringExpander, HTTPRequestEntry request) {
         Set<String> outputParams = new HashSet<>();
 
-        if(request.getOutputMappings() != null) {
+        if(isNotEmpty(request.getOutputMappings())) {
             outputParams.addAll(
                 request.getOutputMappings().entrySet()
                     .parallelStream()
@@ -88,7 +91,7 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
             );
         }
 
-        if(request.getAssertions() != null) {
+        if(isNotEmpty(request.getAssertions())) {
             outputParams.addAll(
                 request.getAssertions()
                     .parallelStream()
@@ -112,7 +115,7 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
 
     private void saveOutput(StringExpander stringExpander, Map<String, String> values,
             HTTPRequestEntry request, HTTPResponseEntry response) {
-        if(request.getOutputMappings() == null) {
+        if(isEmpty(request.getOutputMappings())) {
             return;
         }
 
@@ -162,7 +165,7 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
 
     private void evaluate(StringExpander stringExpander, Map<String, String> values,
             List<AssertionEntry> assertions) {
-        if(assertions == null || stringExpander.getSettings().isSkipAssertions()) {
+        if(isEmpty(assertions) || stringExpander.getSettings().isSkipAssertions()) {
             return;
         }
 

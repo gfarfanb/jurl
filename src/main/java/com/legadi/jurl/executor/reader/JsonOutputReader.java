@@ -1,5 +1,7 @@
 package com.legadi.jurl.executor.reader;
 
+import static com.legadi.jurl.common.CommonUtils.isNotBlank;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,8 +16,6 @@ import java.util.function.Consumer;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
-
-import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 
 public class JsonOutputReader implements OutputReader<Map<String, String>> {
 

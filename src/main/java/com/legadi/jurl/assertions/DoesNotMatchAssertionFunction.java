@@ -1,11 +1,11 @@
 package com.legadi.jurl.assertions;
 
-import com.legadi.jurl.exception.AssertionException;
-
 import static com.legadi.jurl.model.AssertionType.DOES_NOT_MATCH;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.legadi.jurl.exception.AssertionException;
 
 public class DoesNotMatchAssertionFunction implements AssertionFunction {
 

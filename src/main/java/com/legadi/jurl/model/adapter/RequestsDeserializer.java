@@ -1,5 +1,7 @@
 package com.legadi.jurl.model.adapter;
 
+import static com.legadi.jurl.common.CommonUtils.toJsonString;
+
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,8 +11,6 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
-
-import static com.legadi.jurl.common.CommonUtils.toJsonString;
 
 public class RequestsDeserializer implements JsonDeserializer<Map<String, String>> {
 

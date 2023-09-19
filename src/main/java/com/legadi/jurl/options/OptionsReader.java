@@ -1,5 +1,11 @@
 package com.legadi.jurl.options;
 
+import static com.legadi.jurl.common.CommonUtils.isBlank;
+import static com.legadi.jurl.common.CommonUtils.isEmpty;
+import static com.legadi.jurl.common.CommonUtils.isNotBlank;
+import static com.legadi.jurl.options.OptionsRegistry.findByArg;
+import static com.legadi.jurl.options.OptionsRegistry.registerAddOn;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -12,11 +18,6 @@ import java.util.stream.Collectors;
 import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.exception.CommandException;
-
-import static com.legadi.jurl.common.CommonUtils.isBlank;
-import static com.legadi.jurl.common.CommonUtils.isNotBlank;
-import static com.legadi.jurl.options.OptionsRegistry.findByArg;
-import static com.legadi.jurl.options.OptionsRegistry.registerAddOn;
 
 public class OptionsReader {
 
@@ -79,7 +80,7 @@ public class OptionsReader {
     }
 
     private void validateArgs(String[] args) {
-        if(args == null || args.length < 1) {
+        if(isEmpty(args)) {
             throw new CommandException("No args in the command, please use [--help] option");
         }
     }
@@ -118,7 +119,7 @@ public class OptionsReader {
     }
 
     public List<OptionEntry> mapToOptionEntries(Map<String, String[]> options) {
-        if(options == null) {
+        if(isEmpty(options)) {
             return new LinkedList<>();
         }
 
@@ -136,7 +137,7 @@ public class OptionsReader {
             throw new CommandException("Option not found: " + opt);
         }
         if(option.getArgs().length > 0
-                && (arguments == null || arguments.length < option.getArgs().length)) {
+                && (isEmpty(arguments) || arguments.length < option.getArgs().length)) {
             throw new CommandException("Invalid args length for option: "
                 + Arrays.toString(arguments) + " - " + option);
         }

@@ -1,12 +1,12 @@
 package com.legadi.jurl.options;
 
+import static com.legadi.jurl.common.CommonUtils.isNotBlank;
+
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.legadi.jurl.common.Settings;
-
-import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 
 public abstract class Option {
 

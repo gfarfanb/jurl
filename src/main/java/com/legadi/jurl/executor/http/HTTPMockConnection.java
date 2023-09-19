@@ -1,4 +1,8 @@
-package com.legadi.jurl.executor;
+package com.legadi.jurl.executor.http;
+
+import static com.legadi.jurl.common.CommonUtils.isNotBlank;
+import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
+import static com.legadi.jurl.common.CommonUtils.toJsonString;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -12,9 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-
-import static com.legadi.jurl.common.CommonUtils.isNotBlank;
-import static com.legadi.jurl.common.CommonUtils.toJsonString;
 
 public class HTTPMockConnection extends HttpURLConnection {
 
@@ -103,7 +104,7 @@ public class HTTPMockConnection extends HttpURLConnection {
 
     @Override
     public Map<String, List<String>> getHeaderFields() {
-        if(responseHeaders != null) {
+        if(isNotEmpty(responseHeaders)) {
             LOGGER.fine("[mock-connection] Calling getHeaderFields():" + responseHeaders.getClass().getSimpleName()
                 + "-" + toJsonString(responseHeaders));
             return responseHeaders;

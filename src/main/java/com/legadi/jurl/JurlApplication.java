@@ -15,7 +15,7 @@ public class JurlApplication {
     private static final Logger LOGGER = Logger.getLogger(JurlApplication.class.getName());
 
     public static void main(String[] args) throws Exception {
-        args = new String[] { "input.json" };
+        args = new String[] { "-h", "input.json" };
 
         try {
             System.setProperty("java.util.logging.SimpleFormatter.format", "%5$s%6$s%n");

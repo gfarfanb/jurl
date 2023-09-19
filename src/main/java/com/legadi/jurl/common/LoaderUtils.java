@@ -44,7 +44,7 @@ public class LoaderUtils {
             try {
                 return readJsonProperties(filePath, new FileInputStream(jsonFile));
             } catch(FileNotFoundException ex) {
-                throw new IllegalStateException("Unable to optain file: " + filePath, ex);
+                throw new IllegalStateException("Unable to obtain file: " + filePath, ex);
             }
         } else {
             LOGGER.fine("JSON properties file not found: " + filePath);

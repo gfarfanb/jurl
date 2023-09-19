@@ -1,5 +1,15 @@
 package com.legadi.jurl.executor;
 
+import static com.legadi.jurl.common.CommonUtils.isBlank;
+import static com.legadi.jurl.common.CommonUtils.isEmpty;
+import static com.legadi.jurl.common.CommonUtils.isNotBlank;
+import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
+import static com.legadi.jurl.common.LoaderUtils.jsonToObject;
+import static com.legadi.jurl.common.LoaderUtils.loadCredentials;
+import static com.legadi.jurl.common.LoaderUtils.loadJsonFile;
+import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
+import static com.legadi.jurl.executor.RequestHandlersRegistry.findByRequest;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,14 +33,6 @@ import com.legadi.jurl.model.StepEntry;
 import com.legadi.jurl.options.OptionsReader;
 import com.legadi.jurl.options.OptionsReader.OptionEntry;
 import com.legadi.jurl.options.SetInputNameOption;
-
-import static com.legadi.jurl.common.LoaderUtils.jsonToObject;
-import static com.legadi.jurl.common.LoaderUtils.loadCredentials;
-import static com.legadi.jurl.common.LoaderUtils.loadJsonFile;
-import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
-import static com.legadi.jurl.common.CommonUtils.isBlank;
-import static com.legadi.jurl.common.CommonUtils.isNotBlank;
-import static com.legadi.jurl.executor.RequestHandlersRegistry.findByRequest;
 
 public class RequestCommand {
 
@@ -105,7 +107,7 @@ public class RequestCommand {
         Settings.mergeProperties(environment, loadJsonProperties(configFile));
         Settings.mergeCredentials(environment, loadCredentials(credentialsFile));
 
-        if(requestInput.getConfigs() != null) {
+        if(isNotEmpty(requestInput.getConfigs())) {
             Map<String, String> fileConfig = requestInput.getConfigs().getOrDefault(environment, new HashMap<>());
 
             if(isMainInput) {
@@ -117,14 +119,14 @@ public class RequestCommand {
     }
 
     private void processFlow(int index, RequestInputRaw requestInput, StringExpander stringExpander) {
-        if(requestInput.getFlows() == null || requestInput.getFlows().isEmpty()) {
+        if(isEmpty(requestInput.getFlows())) {
             throw new CommandException("No flows are defined in the request file: " + requestInput.getPath());
         }
 
         Settings settings = stringExpander.getSettings();
         Pair<String, String[]> flowDef = pickFlow(requestInput, settings);
 
-        if(flowDef.getRight() == null || flowDef.getRight().length < 1) {
+        if(isEmpty(flowDef.getRight())) {
             throw new CommandException("No steps defined for the flow: "
                 + flowDef.getLeft() + " - " + requestInput.getPath());
         }
@@ -182,7 +184,7 @@ public class RequestCommand {
     }
 
     private void processRequest(int index, RequestInputRaw requestInput, StringExpander stringExpander) {
-        if(requestInput.getRequests() == null || requestInput.getRequests().isEmpty()) {
+        if(isEmpty(requestInput.getRequests())) {
             throw new CommandException("No requests are defined in the request file: " + requestInput.getPath());
         }
 
@@ -226,6 +228,10 @@ public class RequestCommand {
         RequestExecutor<?, ?> executor = handlers.getLeft();
         ResponseProcessor<?, ?> processor = handlers.getRight();
         RequestEntry request = jsonToObject(requestRaw, executor.type());
+
+        if(isNotBlank(settings.getOverrideRequestFile())) {
+            executor.overrideWithFile(settings, request, settings.getOverrideRequestFile());
+        }
 
         long beginTime = System.nanoTime();
         ResponseEntry response = executor.execute(settings, request);

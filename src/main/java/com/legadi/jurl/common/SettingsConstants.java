@@ -3,6 +3,7 @@ package com.legadi.jurl.common;
 public class SettingsConstants {
 
     public static final String PROP_EXECUTION_OUTPUT_PATH = "executionOutputPath";
+    public static final String PROP_TEMPORAL_PATH = "temporalPath";
     public static final String PROP_ADD_ON_OPTION_CLASSES = "addOnOptionClasses";
     public static final String PROP_OPEN_EDITOR_COMMAND = "openEditorCommand";
     public static final String PROP_REQUEST_CREDENTIAL_ID = "requestCredentialId";
@@ -20,6 +21,7 @@ public class SettingsConstants {
     public static final String PROP_SETTINGS_PARAM_START_AT = "settingsParamStartAt";
     public static final String PROP_SETTINGS_PARAM_END_AT_LENGTH_MINUS = "settingsParamEndAtLengthMinus";
     public static final String PROP_SKIP_ASSERTIONS = "skipAssertions";
+    public static final String PROP_OVERRIDE_REQUEST_FILE = "overrideRequestFile";
 
     private SettingsConstants() {}
 }

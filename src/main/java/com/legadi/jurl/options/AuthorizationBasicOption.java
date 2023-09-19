@@ -1,7 +1,7 @@
 package com.legadi.jurl.options;
 
-import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_CREDENTIAL_ID;
 import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_AUTHORIZATION_TYPE;
+import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_CREDENTIAL_ID;
 import static com.legadi.jurl.model.AuthorizationType.BASIC;
 
 import com.legadi.jurl.common.Settings;

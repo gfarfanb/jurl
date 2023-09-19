@@ -1,10 +1,10 @@
 package com.legadi.jurl.assertions;
 
-import com.legadi.jurl.exception.AssertionException;
-
 import static com.legadi.jurl.model.AssertionType.IS_NULL;
 
 import java.util.Objects;
+
+import com.legadi.jurl.exception.AssertionException;
 
 public class IsNullAssertionFunction implements AssertionFunction {
 

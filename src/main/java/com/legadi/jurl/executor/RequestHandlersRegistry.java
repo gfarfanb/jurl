@@ -5,6 +5,8 @@ import java.util.List;
 
 import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.exception.CommandException;
+import com.legadi.jurl.executor.http.HTTPRequestExecutor;
+import com.legadi.jurl.executor.http.HTTPResponseProcessor;
 import com.legadi.jurl.model.RequestEntry;
 
 public class RequestHandlersRegistry {

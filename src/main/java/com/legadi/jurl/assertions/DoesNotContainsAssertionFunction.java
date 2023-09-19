@@ -1,9 +1,9 @@
 package com.legadi.jurl.assertions;
 
-import com.legadi.jurl.exception.AssertionException;
-
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.model.AssertionType.DOES_NOT_CONTAINS;
+
+import com.legadi.jurl.exception.AssertionException;
 
 public class DoesNotContainsAssertionFunction implements AssertionFunction {
 

@@ -1,5 +1,6 @@
 {
     "executionOutputPath": "executions/",
+    "temporalPath": "tmp/",
     "addOnOptionClasses": "",
     "openEditorCommand": "",
     "requestCredentialId": "",
@@ -16,5 +17,6 @@
     "settingsParamRegexReplace": "<param-name>",
     "settingsParamStartAt": 2,
     "settingsParamEndAtLengthMinus": 2,
-    "skipAssertions": false
+    "skipAssertions": false,
+    "overrideRequestFile": ""
 }

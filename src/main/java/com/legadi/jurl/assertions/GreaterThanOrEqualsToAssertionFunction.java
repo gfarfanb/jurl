@@ -1,11 +1,11 @@
 package com.legadi.jurl.assertions;
 
-import com.legadi.jurl.exception.AssertionException;
-
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.model.AssertionType.GREATER_THAN_OR_EQUALS_TO;
 
 import java.math.BigDecimal;
+
+import com.legadi.jurl.exception.AssertionException;
 
 public class GreaterThanOrEqualsToAssertionFunction implements AssertionFunction {
 

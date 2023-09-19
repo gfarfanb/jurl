@@ -1,5 +1,7 @@
 package com.legadi.jurl.common;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import com.google.gson.Gson;
@@ -17,6 +19,30 @@ public class CommonUtils {
 
     public static boolean isBlank(String value) {
         return !isNotBlank(value);
+    }
+
+    public static boolean isNotEmpty(Collection<?> collection) {
+        return collection != null && !collection.isEmpty();
+    }
+
+    public static boolean isEmpty(Collection<?> collection) {
+        return !isNotEmpty(collection);
+    }
+
+    public static boolean isNotEmpty(Map<?, ?> map) {
+        return map != null && !map.isEmpty();
+    }
+
+    public static boolean isEmpty(Map<?, ?> map) {
+        return !isNotEmpty(map);
+    }
+
+    public static boolean isNotEmpty(Object[] array) {
+        return array != null && array.length > 0;
+    }
+
+    public static boolean isEmpty(Object[] array) {
+        return !isNotEmpty(array);
     }
 
     public static String strip(String value, String stripChars) {
