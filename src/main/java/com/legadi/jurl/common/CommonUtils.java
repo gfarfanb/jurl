@@ -2,6 +2,7 @@ package com.legadi.jurl.common;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.regex.Pattern;
 
 import com.google.gson.Gson;
@@ -10,6 +11,8 @@ public class CommonUtils {
 
     private static final Gson GSON = new Gson();
     private static Pattern NUMBER_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
+    private static String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvxyz0123456789";
+    private static String NUMERIC_STRING = "0123456789";
 
     private CommonUtils() {}
 
@@ -107,5 +110,28 @@ public class CommonUtils {
         } else {
             return value;
         }
+    }
+
+    public static String nextString(int length) {
+        return nextString(length, ALPHA_NUMERIC_STRING.length(), (i, index) ->
+            ALPHA_NUMERIC_STRING.charAt(index));
+    }
+
+    public static String nextNumber(int length) {
+        return nextString(length, NUMERIC_STRING.length(), (i, index) ->
+            NUMERIC_STRING.charAt(i == 0 && index == 0 ? 1 : index));
+    }
+
+    public static <T> String nextString(int length, int sourceLength,
+            BiFunction<Integer, Integer, T> indexMapper) {
+        StringBuilder elements = new StringBuilder();
+        int index;
+
+        for (int i = 0; i < length; i++) {
+            index = (int) (sourceLength * Math.random());
+            elements.append(indexMapper.apply(i, index));
+        }
+
+        return elements.toString();
     }
 }

@@ -1,8 +1,8 @@
 package com.legadi.jurl.executor.http;
 
 import static com.legadi.jurl.common.CommonUtils.isBlank;
-import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isEmpty;
+import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static java.util.logging.Level.FINE;
 

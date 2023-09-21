@@ -1,8 +1,8 @@
 package com.legadi.jurl.common;
 
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
+import static com.legadi.jurl.common.generators.GeneratorsRegistry.getValueByGenerator;
 
-import java.io.Console;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -11,9 +11,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class StringExpander {
-
-    private static final String INPUT_PREFIX = "INPUT:";
-    private static final String PASSWORD_PREFIX = "PASSWORD:";
 
     private final Settings settings;
 
@@ -34,7 +31,6 @@ public class StringExpander {
         Pattern pattern = Pattern.compile(settings.getSettingsParamRegex());
         Matcher matcher = pattern.matcher(content);
         Set<String> paramTags = new HashSet<>();
-        Console console = System.console();
 
         while(matcher.find()) {
             String paramTag = matcher.group(0);
@@ -47,19 +43,9 @@ public class StringExpander {
                 String paramRegex = settings.getSettingsParamRegexMask().replace(
                     settings.getSettingsParamRegexReplace(), paramName
                 );
-                String value;
+                String value = getValueByGenerator(settings, paramName);
 
-                if(paramName.startsWith(INPUT_PREFIX) || !settings.containsOverride(paramName)) {
-                    value = console.readLine(extractMessage(INPUT_PREFIX, paramName));
-
-                    settings.putOverride(paramName, value);
-                } else if(paramName.startsWith(PASSWORD_PREFIX) || !settings.containsOverride(paramName)) {
-                    value = String.valueOf(
-                        console.readPassword(extractMessage(PASSWORD_PREFIX, paramName))
-                    );
-
-                    settings.putOverride(paramName, value);
-                } else {
+                if(value == null) {
                     value = values.getOrDefault(paramName,
                         settings.getOrDefault(paramName, ""));
                 }
@@ -73,10 +59,6 @@ public class StringExpander {
         }
 
         return content;
-    }
-
-    private String extractMessage(String prefix, String value) {
-        return value.substring(prefix.length(), value.length());
     }
 
     public Set<String> scanParamsInContent(String content) {
