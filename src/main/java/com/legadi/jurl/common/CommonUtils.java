@@ -128,10 +128,14 @@ public class CommonUtils {
         int index;
 
         for (int i = 0; i < length; i++) {
-            index = (int) (sourceLength * Math.random());
+            index = nextIndex(sourceLength);
             elements.append(indexMapper.apply(i, index));
         }
 
         return elements.toString();
+    }
+
+    public static int nextIndex(int length) {
+        return(int) (length * Math.random());
     }
 }

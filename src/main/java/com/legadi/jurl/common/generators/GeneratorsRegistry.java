@@ -16,7 +16,6 @@ public class GeneratorsRegistry {
         GENERATORS.add(new EmailGenerator());;
         GENERATORS.add(new FullNameGenerator());
         GENERATORS.add(new IntegerGenerator());
-        GENERATORS.add(new IntegerLengthGenerator());
         GENERATORS.add(new LastNameGenerator());
         GENERATORS.add(new LoremIpsumGenerator());
         GENERATORS.add(new NameGenerator());
