@@ -1,7 +1,10 @@
 package com.legadi.jurl.executor;
 
+import java.util.Optional;
+
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.exception.RequestException;
+import com.legadi.jurl.model.AssertionResult;
 import com.legadi.jurl.model.RequestEntry;
 import com.legadi.jurl.model.ResponseEntry;
 
@@ -17,10 +20,9 @@ public interface ResponseProcessor<T extends RequestEntry, R extends ResponseEnt
         return (R) response;
     }
 
-    default void process(Settings settings, RequestEntry request, ResponseEntry response, 
-            long nanoElapsed) throws RequestException {
-        processResponse(settings, cast(request), cast(response), nanoElapsed);
+    default Optional<AssertionResult> process(Settings settings, RequestEntry request, ResponseEntry response) throws RequestException {
+        return processResponse(settings, cast(request), cast(response));
     }
 
-    void processResponse(Settings settings, T request, R response, long nanoElapsed) throws RequestException;
+    Optional<AssertionResult> processResponse(Settings settings, T request, R response) throws RequestException;
 }

@@ -4,17 +4,24 @@ import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
+import static com.legadi.jurl.common.CommonUtils.toJsonString;
 import static com.legadi.jurl.common.LoaderUtils.jsonToObject;
 import static com.legadi.jurl.common.LoaderUtils.loadCredentials;
 import static com.legadi.jurl.common.LoaderUtils.loadJsonFile;
 import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
 import static com.legadi.jurl.executor.RequestHandlersRegistry.findByRequest;
+import static com.legadi.jurl.common.WriterUtils.buildHistoryFilePath;
+import static com.legadi.jurl.common.WriterUtils.writeFile;
+import static com.legadi.jurl.common.WriterUtils.appendToFile;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -24,8 +31,11 @@ import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.common.StringExpander;
 import com.legadi.jurl.exception.CommandException;
+import com.legadi.jurl.exception.InvalidAssertionsFoundException;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.exception.SkipExecutionException;
+import com.legadi.jurl.model.AssertionResult;
+import com.legadi.jurl.model.HistoryEntry;
 import com.legadi.jurl.model.RequestEntry;
 import com.legadi.jurl.model.RequestInputRaw;
 import com.legadi.jurl.model.ResponseEntry;
@@ -198,6 +208,7 @@ public class RequestCommand {
         String requestRaw = stringExpander.replaceAllInContent(requestDef.getRight());
         RequestEntry requestEntry = jsonToObject(requestRaw, new TypeToken<RequestEntry>() {});
 
+        requestEntry.setRequestPath(requestInput.getPath());
         requestEntry.setName(requestDef.getLeft());
 
         try {
@@ -237,6 +248,34 @@ public class RequestCommand {
         ResponseEntry response = executor.execute(settings, request);
         long endTime = System.nanoTime();
 
-        processor.process(settings, request, response, endTime - beginTime);
+        HistoryEntry historyEntry = new HistoryEntry();
+        historyEntry.setCurl(response.getCurlCommand());
+        historyEntry.setTimestamp(settings.getTimestamp());
+        historyEntry.setExecutionTag(settings.getExecutionTag());
+        historyEntry.setNanoTime(endTime - beginTime);
+
+        Optional<AssertionResult> result = processor.process(settings, request, response);
+
+        result.ifPresent(r -> {
+            historyEntry.setAssertions(r.getAssertions());
+            historyEntry.setFailures(r.getFailures());
+        });
+
+        saveHistory(settings, historyEntry, request.getRequestPath(), request.getName());
+
+        if(result.isPresent() && result.get().isSkip()) {
+            throw new InvalidAssertionsFoundException();
+        }
+    }
+
+    private void saveHistory(Settings settings, HistoryEntry entry, String requestPath, String requestName) {
+        Path historyPath = buildHistoryFilePath(settings, requestPath, requestName, "history");
+        File historyFile = historyPath.toFile();
+
+        if(historyFile.exists()) {
+            appendToFile(historyFile, historyFile.length() - 1, ",", toJsonString(entry), "]");
+        } else {
+            writeFile(historyPath.toString(), "[", toJsonString(entry), "]");
+        }
     }
 }

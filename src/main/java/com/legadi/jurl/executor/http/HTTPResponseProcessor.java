@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -24,15 +25,15 @@ import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.common.StringExpander;
 import com.legadi.jurl.exception.AssertionException;
 import com.legadi.jurl.exception.CommandException;
-import com.legadi.jurl.exception.InvalidAssertionsFoundException;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.executor.ResponseProcessor;
 import com.legadi.jurl.executor.reader.JsonOutputReader;
 import com.legadi.jurl.executor.reader.XmlOutputReader;
 import com.legadi.jurl.model.AssertionEntry;
-import com.legadi.jurl.model.HTTPRequestEntry;
-import com.legadi.jurl.model.HTTPResponseEntry;
+import com.legadi.jurl.model.AssertionResult;
 import com.legadi.jurl.model.OutputType;
+import com.legadi.jurl.model.http.HTTPRequestEntry;
+import com.legadi.jurl.model.http.HTTPResponseEntry;
 
 public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry, HTTPResponseEntry> {
 
@@ -42,12 +43,12 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
     private static final String OUTPUT_PREFIX = "OUT:";
 
     @Override
-    public void processResponse(Settings settings, HTTPRequestEntry request, HTTPResponseEntry response,
-            long nanoElapsed) throws RequestException {
+    public Optional<AssertionResult> processResponse(Settings settings, HTTPRequestEntry request, HTTPResponseEntry response)
+            throws RequestException {
 
         if(settings.isCurlRequest()) {
             LOGGER.info(response.getCurlCommand());
-            return;
+            return Optional.empty();
         }
 
         mapOutput(settings, response);
@@ -57,7 +58,8 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
         Map<String, String> values = readOutputValues(request.getOutputType(), response, outputParams);
 
         saveOutput(stringExpander, values, request, response);
-        evaluate(stringExpander, values, request.getAssertions());
+
+        return evaluate(stringExpander, values, request.getAssertions());
     }
 
     private void mapOutput(Settings settings, HTTPResponseEntry response) {
@@ -163,13 +165,14 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
         }
     }
 
-    private void evaluate(StringExpander stringExpander, Map<String, String> values,
+    private Optional<AssertionResult> evaluate(StringExpander stringExpander, Map<String, String> values,
             List<AssertionEntry> assertions) {
         if(isEmpty(assertions) || stringExpander.getSettings().isSkipAssertions()) {
-            return;
+            return Optional.empty();
         }
 
-        boolean skip = false;
+        AssertionResult result = new AssertionResult(assertions.size());
+        int failures = 0;
 
         for(AssertionEntry assertionEntry : assertions) {
             try {
@@ -193,13 +196,13 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
 
                 function.evaluate(message, args);
             } catch(AssertionException ex) {
-                LOGGER.info(ex.getMessage());
-                skip = true;
+                LOGGER.warning(ex.getMessage());
+                result.setSkip(true);
+                failures++;
             }
         }
 
-        if(skip) {
-            throw new InvalidAssertionsFoundException();
-        }
+        result.setFailures(failures);
+        return Optional.of(result);
     }
 }

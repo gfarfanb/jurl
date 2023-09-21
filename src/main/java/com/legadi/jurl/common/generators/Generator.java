@@ -10,7 +10,7 @@ public interface Generator {
         try {
             return getValue(settings, param);
         } catch(Exception ex) {
-            throw new IllegalStateException("Unable to generate value - " + ex.getMessage(), ex);
+            throw new IllegalStateException("Unable to generate value: " + param, ex);
         }
     }
 

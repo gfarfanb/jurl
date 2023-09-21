@@ -4,11 +4,12 @@ import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
+import static com.legadi.jurl.common.LoaderUtils.printFile;
+import static com.legadi.jurl.common.WriterUtils.buildOutputFilePath;
 import static java.util.logging.Level.FINE;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -34,10 +35,10 @@ import com.legadi.jurl.common.URLBuilder;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.executor.RequestExecutor;
 import com.legadi.jurl.model.Credential;
-import com.legadi.jurl.model.HTTPRequestEntry;
-import com.legadi.jurl.model.HTTPRequestFileEntry;
-import com.legadi.jurl.model.HTTPResponseEntry;
 import com.legadi.jurl.model.RequestEntry;
+import com.legadi.jurl.model.http.HTTPRequestEntry;
+import com.legadi.jurl.model.http.HTTPRequestFileEntry;
+import com.legadi.jurl.model.http.HTTPResponseEntry;
 
 public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HTTPResponseEntry> {
 
@@ -66,21 +67,21 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         addHeaders(connection, settings, request, curlBuilder);
 
         if(request.getRequestFile() != null) {
-            sendFile(connection, request, curlBuilder);
+            sendFile(connection, settings, request, curlBuilder);
         } else {
             addMethod(connection, request, curlBuilder);
-            sendBody(connection, request, curlBuilder);
+            sendBody(connection, settings, request, curlBuilder);
         }
 
-        Path responsePath = readOutput(settings, connection);
+        Path responsePath = readOutput(connection, settings, request);
 
-        return buildResponse(responsePath, connection, request, curlBuilder);
+        return buildResponse(responsePath, connection, settings, request, curlBuilder);
     }
 
     @Override
     public void overrideRequest(Settings settings, HTTPRequestEntry request, String filename) {
         HTTPRequestParser parser = new HTTPRequestParser(settings);
-        HTTPRequestEntry overrideRequest = parser.parseRequest(filename);
+        HTTPRequestEntry overrideRequest = parser.parseRequest(request.getRequestPath(), request.getName(), filename);
 
         if(isNotEmpty(request.getHeaders())) {
             request.getHeaders().putAll(overrideRequest.getHeaders());
@@ -123,6 +124,10 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             URL url = new URL(urlBuilder.build());
 
             curlBuilder.setUrl(url);
+
+            if(!settings.isCurlRequest()) {
+                LOGGER.info(request.getMethod() + " " + url);
+            }
 
             return createConnection(settings, request, url);
         } catch(MalformedURLException ex) {
@@ -181,10 +186,13 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             return;
         }
 
+        StringBuilder printableHeaders = new StringBuilder();
+
         request.getHeaders().forEach(
             (header, value) -> {
                 connection.setRequestProperty(header, value);
                 curlBuilder.addHeader(header, value);
+                printableHeaders.append(header).append(": ").append(value).append("\n");
             }
         );
 
@@ -195,24 +203,36 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
                 String basicValue = Base64.getEncoder().encodeToString(basicDecoded.getBytes());
                 connection.setRequestProperty("Authorization", "Basic " + basicValue);
                 curlBuilder.addHeader("Authorization", "Basic " + basicValue);
+                printableHeaders.append("Authorization").append(": Basic ").append(basicValue).append("\n");
                 break;
             case TOKEN:
                 Credential tokenCredential = settings.getCredential();
                 connection.setRequestProperty("Authorization", "Bearer " + tokenCredential.getToken());
                 curlBuilder.addHeader("Authorization", "Bearer " + tokenCredential.getToken());
+                printableHeaders.append("Authorization").append(": Bearer ").append(tokenCredential.getToken()).append("\n");
                 break;
             default:
                 LOGGER.fine("Authorization type not specified");
                 break;
         }
+
+        if(!settings.isCurlRequest()) {
+            LOGGER.info(printableHeaders.toString());
+        }
     }
 
-    private void sendBody(HttpURLConnection connection, HTTPRequestEntry request, CurlBuilder culrBuilder) {
+    private void sendBody(HttpURLConnection connection, Settings settings, 
+            HTTPRequestEntry request, CurlBuilder culrBuilder) {
         try(DataOutputStream dataOutputStream = new DataOutputStream(connection.getOutputStream())) {
 
             if(isNotBlank(request.getBodyContent())) {
                 writeLine(dataOutputStream, request.getBodyContent(), request.getBodyCharset());
                 culrBuilder.setData(request.getBodyContent());
+
+                if(!settings.isCurlRequest()) {
+                    LOGGER.info(request.getBodyContent());
+                }
+
                 return;
             }
 
@@ -224,6 +244,11 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
                 }
 
                 culrBuilder.setDataBinary(request.getBodyFilePath());
+
+                if(!settings.isCurlRequest()) {
+                    printFile(request.getBodyFilePath());
+                }
+
                 return;
             }
 
@@ -233,12 +258,14 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         }
     }
 
-    private void sendFile(HttpURLConnection connection, HTTPRequestEntry request, CurlBuilder curlBuilder) {
+    private void sendFile(HttpURLConnection connection, Settings settings,
+            HTTPRequestEntry request, CurlBuilder curlBuilder) {
         HTTPRequestFileEntry requestFile = validateAndGetRequestFile(request);
         String boundary = "*****" + Long.toString(System.currentTimeMillis()) + "*****";
         String[] pathParts = requestFile.getPath().split("/");
         String filename = isNotBlank(requestFile.getName()) ? requestFile.getName() : pathParts[pathParts.length - 1];
         Map<String, String> formData = isNotEmpty(requestFile.getFormData()) ? requestFile.getFormData() : new HashMap<>();
+        StringBuilder printableFile = new StringBuilder();
 
         connection.setDoInput(true);
         connection.setDoOutput(true);
@@ -291,24 +318,42 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
 
             curlBuilder.setMethod("POST");
             curlBuilder.setFile(requestFile.getField(), requestFile.getPath(), filename, requestFile.getMineType());
-            formData.forEach((field, value) -> curlBuilder.addForm(field, value));
+
+            printableFile.append(requestFile.getField()).append("=").append(requestFile.getPath()).append("\n");
+            if(isNotBlank(filename)) {
+                printableFile.append("filename=").append(requestFile.getPath()).append("\n");
+            }
+            if(isNotBlank(requestFile.getMineType())) {
+                printableFile.append("type=").append(requestFile.getMineType()).append("\n");
+            }
+
+            formData.forEach((field, value) -> {
+                curlBuilder.addForm(field, value);
+                printableFile.append(field).append("=").append(value).append("\n");
+            });
+
+            if(!settings.isCurlRequest()) {
+                LOGGER.info(printableFile.toString());
+
+            }
         } catch(IOException ex) {
             throw new IllegalStateException("Unable to create output stream for request file: " + requestFile.getPath(), ex);
         }
     }
 
-    private Path readOutput(Settings settings, HttpURLConnection connection) {
-        File responseFile = settings.getOutputPath().resolve(settings.getExecutionTag() + ".response").toFile();
+    private Path readOutput(HttpURLConnection connection, Settings settings, HTTPRequestEntry request) {
+        Path responsePath = buildOutputFilePath(settings,
+            request.getRequestPath(), request.getName(), "response");
 
         try(BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                FileWriter responseWriter = new FileWriter(responseFile)) {
+                FileWriter responseWriter = new FileWriter(responsePath.toFile())) {
 
             String line;
             while((line = br.readLine()) != null) {
                 responseWriter.write(line);
             }
 
-            return responseFile.toPath();
+            return responsePath;
         } catch(IOException ex) {
             LOGGER.log(FINE, "Error on reading response", ex);
             return null;
@@ -316,8 +361,9 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     }
 
     private HTTPResponseEntry buildResponse(Path responsePath, HttpURLConnection connection,
-            HTTPRequestEntry request, CurlBuilder curlBuilder) {
+            Settings settings, HTTPRequestEntry request, CurlBuilder curlBuilder) {
         HTTPResponseEntry response = new HTTPResponseEntry();
+        StringBuilder printableResponse = new StringBuilder();
 
         try {
             response.setRequestUrl(connection.getURL().toString());
@@ -334,6 +380,16 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
                     HashMap::new
                 ))
             );
+
+            printableResponse.append("HTTP/ ").append(response.getStatusCode()).append("\n");
+            response.getResponseHeaders()
+                .forEach((header, value) ->
+                    printableResponse.append(header).append(": ").append(value).append("\n"));
+
+            if(!settings.isCurlRequest()) {
+                LOGGER.info(printableResponse.toString());
+                printFile(responsePath);
+            }
 
             return response;
         } catch(IOException ex) {

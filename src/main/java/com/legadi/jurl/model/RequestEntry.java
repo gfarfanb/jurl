@@ -5,6 +5,8 @@ import com.google.gson.annotations.Expose;
 public class RequestEntry {
 
     @Expose(serialize = false, deserialize = false)
+    protected String requestPath;
+    @Expose(serialize = false, deserialize = false)
     protected String name;
     protected String url;
     protected String protocol;
@@ -12,6 +14,14 @@ public class RequestEntry {
     protected int port;
     protected String basePath;
     protected String endpoint;
+
+    public String getRequestPath() {
+        return requestPath;
+    }
+
+    public void setRequestPath(String requestPath) {
+        this.requestPath = requestPath;
+    }
 
     public String getName() {
         return name;

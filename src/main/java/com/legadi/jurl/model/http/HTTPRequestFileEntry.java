@@ -1,4 +1,4 @@
-package com.legadi.jurl.model;
+package com.legadi.jurl.model.http;
 
 import java.util.Map;
 

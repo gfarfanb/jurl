@@ -4,12 +4,14 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -140,6 +142,29 @@ public class LoaderUtils {
             return new ArrayList<>(lines);
         } catch(IOException ex) {
             throw new IllegalStateException("Unable to obtain internal file: " + internalFilePath, ex);
+        }
+    }
+
+    public static void printFile(Path filePath) {
+        if(filePath == null) {
+            return;
+        }
+
+        printFile(filePath.toString());
+    }
+
+    public static void printFile(String filePath) {
+        if(filePath == null) {
+            return;
+        }
+
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                System.out.println(line);
+            }
+        } catch(IOException ex) {
+            throw new IllegalStateException("Unable to print file: " + filePath, ex);
         }
     }
 }

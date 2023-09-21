@@ -1,6 +1,7 @@
 {
     "executionOutputPath": "executions/",
     "temporalPath": "tmp/",
+    "historyPath": "history/",
     "addOnOptionClasses": "",
     "openEditorCommand": "",
     "requestCredentialId": "",

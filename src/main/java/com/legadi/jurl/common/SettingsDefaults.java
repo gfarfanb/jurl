@@ -5,6 +5,7 @@ import static com.legadi.jurl.common.SettingsConstants.PROP_CURL_REQUEST;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_AS_FLOW;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_OUTPUT_PATH;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_TIMES;
+import static com.legadi.jurl.common.SettingsConstants.PROP_HISTORY_PATH;
 import static com.legadi.jurl.common.SettingsConstants.PROP_INPUT_NAME;
 import static com.legadi.jurl.common.SettingsConstants.PROP_MOCK_REQUEST;
 import static com.legadi.jurl.common.SettingsConstants.PROP_MOCK_REQUEST_CLASS;
@@ -54,6 +55,16 @@ public interface SettingsDefaults {
             Files.createDirectories(path);
         } catch(IOException ex) {
             throw new IllegalStateException("Unable to create temporal directory: " + path, ex);
+        }
+        return path;
+    }
+
+    default Path getHistoryPath() {
+        Path path = Paths.get(get(PROP_HISTORY_PATH));
+        try {
+            Files.createDirectories(path);
+        } catch(IOException ex) {
+            throw new IllegalStateException("Unable to create history directory: " + path, ex);
         }
         return path;
     }

@@ -1,8 +1,12 @@
-package com.legadi.jurl.model;
+package com.legadi.jurl.model.http;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+
+import com.legadi.jurl.model.AssertionEntry;
+import com.legadi.jurl.model.OutputType;
+import com.legadi.jurl.model.RequestEntry;
 
 public class HTTPRequestEntry extends RequestEntry {
 

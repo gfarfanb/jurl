@@ -1,5 +1,8 @@
 package com.legadi.jurl.executor.http;
 
+import static com.legadi.jurl.common.CommonUtils.strip;
+import static com.legadi.jurl.common.WriterUtils.buildTemporalFilePath;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.Closeable;
@@ -7,6 +10,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -18,9 +22,7 @@ import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.common.StringExpander;
 import com.legadi.jurl.model.AssertionEntry;
 import com.legadi.jurl.model.AssertionType;
-import com.legadi.jurl.model.HTTPRequestEntry;
-
-import static com.legadi.jurl.common.CommonUtils.strip;
+import com.legadi.jurl.model.http.HTTPRequestEntry;
 
 public class HTTPRequestParser {
 
@@ -46,7 +48,7 @@ public class HTTPRequestParser {
         this.commentPattern = Pattern.compile(COMMENT_PATTERN);
     }
 
-    public HTTPRequestEntry parseRequest(String filename) {
+    public HTTPRequestEntry parseRequest(String requestPath, String requestName, String filename) {
         HTTPRequestEntry request = new HTTPRequestEntry();
 
         request.setHeaders(new HashMap<>());
@@ -82,13 +84,11 @@ public class HTTPRequestParser {
                 }
 
                 if(!writer.hasWriter()) {
-                    String bodyFilename = filename.replaceAll(File.separator, "-")
-                        + "." + stringExpander.getSettings().getExecutionTag()
-                        + ".body";
-                    File bodyFile = stringExpander.getSettings().getTemporalPath().resolve(bodyFilename).toFile();
+                    Path bodyPath = buildTemporalFilePath(stringExpander.getSettings(),
+                        requestPath, requestName, "body");
 
-                    writer.setWriter(bodyFile);
-                    request.setBodyFilePath(bodyFilename);
+                    writer.setWriter(bodyPath.toFile());
+                    request.setBodyFilePath(bodyPath.toString());
                 }
 
                 writer.write(line);

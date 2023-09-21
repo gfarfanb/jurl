@@ -4,6 +4,7 @@ public class SettingsConstants {
 
     public static final String PROP_EXECUTION_OUTPUT_PATH = "executionOutputPath";
     public static final String PROP_TEMPORAL_PATH = "temporalPath";
+    public static final String PROP_HISTORY_PATH = "historyPath";
     public static final String PROP_ADD_ON_OPTION_CLASSES = "addOnOptionClasses";
     public static final String PROP_OPEN_EDITOR_COMMAND = "openEditorCommand";
     public static final String PROP_REQUEST_CREDENTIAL_ID = "requestCredentialId";

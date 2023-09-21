@@ -1,7 +1,9 @@
-package com.legadi.jurl.model;
+package com.legadi.jurl.model.http;
 
 import java.nio.file.Path;
 import java.util.Map;
+
+import com.legadi.jurl.model.ResponseEntry;
 
 public class HTTPResponseEntry extends ResponseEntry {
 
