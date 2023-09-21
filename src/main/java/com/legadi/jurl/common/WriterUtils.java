@@ -1,6 +1,5 @@
 package com.legadi.jurl.common;
 
-import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.strip;
 
 import java.io.BufferedWriter;
@@ -76,19 +75,16 @@ public class WriterUtils {
     }
 
     public static Path buildHistoryFilePath(Settings settings, String path, String filename, String extension) {
-        return buildFilePath(settings.getHistoryPath(), path, null, filename, extension);
+        return buildFilePath(settings.getHistoryPath(), path, settings.getTimestamp().toLocalDate().toString(),
+            filename, extension);
     }
 
     private static Path buildFilePath(Path mainPath, String path, String folder, String filename, String extension) {
-        String[] pathParts = strip(path, File.separator).split(File.separator);
+        String[] pathParts = strip(path, File.separator + ".").split(File.separator);
         StringBuilder filePathBuilder = new StringBuilder()
-            .append(pathParts[pathParts.length - 1].replaceAll("\\.", "_"));
-        
-        if(isNotBlank(folder)) {
-            filePathBuilder.append(File.separator).append(folder);
-        }
-
-        filePathBuilder
+            .append(pathParts[pathParts.length - 1].replaceAll("\\.", "_"))
+            .append(File.separator)
+            .append(strip(folder, File.separator + "."))
             .append(File.separator)
             .append(filename)
             .append('.')
