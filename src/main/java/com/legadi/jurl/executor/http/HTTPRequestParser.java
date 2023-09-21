@@ -1,7 +1,6 @@
 package com.legadi.jurl.executor.http;
 
 import static com.legadi.jurl.common.CommonUtils.strip;
-import static com.legadi.jurl.common.WriterUtils.buildTemporalFilePath;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -18,6 +17,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.legadi.jurl.common.OutputPathBuilder;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.common.StringExpander;
 import com.legadi.jurl.model.AssertionEntry;
@@ -84,8 +84,11 @@ public class HTTPRequestParser {
                 }
 
                 if(!writer.hasWriter()) {
-                    Path bodyPath = buildTemporalFilePath(stringExpander.getSettings(),
-                        requestPath, requestName, "body");
+                    OutputPathBuilder pathBuilder = new OutputPathBuilder(stringExpander.getSettings())
+                        .setRequestPath(requestPath)
+                        .setRequestName(requestName)
+                        .setExtension("body");
+                    Path bodyPath = pathBuilder.buildTemporalPath();
 
                     writer.setWriter(bodyPath.toFile());
                     request.setBodyFilePath(bodyPath.toString());

@@ -6,6 +6,7 @@ import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
+import static com.legadi.jurl.common.LoaderUtils.printFile;
 import static com.legadi.jurl.common.WriterUtils.writeJsonFile;
 
 import java.util.Arrays;
@@ -31,7 +32,6 @@ import com.legadi.jurl.executor.reader.JsonOutputReader;
 import com.legadi.jurl.executor.reader.XmlOutputReader;
 import com.legadi.jurl.model.AssertionEntry;
 import com.legadi.jurl.model.AssertionResult;
-import com.legadi.jurl.model.OutputType;
 import com.legadi.jurl.model.http.HTTPRequestEntry;
 import com.legadi.jurl.model.http.HTTPResponseEntry;
 
@@ -55,7 +55,7 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
 
         StringExpander stringExpander = new StringExpander(settings);
         Set<String> outputParams = scanOutputParams(stringExpander, request);
-        Map<String, String> values = readOutputValues(request.getOutputType(), response, outputParams);
+        Map<String, String> values = readOutputValues(response, outputParams);
 
         saveOutput(stringExpander, values, request, response);
 
@@ -144,25 +144,48 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
         writeJsonFile(overrideFile, overrideProperties);
     }
 
-    private Map<String, String> readOutputValues(OutputType outputType, HTTPResponseEntry response,
+    private Map<String, String> readOutputValues(Settings settings, HTTPResponseEntry response,
             Set<String> outputParams) {
         if(response.getResponsePath() == null) {
             return new HashMap<>();
         }
 
-        LOGGER.info("Processing output [" + outputType + "]: " + response.getResponsePath());
+        Map<String, String> outputValues;
+        boolean isPrintable = false;
 
         switch(outputType) {
             case JSON:
-                return new JsonOutputReader().apply(response.getResponsePath(), outputParams, OUTPUT_PREFIX);
+                outputValues = new JsonOutputReader().apply(response.getResponsePath(), outputParams, OUTPUT_PREFIX);
+                isPrintable = true;
+                break;
             case XML:
-                return new XmlOutputReader().apply(response.getResponsePath(), outputParams, OUTPUT_PREFIX);
+                outputValues = new XmlOutputReader().apply(response.getResponsePath(), outputParams, OUTPUT_PREFIX);
+                isPrintable = true;
+                break;
             default:
                 if(response.getResponsePath() != null) {
                     LOGGER.info("Generated output [" + outputType + "]: " + response.getResponsePath());
                 }
-                return new HashMap<>();
+                outputValues = new HashMap<>();
         }
+
+        if(!settings.isCurlRequest()) {
+
+            if(isPrintable) {
+                printFile(response.getResponsePath());
+            }
+
+            if(isNotEmpty(outputValues)) {
+                StringBuilder printableOutput = new StringBuilder();
+
+                outputValues.forEach((output, value) -> printableOutput.append(output).append(" <- ").append(value).append("\n"));
+
+                LOGGER.info("Processed output [" + outputType + "]: " + response.getResponsePath());
+                LOGGER.info(printableOutput.toString());
+            }
+        }
+
+        return outputValues;
     }
 
     private Optional<AssertionResult> evaluate(StringExpander stringExpander, Map<String, String> values,

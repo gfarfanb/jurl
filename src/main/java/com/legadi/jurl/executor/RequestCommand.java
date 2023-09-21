@@ -9,10 +9,9 @@ import static com.legadi.jurl.common.LoaderUtils.jsonToObject;
 import static com.legadi.jurl.common.LoaderUtils.loadCredentials;
 import static com.legadi.jurl.common.LoaderUtils.loadJsonFile;
 import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
-import static com.legadi.jurl.executor.RequestHandlersRegistry.findByRequest;
-import static com.legadi.jurl.common.WriterUtils.buildHistoryFilePath;
-import static com.legadi.jurl.common.WriterUtils.writeFile;
 import static com.legadi.jurl.common.WriterUtils.appendToFile;
+import static com.legadi.jurl.common.WriterUtils.writeFile;
+import static com.legadi.jurl.executor.RequestHandlersRegistry.findByRequest;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -27,6 +26,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import com.google.gson.reflect.TypeToken;
+import com.legadi.jurl.common.OutputPathBuilder;
 import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.common.StringExpander;
@@ -269,7 +269,12 @@ public class RequestCommand {
     }
 
     private void saveHistory(Settings settings, HistoryEntry entry, String requestPath, String requestName) {
-        Path historyPath = buildHistoryFilePath(settings, requestPath, requestName, "history");
+        OutputPathBuilder pathBuilder = new OutputPathBuilder(settings)
+            .setRequestPath(requestPath)
+            .setRequestName(requestName)
+            .setLocalDateFilename()
+            .setExtension("history.json");
+        Path historyPath = pathBuilder.buildHistoryPath();
         File historyFile = historyPath.toFile();
 
         if(historyFile.exists()) {

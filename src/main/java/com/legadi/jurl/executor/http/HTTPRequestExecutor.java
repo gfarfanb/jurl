@@ -4,8 +4,8 @@ import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
+import static com.legadi.jurl.common.CommonUtils.strip;
 import static com.legadi.jurl.common.LoaderUtils.printFile;
-import static com.legadi.jurl.common.WriterUtils.buildOutputFilePath;
 import static java.util.logging.Level.FINE;
 
 import java.io.BufferedReader;
@@ -26,10 +26,13 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.google.gson.reflect.TypeToken;
 import com.legadi.jurl.common.CurlBuilder;
+import com.legadi.jurl.common.OutputPathBuilder;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.common.URLBuilder;
 import com.legadi.jurl.exception.RequestException;
@@ -47,6 +50,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     private static final String MULTIPART_LINE_END = "\r\n";
     private static final String MULTIPART_TWO_HYPHENS = "--";
     private static final int MULTIPART_MAX_BUFFER_SIZE = 1 * 1024 * 1024;
+    private static final String FILENAME_PATTERN = ".*filename=(.*)";
 
     @Override
     public boolean accepts(RequestEntry request) {
@@ -73,9 +77,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             sendBody(connection, settings, request, curlBuilder);
         }
 
-        Path responsePath = readOutput(connection, settings, request);
-
-        return buildResponse(responsePath, connection, settings, request, curlBuilder);
+        return buildResponse(connection, settings, request, curlBuilder);
     }
 
     @Override
@@ -341,9 +343,37 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         }
     }
 
-    private Path readOutput(HttpURLConnection connection, Settings settings, HTTPRequestEntry request) {
-        Path responsePath = buildOutputFilePath(settings,
-            request.getRequestPath(), request.getName(), "response");
+    private String getOutputFilename(HTTPResponseEntry response) {
+        String contentDisposition = response.getResponseHeaders()
+            .entrySet()
+            .stream()
+            .filter(e -> "Content-Disposition".equalsIgnoreCase(e.getKey()))
+            .map(Map.Entry::getValue)
+            .findFirst()
+            .orElse(null);
+
+            if(isBlank(contentDisposition)) {
+                return null;
+            }
+
+            Pattern pattern = Pattern.compile(FILENAME_PATTERN);
+            Matcher matcher = pattern.matcher(contentDisposition);
+
+            if(matcher.find()) {
+                return strip(matcher.group(0), "\"");
+            } else {
+                return null;
+            }
+    }
+
+    private Path readOutput(HttpURLConnection connection, Settings settings,
+            HTTPRequestEntry request, String filename) {
+        OutputPathBuilder pathBuilder = new OutputPathBuilder(settings)
+                .setRequestPath(request.getRequestPath())
+                .setRequestName(request.getName())
+                .setFilename(filename)
+                .setExtension(isBlank(filename) ? "response" : null);
+        Path responsePath = pathBuilder.buildOutputPath();
 
         try(BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                 FileWriter responseWriter = new FileWriter(responsePath.toFile())) {
@@ -360,7 +390,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         }
     }
 
-    private HTTPResponseEntry buildResponse(Path responsePath, HttpURLConnection connection,
+    private HTTPResponseEntry buildResponse(HttpURLConnection connection,
             Settings settings, HTTPRequestEntry request, CurlBuilder curlBuilder) {
         HTTPResponseEntry response = new HTTPResponseEntry();
         StringBuilder printableResponse = new StringBuilder();
@@ -368,7 +398,6 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         try {
             response.setRequestUrl(connection.getURL().toString());
             response.setCurlCommand(curlBuilder.build());
-            response.setResponsePath(responsePath);
             response.setStatusCode(connection.getResponseCode());
             response.setResponseHeaders(connection.getHeaderFields()
                 .entrySet()
@@ -381,6 +410,11 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
                 ))
             );
 
+            String filename = getOutputFilename(response);
+            Path responsePath = readOutput(connection, settings, request, filename);
+
+            response.setResponsePath(responsePath);
+
             printableResponse.append("HTTP/ ").append(response.getStatusCode()).append("\n");
             response.getResponseHeaders()
                 .forEach((header, value) ->
@@ -388,7 +422,6 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
 
             if(!settings.isCurlRequest()) {
                 LOGGER.info(printableResponse.toString());
-                printFile(responsePath);
             }
 
             return response;

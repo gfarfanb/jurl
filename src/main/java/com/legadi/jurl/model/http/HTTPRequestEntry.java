@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.legadi.jurl.model.AssertionEntry;
-import com.legadi.jurl.model.OutputType;
 import com.legadi.jurl.model.RequestEntry;
 
 public class HTTPRequestEntry extends RequestEntry {
@@ -17,7 +16,6 @@ public class HTTPRequestEntry extends RequestEntry {
     private String bodyContent;
     private String bodyFilePath;
     private HTTPRequestFileEntry requestFile;
-    private OutputType outputType = OutputType.JSON;
     private Map<String, String> outputMappings;
     private List<AssertionEntry> assertions;
 
@@ -75,14 +73,6 @@ public class HTTPRequestEntry extends RequestEntry {
 
     public void setRequestFile(HTTPRequestFileEntry requestFile) {
         this.requestFile = requestFile;
-    }
-
-    public OutputType getOutputType() {
-        return outputType;
-    }
-
-    public void setOutputType(OutputType outputType) {
-        this.outputType = outputType;
     }
 
     public Map<String, String> getOutputMappings() {
