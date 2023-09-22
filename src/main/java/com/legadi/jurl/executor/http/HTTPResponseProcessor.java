@@ -55,7 +55,7 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
 
         StringExpander stringExpander = new StringExpander(settings);
         Set<String> outputParams = scanOutputParams(stringExpander, request);
-        Map<String, String> values = readOutputValues(response, outputParams);
+        Map<String, String> values = readOutputValues(settings, response, outputParams);
 
         saveOutput(stringExpander, values, request, response);
 
@@ -150,23 +150,26 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
             return new HashMap<>();
         }
 
-        Map<String, String> outputValues;
+        Map<String, String> outputValues = new HashMap<>();
+        String contentType = response.getResponseHeaders()
+            .entrySet()
+            .stream()
+            .filter(e -> "Content-Type".equalsIgnoreCase(e.getKey()))
+            .map(Map.Entry::getValue)
+            .findFirst()
+            .orElse("");
         boolean isPrintable = false;
-
-        switch(outputType) {
-            case JSON:
-                outputValues = new JsonOutputReader().apply(response.getResponsePath(), outputParams, OUTPUT_PREFIX);
-                isPrintable = true;
-                break;
-            case XML:
-                outputValues = new XmlOutputReader().apply(response.getResponsePath(), outputParams, OUTPUT_PREFIX);
-                isPrintable = true;
-                break;
-            default:
-                if(response.getResponsePath() != null) {
-                    LOGGER.info("Generated output [" + outputType + "]: " + response.getResponsePath());
-                }
-                outputValues = new HashMap<>();
+        
+        if(contentType.contains("application/json")) {
+            outputValues = new JsonOutputReader().apply(response.getResponsePath(), outputParams, OUTPUT_PREFIX);
+            isPrintable = true;
+        } else if(contentType.contains("application/xml")
+                || contentType.contains("text/xml")) {
+            outputValues = new XmlOutputReader().apply(response.getResponsePath(), outputParams, OUTPUT_PREFIX);
+            isPrintable = true;
+        } else if(contentType.contains("application/graphql+json")
+                || contentType.contains("text/html")) {
+            isPrintable = true;
         }
 
         if(!settings.isCurlRequest()) {
@@ -180,7 +183,7 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
 
                 outputValues.forEach((output, value) -> printableOutput.append(output).append(" <- ").append(value).append("\n"));
 
-                LOGGER.info("Processed output [" + outputType + "]: " + response.getResponsePath());
+                LOGGER.info("Processed output [" + contentType + "]: " + response.getResponsePath());
                 LOGGER.info(printableOutput.toString());
             }
         }
