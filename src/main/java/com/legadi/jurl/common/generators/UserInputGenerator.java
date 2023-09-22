@@ -10,7 +10,7 @@ public class UserInputGenerator implements Generator {
 
     @Override
     public boolean accepts(Settings settings, String param) {
-        return param.startsWith(INPUT_PREFIX) || !settings.containsOverride(param);
+        return param.startsWith(INPUT_PREFIX) && !settings.containsOverride(param);
     }
 
     @Override

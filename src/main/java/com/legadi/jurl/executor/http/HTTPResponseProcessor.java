@@ -9,6 +9,7 @@ import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
 import static com.legadi.jurl.common.LoaderUtils.printFile;
 import static com.legadi.jurl.common.WriterUtils.writeJsonFile;
 
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -136,12 +137,12 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
 
         Settings.mergeProperties(stringExpander.getSettings().getEnvironment(), outputProperties);
 
-        String overrideFile = stringExpander.getSettings().getOverrideFileName();
-        Map<String, String> overrideProperties = loadJsonProperties(overrideFile);
+        Path overridePath = stringExpander.getSettings().getOverrideFilePath();
+        Map<String, String> overrideProperties = loadJsonProperties(overridePath);
 
         overrideProperties.putAll(outputProperties);
 
-        writeJsonFile(overrideFile, overrideProperties);
+        writeJsonFile(overridePath, overrideProperties);
     }
 
     private Map<String, String> readOutputValues(Settings settings, HTTPResponseEntry response,

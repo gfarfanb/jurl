@@ -1,11 +1,9 @@
 package com.legadi.jurl.model;
 
-import java.time.LocalDateTime;
-
 public class HistoryEntry {
 
     private String curl;
-    private LocalDateTime timestamp;
+    private long timestamp;
     private String executionTag;
     private long nanoTime;
     private int assertions;
@@ -19,11 +17,11 @@ public class HistoryEntry {
         this.curl = curl;
     }
 
-    public LocalDateTime getTimestamp() {
+    public long getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(LocalDateTime timestamp) {
+    public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
 

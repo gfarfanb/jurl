@@ -1,12 +1,14 @@
 package com.legadi.jurl.common;
 
+import static com.legadi.jurl.common.CommonUtils.createDirectories;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.strip;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 public class OutputPathBuilder {
 
@@ -37,11 +39,6 @@ public class OutputPathBuilder {
         return this;
     }
 
-    public OutputPathBuilder setLocalDateFilename() {
-        this.filename = settings.getTimestamp().toLocalDate().toString();
-        return this;
-    }
-
     public OutputPathBuilder setExtension(String extension) {
         this.extension = extension;
         return this;
@@ -60,38 +57,32 @@ public class OutputPathBuilder {
     }
 
     private Path buildFilePath(Path mainPath, String folder) {
-        StringBuilder filePathBuilder = new StringBuilder();
+        List<String> pathParts = new ArrayList<>();
 
         if(isNotBlank(requestPath)) {
-            filePathBuilder.append(File.separator).append(requestPath);
+            pathParts.add(requestPath);
         }
 
         if(isNotBlank(requestName)) {
-            filePathBuilder.append(File.separator).append(requestName);
+            pathParts.add(requestName);
         }
 
         if(isNotBlank(folder)) {
-            filePathBuilder.append(File.separator).append(folder);
+            pathParts.add(folder);
         }
+
+        Path filePath = Paths.get(mainPath.toString(), pathParts.toArray(new String[pathParts.size()]));
+
+        return createDirectories(filePath).resolve(getFilename());
+    }
+
+    private String getFilename() {
+        String ext = isNotBlank(extension) ? "." + extension : "";
 
         if(isNotBlank(filename)) {
-            filePathBuilder.append(File.separator).append(filename);
+            return filename + ext;
         } else {
-            filePathBuilder.append(File.separator).append(settings.getExecutionTag());
+            return settings.getExecutionTag() + ext;
         }
-
-        if(isNotBlank(extension)) {
-            filePathBuilder.append('.').append(extension);
-        }
-
-        Path filePath = mainPath.resolve(filePathBuilder.toString());
-
-        try {
-            Files.createDirectories(filePath);
-        } catch(IOException ex) {
-            throw new IllegalStateException("Unable to create directory: " + filePath, ex);
-        }
-
-        return filePath;
     }
 }

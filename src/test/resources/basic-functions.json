@@ -1,0 +1,16 @@
+{
+    "requests": {
+        "post": {
+            "protocol": "http",
+            "domain": "localhost",
+            "port": "{{local.server.port}}",
+            "basePath": "basic",
+            "endpoint": "/body",
+            "method": "POST",
+            "bodyContent": "{}",
+            "headers": {
+                "Content-Type": "application/json"
+            }
+        }
+    }
+}

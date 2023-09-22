@@ -15,6 +15,7 @@ import static com.legadi.jurl.executor.RequestHandlersRegistry.findByRequest;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -85,8 +86,7 @@ public class RequestCommand {
 
         registeredInputPaths.add(requestInputPath);
 
-        RequestInputRaw requestInput = loadJsonFile(requestInputPath,
-            new TypeToken<RequestInputRaw>() {}, false);
+        RequestInputRaw requestInput = loadJsonFile(requestInputPath, new TypeToken<RequestInputRaw>() {});
 
         requestInput.setPath(requestInputPath);
 
@@ -111,11 +111,11 @@ public class RequestCommand {
 
     private void loadConfig(RequestInputRaw requestInput, Settings settings, boolean isMainInput) {
         String environment = settings.getEnvironment();
-        String configFile = settings.getConfigFileName();
-        String credentialsFile = settings.getCredentialsFileName();
+        Path configPath = settings.getConfigFilePath();
+        Path credentialsPath = settings.getCredentialsFilePath();
 
-        Settings.mergeProperties(environment, loadJsonProperties(configFile));
-        Settings.mergeCredentials(environment, loadCredentials(credentialsFile));
+        Settings.mergeProperties(environment, loadJsonProperties(configPath));
+        Settings.mergeCredentials(environment, loadCredentials(credentialsPath));
 
         if(isNotEmpty(requestInput.getConfigs())) {
             Map<String, String> fileConfig = requestInput.getConfigs().getOrDefault(environment, new HashMap<>());
@@ -206,16 +206,14 @@ public class RequestCommand {
         }
 
         String requestRaw = stringExpander.replaceAllInContent(requestDef.getRight());
-        RequestEntry requestEntry = jsonToObject(requestRaw, new TypeToken<RequestEntry>() {});
-
-        requestEntry.setRequestPath(requestInput.getPath());
-        requestEntry.setName(requestDef.getLeft());
+        RequestEntry header = jsonToObject(requestRaw, new TypeToken<RequestEntry>() {});
 
         try {
-            executeRequest(settings, requestEntry, requestRaw);
+            executeRequest(settings, header,
+                requestInput.getPath(), requestDef.getLeft(), requestRaw);
         } catch(CommandException | RequestException ex) {
             throw new CommandException(
-                "[" + requestInput.getPath() + "/" + requestEntry.getName() + "] "
+                "[" + requestInput.getPath() + "/" + requestDef.getLeft() + "] "
                 + (settings.getTimes() > 1 ? " index=" + index + " ": "")
                 + ex.getMessage());
         }
@@ -234,11 +232,15 @@ public class RequestCommand {
         }
     }
 
-    private void executeRequest(Settings settings, RequestEntry requestEntry, String requestRaw) {
-        Pair<RequestExecutor<?, ?>, ResponseProcessor<?, ?>> handlers = findByRequest(requestEntry);
+    private void executeRequest(Settings settings, RequestEntry header,
+            String requestPath, String name, String requestRaw) {
+        Pair<RequestExecutor<?, ?>, ResponseProcessor<?, ?>> handlers = findByRequest(header);
         RequestExecutor<?, ?> executor = handlers.getLeft();
         ResponseProcessor<?, ?> processor = handlers.getRight();
         RequestEntry request = jsonToObject(requestRaw, executor.type());
+
+        request.setRequestPath(requestPath);
+        request.setName(name);
 
         if(isNotBlank(settings.getOverrideRequestFile())) {
             executor.overrideWithFile(settings, request, settings.getOverrideRequestFile());
@@ -250,7 +252,7 @@ public class RequestCommand {
 
         HistoryEntry historyEntry = new HistoryEntry();
         historyEntry.setCurl(response.getCurlCommand());
-        historyEntry.setTimestamp(settings.getTimestamp());
+        historyEntry.setTimestamp(settings.getTimestamp().toEpochSecond(OffsetDateTime.now().getOffset()));
         historyEntry.setExecutionTag(settings.getExecutionTag());
         historyEntry.setNanoTime(endTime - beginTime);
 
@@ -272,7 +274,7 @@ public class RequestCommand {
         OutputPathBuilder pathBuilder = new OutputPathBuilder(settings)
             .setRequestPath(requestPath)
             .setRequestName(requestName)
-            .setLocalDateFilename()
+            .setFilename(settings.getTimestamp().toLocalDate().toString())
             .setExtension("history.json");
         Path historyPath = pathBuilder.buildHistoryPath();
         File historyFile = historyPath.toFile();
@@ -280,7 +282,7 @@ public class RequestCommand {
         if(historyFile.exists()) {
             appendToFile(historyFile, historyFile.length() - 1, ",", toJsonString(entry), "]");
         } else {
-            writeFile(historyPath.toString(), "[", toJsonString(entry), "]");
+            writeFile(historyPath, "[", toJsonString(entry), "]");
         }
     }
 }

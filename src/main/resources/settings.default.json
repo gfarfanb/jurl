@@ -1,7 +1,8 @@
 {
-    "executionOutputPath": "executions/",
-    "temporalPath": "tmp/",
-    "historyPath": "history/",
+    "configPath": "./config/",
+    "executionOutputPath": "./executions/",
+    "temporalPath": "./tmp/",
+    "historyPath": "./history/",
     "addOnOptionClasses": "",
     "openEditorCommand": "",
     "requestCredentialId": "",

@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.Writer;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -17,16 +17,16 @@ public class WriterUtils {
 
     private WriterUtils() {}
 
-    public static void writeJsonFile(String filename, Object content) {
-        try(Writer writer = Files.newBufferedWriter(Paths.get(filename))) {
+    public static void writeJsonFile(Path filePath, Object content) {
+        try(Writer writer = Files.newBufferedWriter(filePath)) {
             GSON.toJson(content, writer);
         } catch(IOException ex) {
-            throw new IllegalStateException("Unable to write JSON file: " + filename, ex);
+            throw new IllegalStateException("Unable to write JSON file: " + filePath, ex);
         }
     }
 
-    public static void writeFile(String filename, String... lines) {
-        try(BufferedWriter writer = Files.newBufferedWriter(Paths.get(filename))) {
+    public static void writeFile(Path filePath, String... lines) {
+        try(BufferedWriter writer = Files.newBufferedWriter(filePath)) {
             int index = 0;
         
             for(String line : lines) {
@@ -39,7 +39,7 @@ public class WriterUtils {
                 }
             }
         } catch(IOException ex) {
-            throw new IllegalStateException("Unable to write file: " + filename, ex);
+            throw new IllegalStateException("Unable to write file: " + filePath, ex);
         }
     }
 

@@ -40,9 +40,6 @@ public class StringExpander {
                     settings.getSettingsParamStartAt(),
                     paramTag.length() - settings.getSettingsParamEndAtLengthMinus()
                 );
-                String paramRegex = settings.getSettingsParamRegexMask().replace(
-                    settings.getSettingsParamRegexReplace(), paramName
-                );
                 String value = getValueByGenerator(settings, paramName);
 
                 if(value == null) {
@@ -51,6 +48,10 @@ public class StringExpander {
                 }
 
                 if(isNotBlank(value)) {
+                    String paramRegex = settings.getSettingsParamRegexMask().replace(
+                        settings.getSettingsParamRegexReplace(), paramName
+                    );
+
                     content = content.replaceAll(paramRegex, value);
                 }
 

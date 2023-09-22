@@ -1,6 +1,8 @@
 package com.legadi.jurl.common;
 
+import static com.legadi.jurl.common.CommonUtils.createDirectories;
 import static com.legadi.jurl.common.SettingsConstants.PROP_ADD_ON_OPTION_CLASSES;
+import static com.legadi.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
 import static com.legadi.jurl.common.SettingsConstants.PROP_CURL_REQUEST;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_AS_FLOW;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_OUTPUT_PATH;
@@ -21,8 +23,6 @@ import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_START
 import static com.legadi.jurl.common.SettingsConstants.PROP_SKIP_ASSERTIONS;
 import static com.legadi.jurl.common.SettingsConstants.PROP_TEMPORAL_PATH;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.function.Function;
@@ -39,34 +39,20 @@ public interface SettingsDefaults {
 
     String getOrDefault(String propertyName, String defaultValue);
 
+    default Path getConfigPath() {
+        return createDirectories(Paths.get(get(PROP_CONFIG_PATH)));
+    }
+
     default Path getOutputPath() {
-        Path path = Paths.get(get(PROP_EXECUTION_OUTPUT_PATH));
-        try {
-            Files.createDirectories(path);
-        } catch(IOException ex) {
-            throw new IllegalStateException("Unable to create output directory: " + path, ex);
-        }
-        return path;
+        return createDirectories(Paths.get(get(PROP_EXECUTION_OUTPUT_PATH)));
     }
 
     default Path getTemporalPath() {
-        Path path = Paths.get(get(PROP_TEMPORAL_PATH));
-        try {
-            Files.createDirectories(path);
-        } catch(IOException ex) {
-            throw new IllegalStateException("Unable to create temporal directory: " + path, ex);
-        }
-        return path;
+        return createDirectories(Paths.get(get(PROP_TEMPORAL_PATH)));
     }
 
     default Path getHistoryPath() {
-        Path path = Paths.get(get(PROP_HISTORY_PATH));
-        try {
-            Files.createDirectories(path);
-        } catch(IOException ex) {
-            throw new IllegalStateException("Unable to create history directory: " + path, ex);
-        }
-        return path;
+        return createDirectories(Paths.get(get(PROP_HISTORY_PATH)));
     }
 
     default String[] getAddOnOptionClasses() {

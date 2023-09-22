@@ -1,5 +1,8 @@
 package com.legadi.jurl.common;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -66,7 +69,9 @@ public class CommonUtils {
         } else if(stripChars.isEmpty()) {
             return value;
         } else {
-            while(index != length && stripChars.indexOf(value.charAt(index)) != -1) {
+            while(index != length
+                    && (stripChars.indexOf(value.charAt(index)) != -1
+                        || Character.isWhitespace(value.charAt(index)))) {
                 index++;
             }
         }
@@ -78,19 +83,20 @@ public class CommonUtils {
         if(length == 0) {
             return value;
         }
-        int index = length - 1;
         if(stripChars == null) {
-            while(index != 0 && Character.isWhitespace(value.charAt(index))) {
-                index--;
+            while(length != 0 && Character.isWhitespace(value.charAt(length - 1))) {
+                length--;
             }
         } else if(stripChars.isEmpty()) {
             return value;
         } else {
-            while(index != 0 && stripChars.indexOf(value.charAt(index)) != -1) {
-                index--;
+            while(length != 0
+                    && (stripChars.indexOf(value.charAt(length - 1)) != -1
+                        || Character.isWhitespace(value.charAt(length - 1)))) {
+                length--;
             }
         }
-        return value.substring(0, index);
+        return value.substring(0, length);
     }
 
     public static String toJsonString(Object value) {
@@ -137,5 +143,14 @@ public class CommonUtils {
 
     public static int nextIndex(int length) {
         return(int) (length * Math.random());
+    }
+
+    public static Path createDirectories(Path path) {
+        try {
+            Files.createDirectories(path);
+        } catch(IOException ex) {
+            throw new IllegalStateException("Unable to create directory: " + path, ex);
+        }
+        return path;
     }
 }

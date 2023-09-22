@@ -12,6 +12,7 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,14 +38,14 @@ public class LoaderUtils {
             ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
             InputStream jsonInputStream = classLoader.getResource(internalFilePath).openStream();
 
-            return readJsonProperties(internalFilePath, jsonInputStream);
+            return readJsonProperties(Paths.get(internalFilePath), jsonInputStream);
         } catch(IOException ex) {
             throw new IllegalStateException("Unable to obtain internal file: " + internalFilePath, ex);
         }
     }
 
-    public static Map<String, String> loadJsonProperties(String filePath) {
-        File jsonFile = new File(filePath);
+    public static Map<String, String> loadJsonProperties(Path filePath) {
+        File jsonFile = filePath.toFile();
 
         if(jsonFile.exists()) {
             try {
@@ -58,7 +59,7 @@ public class LoaderUtils {
         }
     }
 
-    private static Map<String, String> readJsonProperties(String jsonPath, InputStream jsonInputStream) {
+    private static Map<String, String> readJsonProperties(Path jsonPath, InputStream jsonInputStream) {
         try(Reader reader = new InputStreamReader(jsonInputStream)) {
             Map<String, String> jsonProperties = GSON.fromJson(reader, new TypeToken<Map<String, String>>() {});
 
@@ -70,8 +71,8 @@ public class LoaderUtils {
         }
     }
 
-    public static Map<String, Credential> loadCredentials(String credentialsPath) {
-        File credentialsFile = new File(credentialsPath);
+    public static Map<String, Credential> loadCredentials(Path credentialsPath) {
+        File credentialsFile = credentialsPath.toFile();
 
         if(credentialsFile.exists()) {
             try(Reader reader = Files.newBufferedReader(credentialsFile.toPath())) {
@@ -96,25 +97,20 @@ public class LoaderUtils {
         }
     }
 
-    public static <T> T loadJsonFile(String filePath, TypeToken<T> type, boolean silent) {
+    public static <T> T loadJsonFile(String filePath, TypeToken<T> type) {
         File jsonFile = new File(filePath);
 
         if(jsonFile.exists()) {
             try(Reader reader = Files.newBufferedReader(jsonFile.toPath())) {
                 T input = GSON.fromJson(reader, type.getType());
 
-                LOGGER.info("Loaded JSON file: " + filePath);
+                LOGGER.fine("Loaded JSON file: " + filePath);
                 return input;
             } catch(IOException ex) {
                 throw new IllegalStateException("Unable to read JSON file: " + filePath, ex);
             }
         } else {
-            if(silent) {
-                LOGGER.fine("JSON file not found: " + filePath);
-                return null;
-            } else {
-                throw new CommandException("JSON file not found: " + filePath);
-            }
+            throw new CommandException("JSON file not found: " + filePath);
         }
     }
 

@@ -2,6 +2,7 @@ package com.legadi.jurl.common;
 
 public class SettingsConstants {
 
+    public static final String PROP_CONFIG_PATH = "configPath";
     public static final String PROP_EXECUTION_OUTPUT_PATH = "executionOutputPath";
     public static final String PROP_TEMPORAL_PATH = "temporalPath";
     public static final String PROP_HISTORY_PATH = "historyPath";
