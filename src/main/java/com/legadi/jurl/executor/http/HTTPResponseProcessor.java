@@ -160,7 +160,7 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
             .findFirst()
             .orElse("");
         boolean isPrintable = false;
-        
+
         if(contentType.contains("application/json")) {
             outputValues = new JsonOutputReader().apply(response.getResponsePath(), outputParams, OUTPUT_PREFIX);
             isPrintable = true;

@@ -4,6 +4,7 @@ public class ResponseEntry {
 
     protected String requestUrl;
     protected String curlCommand;
+    protected String result;
 
     public String getRequestUrl() {
         return requestUrl;
@@ -19,5 +20,13 @@ public class ResponseEntry {
 
     public void setCurlCommand(String curlCommand) {
         this.curlCommand = curlCommand;
+    }
+
+    public String getResult() {
+        return result;
+    }
+
+    public void setResult(String result) {
+        this.result = result;
     }
 }

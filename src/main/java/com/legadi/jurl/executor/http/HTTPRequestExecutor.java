@@ -6,6 +6,7 @@ import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.CommonUtils.strip;
 import static com.legadi.jurl.common.LoaderUtils.printFile;
+import static com.legadi.jurl.common.CommonUtils.getOrDefault;
 import static java.util.logging.Level.FINE;
 
 import java.io.BufferedReader;
@@ -403,19 +404,20 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
                 .entrySet()
                 .stream()
                 .collect(Collectors.toMap(
-                    e -> e.getKey(),
+                    e -> getOrDefault(e.getKey(), "HTTP:HEADER:RESULT"),
                     e -> String.join(",", e.getValue()),
                     (v1, v2) -> v2,
                     HashMap::new
                 ))
             );
+            response.setResult(response.getResponseHeaders().remove("HTTP:HEADER:RESULT"));
 
             String filename = getOutputFilename(response);
             Path responsePath = readOutput(connection, settings, request, filename);
 
             response.setResponsePath(responsePath);
 
-            printableResponse.append("HTTP/ ").append(response.getStatusCode()).append("\n");
+            printableResponse.append(response.getResult()).append("\n");
             response.getResponseHeaders()
                 .forEach((header, value) ->
                     printableResponse.append(header).append(": ").append(value).append("\n"));

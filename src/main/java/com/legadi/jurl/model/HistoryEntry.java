@@ -3,6 +3,7 @@ package com.legadi.jurl.model;
 public class HistoryEntry {
 
     private String curl;
+    private String result;
     private long timestamp;
     private String executionTag;
     private long nanoTime;
@@ -15,6 +16,14 @@ public class HistoryEntry {
 
     public void setCurl(String curl) {
         this.curl = curl;
+    }
+
+    public String getResult() {
+        return result;
+    }
+
+    public void setResult(String result) {
+        this.result = result;
     }
 
     public long getTimestamp() {
