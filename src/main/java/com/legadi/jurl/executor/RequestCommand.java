@@ -253,6 +253,9 @@ public class RequestCommand {
         HistoryEntry historyEntry = new HistoryEntry();
         historyEntry.setCurl(response.getCurlCommand());
         historyEntry.setResult(response.getResult());
+        historyEntry.setRequestPath(requestPath);
+        historyEntry.setRequestName(name);
+        historyEntry.setEnvironment(settings.getEnvironment());
         historyEntry.setTimestamp(settings.getTimestamp().toEpochSecond(OffsetDateTime.now().getOffset()));
         historyEntry.setExecutionTag(settings.getExecutionTag());
         historyEntry.setNanoTime(endTime - beginTime);

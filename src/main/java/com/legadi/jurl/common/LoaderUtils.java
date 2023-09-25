@@ -159,6 +159,7 @@ public class LoaderUtils {
             while ((line = br.readLine()) != null) {
                 System.out.println(line);
             }
+            System.out.println();
         } catch(IOException ex) {
             throw new IllegalStateException("Unable to print file: " + filePath, ex);
         }

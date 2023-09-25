@@ -10,9 +10,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
+import com.legadi.jurl.JurlApplication;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.embedded.config.EmbeddedConfig;
-import com.legadi.jurl.executor.RequestCommand;
 
 @SpringBootTest(classes = EmbeddedConfig.class, webEnvironment = WebEnvironment.RANDOM_PORT)
 public class EmbeddedAPITest {
@@ -28,8 +28,10 @@ public class EmbeddedAPITest {
         properties.put("local.server.port", Integer.toString(port));
         Settings.mergeProperties(Settings.DEFAULT_ENVIRONMENT, properties);
 
-        new RequestCommand(
-            arguments.toArray(new String[arguments.size()])
-        ).execute();
+        try {
+            JurlApplication.main(arguments.toArray(new String[arguments.size()]));
+        } catch(Exception ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 }

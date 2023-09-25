@@ -4,6 +4,9 @@ public class HistoryEntry {
 
     private String curl;
     private String result;
+    private String requestPath;
+    private String requestName;
+    private String environment;
     private long timestamp;
     private String executionTag;
     private long nanoTime;
@@ -24,6 +27,30 @@ public class HistoryEntry {
 
     public void setResult(String result) {
         this.result = result;
+    }
+
+    public String getRequestPath() {
+        return requestPath;
+    }
+
+    public void setRequestPath(String requestPath) {
+        this.requestPath = requestPath;
+    }
+
+    public String getRequestName() {
+        return requestName;
+    }
+
+    public void setRequestName(String requestName) {
+        this.requestName = requestName;
+    }
+
+    public String getEnvironment() {
+        return environment;
+    }
+
+    public void setEnvironment(String environment) {
+        this.environment = environment;
     }
 
     public long getTimestamp() {

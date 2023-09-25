@@ -375,18 +375,26 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
                 .setFilename(filename)
                 .setExtension(isBlank(filename) ? "response" : null);
         Path responsePath = pathBuilder.buildOutputPath();
+        int lines = 0;
 
         try(BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                 FileWriter responseWriter = new FileWriter(responsePath.toFile())) {
 
+            
             String line;
             while((line = br.readLine()) != null) {
                 responseWriter.write(line);
+                lines++;
             }
-
-            return responsePath;
         } catch(IOException ex) {
             LOGGER.log(FINE, "Error on reading response", ex);
+            return null;
+        }
+
+        if(lines > 0) {
+            return responsePath;
+        } else {
+            responsePath.toFile().delete();
             return null;
         }
     }
