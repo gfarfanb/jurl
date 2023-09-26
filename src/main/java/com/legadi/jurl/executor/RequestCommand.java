@@ -9,6 +9,7 @@ import static com.legadi.jurl.common.LoaderUtils.jsonToObject;
 import static com.legadi.jurl.common.LoaderUtils.loadCredentials;
 import static com.legadi.jurl.common.LoaderUtils.loadJsonFile;
 import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
+import static com.legadi.jurl.common.RequestUtils.mergeRequestHeader;
 import static com.legadi.jurl.common.WriterUtils.appendToFile;
 import static com.legadi.jurl.common.WriterUtils.writeFile;
 import static com.legadi.jurl.executor.RequestHandlersRegistry.findByRequest;
@@ -61,7 +62,7 @@ public class RequestCommand {
         Settings settings = new Settings();
 
         executeOptions(settings, optionsReader.getOptionEntries());
-        executeInput(settings, optionsReader.getRequestInputPath(), true);
+        executeInputPath(settings, optionsReader.getRequestInputPath(), true);
     }
 
     private void executeOptions(Settings settings, List<OptionEntry> optionEntries) {
@@ -76,7 +77,7 @@ public class RequestCommand {
         }
     }
 
-    private void executeInput(Settings settings, String requestInputPath, boolean isMainInput) {
+    private void executeInputPath(Settings settings, String requestInputPath, boolean isMainInput) {
         if(isBlank(requestInputPath)) {
             throw new CommandException("Request input path is null or empty");
         }
@@ -90,10 +91,10 @@ public class RequestCommand {
 
         requestInput.setPath(requestInputPath);
 
-        executeInput(settings, requestInput, isMainInput);
+        executeInputRaw(settings, requestInput, isMainInput);
     }
 
-    private void executeInput(Settings settings, RequestInputRaw requestInput, boolean isMainInput) {
+    private void executeInputRaw(Settings settings, RequestInputRaw requestInput, boolean isMainInput) {
         loadConfig(requestInput, settings, isMainInput);
 
         int times = settings.getTimes() > 0 ? settings.getTimes() : 1;
@@ -187,9 +188,9 @@ public class RequestCommand {
 
         if(isNotBlank(step.getRequestInputName())) {
             SetInputNameOption.setInputName(settings, step.getRequestInputName());
-            executeInput(settings, requestInput, false);
+            executeInputRaw(settings, requestInput, false);
         } else {
-            executeInput(settings, step.getRequestInputPath(), false);
+            executeInputPath(settings, step.getRequestInputPath(), false);
         }
     }
 
@@ -205,12 +206,24 @@ public class RequestCommand {
                 + requestDef.getLeft() + " - " + requestInput.getPath());
         }
 
+        String apiRaw = null;
+        RequestEntry apiHeader = null;
+        
+        if(isNotBlank(requestInput.getApi())) {
+            apiRaw = stringExpander.replaceAllInContent(requestInput.getApi());
+            apiHeader = jsonToObject(apiRaw, new TypeToken<RequestEntry>() {});
+        }
+        
         String requestRaw = stringExpander.replaceAllInContent(requestDef.getRight());
-        RequestEntry header = jsonToObject(requestRaw, new TypeToken<RequestEntry>() {});
+        RequestEntry requestHeader = jsonToObject(requestRaw, new TypeToken<RequestEntry>() {});
+
+        if(apiHeader != null) {
+            mergeRequestHeader(apiHeader, requestHeader);
+        }
 
         try {
-            executeRequest(settings, header,
-                requestInput.getPath(), requestDef.getLeft(), requestRaw);
+            executeRequest(settings, requestHeader, requestInput.getPath(), requestDef.getLeft(),
+                apiRaw, requestRaw);
         } catch(CommandException | RequestException ex) {
             throw new CommandException(
                 "[" + requestInput.getPath() + "/" + requestDef.getLeft() + "] "
@@ -233,7 +246,7 @@ public class RequestCommand {
     }
 
     private void executeRequest(Settings settings, RequestEntry header,
-            String requestPath, String name, String requestRaw) {
+            String requestPath, String name, String apiRaw, String requestRaw) {
         Pair<RequestExecutor<?, ?>, ResponseProcessor<?, ?>> handlers = findByRequest(header);
         RequestExecutor<?, ?> executor = handlers.getLeft();
         ResponseProcessor<?, ?> processor = handlers.getRight();
@@ -241,6 +254,11 @@ public class RequestCommand {
 
         request.setRequestPath(requestPath);
         request.setName(name);
+
+        if(apiRaw != null) {
+            RequestEntry api = jsonToObject(apiRaw, executor.type());
+            executor.mergeAPIDefinition(settings, api, request);
+        }
 
         if(isNotBlank(settings.getOverrideRequestFile())) {
             executor.overrideWithFile(settings, request, settings.getOverrideRequestFile());

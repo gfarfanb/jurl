@@ -1,6 +1,8 @@
 package com.legadi.jurl.model.http;
 
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -10,14 +12,14 @@ import com.legadi.jurl.model.RequestEntry;
 public class HTTPRequestEntry extends RequestEntry {
 
     private String method;
-    private Map<String, String> queryParams;
-    private Map<String, String> headers;
+    private Map<String, String> queryParams = new HashMap<>();
+    private Map<String, String> headers = new HashMap<>();
     private String bodyCharset = StandardCharsets.UTF_8.name();
     private String bodyContent;
     private String bodyFilePath;
     private HTTPRequestFileEntry requestFile;
-    private Map<String, String> outputMappings;
-    private List<AssertionEntry> assertions;
+    private Map<String, String> outputMappings = new HashMap<>();
+    private List<AssertionEntry> assertions = new LinkedList<>();
 
     public String getMethod() {
         return method;

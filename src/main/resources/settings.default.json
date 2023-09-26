@@ -14,7 +14,7 @@
     "openOutputInEditor": false,
     "executionTimes": 1,
     "inputName": "",
-    "settingsParamRegex": "(?:\\{\\{[\\w\\[:.\\-\\]\\\\]+\\}\\})",
+    "settingsParamRegex": "(?:\\{\\{[\\w\\[:.,\\-\\]\\\\]+\\}\\})",
     "settingsParamRegexMask": "\\{\\{<param-name>\\}\\}",
     "settingsParamRegexReplace": "<param-name>",
     "settingsParamStartAt": 2,

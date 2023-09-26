@@ -20,6 +20,8 @@ public class OptionsRegistry {
         registerOption(new AuthorizationBasicOption());
         registerOption(new AuthorizationTokenOption());
         registerOption(new CurlPrintOption());
+        registerOption(new CustomGeneratorOption());
+        registerOption(new CustomHandlerOption());
         registerOption(new EnvironmentOption());
         registerOption(new FlowExecutionOption());
         registerOption(new HelpOption());

@@ -25,6 +25,7 @@ public class HTTPMockConnection extends HttpURLConnection {
     private String responseContent;
     private int responseCode;
     private Map<String, List<String>> responseHeaders;
+    private boolean doOutput;
 
     public HTTPMockConnection(URL url) {
         super(null);
@@ -70,8 +71,15 @@ public class HTTPMockConnection extends HttpURLConnection {
     }
 
     @Override
-    public void setDoOutput(boolean output) {
-        LOGGER.fine("[mock-connection] Calling setDoOutput(" + output + ")");
+    public void setDoOutput(boolean doOutput) {
+        LOGGER.fine("[mock-connection] Calling setDoOutput(" + doOutput + ")");
+        this.doOutput = doOutput;
+    }
+
+    @Override
+    public boolean getDoOutput() {
+        LOGGER.fine("[mock-connection] Calling getDoOutput():" + doOutput);
+        return doOutput;
     }
 
     @Override

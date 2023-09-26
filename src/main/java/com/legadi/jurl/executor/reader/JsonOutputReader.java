@@ -37,7 +37,9 @@ public class JsonOutputReader implements OutputReader<Map<String, String>> {
                 switch (nextToken) {
                     case BEGIN_OBJECT:
                         jsonReader.beginObject();
-                        elements.peekLast().incrementArrayCount();
+                        if(elements.peekLast() != null) {
+                            elements.peekLast().incrementArrayCount();
+                        }
                         elements.add(new Element(false));
                         break;
                     case BEGIN_ARRAY:

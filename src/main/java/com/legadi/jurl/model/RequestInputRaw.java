@@ -4,6 +4,7 @@ import java.util.Map;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
+import com.legadi.jurl.model.adapter.APIDeserializer;
 import com.legadi.jurl.model.adapter.FlowsDeserializer;
 import com.legadi.jurl.model.adapter.RequestsDeserializer;
 
@@ -14,6 +15,8 @@ public class RequestInputRaw {
     private Map<String, Map<String, String>> configs;
     private String defaultRequest;
     private String defaultFlow;
+    @JsonAdapter(APIDeserializer.class)
+    private String api;
     @JsonAdapter(RequestsDeserializer.class)
     private Map<String, String> requests;
     @JsonAdapter(FlowsDeserializer.class)
@@ -49,6 +52,14 @@ public class RequestInputRaw {
 
     public void setDefaultFlow(String defaultFlow) {
         this.defaultFlow = defaultFlow;
+    }
+
+    public String getApi() {
+        return api;
+    }
+
+    public void setApi(String api) {
+        this.api = api;
     }
 
     public Map<String, String> getRequests() {

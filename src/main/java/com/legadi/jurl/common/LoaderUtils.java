@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,7 +32,7 @@ public class LoaderUtils {
     private static final Logger LOGGER = Logger.getLogger(LoaderUtils.class.getName());
 
     private static final Gson GSON = new Gson();
-    private static Map<String, List<String>> CACHED_LINES = new HashMap<>();
+    private static final Map<String, List<String>> CACHED_LINES = new HashMap<>();
 
     public static Map<String, String> loadInternalJsonProperties(String internalFilePath) {
         try {
@@ -162,6 +163,17 @@ public class LoaderUtils {
             System.out.println();
         } catch(IOException ex) {
             throw new IllegalStateException("Unable to print file: " + filePath, ex);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T instantiate(String typeClass) {
+        try {
+            Class<T> type = (Class<T>) Class.forName(typeClass);
+            Constructor<T> constructor = type.getConstructor();
+            return constructor.newInstance();
+        } catch(Exception ex) {
+            throw new IllegalStateException("Unable to instance from: " + typeClass, ex);
         }
     }
 }

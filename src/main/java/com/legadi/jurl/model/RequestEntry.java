@@ -78,4 +78,18 @@ public class RequestEntry {
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
     }
+
+    @Override
+    public String toString() {
+        return "RequestEntry ["
+            + "requestPath=" + requestPath
+            + ", name=" + name
+            + ", url=" + url
+            + ", protocol=" + protocol
+            + ", domain=" + domain
+            + ", port=" + port
+            + ", basePath=" + basePath
+            + ", endpoint=" + endpoint
+            + "]";
+    }
 }

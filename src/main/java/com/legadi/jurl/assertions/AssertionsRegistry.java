@@ -1,6 +1,7 @@
 package com.legadi.jurl.assertions;
 
-import java.lang.reflect.Constructor;
+import static com.legadi.jurl.common.LoaderUtils.instantiate;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,31 +39,22 @@ public class AssertionsRegistry {
         ASSERTIONS.add(new StartsWithAssertionFunction());
     }
 
+    public static AssertionFunction registerAssertionFunction(String assertionClass) {
+        if(REGISTERED.containsKey(assertionClass)) {
+            return REGISTERED.get(assertionClass);
+        } else {
+            AssertionFunction function = instantiate(assertionClass);
+            ASSERTIONS.add(function);
+            REGISTERED.put(assertionClass, function);
+            return function;
+        }
+    }
+
     public static AssertionFunction findByName(String name) {
         return ASSERTIONS
             .stream()
             .filter(function -> function.name().equalsIgnoreCase(name))
             .findFirst()
             .orElseThrow(() -> new CommandException("Unable to obtain assertion function: " + name));
-    }
-
-    @SuppressWarnings("unchecked")
-    public static AssertionFunction registerAssertionFunction(String assertionClass) {
-        try {
-            if(REGISTERED.containsKey(assertionClass)) {
-                return REGISTERED.get(assertionClass);
-            }
-
-            Class<AssertionFunction> type = (Class<AssertionFunction>) Class.forName(assertionClass);
-            Constructor<AssertionFunction> constructor = type.getConstructor();
-            AssertionFunction function = constructor.newInstance();
-
-            ASSERTIONS.add(function);
-            REGISTERED.put(assertionClass, function);
-
-            return function;
-        } catch(Exception ex) {
-            throw new IllegalStateException("Unable to instance assertion function from: " + assertionClass, ex);
-        }
     }
 }

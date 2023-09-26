@@ -4,6 +4,7 @@ import static com.legadi.jurl.assertions.AssertionsRegistry.findByName;
 import static com.legadi.jurl.assertions.AssertionsRegistry.registerAssertionFunction;
 import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isEmpty;
+import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
 import static com.legadi.jurl.common.LoaderUtils.printFile;
@@ -16,6 +17,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -106,6 +108,7 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
                         return elements;
                     })
                     .flatMap(List::stream)
+                    .filter(Objects::nonNull)
                     .map(stringExpander::scanParamsInContent)
                     .flatMap(Set::stream)
                     .filter(param -> param.startsWith(OUTPUT_PREFIX))
@@ -204,6 +207,7 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
         for(AssertionEntry assertionEntry : assertions) {
             try {
                 AssertionFunction function = null;
+                String message = null;
 
                 if(assertionEntry.getType() != null) {
                     function = findByName(assertionEntry.getType().name());
@@ -215,7 +219,10 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
                     function = registerAssertionFunction(assertionClass);
                 }
 
-                String message = stringExpander.replaceAllInContent(values, assertionEntry.getMessage());
+                if(isNotBlank(assertionEntry.getMessage())) {
+                    message = stringExpander.replaceAllInContent(values, assertionEntry.getMessage());
+                }
+                
                 String[] args = Arrays.stream(assertionEntry.getArgs())
                     .parallel()
                     .map(arg -> stringExpander.replaceAllInContent(values, arg))

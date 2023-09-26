@@ -1,5 +1,6 @@
 package com.legadi.jurl.model.http;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class HTTPRequestFileEntry {
@@ -8,7 +9,7 @@ public class HTTPRequestFileEntry {
     private String path;
     private String field;
     private String mineType;
-    private Map<String, String> formData;
+    private Map<String, String> formData = new HashMap<>();
 
     public String getName() {
         return name;

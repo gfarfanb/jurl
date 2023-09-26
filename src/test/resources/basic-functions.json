@@ -1,16 +1,69 @@
 {
+    "api": {
+        "protocol": "http",
+        "domain": "localhost",
+        "port": "{{local.server.port}}",
+        "basePath": "basic",
+        "headers": {
+            "Content-Type": "application/json"
+        }
+    },
     "requests": {
         "post": {
-            "protocol": "http",
-            "domain": "localhost",
-            "port": "{{local.server.port}}",
-            "basePath": "basic",
             "endpoint": "/body",
             "method": "POST",
-            "bodyContent": "{}",
-            "headers": {
-                "Content-Type": "application/json"
-            }
+            "bodyContent": "{\"access\": \"{{UUID:}}\", \"name\": \"{{FULL_NAME:}}\", \"email\": \"{{EMAIL:}}\", \"nickname\": \"{{ALPHA_NUMERIC:}}\", \"amount\": {{DECIMAL:}}, \"active\": {{BOOLEAN:}}, \"coins\": {{INTEGER:}}, \"bio\": \"{{LOREM_IPSUM:}}\", \"type\": \"{{PICK_ANY:A,B,C}}\"}",
+            "outputMappings": {
+                "basic.functions.id": "{{HTTP:header.Resource-ID}}"
+            },
+            "assertions": [
+                {
+                    "type": "EQUALS_TO",
+                    "args": [ "201", "{{HTTP:status}}" ]
+                }
+            ]
+        },
+        "get": {
+            "endpoint": "/body/{{basic.functions.id}}",
+            "method": "GET",
+            "outputMappings": {
+                "basic.functions.access": "{{OUT:access}}",
+                "basic.functions.name": "{{OUT:name}}",
+                "basic.functions.email": "{{OUT:email}}",
+                "basic.functions.nickname": "{{OUT:nickname}}",
+                "basic.functions.amount": "{{OUT:amount}}",
+                "basic.functions.active": "{{OUT:active}}",
+                "basic.functions.coins": "{{OUT:coins}}",
+                "basic.functions.bio": "{{OUT:bio}}",
+                "basic.functions.type": "{{OUT:type}}"
+            },
+            "assertions": [
+                {
+                    "type": "EQUALS_TO",
+                    "args": [ "200", "{{HTTP:status}}" ]
+                }
+            ]
+        },
+        "update": {
+            "endpoint": "/body/{{basic.functions.id}}",
+            "method": "PUT",
+            "bodyContent": "{\"access\": \"{{basic.functions.access}}\", \"name\": \"{{basic.functions.name}}\", \"email\": \"{{basic.functions.email}}\", \"nickname\": \"{{basic.functions.nickname}}\", \"amount\": {{basic.functions.amount}}, \"active\": {{basic.functions.active}}, \"coins\": {{basic.functions.coins}}, \"bio\": \"{{basic.functions.bio}}\", \"type\": \"{{basic.functions.type}}\"}",
+            "assertions": [
+                {
+                    "type": "EQUALS_TO",
+                    "args": [ "204", "{{HTTP:status}}" ]
+                }
+            ]
+        },
+        "delete": {
+            "endpoint": "/body/{{basic.functions.id}}",
+            "method": "DELETE",
+            "assertions": [
+                {
+                    "type": "EQUALS_TO",
+                    "args": [ "204", "{{HTTP:status}}" ]
+                }
+            ]
         }
     }
 }

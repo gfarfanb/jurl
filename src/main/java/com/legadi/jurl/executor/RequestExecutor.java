@@ -23,6 +23,12 @@ public interface RequestExecutor<T extends RequestEntry, R extends ResponseEntry
 
     R executeRequest(Settings settings, T request) throws RequestException;
 
+    default void mergeAPIDefinition(Settings settings, RequestEntry api, RequestEntry request) {
+        mergeAPI(settings, cast(api), cast(request));
+    }
+
+    void mergeAPI(Settings settings, T api, T request);
+
     default void overrideWithFile(Settings settings, RequestEntry request, String filename) {
         overrideRequest(settings, cast(request), filename);
     }

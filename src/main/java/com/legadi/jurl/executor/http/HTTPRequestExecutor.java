@@ -1,12 +1,13 @@
 package com.legadi.jurl.executor.http;
 
+import static com.legadi.jurl.common.CommonUtils.getOrDefault;
 import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.CommonUtils.strip;
 import static com.legadi.jurl.common.LoaderUtils.printFile;
-import static com.legadi.jurl.common.CommonUtils.getOrDefault;
+import static com.legadi.jurl.common.RequestUtils.mergeRequestHeader;
 import static java.util.logging.Level.FINE;
 
 import java.io.BufferedReader;
@@ -25,6 +26,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -38,6 +41,7 @@ import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.common.URLBuilder;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.executor.RequestExecutor;
+import com.legadi.jurl.model.AssertionEntry;
 import com.legadi.jurl.model.Credential;
 import com.legadi.jurl.model.RequestEntry;
 import com.legadi.jurl.model.http.HTTPRequestEntry;
@@ -82,19 +86,56 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     }
 
     @Override
+    public void mergeAPI(Settings settings, HTTPRequestEntry api, HTTPRequestEntry request) {
+        mergeRequestHeader(api, request);
+
+        if(isBlank(request.getMethod())) {
+            request.setMethod(api.getMethod());
+        }
+
+        Map<String, String> queryParams = new HashMap<>(api.getQueryParams());
+        queryParams.putAll(request.getQueryParams());
+        request.setQueryParams(queryParams);
+
+        Map<String, String> headers = new HashMap<>(api.getHeaders());
+        headers.putAll(request.getHeaders());
+        request.setHeaders(headers);
+
+        if(isBlank(request.getBodyCharset())) {
+            request.setBodyCharset(api.getBodyCharset());
+        }
+        if(isBlank(request.getBodyContent())) {
+            request.setBodyContent(api.getBodyContent());
+        }
+        if(isBlank(request.getBodyFilePath())) {
+            request.setBodyFilePath(api.getBodyFilePath());
+        }
+
+        if(request.getRequestFile() == null) {
+            request.setRequestFile(api.getRequestFile());
+        } else if(api.getRequestFile() != null) {
+            mergeRequestFile(api.getRequestFile(), request.getRequestFile());
+        }
+
+        Map<String, String> outputMappings = new HashMap<>(api.getOutputMappings());
+        outputMappings.putAll(request.getOutputMappings());
+        request.setOutputMappings(outputMappings);
+
+        List<AssertionEntry> assertions = new LinkedList<>(api.getAssertions());
+        assertions.addAll(request.getAssertions());
+        request.setAssertions(assertions);
+    }
+
+    @Override
     public void overrideRequest(Settings settings, HTTPRequestEntry request, String filename) {
         HTTPRequestParser parser = new HTTPRequestParser(settings);
         HTTPRequestEntry overrideRequest = parser.parseRequest(request.getRequestPath(), request.getName(), filename);
 
-        if(isNotEmpty(request.getHeaders())) {
-            request.getHeaders().putAll(overrideRequest.getHeaders());
-        } else {
+        if(isNotEmpty(overrideRequest.getHeaders())) {
             request.setHeaders(overrideRequest.getHeaders());
         }
 
-        if(isNotEmpty(request.getQueryParams())) {
-            request.getQueryParams().putAll(overrideRequest.getQueryParams());
-        } else {
+        if(isNotEmpty(overrideRequest.getQueryParams())) {
             request.setQueryParams(overrideRequest.getQueryParams());
         }
 
@@ -110,6 +151,25 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             request.setBodyContent(null);
             request.setBodyFilePath(overrideRequest.getBodyFilePath());
         }
+    }
+
+    private void mergeRequestFile(HTTPRequestFileEntry api, HTTPRequestFileEntry request) {
+        if(isBlank(request.getName())) {
+            request.setName(api.getName());
+        }
+        if(isBlank(request.getPath())) {
+            request.setPath(api.getPath());
+        }
+        if(isBlank(request.getField())) {
+            request.setField(api.getField());
+        }
+        if(isBlank(request.getMineType())) {
+            request.setMineType(api.getMineType());
+        }
+
+        Map<String, String> formData = new HashMap<>(api.getFormData());
+        formData.putAll(request.getFormData());
+        request.setFormData(formData);
     }
 
     private HttpURLConnection createConnection(Settings settings,
@@ -226,6 +286,10 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
 
     private void sendBody(HttpURLConnection connection, Settings settings, 
             HTTPRequestEntry request, CurlBuilder culrBuilder) {
+        if(!connection.getDoOutput()) {
+            return;
+        }
+
         try(DataOutputStream dataOutputStream = new DataOutputStream(connection.getOutputStream())) {
 
             if(isNotBlank(request.getBodyContent())) {

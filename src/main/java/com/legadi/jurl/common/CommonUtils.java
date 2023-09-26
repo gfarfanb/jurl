@@ -13,9 +13,9 @@ import com.google.gson.Gson;
 public class CommonUtils {
 
     private static final Gson GSON = new Gson();
-    private static Pattern NUMBER_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
-    private static String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvxyz0123456789";
-    private static String NUMERIC_STRING = "0123456789";
+    private static final Pattern NUMBER_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
+    private static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvxyz0123456789";
+    private static final String NUMERIC_STRING = "0123456789";
 
     private CommonUtils() {}
 
