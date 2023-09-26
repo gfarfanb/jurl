@@ -1,7 +1,8 @@
 package com.legadi.jurl.options;
 
+import static com.legadi.jurl.generators.GeneratorsRegistry.registerGenerator;
+
 import com.legadi.jurl.common.Settings;
-import static com.legadi.jurl.common.generators.GeneratorsRegistry.registerGenerator;
 
 public class CustomGeneratorOption extends Option {
 

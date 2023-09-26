@@ -1,22 +1,22 @@
-package com.legadi.jurl.common.generators;
+package com.legadi.jurl.generators;
 
 import java.io.Console;
 
 import com.legadi.jurl.common.Settings;
 
-public class UserInputGenerator implements Generator {
+public class PasswordInputGenerator implements Generator {
 
-    private static final String INPUT_PREFIX = "INPUT:";
+    private static final String PASSWORD_PREFIX = "PASSWORD:";
 
     @Override
     public boolean accepts(Settings settings, String param) {
-        return param.startsWith(INPUT_PREFIX) && !settings.containsOverride(param);
+        return param.startsWith(PASSWORD_PREFIX) && !settings.containsOverride(param);
     }
 
     @Override
     public String getValue(Settings settings, String param) {
         Console console = System.console();
-        String value = console.readLine(extractArg(INPUT_PREFIX, param));
+        String value = String.valueOf(console.readPassword(extractArg(PASSWORD_PREFIX, param)));
         settings.putOverride(param, value);
         return value;
     }

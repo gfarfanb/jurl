@@ -91,13 +91,13 @@ public class HTTPRequestParser {
                     Path bodyPath = pathBuilder.buildTemporalPath();
 
                     writer.setWriter(bodyPath.toFile());
-                    request.setBodyFilePath(bodyPath.toString());
+                    request.setBodyTemporalPath(bodyPath.toString());
                 }
 
                 writer.write(line);
             }
         } catch(IOException ex) {
-            throw new IllegalStateException("Unable to read override request file: " + filename, ex);
+            throw new IllegalStateException("Unable to process override request file: " + filename, ex);
         }
 
         return request;

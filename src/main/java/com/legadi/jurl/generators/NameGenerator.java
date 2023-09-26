@@ -1,4 +1,4 @@
-package com.legadi.jurl.common.generators;
+package com.legadi.jurl.generators;
 
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 

@@ -50,7 +50,7 @@ public class BasicFunctionsController {
     }
 
     @PutMapping("/body/{id}")
-    public ResponseEntity<String> update(@PathVariable UUID id, @RequestBody BasicFunctionsEntity entity) {
+    public ResponseEntity<String> put(@PathVariable UUID id, @RequestBody BasicFunctionsEntity entity) {
         if(!requestCatcher.contains(new TypeToken<BasicFunctionsEntity>() {}, id)) {
             return ResponseEntity.notFound().build();
         }

@@ -1,4 +1,4 @@
-package com.legadi.jurl.common.generators;
+package com.legadi.jurl.generators;
 
 import static com.legadi.jurl.common.LoaderUtils.instantiate;
 
@@ -20,6 +20,7 @@ public class GeneratorsRegistry {
     static {
         GENERATORS.add(new AlphaNumericGenerator());
         GENERATORS.add(new BooleanGenerator());
+        GENERATORS.add(new DateTimeGenerator());
         GENERATORS.add(new DecimalGenerator());
         GENERATORS.add(new EmailGenerator());;
         GENERATORS.add(new FullNameGenerator());

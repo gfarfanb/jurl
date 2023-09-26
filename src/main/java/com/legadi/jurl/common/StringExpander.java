@@ -1,7 +1,7 @@
 package com.legadi.jurl.common;
 
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
-import static com.legadi.jurl.common.generators.GeneratorsRegistry.getValueByGenerator;
+import static com.legadi.jurl.generators.GeneratorsRegistry.getValueByGenerator;
 
 import java.util.HashMap;
 import java.util.HashSet;

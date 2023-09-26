@@ -11,6 +11,7 @@ import static com.legadi.jurl.common.RequestUtils.mergeRequestHeader;
 import static java.util.logging.Level.FINE;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileWriter;
@@ -38,6 +39,7 @@ import com.google.gson.reflect.TypeToken;
 import com.legadi.jurl.common.CurlBuilder;
 import com.legadi.jurl.common.OutputPathBuilder;
 import com.legadi.jurl.common.Settings;
+import com.legadi.jurl.common.StringExpander;
 import com.legadi.jurl.common.URLBuilder;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.executor.RequestExecutor;
@@ -147,9 +149,10 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             request.setOutputMappings(overrideRequest.getOutputMappings());
         }
 
-        if(isNotBlank(overrideRequest.getBodyFilePath())) {
+        if(isNotBlank(overrideRequest.getBodyTemporalPath())) {
             request.setBodyContent(null);
-            request.setBodyFilePath(overrideRequest.getBodyFilePath());
+            request.setBodyFilePath(null);
+            request.setBodyTemporalPath(overrideRequest.getBodyTemporalPath());
         }
     }
 
@@ -293,35 +296,79 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         try(DataOutputStream dataOutputStream = new DataOutputStream(connection.getOutputStream())) {
 
             if(isNotBlank(request.getBodyContent())) {
-                writeLine(dataOutputStream, request.getBodyContent(), request.getBodyCharset());
-                culrBuilder.setData(request.getBodyContent());
-
-                if(!settings.isCurlRequest()) {
-                    LOGGER.info(request.getBodyContent());
-                }
-
+                sendBodyContent(dataOutputStream, settings, request, culrBuilder);
                 return;
             }
 
             if(isNotBlank(request.getBodyFilePath())) {
-                Path bodyPath = Paths.get(request.getBodyFilePath());
+                sendBodyFile(dataOutputStream, settings, request, culrBuilder);
+                return;
+            }
 
-                try(BufferedReader br = Files.newBufferedReader(bodyPath)) {
-                    br.lines().forEach(line -> writeLine(dataOutputStream, line, request.getBodyCharset()));
-                }
-
-                culrBuilder.setDataBinary(request.getBodyFilePath());
-
-                if(!settings.isCurlRequest()) {
-                    printFile(request.getBodyFilePath());
-                }
-
+            if(isNotBlank(request.getBodyTemporalPath())) {
+                sendBodyTemporal(dataOutputStream, settings, request, culrBuilder);
                 return;
             }
 
             throw new RequestException(request, "request.bodyContent or request.bodyFile is null or empty");
         } catch(IOException ex) {
             throw new IllegalStateException("Unable to create output stream for request body", ex);
+        }
+    }
+
+    private void sendBodyContent(DataOutputStream dataOutputStream, Settings settings, 
+            HTTPRequestEntry request, CurlBuilder culrBuilder) {
+        writeLine(dataOutputStream, request.getBodyContent(), request.getBodyCharset());
+        culrBuilder.setData(request.getBodyContent());
+
+        if(!settings.isCurlRequest()) {
+            LOGGER.info(request.getBodyContent());
+        }
+    }
+
+    private void sendBodyFile(DataOutputStream dataOutputStream, Settings settings, 
+            HTTPRequestEntry request, CurlBuilder culrBuilder) throws IOException {
+        StringExpander stringExpander = new StringExpander(settings);
+        OutputPathBuilder pathBuilder = new OutputPathBuilder(stringExpander.getSettings())
+            .setRequestPath(request.getRequestPath())
+            .setRequestName(request.getName())
+            .setExtension("body");
+        Path temporalBodyPath = pathBuilder.buildTemporalPath();
+        Path requestBodyPath = Paths.get(request.getBodyFilePath());
+
+        try(BufferedReader br = Files.newBufferedReader(requestBodyPath);
+                BufferedWriter writer = Files.newBufferedWriter(temporalBodyPath)) {
+            br
+                .lines()
+                .map(stringExpander::replaceAllInContent)
+                .forEach(line -> {
+                    writeBody(temporalBodyPath, writer, line);
+                    writeLine(dataOutputStream, line, request.getBodyCharset());
+                });
+        }
+
+        request.setBodyTemporalPath(temporalBodyPath.toString());
+        culrBuilder.setDataBinary(temporalBodyPath.toString());
+
+        if(!settings.isCurlRequest()) {
+            printFile(temporalBodyPath);
+        }
+    }
+
+    private void sendBodyTemporal(DataOutputStream dataOutputStream, Settings settings, 
+            HTTPRequestEntry request, CurlBuilder culrBuilder) throws IOException {
+        Path bodyPath = Paths.get(request.getBodyTemporalPath());
+
+        try(BufferedReader br = Files.newBufferedReader(bodyPath)) {
+            br
+                .lines()
+                .forEach(line -> writeLine(dataOutputStream, line, request.getBodyCharset()));
+        }
+
+        culrBuilder.setDataBinary(bodyPath.toString());
+
+        if(!settings.isCurlRequest()) {
+            printFile(bodyPath);
         }
     }
 
@@ -523,6 +570,15 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             dataOutputStream.write(input, 0, input.length);
         } catch(IOException ex) {
             throw new IllegalStateException("Unable to write line", ex);
+        }
+    }
+
+    private void writeBody(Path bodyPath, BufferedWriter writer, String line) {
+        try {
+            writer.write(line);
+            writer.newLine();
+        } catch(IOException ex) {
+            throw new IllegalStateException("Unable to write body request file: " + bodyPath, ex);
         }
     }
 }

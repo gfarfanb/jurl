@@ -1,7 +1,11 @@
 package com.legadi.jurl.embedded.model;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
+
+import com.google.gson.annotations.JsonAdapter;
+import com.legadi.jurl.embedded.model.adapter.LocalDateTimeDeserializer;
 
 public class BasicFunctionsEntity {
 
@@ -14,6 +18,8 @@ public class BasicFunctionsEntity {
     private int coins;
     private String bio;
     private String type;
+    @JsonAdapter(LocalDateTimeDeserializer.class)
+    private LocalDateTime timestamp;
 
     public UUID getAccess() {
         return access;
@@ -85,5 +91,13 @@ public class BasicFunctionsEntity {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
     }
 }

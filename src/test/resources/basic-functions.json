@@ -9,10 +9,10 @@
         }
     },
     "requests": {
-        "post": {
+        "create": {
             "endpoint": "/body",
             "method": "POST",
-            "bodyContent": "{\"access\": \"{{UUID:}}\", \"name\": \"{{FULL_NAME:}}\", \"email\": \"{{EMAIL:}}\", \"nickname\": \"{{ALPHA_NUMERIC:}}\", \"amount\": {{DECIMAL:}}, \"active\": {{BOOLEAN:}}, \"coins\": {{INTEGER:}}, \"bio\": \"{{LOREM_IPSUM:}}\", \"type\": \"{{PICK_ANY:A,B,C}}\"}",
+            "bodyContent": "{\"access\": \"{{UUID:}}\", \"name\": \"{{FULL_NAME:}}\", \"email\": \"{{EMAIL:}}\", \"nickname\": \"{{ALPHA_NUMERIC:}}\", \"amount\": {{DECIMAL:}}, \"active\": {{BOOLEAN:}}, \"coins\": {{INTEGER:}}, \"bio\": \"{{LOREM_IPSUM:}}\", \"type\": \"{{PICK_ANY:A,B,C}}\", \"timestamp\": \"{{DATE_TIME:}}\"}",
             "outputMappings": {
                 "basic.functions.id": "{{HTTP:header.Resource-ID}}"
             },
@@ -23,7 +23,7 @@
                 }
             ]
         },
-        "get": {
+        "obtain": {
             "endpoint": "/body/{{basic.functions.id}}",
             "method": "GET",
             "outputMappings": {
@@ -35,7 +35,8 @@
                 "basic.functions.active": "{{OUT:active}}",
                 "basic.functions.coins": "{{OUT:coins}}",
                 "basic.functions.bio": "{{OUT:bio}}",
-                "basic.functions.type": "{{OUT:type}}"
+                "basic.functions.type": "{{OUT:type}}",
+                "basic.functions.timestamp": "{{OUT:timestamp}}"
             },
             "assertions": [
                 {
@@ -47,7 +48,7 @@
         "update": {
             "endpoint": "/body/{{basic.functions.id}}",
             "method": "PUT",
-            "bodyContent": "{\"access\": \"{{basic.functions.access}}\", \"name\": \"{{basic.functions.name}}\", \"email\": \"{{basic.functions.email}}\", \"nickname\": \"{{basic.functions.nickname}}\", \"amount\": {{basic.functions.amount}}, \"active\": {{basic.functions.active}}, \"coins\": {{basic.functions.coins}}, \"bio\": \"{{basic.functions.bio}}\", \"type\": \"{{basic.functions.type}}\"}",
+            "bodyFilePath": "src/test/resources/basic-functions.body",
             "assertions": [
                 {
                     "type": "EQUALS_TO",
@@ -55,7 +56,7 @@
                 }
             ]
         },
-        "delete": {
+        "remove": {
             "endpoint": "/body/{{basic.functions.id}}",
             "method": "DELETE",
             "assertions": [

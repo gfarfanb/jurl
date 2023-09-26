@@ -18,6 +18,9 @@ public class RequestCatcher {
     }
 
     public <T> T add(TypeToken<T> dataType, UUID identifier, T value) {
+        if(value == null) {
+            return null;
+        }
         if(!data.containsKey(dataType)) {
             data.put(dataType, Collections.synchronizedMap(new HashMap<>()));
         }

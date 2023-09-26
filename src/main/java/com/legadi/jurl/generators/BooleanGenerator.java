@@ -1,4 +1,4 @@
-package com.legadi.jurl.common.generators;
+package com.legadi.jurl.generators;
 
 import java.util.Random;
 
