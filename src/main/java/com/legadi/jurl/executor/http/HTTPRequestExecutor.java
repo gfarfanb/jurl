@@ -2,7 +2,6 @@ package com.legadi.jurl.executor.http;
 
 import static com.legadi.jurl.common.CommonUtils.getOrDefault;
 import static com.legadi.jurl.common.CommonUtils.isBlank;
-import static com.legadi.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.CommonUtils.strip;
@@ -75,11 +74,12 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         CurlBuilder curlBuilder = new CurlBuilder();
         HttpURLConnection connection = createConnection(settings, request, curlBuilder);
 
-        addHeaders(connection, settings, request, curlBuilder);
-
         if(request.getRequestFile() != null) {
+            addFileHeaders(connection, settings, request, curlBuilder);
+            addFileMethod(connection, request, curlBuilder);
             sendFile(connection, settings, request, curlBuilder);
         } else {
+            addHeaders(connection, settings, request, curlBuilder);
             addMethod(connection, request, curlBuilder);
             sendBody(connection, settings, request, curlBuilder);
         }
@@ -192,7 +192,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             curlBuilder.setUrl(url);
 
             if(!settings.isCurlRequest()) {
-                LOGGER.info(request.getMethod() + " " + url);
+                LOGGER.info(identifyMethod(request) + " " + url);
             }
 
             return createConnection(settings, request, url);
@@ -221,14 +221,28 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         return (HttpURLConnection) url.openConnection();
     }
 
-    private void addMethod(HttpURLConnection connection, HTTPRequestEntry request, CurlBuilder curlBuilder) {
-        if(isBlank(request.getMethod())) {
-            throw new RequestException(request, "HTTP method not defined");
+    private void addFileMethod(HttpURLConnection connection, HTTPRequestEntry request, CurlBuilder curlBuilder) {
+        String method = identifyMethod(request);
+
+        try {
+            connection.setDoInput(true);
+            connection.setDoOutput(true);
+            connection.setUseCaches(false);
+            connection.setRequestMethod(method);
+
+            request.setMethod(method);
+            curlBuilder.setMethod(method);
+        } catch(ProtocolException ex) {
+            throw new RequestException(request, "Invalid method for HTTP: " + method);
         }
+    }
+
+    private void addMethod(HttpURLConnection connection, HTTPRequestEntry request, CurlBuilder curlBuilder) {
+        String method = identifyMethod(request);
 
         try {
             boolean output;
-            switch(request.getMethod()) {
+            switch(method) {
                 case "PUT":
                 case "POST":
                     output = true;
@@ -238,20 +252,30 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             }
 
             connection.setDoOutput(output);
-            connection.setRequestMethod(request.getMethod());
+            connection.setRequestMethod(method);
 
-            curlBuilder.setMethod(request.getMethod());
+            curlBuilder.setMethod(method);
         } catch(ProtocolException ex) {
-            throw new RequestException(request, "Invalid method for HTTP: " + request.getMethod());
+            throw new RequestException(request, "Invalid method for HTTP: " + method);
         }
+    }
+
+    private void addFileHeaders(HttpURLConnection connection, Settings settings,
+            HTTPRequestEntry request, CurlBuilder curlBuilder) {
+        String boundary = "*****" + Long.toString(System.currentTimeMillis()) + "*****";
+
+        connection.setRequestProperty("Connection", "Keep-Alive");
+        connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+
+        request.getRequestFile().setBoundary(boundary);
+        request.getHeaders().put("Connection", "Keep-Alive");
+        request.getHeaders().put("Content-Type", "multipart/form-data; boundary=" + boundary);
+
+        addHeaders(connection, settings, request, curlBuilder);
     }
 
     private void addHeaders(HttpURLConnection connection, Settings settings,
             HTTPRequestEntry request, CurlBuilder curlBuilder) {
-        if(isEmpty(request.getHeaders())) {
-            return;
-        }
-
         StringBuilder printableHeaders = new StringBuilder();
 
         request.getHeaders().forEach(
@@ -282,7 +306,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
                 break;
         }
 
-        if(!settings.isCurlRequest()) {
+        if(!settings.isCurlRequest() && printableHeaders.length() > 0) {
             LOGGER.info(printableHeaders.toString());
         }
     }
@@ -375,27 +399,14 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     private void sendFile(HttpURLConnection connection, Settings settings,
             HTTPRequestEntry request, CurlBuilder curlBuilder) {
         HTTPRequestFileEntry requestFile = validateAndGetRequestFile(request);
-        String boundary = "*****" + Long.toString(System.currentTimeMillis()) + "*****";
         String[] pathParts = requestFile.getPath().split("/");
         String filename = isNotBlank(requestFile.getName()) ? requestFile.getName() : pathParts[pathParts.length - 1];
         Map<String, String> formData = isNotEmpty(requestFile.getFormData()) ? requestFile.getFormData() : new HashMap<>();
         StringBuilder printableFile = new StringBuilder();
 
-        connection.setDoInput(true);
-        connection.setDoOutput(true);
-        connection.setUseCaches(false);
-        connection.setRequestProperty("Connection", "Keep-Alive");
-        connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
-
-        try {
-            connection.setRequestMethod("POST");
-        } catch(ProtocolException ex) {
-            throw new RequestException(request, "Invalid method for HTTP: " + request.getMethod());
-        }
-
         try(DataOutputStream dataOutputStream = new DataOutputStream(connection.getOutputStream());
                 FileInputStream fileInputStream = new FileInputStream(requestFile.getPath())) {
-            dataOutputStream.writeBytes(MULTIPART_TWO_HYPHENS + boundary + MULTIPART_LINE_END);
+            dataOutputStream.writeBytes(MULTIPART_TWO_HYPHENS + requestFile.getBoundary() + MULTIPART_LINE_END);
             dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"" + requestFile.getField() + "\"; filename=\"" + filename + "\"" + MULTIPART_LINE_END);
             dataOutputStream.writeBytes("Content-Transfer-Encoding: binary" + MULTIPART_LINE_END);
 
@@ -420,7 +431,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             dataOutputStream.writeBytes(MULTIPART_LINE_END);
 
             for(Map.Entry<String, String> formEntry : formData.entrySet()) {
-                dataOutputStream.writeBytes(MULTIPART_TWO_HYPHENS + boundary + MULTIPART_LINE_END);
+                dataOutputStream.writeBytes(MULTIPART_TWO_HYPHENS + requestFile.getBoundary() + MULTIPART_LINE_END);
                 dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"" + formEntry.getKey() + "\"" + MULTIPART_LINE_END);
                 dataOutputStream.writeBytes("Content-Type: text/plain" + MULTIPART_LINE_END);
                 dataOutputStream.writeBytes(MULTIPART_LINE_END);
@@ -428,15 +439,13 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
                 dataOutputStream.writeBytes(MULTIPART_LINE_END);
             };
 
-            dataOutputStream.writeBytes(MULTIPART_TWO_HYPHENS + boundary + MULTIPART_TWO_HYPHENS + MULTIPART_LINE_END);
+            dataOutputStream.writeBytes(MULTIPART_TWO_HYPHENS + requestFile.getBoundary() + MULTIPART_TWO_HYPHENS + MULTIPART_LINE_END);
 
-            curlBuilder.setMethod("POST");
             curlBuilder.setFile(requestFile.getField(), requestFile.getPath(), filename, requestFile.getMineType());
 
             printableFile.append(requestFile.getField()).append("=").append(requestFile.getPath()).append("\n");
-            if(isNotBlank(filename)) {
-                printableFile.append("filename=").append(requestFile.getPath()).append("\n");
-            }
+            printableFile.append("filename=").append(requestFile.getPath()).append("\n");
+
             if(isNotBlank(requestFile.getMineType())) {
                 printableFile.append("type=").append(requestFile.getMineType()).append("\n");
             }
@@ -472,7 +481,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             Matcher matcher = pattern.matcher(contentDisposition);
 
             if(matcher.find()) {
-                return strip(matcher.group(0), "\"");
+                return strip(matcher.group(1), "\"");
             } else {
                 return null;
             }
@@ -580,5 +589,15 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         } catch(IOException ex) {
             throw new IllegalStateException("Unable to write body request file: " + bodyPath, ex);
         }
+    }
+
+    private String identifyMethod(HTTPRequestEntry request) {
+        if(isNotBlank(request.getMethod())) {
+            return request.getMethod();
+        }
+        if(request.getRequestFile() != null) {
+            return "POST";
+        }
+        throw new RequestException(request, "HTTP method not defined");
     }
 }

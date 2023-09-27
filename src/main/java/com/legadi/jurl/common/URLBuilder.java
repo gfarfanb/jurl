@@ -87,6 +87,7 @@ public class URLBuilder {
                     if(first.get()) {
                         first.set(false);
                         urlBuilder
+                            .append('?')
                             .append(param.getKey())
                             .append('=')
                             .append(param.getValue());

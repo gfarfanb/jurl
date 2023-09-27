@@ -1,0 +1,63 @@
+{
+    "requests": {
+        "upload": {
+            "url": "http://localhost:{{local.server.port}}/file",
+            "requestFile": {
+                "name": "uploaded.csv",
+                "path": "src/test/resources/file.csv",
+                "field": "file",
+                "mineType": "text/csv",
+                "formData": {
+                    "identifier": "{{UUID:}}",
+                    "timestamp": "{{DATE_TIME:}}"
+                }
+            },
+            "assertions": [
+                {
+                    "type": "EQUALS_TO",
+                    "args": [ "201", "{{HTTP:status}}" ]
+                }
+            ]
+        },
+        "uploadWithoutForm": {
+            "url": "http://localhost:{{local.server.port}}/file",
+            "requestFile": {
+                "path": "src/test/resources/file.csv",
+                "field": "file"
+            },
+            "assertions": [
+                {
+                    "type": "EQUALS_TO",
+                    "args": [ "201", "{{HTTP:status}}" ]
+                }
+            ]
+        },
+        "download": {
+            "url": "http://localhost:{{local.server.port}}/file",
+            "method": "GET",
+            "queryParams": {
+                "file": "src/test/resources/file.csv",
+                "name": "downloaded.csv"
+            },
+            "assertions": [
+                {
+                    "type": "EQUALS_TO",
+                    "args": [ "200", "{{HTTP:status}}" ]
+                }
+            ]
+        },
+        "downloadWithoutName": {
+            "url": "http://localhost:{{local.server.port}}/file",
+            "method": "GET",
+            "queryParams": {
+                "file": "src/test/resources/file.csv"
+            },
+            "assertions": [
+                {
+                    "type": "EQUALS_TO",
+                    "args": [ "200", "{{HTTP:status}}" ]
+                }
+            ]
+        }
+    }
+}

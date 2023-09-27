@@ -6,11 +6,12 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.google.gson.reflect.TypeToken;
+import com.legadi.jurl.common.Pair;
 
 public class RequestCatcher {
 
     private final Map<TypeToken<?>, Map<UUID, Object>> data = Collections.synchronizedMap(new HashMap<>());
-    private final Map<TypeToken<?>, Object> lastSaved = Collections.synchronizedMap(new HashMap<>());
+    private final Map<TypeToken<?>, Pair<UUID, Object>> lastSaved = Collections.synchronizedMap(new HashMap<>());
 
     @SuppressWarnings("unchecked")
     public <T> T get(TypeToken<T> dataType, UUID identifier) {
@@ -25,7 +26,7 @@ public class RequestCatcher {
             data.put(dataType, Collections.synchronizedMap(new HashMap<>()));
         }
         data.get(dataType).put(identifier, value);
-        lastSaved.put(dataType, value);
+        lastSaved.put(dataType, new Pair<>(identifier, value));
         return value;
     }
 
@@ -42,7 +43,7 @@ public class RequestCatcher {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T getLastSaved(TypeToken<T> dataType) {
-        return (T) lastSaved.get(dataType);
+    public <T> Pair<UUID, T> getLastSaved(TypeToken<T> dataType) {
+        return (Pair<UUID, T>) lastSaved.get(dataType);
     }
 }

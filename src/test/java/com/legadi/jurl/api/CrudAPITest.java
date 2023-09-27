@@ -53,7 +53,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertEquals(1, createRequest.getAssertions().size());
 
         HTTPResponseEntry createResponse = requestCatcher.get(new TypeToken<HTTPResponseEntry>() {}, createIdentifier);
-        BasicFunctionsEntity createEntity = requestCatcher.getLastSaved(new TypeToken<BasicFunctionsEntity>() {});
+        BasicFunctionsEntity createEntity = requestCatcher.getLastSaved(new TypeToken<BasicFunctionsEntity>() {}).getRight();
         Settings createSettings = requestCatcher.get(new TypeToken<Settings>() {}, createIdentifier);
 
         Assertions.assertEquals("http://localhost:" + port + "/basic/body", createResponse.getRequestUrl());
@@ -185,7 +185,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertEquals(0, updateAssertionResult.get().getFailures());
         Assertions.assertFalse(updateAssertionResult.get().isSkip());
 
-        BasicFunctionsEntity updateEntity = requestCatcher.getLastSaved(new TypeToken<BasicFunctionsEntity>() {});
+        BasicFunctionsEntity updateEntity = requestCatcher.getLastSaved(new TypeToken<BasicFunctionsEntity>() {}).getRight();
         BasicFunctionsEntity updateBody = loadJsonFile(updateRequest.getBodyTemporalPath(), new TypeToken<BasicFunctionsEntity>() {});
 
         Assertions.assertEquals(updateEntity.getAccess(), updateBody.getAccess());
