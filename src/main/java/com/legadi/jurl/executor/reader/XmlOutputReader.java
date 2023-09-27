@@ -14,7 +14,17 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-public class XmlOutputReader implements OutputReader<Map<String, String>> {
+public class XmlOutputReader implements OutputReader {
+
+    @Override
+    public boolean accepts(String contentType) {
+        return accepts(contentType, "application/xml", "text/xml", "application/atom+xml");
+    }
+
+    @Override
+    public boolean isPrintable() {
+        return true;
+    }
 
     @Override
     public Map<String, String> apply(Path sourcePath, Set<String> params, String paramPrefix) {

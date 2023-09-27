@@ -17,9 +17,19 @@ import java.util.function.Consumer;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 
-public class JsonOutputReader implements OutputReader<Map<String, String>> {
+public class JsonOutputReader implements OutputReader {
 
     private final Random random = new Random();
+
+    @Override
+    public boolean accepts(String contentType) {
+        return accepts(contentType, "application/json", "application/ld+json");
+    }
+
+    @Override
+    public boolean isPrintable() {
+        return true;
+    }
 
     @Override
     public Map<String, String> apply(Path sourcePath, Set<String> params, String paramPrefix) {

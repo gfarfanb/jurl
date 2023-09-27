@@ -30,14 +30,14 @@ public class RequestHandlersRegistry {
         registerHandler(executorSupplier, processorSupplier);
     }
 
-    public static void registerHandler(Supplier<RequestExecutor<?, ?>> requestExecutor,
-            Supplier<ResponseProcessor<?, ?>> responseProcessor) {
-        RequestExecutor<?, ?> executor = requestExecutor.get();
+    public static void registerHandler(Supplier<RequestExecutor<?, ?>> requestExecutorSupplier,
+            Supplier<ResponseProcessor<?, ?>> responseProcessorSupplier) {
+        RequestExecutor<?, ?> requestExecutor = requestExecutorSupplier.get();
         Handler handler = new Handler();
 
-        handler.setAccepts(request -> executor.accepts(request));
-        handler.setRequestExecutor(requestExecutor);
-        handler.setResponseProcessor(responseProcessor);
+        handler.setAccepts(requestExecutor::accepts);
+        handler.setRequestExecutor(requestExecutorSupplier);
+        handler.setResponseProcessor(responseProcessorSupplier);
 
         EXECUTORS.add(handler);
     }

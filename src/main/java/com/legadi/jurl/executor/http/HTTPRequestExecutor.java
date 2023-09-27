@@ -13,10 +13,9 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.lang.reflect.Constructor;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -204,16 +203,6 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     }
 
     private HttpURLConnection createConnection(Settings settings, HTTPRequestEntry request, URL url) throws IOException {
-        if(isNotBlank(settings.getMockRequestClass())) {
-            try {
-                Class<?> connectionClass = Class.forName(settings.getMockRequestClass());
-                Constructor<?> constructor = connectionClass.getConstructor();
-                return (HttpURLConnection) constructor.newInstance();
-            } catch(Exception ex) {
-                throw new RequestException(request, "Invalid mock definition class: " + settings.getMockRequestClass());
-            }
-        }
-
         if(settings.isCurlRequest() || settings.isMockRequest()) {
             return new HTTPMockConnection(url);
         }
@@ -495,23 +484,23 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
                 .setFilename(filename)
                 .setExtension(isBlank(filename) ? "response" : null);
         Path responsePath = pathBuilder.buildOutputPath();
-        int lines = 0;
+        boolean wasOutputWritten = false;
 
-        try(BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                FileWriter responseWriter = new FileWriter(responsePath.toFile())) {
+        try(InputStream inputStream = connection.getInputStream();
+                OutputStream outputStream = Files.newOutputStream(responsePath)) {
 
-            
-            String line;
-            while((line = br.readLine()) != null) {
-                responseWriter.write(line);
-                lines++;
+            byte[] buffer = new byte[8 * 1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+                wasOutputWritten = true;
             }
         } catch(IOException ex) {
             LOGGER.log(FINE, "Error on reading response", ex);
             return null;
         }
 
-        if(lines > 0) {
+        if(wasOutputWritten) {
             return responsePath;
         } else {
             responsePath.toFile().delete();
@@ -592,11 +581,11 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     }
 
     private String identifyMethod(HTTPRequestEntry request) {
-        if(isNotBlank(request.getMethod())) {
-            return request.getMethod();
-        }
         if(request.getRequestFile() != null) {
             return "POST";
+        }
+        if(isNotBlank(request.getMethod())) {
+            return request.getMethod();
         }
         throw new RequestException(request, "HTTP method not defined");
     }

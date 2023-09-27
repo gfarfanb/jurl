@@ -9,6 +9,7 @@ import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
 import static com.legadi.jurl.common.LoaderUtils.printFile;
 import static com.legadi.jurl.common.WriterUtils.writeJsonFile;
+import static com.legadi.jurl.executor.reader.OutputReaderRegistry.findByContentType;
 
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -31,8 +32,7 @@ import com.legadi.jurl.exception.AssertionException;
 import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.executor.ResponseProcessor;
-import com.legadi.jurl.executor.reader.JsonOutputReader;
-import com.legadi.jurl.executor.reader.XmlOutputReader;
+import com.legadi.jurl.executor.reader.OutputReader;
 import com.legadi.jurl.model.AssertionEntry;
 import com.legadi.jurl.model.AssertionResult;
 import com.legadi.jurl.model.http.HTTPRequestEntry;
@@ -154,7 +154,6 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
             return new HashMap<>();
         }
 
-        Map<String, String> outputValues = new HashMap<>();
         String contentType = response.getResponseHeaders()
             .entrySet()
             .stream()
@@ -162,18 +161,17 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
             .map(Map.Entry::getValue)
             .findFirst()
             .orElse("");
-        boolean isPrintable = false;
+        Optional<OutputReader> outputReader = findByContentType(contentType);
+        Map<String, String> outputValues;
+        boolean isPrintable;
 
-        if(contentType.contains("application/json")) {
-            outputValues = new JsonOutputReader().apply(response.getResponsePath(), outputParams, OUTPUT_PREFIX);
-            isPrintable = true;
-        } else if(contentType.contains("application/xml")
-                || contentType.contains("text/xml")) {
-            outputValues = new XmlOutputReader().apply(response.getResponsePath(), outputParams, OUTPUT_PREFIX);
-            isPrintable = true;
-        } else if(contentType.contains("application/graphql+json")
-                || contentType.contains("text/html")) {
-            isPrintable = true;
+        if(outputReader.isPresent()) {
+            isPrintable = outputReader.get().isPrintable();
+            outputValues = outputReader.get().apply(response.getResponsePath(), outputParams, OUTPUT_PREFIX);
+        } else {
+            isPrintable = Arrays.stream(settings.getPrintableMimeTypes())
+                .anyMatch(type -> type.equalsIgnoreCase(contentType));
+            outputValues = new HashMap<>();
         }
 
         if(!settings.isCurlRequest()) {

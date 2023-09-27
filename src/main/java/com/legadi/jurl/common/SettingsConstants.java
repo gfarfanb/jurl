@@ -13,7 +13,6 @@ public class SettingsConstants {
     public static final String PROP_EXECUTION_AS_FLOW = "executionAsFlow";
     public static final String PROP_CURL_REQUEST = "curlRequest";
     public static final String PROP_MOCK_REQUEST = "mockRequest";
-    public static final String PROP_MOCK_REQUEST_CLASS = "mockRequestClass";
     public static final String PROP_OPEN_OUTPUT_IN_EDITOR = "openOutputInEditor";
     public static final String PROP_EXECUTION_TIMES = "executionTimes";
     public static final String PROP_INPUT_NAME = "inputName";
@@ -24,6 +23,7 @@ public class SettingsConstants {
     public static final String PROP_SETTINGS_PARAM_END_AT_LENGTH_MINUS = "settingsParamEndAtLengthMinus";
     public static final String PROP_SKIP_ASSERTIONS = "skipAssertions";
     public static final String PROP_OVERRIDE_REQUEST_FILE = "overrideRequestFile";
+    public static final String PROP_PRINTABLE_MIME_TYPES = "printableMimeTypes";
 
     private SettingsConstants() {}
 }

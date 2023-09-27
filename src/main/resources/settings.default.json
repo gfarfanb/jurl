@@ -10,7 +10,6 @@
     "executionAsFlow": false,
     "curlRequest": false,
     "mockRequest": false,
-    "mockRequestClass": "",
     "openOutputInEditor": false,
     "executionTimes": 1,
     "inputName": "",
@@ -20,5 +19,6 @@
     "settingsParamStartAt": 2,
     "settingsParamEndAtLengthMinus": 2,
     "skipAssertions": false,
-    "overrideRequestFile": ""
+    "overrideRequestFile": "",
+    "printableMimeTypes": "application/graphql+json,application/vnd.mozilla.xul+xml,application/xhtml+xml,text/css,text/csv,text/html,text/javascript,text/plain"
 }

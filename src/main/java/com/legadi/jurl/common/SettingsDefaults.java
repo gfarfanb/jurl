@@ -10,9 +10,9 @@ import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_TIMES;
 import static com.legadi.jurl.common.SettingsConstants.PROP_HISTORY_PATH;
 import static com.legadi.jurl.common.SettingsConstants.PROP_INPUT_NAME;
 import static com.legadi.jurl.common.SettingsConstants.PROP_MOCK_REQUEST;
-import static com.legadi.jurl.common.SettingsConstants.PROP_MOCK_REQUEST_CLASS;
 import static com.legadi.jurl.common.SettingsConstants.PROP_OPEN_EDITOR_COMMAND;
 import static com.legadi.jurl.common.SettingsConstants.PROP_OVERRIDE_REQUEST_FILE;
+import static com.legadi.jurl.common.SettingsConstants.PROP_PRINTABLE_MIME_TYPES;
 import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_AUTHORIZATION_TYPE;
 import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_CREDENTIAL_ID;
 import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_END_AT_LENGTH_MINUS;
@@ -83,10 +83,6 @@ public interface SettingsDefaults {
         return get(PROP_MOCK_REQUEST, Boolean::valueOf);
     }
 
-    default String getMockRequestClass() {
-        return get(PROP_MOCK_REQUEST_CLASS);
-    }
-
     default boolean isOpenOutputInEditor() {
         return get(PROP_OPEN_EDITOR_COMMAND, Boolean::valueOf);
     }
@@ -125,5 +121,9 @@ public interface SettingsDefaults {
 
     default String getOverrideRequestFile() {
         return get(PROP_OVERRIDE_REQUEST_FILE);
+    }
+
+    default String[] getPrintableMimeTypes() {
+        return getOrDefault(PROP_PRINTABLE_MIME_TYPES, "").split(",");
     }
 }
