@@ -19,15 +19,14 @@ import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import com.google.gson.reflect.TypeToken;
+import com.legadi.jurl.common.ExecutionLevels;
 import com.legadi.jurl.common.OutputPathBuilder;
 import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.common.Settings;
@@ -49,12 +48,14 @@ import com.legadi.jurl.options.SetInputNameOption;
 
 public class RequestCommand {
 
+    private static final int FIRST_EXECUTION = 1;
+
     private final OptionsReader optionsReader;
-    private final Set<String> registeredInputPaths;
+    private final ExecutionLevels executionLevels;
 
     public RequestCommand(String[] args) {
         this.optionsReader = new OptionsReader(args);
-        this.registeredInputPaths = new HashSet<>();
+        this.executionLevels = new ExecutionLevels();
 
         optionsReader.registerAddOnOptions();
     }
@@ -82,11 +83,6 @@ public class RequestCommand {
         if(isBlank(requestInputPath)) {
             throw new CommandException("Request input path is null or empty");
         }
-        if(registeredInputPaths.contains(requestInputPath)) {
-            throw new CommandException("Request input was already processed: " + requestInputPath);
-        }
-
-        registeredInputPaths.add(requestInputPath);
 
         RequestInputRaw requestInput = loadJsonFile(requestInputPath, new TypeToken<RequestInputRaw>() {});
 
@@ -98,12 +94,15 @@ public class RequestCommand {
     private void executeInputRaw(Settings settings, RequestInputRaw requestInput, boolean isMainInput) {
         loadConfig(requestInput, settings, isMainInput);
 
-        int times = settings.getTimes() > 0 ? settings.getTimes() : 1;
+        int times = settings.getTimes() > 0 ? settings.getTimes() : FIRST_EXECUTION;
 
         IntStream.range(0, times)
             .parallel()
             .forEach(index -> {
                 if(settings.isExecutionAsFlow()) {
+                    if(index == FIRST_EXECUTION) {
+                        executionLevels.nextLevel();
+                    }
                     processFlow(index, requestInput, new StringExpander(settings.createForNextExecution()));
                 } else {
                     processRequest(index, requestInput, new StringExpander(settings.createForNextExecution()));
@@ -202,9 +201,14 @@ public class RequestCommand {
 
         Settings settings = stringExpander.getSettings();
         Pair<String, String> requestDef = pickRequest(requestInput, settings);
+
         if(isBlank(requestDef.getRight())) {
             throw new CommandException("No request defined for name: "
                 + requestDef.getLeft() + " - " + requestInput.getPath());
+        }
+        if(index == FIRST_EXECUTION && executionLevels.wasExecuted(requestInput.getPath(), requestDef.getLeft())) {
+            throw new CommandException("Request input was already processed: "
+                + requestInput.getPath() + "/" + requestDef.getLeft() + " - " + executionLevels.getTrace());
         }
 
         String apiRaw = null;
