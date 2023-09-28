@@ -26,8 +26,9 @@ public class OptionsRegistry {
         registerOption(new FlowExecutionOption());
         registerOption(new HelpOption());
         registerOption(new MockRequestOption());
-        registerOption(new OpenOutputOption());
+        registerOption(new OpenEditorOption());
         registerOption(new OverrideRequestOption());
+        registerOption(new RequestPrintOption());
         registerOption(new SetInputNameOption());
         registerOption(new SetValueOption());
         registerOption(new SkipAssertionsOption());

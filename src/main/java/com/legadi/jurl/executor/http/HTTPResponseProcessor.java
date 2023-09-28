@@ -35,6 +35,7 @@ import com.legadi.jurl.executor.ResponseProcessor;
 import com.legadi.jurl.executor.reader.OutputReader;
 import com.legadi.jurl.model.AssertionEntry;
 import com.legadi.jurl.model.AssertionResult;
+import com.legadi.jurl.model.RequestBehaviour;
 import com.legadi.jurl.model.http.HTTPRequestEntry;
 import com.legadi.jurl.model.http.HTTPResponseEntry;
 
@@ -48,10 +49,16 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
     @Override
     public Optional<AssertionResult> processResponse(Settings settings, HTTPRequestEntry request, HTTPResponseEntry response)
             throws RequestException {
+        RequestBehaviour behaviour = settings.getRequestBehaviour();
 
-        if(settings.isCurlRequest()) {
-            LOGGER.info(response.getCurlCommand());
-            return Optional.empty();
+        switch(behaviour) {
+            case CURL_ONLY:
+                LOGGER.info(response.getCurlCommand());
+                return Optional.empty();
+            case PRINT_ONLY:
+                return Optional.empty();
+            default:
+                break;
         }
 
         mapOutput(settings, response);
@@ -174,20 +181,21 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
             outputValues = new HashMap<>();
         }
 
-        if(!settings.isCurlRequest()) {
+        if(isPrintable) {
+            printFile(response.getResponsePath());
+        }
 
-            if(isPrintable) {
-                printFile(response.getResponsePath());
-            }
+        if(isNotEmpty(outputValues)) {
+            StringBuilder printableOutput = new StringBuilder();
 
-            if(isNotEmpty(outputValues)) {
-                StringBuilder printableOutput = new StringBuilder();
+            outputValues.forEach((output, value) -> printableOutput
+                .append(output)
+                .append(" <- ")
+                .append(value)
+                .append("\n"));
 
-                outputValues.forEach((output, value) -> printableOutput.append(output).append(" <- ").append(value).append("\n"));
-
-                LOGGER.info("Processed output [" + contentType + "]: " + response.getResponsePath());
-                LOGGER.info(printableOutput.toString());
-            }
+            LOGGER.info("Processed output [" + contentType + "]: " + response.getResponsePath());
+            LOGGER.info(printableOutput.toString());
         }
 
         return outputValues;

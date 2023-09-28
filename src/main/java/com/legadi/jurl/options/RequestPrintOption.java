@@ -5,16 +5,16 @@ import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_BEHAVIOUR;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.model.RequestBehaviour;
 
-public class CurlPrintOption extends Option {
+public class RequestPrintOption extends Option {
 
     @Override
     public String getOpt() {
-        return "--curl";
+        return "--print";
     }
 
     @Override
     public String getAlias() {
-        return "-c";
+        return "-p";
     }
 
     @Override
@@ -24,12 +24,12 @@ public class CurlPrintOption extends Option {
 
     @Override
     public String getDescription() {
-        return "Displays the related 'curl' command.";
+        return "Displays the request definition.";
     }
 
     @Override
     public boolean execute(Settings settings, String[] args) {
-        settings.putOverride(PROP_REQUEST_BEHAVIOUR, RequestBehaviour.CURL_ONLY.name());
+        settings.putOverride(PROP_REQUEST_BEHAVIOUR, RequestBehaviour.PRINT_ONLY.name());
         return true;
     }
 }

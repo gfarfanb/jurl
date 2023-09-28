@@ -11,7 +11,7 @@ public class SettingsConstants {
     public static final String PROP_REQUEST_CREDENTIAL_ID = "requestCredentialId";
     public static final String PROP_REQUEST_AUTHORIZATION_TYPE = "requestAuthorizationType";
     public static final String PROP_EXECUTION_AS_FLOW = "executionAsFlow";
-    public static final String PROP_CURL_REQUEST = "curlRequest";
+    public static final String PROP_REQUEST_BEHAVIOUR = "requestBehaviour";
     public static final String PROP_MOCK_REQUEST = "mockRequest";
     public static final String PROP_OPEN_OUTPUT_IN_EDITOR = "openOutputInEditor";
     public static final String PROP_EXECUTION_TIMES = "executionTimes";

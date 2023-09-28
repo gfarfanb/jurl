@@ -4,16 +4,16 @@ import static com.legadi.jurl.common.SettingsConstants.PROP_OPEN_OUTPUT_IN_EDITO
 
 import com.legadi.jurl.common.Settings;
 
-public class OpenOutputOption extends Option {
+public class OpenEditorOption extends Option {
 
     @Override
     public String getOpt() {
-        return "--open";
+        return "--open-editor";
     }
 
     @Override
     public String getAlias() {
-        return "-o";
+        return "-oe";
     }
 
     @Override

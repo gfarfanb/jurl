@@ -8,7 +8,7 @@
     "requestCredentialId": "",
     "requestAuthorizationType": "EMPTY",
     "executionAsFlow": false,
-    "curlRequest": false,
+    "requestBehaviour": "REQUEST",
     "mockRequest": false,
     "openOutputInEditor": false,
     "executionTimes": 1,

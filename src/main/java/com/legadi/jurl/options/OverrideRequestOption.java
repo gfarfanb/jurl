@@ -13,7 +13,7 @@ public class OverrideRequestOption extends Option {
 
     @Override
     public String getAlias() {
-        return "-r";
+        return "-or";
     }
 
     @Override

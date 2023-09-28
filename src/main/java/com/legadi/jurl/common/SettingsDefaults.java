@@ -3,7 +3,6 @@ package com.legadi.jurl.common;
 import static com.legadi.jurl.common.CommonUtils.createDirectories;
 import static com.legadi.jurl.common.SettingsConstants.PROP_ADD_ON_OPTION_CLASSES;
 import static com.legadi.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
-import static com.legadi.jurl.common.SettingsConstants.PROP_CURL_REQUEST;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_AS_FLOW;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_OUTPUT_PATH;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_TIMES;
@@ -14,6 +13,7 @@ import static com.legadi.jurl.common.SettingsConstants.PROP_OPEN_EDITOR_COMMAND;
 import static com.legadi.jurl.common.SettingsConstants.PROP_OVERRIDE_REQUEST_FILE;
 import static com.legadi.jurl.common.SettingsConstants.PROP_PRINTABLE_MIME_TYPES;
 import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_AUTHORIZATION_TYPE;
+import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_BEHAVIOUR;
 import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_CREDENTIAL_ID;
 import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_END_AT_LENGTH_MINUS;
 import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX;
@@ -28,6 +28,7 @@ import java.nio.file.Paths;
 import java.util.function.Function;
 
 import com.legadi.jurl.model.AuthorizationType;
+import com.legadi.jurl.model.RequestBehaviour;
 
 public interface SettingsDefaults {
 
@@ -75,8 +76,8 @@ public interface SettingsDefaults {
         return get(PROP_EXECUTION_AS_FLOW, Boolean::valueOf);
     }
 
-    default boolean isCurlRequest() {
-        return get(PROP_CURL_REQUEST, Boolean::valueOf);
+    default RequestBehaviour getRequestBehaviour() {
+        return get(PROP_REQUEST_BEHAVIOUR, RequestBehaviour::valueOf);
     }
 
     default boolean isMockRequest() {
