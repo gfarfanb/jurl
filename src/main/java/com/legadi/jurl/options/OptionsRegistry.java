@@ -22,6 +22,7 @@ public class OptionsRegistry {
         registerOption(new CurlPrintOption());
         registerOption(new CustomGeneratorOption());
         registerOption(new CustomHandlerOption());
+        registerOption(new CustomReaderOption());
         registerOption(new EnvironmentOption());
         registerOption(new FlowExecutionOption());
         registerOption(new HelpOption());
