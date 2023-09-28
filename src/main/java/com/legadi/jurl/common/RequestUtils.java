@@ -2,13 +2,15 @@ package com.legadi.jurl.common;
 
 import static com.legadi.jurl.common.CommonUtils.isBlank;
 
+import com.legadi.jurl.model.MockEntry;
 import com.legadi.jurl.model.RequestEntry;
 
 public class RequestUtils {
 
     private RequestUtils() {}
 
-    public static void mergeRequestHeader(RequestEntry api, RequestEntry request) {
+    public static void mergeRequestHeader(RequestEntry<? extends MockEntry> api,
+            RequestEntry<? extends MockEntry> request) {
         if(isBlank(request.getUrl())) {
             request.setUrl(api.getUrl());
         }

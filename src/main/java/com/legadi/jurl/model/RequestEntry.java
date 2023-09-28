@@ -2,7 +2,7 @@ package com.legadi.jurl.model;
 
 import com.google.gson.annotations.Expose;
 
-public class RequestEntry {
+public class RequestEntry<T extends MockEntry> {
 
     @Expose(serialize = false, deserialize = false)
     protected String requestPath;
@@ -14,6 +14,7 @@ public class RequestEntry {
     protected int port;
     protected String basePath;
     protected String endpoint;
+    protected T mockDefinition;
 
     public String getRequestPath() {
         return requestPath;
@@ -77,6 +78,14 @@ public class RequestEntry {
 
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
+    }
+
+    public T getMockDefinition() {
+        return mockDefinition;
+    }
+
+    public void setMockDefinition(T mockDefinition) {
+        this.mockDefinition = mockDefinition;
     }
 
     @Override

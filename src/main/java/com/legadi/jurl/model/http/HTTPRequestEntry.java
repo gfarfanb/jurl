@@ -10,7 +10,7 @@ import com.google.gson.annotations.Expose;
 import com.legadi.jurl.model.AssertionEntry;
 import com.legadi.jurl.model.RequestEntry;
 
-public class HTTPRequestEntry extends RequestEntry {
+public class HTTPRequestEntry extends RequestEntry<HTTPMockEntry> {
 
     private String method;
     private Map<String, String> queryParams = new HashMap<>();

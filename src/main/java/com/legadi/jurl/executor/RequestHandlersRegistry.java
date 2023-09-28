@@ -13,6 +13,7 @@ import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.executor.http.HTTPRequestExecutor;
 import com.legadi.jurl.executor.http.HTTPResponseProcessor;
+import com.legadi.jurl.model.MockEntry;
 import com.legadi.jurl.model.RequestEntry;
 
 public class RequestHandlersRegistry {
@@ -43,7 +44,8 @@ public class RequestHandlersRegistry {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public static Pair<RequestExecutor<?, ?>, ResponseProcessor<?, ?>> findByRequest(RequestEntry request) {
+    public static Pair<RequestExecutor<?, ?>, ResponseProcessor<?, ?>> findByRequest(
+            RequestEntry<? extends MockEntry> request) {
         List<Handler> handlers = EXECUTORS
             .stream()
             .filter(handler -> handler.getAccepts().test(request))
@@ -60,15 +62,15 @@ public class RequestHandlersRegistry {
 
     public static class Handler {
 
-        private Predicate<RequestEntry> accepts;
+        private Predicate<RequestEntry<? extends MockEntry>> accepts;
         private Supplier<RequestExecutor<?, ?>> requestExecutor;
         private Supplier<ResponseProcessor<?, ?>> responseProcessor;
 
-        public Predicate<RequestEntry> getAccepts() {
+        public Predicate<RequestEntry<? extends MockEntry>> getAccepts() {
             return accepts;
         }
 
-        public void setAccepts(Predicate<RequestEntry> accepts) {
+        public void setAccepts(Predicate<RequestEntry<? extends MockEntry>> accepts) {
             this.accepts = accepts;
         }
 

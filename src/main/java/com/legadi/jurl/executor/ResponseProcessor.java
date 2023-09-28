@@ -5,13 +5,14 @@ import java.util.Optional;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.model.AssertionResult;
+import com.legadi.jurl.model.MockEntry;
 import com.legadi.jurl.model.RequestEntry;
 import com.legadi.jurl.model.ResponseEntry;
 
-public interface ResponseProcessor<T extends RequestEntry, R extends ResponseEntry> {
+public interface ResponseProcessor<T extends RequestEntry<? extends MockEntry>, R extends ResponseEntry> {
 
     @SuppressWarnings("unchecked")
-    default T cast(RequestEntry request) {
+    default T cast(RequestEntry<? extends MockEntry> request) {
         return (T) request;
     }
 
@@ -20,7 +21,8 @@ public interface ResponseProcessor<T extends RequestEntry, R extends ResponseEnt
         return (R) response;
     }
 
-    default Optional<AssertionResult> process(Settings settings, RequestEntry request, ResponseEntry response) throws RequestException {
+    default Optional<AssertionResult> process(Settings settings, RequestEntry<? extends MockEntry> request,
+            ResponseEntry response) throws RequestException {
         return processResponse(settings, cast(request), cast(response));
     }
 

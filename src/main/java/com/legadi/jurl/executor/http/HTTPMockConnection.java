@@ -12,31 +12,40 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+
+import com.legadi.jurl.model.http.HTTPMockEntry;
 
 public class HTTPMockConnection extends HttpURLConnection {
 
     private static final Logger LOGGER = Logger.getLogger(HTTPMockConnection.class.getName());
 
     private URL url;
-    private String responseContent;
     private int responseCode;
-    private Map<String, List<String>> responseHeaders;
+    private String responseContent;
+    private String responseFilePath;
+    private Map<String, List<String>> responseHeaders = new HashMap<>();
     private boolean doOutput;
 
-    public HTTPMockConnection(URL url) {
+    public HTTPMockConnection(URL url, HTTPMockEntry mockEntry) {
         super(null);
-    }
 
-    public void setResponseContent(String responseContent) {
-        this.responseContent = responseContent;
-    }
+        this.url = url;
 
-    public void setResponseCode(int responseCode) {
-        this.responseCode = responseCode;
+        if(mockEntry != null) {
+            this.responseCode = mockEntry.getStatusCode();
+            this.responseContent = mockEntry.getResponseContent();
+            this.responseFilePath = mockEntry.getResponseFilePath();
+
+            this.responseHeaders.putAll(mockEntry.getResponseHeaders());
+            this.responseHeaders.put(null, Arrays.asList("HTTP/1.1 " + responseCode));
+        }
     }
 
     @Override
@@ -98,10 +107,14 @@ public class HTTPMockConnection extends HttpURLConnection {
         if(isNotBlank(responseContent)) {
             LOGGER.fine("[mock-connection] Calling getInputStream():ByteArrayInputStream - " + responseContent);
             return new ByteArrayInputStream(responseContent.getBytes());
-        } else {
-            LOGGER.fine("[mock-connection] Calling getInputStream():ByteArrayInputStream");
-            return new ByteArrayInputStream(new byte[0]);
         }
+        if(isNotBlank(responseFilePath)) {
+            LOGGER.fine("[mock-connection] Calling getInputStream():ByteArrayInputStream - " + responseFilePath);
+            return Files.newInputStream(Paths.get(responseFilePath));
+        }
+
+        LOGGER.fine("[mock-connection] Calling getInputStream():ByteArrayInputStream");
+        return new ByteArrayInputStream(new byte[0]);
     }
 
     @Override
@@ -116,10 +129,10 @@ public class HTTPMockConnection extends HttpURLConnection {
             LOGGER.fine("[mock-connection] Calling getHeaderFields():" + responseHeaders.getClass().getSimpleName()
                 + "-" + toJsonString(responseHeaders));
             return responseHeaders;
-        } else {
-            LOGGER.fine("[mock-connection] Calling getHeaderFields():HashMap");
-            return new HashMap<>();
         }
+
+        LOGGER.fine("[mock-connection] Calling getHeaderFields():HashMap");
+        return new HashMap<>();
     }
 
     @Override

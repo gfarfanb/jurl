@@ -43,6 +43,7 @@ import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.executor.RequestExecutor;
 import com.legadi.jurl.model.AssertionEntry;
 import com.legadi.jurl.model.Credential;
+import com.legadi.jurl.model.MockEntry;
 import com.legadi.jurl.model.RequestBehaviour;
 import com.legadi.jurl.model.RequestEntry;
 import com.legadi.jurl.model.http.HTTPRequestEntry;
@@ -59,7 +60,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     private static final String FILENAME_PATTERN = ".*filename=(.*)";
 
     @Override
-    public boolean accepts(RequestEntry request) {
+    public boolean accepts(RequestEntry<? extends MockEntry> request) {
         return (isNotBlank(request.getUrl()) && request.getUrl().startsWith("http"))
             || (isNotBlank(request.getProtocol()) && request.getProtocol().startsWith("http"));
     }
@@ -203,7 +204,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
 
     private HttpURLConnection createConnection(Settings settings, HTTPRequestEntry request, URL url) throws IOException {
         if(settings.isMockRequest()) {
-            return new HTTPMockConnection(url);
+            return new HTTPMockConnection(url, request.getMockDefinition());
         }
 
         RequestBehaviour behaviour = settings.getRequestBehaviour();
@@ -211,7 +212,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         switch(behaviour) {
             case CURL_ONLY:
             case PRINT_ONLY:
-                return new HTTPMockConnection(url);
+                return new HTTPMockConnection(url, request.getMockDefinition());
             default:
                 return (HttpURLConnection) url.openConnection();
         }

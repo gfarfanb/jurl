@@ -38,6 +38,7 @@ import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.exception.SkipExecutionException;
 import com.legadi.jurl.model.AssertionResult;
 import com.legadi.jurl.model.HistoryEntry;
+import com.legadi.jurl.model.MockEntry;
 import com.legadi.jurl.model.RequestEntry;
 import com.legadi.jurl.model.RequestInputRaw;
 import com.legadi.jurl.model.ResponseEntry;
@@ -207,15 +208,15 @@ public class RequestCommand {
         }
 
         String apiRaw = null;
-        RequestEntry apiHeader = null;
+        RequestEntry<? extends MockEntry> apiHeader = null;
         
         if(isNotBlank(requestInput.getApi())) {
             apiRaw = stringExpander.replaceAllInContent(requestInput.getApi());
-            apiHeader = jsonToObject(apiRaw, new TypeToken<RequestEntry>() {});
+            apiHeader = jsonToObject(apiRaw, new TypeToken<RequestEntry<? extends MockEntry>>() {});
         }
         
         String requestRaw = stringExpander.replaceAllInContent(requestDef.getRight());
-        RequestEntry requestHeader = jsonToObject(requestRaw, new TypeToken<RequestEntry>() {});
+        RequestEntry<? extends MockEntry> requestHeader = jsonToObject(requestRaw, new TypeToken<RequestEntry<? extends MockEntry>>() {});
 
         if(apiHeader != null) {
             mergeRequestHeader(apiHeader, requestHeader);
@@ -245,18 +246,18 @@ public class RequestCommand {
         }
     }
 
-    private void executeRequest(Settings settings, RequestEntry header,
+    private void executeRequest(Settings settings, RequestEntry<? extends MockEntry> header,
             String requestPath, String name, String apiRaw, String requestRaw) {
         Pair<RequestExecutor<?, ?>, ResponseProcessor<?, ?>> handlers = findByRequest(header);
         RequestExecutor<?, ?> executor = handlers.getLeft();
         ResponseProcessor<?, ?> processor = handlers.getRight();
-        RequestEntry request = jsonToObject(requestRaw, executor.type());
+        RequestEntry<? extends MockEntry> request = jsonToObject(requestRaw, executor.type());
 
         request.setRequestPath(requestPath);
         request.setName(name);
 
         if(apiRaw != null) {
-            RequestEntry api = jsonToObject(apiRaw, executor.type());
+            RequestEntry<? extends MockEntry> api = jsonToObject(apiRaw, executor.type());
             executor.mergeAPIDefinition(settings, api, request);
         }
 
