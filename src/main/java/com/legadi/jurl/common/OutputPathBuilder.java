@@ -2,19 +2,21 @@ package com.legadi.jurl.common;
 
 import static com.legadi.jurl.common.CommonUtils.createDirectories;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
-import static com.legadi.jurl.common.CommonUtils.strip;
+import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
+import static com.legadi.jurl.common.CommonUtils.stripStart;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class OutputPathBuilder {
 
     private final Settings settings;
 
-    private String requestPath;
+    private String[] requestPath;
     private String requestName;
     private String filename;
     private String extension;
@@ -24,8 +26,12 @@ public class OutputPathBuilder {
     }
 
     public OutputPathBuilder setRequestPath(String requestPath) {
-        String[] pathParts = strip(requestPath, File.separator + ".").split(File.separator);
-        this.requestPath = pathParts[pathParts.length - 1].replaceAll("\\.", "_");
+        String[] pathParts = stripStart(requestPath, File.separator + ".").split(File.separator);
+        this.requestPath = Arrays
+            .stream(pathParts)
+            .map(part -> part.replaceAll(" ", "_"))
+            .map(part -> part.replaceAll("\\.", "_"))
+            .toArray(String[]::new);
         return this;
     }
 
@@ -44,23 +50,19 @@ public class OutputPathBuilder {
         return this;
     }
 
-    public Path buildOutputPath() {
-        return buildFilePath(settings.getOutputPath(), null);
-    }
-
-    public Path buildTemporalPath() {
-        return buildFilePath(settings.getTemporalPath(), null);
+    public Path buildCommandPath() {
+        return buildFilePath(settings.getExecutionPath(), null);
     }
 
     public Path buildHistoryPath() {
         return buildFilePath(settings.getHistoryPath(), settings.getTimestamp().toLocalDate().toString());
     }
 
-    private Path buildFilePath(Path mainPath, String folder) {
+    private Path buildFilePath(Path basePath, String folder) {
         List<String> pathParts = new ArrayList<>();
 
-        if(isNotBlank(requestPath)) {
-            pathParts.add(requestPath);
+        if(isNotEmpty(requestPath)) {
+            Arrays.stream(requestPath).forEach(pathParts::add);
         }
 
         if(isNotBlank(requestName)) {
@@ -71,7 +73,7 @@ public class OutputPathBuilder {
             pathParts.add(folder);
         }
 
-        Path filePath = Paths.get(mainPath.toString(), pathParts.toArray(new String[pathParts.size()]));
+        Path filePath = Paths.get(basePath.toString(), pathParts.toArray(new String[pathParts.size()]));
 
         return createDirectories(filePath).resolve(getFilename());
     }

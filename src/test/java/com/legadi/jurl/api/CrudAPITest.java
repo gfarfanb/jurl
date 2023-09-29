@@ -72,7 +72,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertTrue(createResponse.getCurlCommand().contains(createEntity.getType()));
         Assertions.assertTrue(createResponse.getCurlCommand().contains(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(createEntity.getTimestamp())));
         Assertions.assertEquals("HTTP/1.1 201", createResponse.getResult());
-        Assertions.assertEquals("./executions/basic-functions_json/create/" + createSettings.getExecutionTag() + ".response",
+        Assertions.assertEquals("./executions/src/test/resources/basic-functions_json/create/" + createSettings.getExecutionTag() + ".response",
             createResponse.getResponsePath().toString());
         Assertions.assertEquals(201, createResponse.getStatusCode());
         Assertions.assertEquals(6, createResponse.getResponseHeaders().size());
@@ -117,7 +117,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertTrue(obtainResponse.getCurlCommand().contains("-H \"Content-Type: application/json\""));
         Assertions.assertTrue(obtainResponse.getCurlCommand().contains("http://localhost:" + port + "/basic/body/" + id));
         Assertions.assertEquals("HTTP/1.1 200", obtainResponse.getResult());
-        Assertions.assertEquals("./executions/basic-functions_json/obtain/" + obtainSettings.getExecutionTag() + ".response",
+        Assertions.assertEquals("./executions/src/test/resources/basic-functions_json/obtain/" + obtainSettings.getExecutionTag() + ".response",
             obtainResponse.getResponsePath().toString());
         Assertions.assertEquals(200, obtainResponse.getStatusCode());
         Assertions.assertEquals(5, obtainResponse.getResponseHeaders().size());

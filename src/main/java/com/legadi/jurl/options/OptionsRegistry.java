@@ -2,54 +2,54 @@ package com.legadi.jurl.options;
 
 import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
+import static com.legadi.jurl.common.LoaderUtils.instantiate;
 
-import java.lang.reflect.Constructor;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import com.legadi.jurl.exception.CommandException;
 
 public class OptionsRegistry {
 
-    private static final Map<String, Option> REGISTERED_OPTIONS = new HashMap<>();
-    private static final Map<String, Option> ADD_ON_OPTIONS = new HashMap<>();
+    private static final Map<String, Supplier<Option>> REGISTERED_OPTIONS = new HashMap<>();
+    private static final Map<String, Supplier<Option>> ADD_ON_OPTIONS = new HashMap<>();
 
     static {
-        registerOption(new AuthorizationBasicOption());
-        registerOption(new AuthorizationTokenOption());
-        registerOption(new CurlPrintOption());
-        registerOption(new CustomGeneratorOption());
-        registerOption(new CustomHandlerOption());
-        registerOption(new CustomReaderOption());
-        registerOption(new EnvironmentOption());
-        registerOption(new FlowExecutionOption());
-        registerOption(new HelpOption());
-        registerOption(new MockRequestOption());
-        registerOption(new OpenEditorOption());
-        registerOption(new OverrideRequestOption());
-        registerOption(new RequestPrintOption());
-        registerOption(new SetInputNameOption());
-        registerOption(new SetValueOption());
-        registerOption(new SkipAssertionsOption());
-        registerOption(new TimesRepeatOption());
+        registerOption(AuthorizationBasicOption::new);
+        registerOption(AuthorizationTokenOption::new);
+        registerOption(CurlPrintOption::new);
+        registerOption(CustomGeneratorOption::new);
+        registerOption(CustomHandlerOption::new);
+        registerOption(CustomReaderOption::new);
+        registerOption(EnvironmentOption::new);
+        registerOption(FlowExecutionOption::new);
+        registerOption(HelpOption::new);
+        registerOption(MockRequestOption::new);
+        registerOption(OpenEditorOption::new);
+        registerOption(OverrideRequestOption::new);
+        registerOption(RequestPrintOption::new);
+        registerOption(SetInputNameOption::new);
+        registerOption(SetValueOption::new);
+        registerOption(SkipAssertionsOption::new);
+        registerOption(TimesRepeatOption::new);
     }
 
-    public static Option registerAddOn(Class<Option> optionClass) {
-        try {
-            Constructor<Option> constructor = optionClass.getConstructor();
-            return registerOption(constructor.newInstance(), true);
-        } catch(Exception ex) {
-            throw new IllegalStateException("Unable to instance option from: " + optionClass, ex);
-        }
+    public static Option registerAddOn(String optionClass) {
+        Supplier<Option> optionSupplier = () -> instantiate(optionClass);
+
+        return registerOption(optionSupplier, true);
     }
 
-    private static Option registerOption(Option option) {
-        return registerOption(option, false);
+    private static Option registerOption(Supplier<Option> optionSupplier) {
+        return registerOption(optionSupplier, false);
     }
 
-    private static Option registerOption(Option option, boolean isAddOn) {
+    private static Option registerOption(Supplier<Option> optionSupplier, boolean isAddOn) {
+        Option option = optionSupplier.get();
+
         if(REGISTERED_OPTIONS.containsKey(option.getOpt()) || ADD_ON_OPTIONS.containsKey(option.getOpt())) {
             throw new CommandException("Option [" + option.getOpt() + "] already exists");
         }
@@ -60,31 +60,45 @@ public class OptionsRegistry {
             throw new CommandException("Option does not have [opt] defined");
         }
 
-        Map<String, Option> registeredOptions;
+        Map<String, Supplier<Option>> registeredOptions;
         if(isAddOn) {
             registeredOptions = ADD_ON_OPTIONS;
         } else {
             registeredOptions = REGISTERED_OPTIONS;
         }
 
-        registeredOptions.put(option.getOpt().toLowerCase(), option);
+        registeredOptions.put(option.getOpt().toLowerCase(), optionSupplier);
 
         if(isNotBlank(option.getAlias())) {
-            registeredOptions.put(option.getAlias().toLowerCase(), option);
+            registeredOptions.put(option.getAlias().toLowerCase(), optionSupplier);
         }
 
         return option;
     }
 
     public static Set<Option> getOptions() {
-        return new HashSet<>(REGISTERED_OPTIONS.values());
+        return REGISTERED_OPTIONS.values()
+            .stream()
+            .map(Supplier::get)
+            .collect(Collectors.toSet());
     }
 
     public static Set<Option> getAddOns() {
-        return new HashSet<>(ADD_ON_OPTIONS.values());
+        return ADD_ON_OPTIONS.values()
+            .stream()
+            .map(Supplier::get)
+            .collect(Collectors.toSet());
     }
 
     public static Option findByArg(String arg) {
-        return REGISTERED_OPTIONS.getOrDefault(arg.toLowerCase(), ADD_ON_OPTIONS.get(arg.toLowerCase()));
+        Supplier<Option> optionSupplier = REGISTERED_OPTIONS.getOrDefault(
+            arg.toLowerCase(), ADD_ON_OPTIONS.get(arg.toLowerCase())
+        );
+
+        if(optionSupplier != null) {
+            return optionSupplier.get();
+        } else {
+            return null;
+        }
     }
 }

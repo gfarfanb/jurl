@@ -3,50 +3,46 @@ package com.legadi.jurl.generators;
 import static com.legadi.jurl.common.LoaderUtils.instantiate;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.legadi.jurl.common.Settings;
-import com.legadi.jurl.exception.CommandException;
 
 public class GeneratorsRegistry {
 
-    private static final List<Generator> GENERATORS = new LinkedList<>();
-    private static final Map<String, Generator> REGISTERED = new HashMap<>();
+    private static final List<Supplier<Generator>> GENERATORS = new LinkedList<>();
 
     static {
-        GENERATORS.add(new AlphaNumericGenerator());
-        GENERATORS.add(new BooleanGenerator());
-        GENERATORS.add(new DateTimeGenerator());
-        GENERATORS.add(new DecimalGenerator());
-        GENERATORS.add(new EmailGenerator());;
-        GENERATORS.add(new FullNameGenerator());
-        GENERATORS.add(new IntegerGenerator());
-        GENERATORS.add(new LastNameGenerator());
-        GENERATORS.add(new LoremIpsumGenerator());
-        GENERATORS.add(new NameGenerator());
-        GENERATORS.add(new PasswordInputGenerator());
-        GENERATORS.add(new PickAnyGenerator());
-        GENERATORS.add(new UserInputGenerator());
-        GENERATORS.add(new UUIDGenerator());
+        registerGenerator(AlphaNumericGenerator::new);
+        registerGenerator(BooleanGenerator::new);
+        registerGenerator(DateTimeGenerator::new);
+        registerGenerator(DecimalGenerator::new);
+        registerGenerator(EmailGenerator::new);;
+        registerGenerator(FullNameGenerator::new);
+        registerGenerator(IntegerGenerator::new);
+        registerGenerator(LastNameGenerator::new);
+        registerGenerator(LoremIpsumGenerator::new);
+        registerGenerator(NameGenerator::new);
+        registerGenerator(PasswordInputGenerator::new);
+        registerGenerator(PickAnyGenerator::new);
+        registerGenerator(UserInputGenerator::new);
+        registerGenerator(UUIDGenerator::new);
     }
 
     public static void registerGenerator(String generatorClass) {
-        if(REGISTERED.containsKey(generatorClass)) {
-            throw new CommandException("Generator [" + generatorClass + "] already exists");
-        }
+        registerGenerator(() -> instantiate(generatorClass));
+    }
 
-        Generator generator = instantiate(generatorClass);
-        GENERATORS.add(generator);
-        REGISTERED.put(generatorClass, generator);
+    private static void registerGenerator(Supplier<Generator> generatorSupplier) {
+        GENERATORS.add(generatorSupplier);
     }
 
     public static String getValueByGenerator(Settings settings, String param) {
         List<Generator> generators = GENERATORS
             .stream()
+            .map(Supplier::get)
             .filter(generator -> generator.accepts(settings, param))
             .collect(Collectors.toCollection(ArrayList::new));
 
@@ -55,7 +51,6 @@ public class GeneratorsRegistry {
         }
 
         Generator lastGenerator = generators.get(generators.size() - 1);
-
         return lastGenerator.get(settings, param);
     }
 }

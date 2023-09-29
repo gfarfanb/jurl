@@ -88,7 +88,7 @@ public class HTTPRequestParser {
                         .setRequestPath(requestPath)
                         .setRequestName(requestName)
                         .setExtension("body");
-                    Path bodyPath = pathBuilder.buildTemporalPath();
+                    Path bodyPath = pathBuilder.buildCommandPath();
 
                     writer.setWriter(bodyPath.toFile());
                     request.setBodyTemporalPath(bodyPath.toString());

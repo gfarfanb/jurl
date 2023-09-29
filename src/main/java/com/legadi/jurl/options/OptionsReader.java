@@ -3,6 +3,7 @@ package com.legadi.jurl.options;
 import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
+import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.options.OptionsRegistry.findByArg;
 import static com.legadi.jurl.options.OptionsRegistry.registerAddOn;
 
@@ -85,27 +86,20 @@ public class OptionsReader {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public void registerAddOnOptions() {
         Settings settings = new Settings();
         String[] addOnOptions = settings.getAddOnOptionClasses();
 
-        if(addOnOptions.length > 0) {
-
+        if(isNotEmpty(addOnOptions)) {
             for(String addOnOption : addOnOptions) {
-
                 if(isBlank(addOnOption)) {
                     continue;
                 }
 
-                try {
-                    Option option = registerAddOn((Class<Option>) Class.forName(addOnOption.trim()));
-                    LOGGER.info("Add-on registered: class=" + addOnOption
-                        + " opt=" + option.getOpt()
-                        + " alias=" + option.getAlias());
-                } catch(ClassCastException | ClassNotFoundException ex) {
-                    throw new CommandException("Unable to load add-on: " + addOnOption);
-                }
+                Option option = registerAddOn(addOnOption.trim());
+                LOGGER.info("Add-on registered: class=" + addOnOption
+                    + " opt=" + option.getOpt()
+                    + " alias=" + option.getAlias());
             }
         }
     }

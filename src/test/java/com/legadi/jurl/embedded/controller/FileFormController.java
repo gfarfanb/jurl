@@ -46,7 +46,7 @@ public class FileFormController {
             @RequestParam Map<String,String> requestParams,
             @RequestPart MultipartFile file) throws IOException {
         Settings settings = new Settings();
-        Path temporalFile = settings.getTemporalPath().resolve(file.getOriginalFilename());
+        Path temporalFile = settings.getExecutionPath().resolve(file.getOriginalFilename());
         UUID id = UUID.randomUUID();
 
         try(InputStream fileInputStream = file.getInputStream();

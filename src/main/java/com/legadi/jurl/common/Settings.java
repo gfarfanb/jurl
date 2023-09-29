@@ -5,6 +5,7 @@ import static com.legadi.jurl.common.LoaderUtils.loadInternalJsonProperties;
 import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
 import static com.legadi.jurl.common.CommonUtils.createDirectories;
 import static com.legadi.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
+import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_OUTPUT_PATH;
 import static java.time.temporal.ChronoField.MILLI_OF_DAY;
 
 import java.nio.file.Path;
@@ -25,20 +26,27 @@ public class Settings implements SettingsDefaults {
     public static final String DEFAULT_ENVIRONMENT = "default";
 
     private static final String DEFAULT_CONFIG_FILE = "config.json";
-    private static final String DEFAULT_OVERRIDE_FILE = ".override.json";
     private static final String DEFAULT_CREDENTIALS_FILE = "credentials.json";
+    private static final String DEFAULT_OVERRIDE_FILE = "override.json";
     private static final String FORMAT_CONFIG_FILE = "config.%s.json";
-    private static final String FORMAT_OVERRIDE_FILE = ".override.%s.json";
     private static final String FORMAT_CREDENTIALS_FILE = "credentials.%s.json";
+    private static final String FORMAT_OVERRIDE_FILE = "override.%s.json";
 
     static {
         SETTINGS.putAll(DEFAULT_ENVIRONMENT, loadInternalJsonProperties("settings.default.json"));
 
-        Path configPath = createDirectories(Paths.get(SETTINGS.get(DEFAULT_ENVIRONMENT, PROP_CONFIG_PATH)));
+        Path configPath = createDirectories(Paths.get(
+            SETTINGS.get(DEFAULT_ENVIRONMENT, PROP_CONFIG_PATH)
+        ));
 
         SETTINGS.putAll(DEFAULT_ENVIRONMENT, loadJsonProperties(configPath.resolve(DEFAULT_CONFIG_FILE)));
-        SETTINGS.putAll(DEFAULT_ENVIRONMENT, loadJsonProperties(configPath.resolve(DEFAULT_OVERRIDE_FILE)));
         CREDENTIALS.putAll(DEFAULT_ENVIRONMENT, loadCredentials(configPath.resolve(DEFAULT_CREDENTIALS_FILE)));
+
+        Path executionOutputPath = createDirectories(Paths.get(
+            SETTINGS.get(DEFAULT_ENVIRONMENT, PROP_EXECUTION_OUTPUT_PATH)
+        ));
+
+        SETTINGS.putAll(DEFAULT_ENVIRONMENT, loadJsonProperties(executionOutputPath.resolve(DEFAULT_OVERRIDE_FILE)));
     }
 
     private final Map<String, String> overrideProperties;
@@ -106,24 +114,28 @@ public class Settings implements SettingsDefaults {
     }
 
     public Path getConfigFilePath() {
-        return getConfigFile(DEFAULT_CONFIG_FILE, FORMAT_CONFIG_FILE);
-    }
-
-    public Path getOverrideFilePath() {
-        return getConfigFile(DEFAULT_OVERRIDE_FILE, FORMAT_OVERRIDE_FILE);
+        return getFilePath(getConfigPath(), DEFAULT_CONFIG_FILE, FORMAT_CONFIG_FILE);
     }
 
     public Path getCredentialsFilePath() {
-        return getConfigFile(DEFAULT_CREDENTIALS_FILE, FORMAT_CREDENTIALS_FILE);
+        return getFilePath(getConfigPath(), DEFAULT_CREDENTIALS_FILE, FORMAT_CREDENTIALS_FILE);
     }
 
-    private Path getConfigFile(String defaultFile, String formatFile) {
+    public Path getOverrideFilePath() {
+        return getFilePath(getExecutionOutputPath(), DEFAULT_OVERRIDE_FILE, FORMAT_OVERRIDE_FILE);
+    }
+
+    public Path getOutputObjectPath() {
+        return createDirectories(getExecutionOutputPath().resolve(getEnvironment()));
+    }
+
+    private Path getFilePath(Path basePath, String defaultFile, String formatFile) {
         String env = getEnvironment();
 
         if(DEFAULT_ENVIRONMENT.equals(env)) {
-            return getConfigPath().resolve(defaultFile);
+            return basePath.resolve(defaultFile);
         } else {
-            return getConfigPath().resolve(String.format(formatFile, env));
+            return basePath.resolve(String.format(formatFile, env));
         }
     }
 

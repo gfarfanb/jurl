@@ -66,7 +66,7 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertTrue(uploadResponse.getCurlCommand().contains(uploadEntity.getType()));
         Assertions.assertTrue(uploadResponse.getCurlCommand().contains(uploadEntity.getField()));
         Assertions.assertEquals("HTTP/1.1 201", uploadResponse.getResult());
-        Assertions.assertEquals("./executions/file_json/upload/" + uploadSettings.getExecutionTag() + ".response",
+        Assertions.assertEquals("./executions/src/test/resources/file_json/upload/" + uploadSettings.getExecutionTag() + ".response",
             uploadResponse.getResponsePath().toString());
         Assertions.assertEquals(201, uploadResponse.getStatusCode());
         Assertions.assertEquals(6, uploadResponse.getResponseHeaders().size());
@@ -79,7 +79,7 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertFalse(uploadAssertionResult.get().isSkip());
 
         Path filePath = Paths.get("src/test/resources/file.csv");
-        Path temporalFilePath = uploadSettings.getTemporalPath().resolve(uploadEntity.getFilename());
+        Path temporalFilePath = uploadSettings.getExecutionPath().resolve(uploadEntity.getFilename());
         List<String> fileContent = readLines(filePath);
         List<String> temporalContent = readLines(temporalFilePath);
 
@@ -127,7 +127,7 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertNull(uploadEntity.getType());
         Assertions.assertTrue(uploadResponse.getCurlCommand().contains(uploadEntity.getField()));
         Assertions.assertEquals("HTTP/1.1 201", uploadResponse.getResult());
-        Assertions.assertEquals("./executions/file_json/uploadWithoutForm/" + uploadSettings.getExecutionTag() + ".response",
+        Assertions.assertEquals("./executions/src/test/resources/file_json/uploadWithoutForm/" + uploadSettings.getExecutionTag() + ".response",
             uploadResponse.getResponsePath().toString());
         Assertions.assertEquals(201, uploadResponse.getStatusCode());
         Assertions.assertEquals(6, uploadResponse.getResponseHeaders().size());
@@ -140,7 +140,7 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertFalse(uploadAssertionResult.get().isSkip());
 
         Path filePath = Paths.get("src/test/resources/file.csv");
-        Path temporalFilePath = uploadSettings.getTemporalPath().resolve(uploadEntity.getFilename());
+        Path temporalFilePath = uploadSettings.getExecutionPath().resolve(uploadEntity.getFilename());
         List<String> fileContent = readLines(filePath);
         List<String> temporalContent = readLines(temporalFilePath);
 
@@ -177,7 +177,7 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertTrue(downloadResponse.getRequestUrl().contains("name=downloaded.csv"));
         Assertions.assertTrue(downloadResponse.getCurlCommand().contains("-X GET"));
         Assertions.assertEquals("HTTP/1.1 200", downloadResponse.getResult());
-        Assertions.assertEquals("./executions/file_json/download/downloaded.csv",
+        Assertions.assertEquals("./executions/src/test/resources/file_json/download/downloaded.csv",
             downloadResponse.getResponsePath().toString());
         Assertions.assertEquals(200, downloadResponse.getStatusCode());
         Assertions.assertEquals(5, downloadResponse.getResponseHeaders().size());
@@ -225,7 +225,7 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertTrue(downloadResponse.getRequestUrl().contains("file=src/test/resources/file.csv"));
         Assertions.assertTrue(downloadResponse.getCurlCommand().contains("-X GET"));
         Assertions.assertEquals("HTTP/1.1 200", downloadResponse.getResult());
-        Assertions.assertEquals("./executions/file_json/downloadWithoutName/" + downloadSettings.getExecutionTag() + ".response",
+        Assertions.assertEquals("./executions/src/test/resources/file_json/downloadWithoutName/" + downloadSettings.getExecutionTag() + ".response",
             downloadResponse.getResponsePath().toString());
         Assertions.assertEquals(200, downloadResponse.getStatusCode());
         Assertions.assertEquals(5, downloadResponse.getResponseHeaders().size());

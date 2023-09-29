@@ -5,6 +5,7 @@ import static com.legadi.jurl.common.SettingsConstants.PROP_ADD_ON_OPTION_CLASSE
 import static com.legadi.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_AS_FLOW;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_OUTPUT_PATH;
+import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_PATH;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_TIMES;
 import static com.legadi.jurl.common.SettingsConstants.PROP_HISTORY_PATH;
 import static com.legadi.jurl.common.SettingsConstants.PROP_INPUT_NAME;
@@ -21,7 +22,6 @@ import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX
 import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX_REPLACE;
 import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_START_AT;
 import static com.legadi.jurl.common.SettingsConstants.PROP_SKIP_ASSERTIONS;
-import static com.legadi.jurl.common.SettingsConstants.PROP_TEMPORAL_PATH;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -44,12 +44,12 @@ public interface SettingsDefaults {
         return createDirectories(Paths.get(get(PROP_CONFIG_PATH)));
     }
 
-    default Path getOutputPath() {
-        return createDirectories(Paths.get(get(PROP_EXECUTION_OUTPUT_PATH)));
+    default Path getExecutionPath() {
+        return createDirectories(Paths.get(get(PROP_EXECUTION_PATH)));
     }
 
-    default Path getTemporalPath() {
-        return createDirectories(Paths.get(get(PROP_TEMPORAL_PATH)));
+    default Path getExecutionOutputPath() {
+        return createDirectories(Paths.get(get(PROP_EXECUTION_OUTPUT_PATH)));
     }
 
     default Path getHistoryPath() {

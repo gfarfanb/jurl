@@ -349,7 +349,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             .setRequestPath(request.getRequestPath())
             .setRequestName(request.getName())
             .setExtension("body");
-        Path temporalBodyPath = pathBuilder.buildTemporalPath();
+        Path temporalBodyPath = pathBuilder.buildCommandPath();
         Path requestBodyPath = Paths.get(request.getBodyFilePath());
 
         try(BufferedReader br = Files.newBufferedReader(requestBodyPath);
@@ -479,7 +479,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
                 .setRequestName(request.getName())
                 .setFilename(filename)
                 .setExtension(isBlank(filename) ? "response" : null);
-        Path responsePath = pathBuilder.buildOutputPath();
+        Path responsePath = pathBuilder.buildCommandPath();
         boolean wasOutputWritten = false;
 
         try(InputStream inputStream = connection.getInputStream();

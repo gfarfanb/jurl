@@ -1,7 +1,7 @@
 {
     "configPath": "./config/",
-    "executionOutputPath": "./executions/",
-    "temporalPath": "./tmp/",
+    "executionPath": "./executions/",
+    "executionOutputPath": "./executions/.output/",
     "historyPath": "./history/",
     "addOnOptionClasses": "",
     "openEditorCommand": "",
