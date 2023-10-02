@@ -11,7 +11,7 @@ public interface OutputReader {
 
     boolean isPrintable();
 
-    Map<String, String> apply(Path sourcePath, Set<String> params, String paramPrefix);
+    Map<String, String> apply(Path sourcePath, Path outputPath, Set<String> params, String paramPrefix);
 
     default boolean accepts(String contentType, String... types) {
         return Arrays.stream(types)

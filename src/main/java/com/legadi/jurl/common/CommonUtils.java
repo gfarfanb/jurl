@@ -142,7 +142,7 @@ public class CommonUtils {
     }
 
     public static int nextIndex(int length) {
-        return(int) (length * Math.random());
+        return (int) (length * Math.random());
     }
 
     public static Path createDirectories(Path path) {

@@ -57,7 +57,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     private static final String MULTIPART_LINE_END = "\r\n";
     private static final String MULTIPART_TWO_HYPHENS = "--";
     private static final int MULTIPART_MAX_BUFFER_SIZE = 1 * 1024 * 1024;
-    private static final String FILENAME_PATTERN = ".*filename=(.*)";
+    private static final Pattern FILENAME_PATTERN = Pattern.compile(".*filename=(.*)");
 
     @Override
     public boolean accepts(RequestEntry<? extends MockEntry> request) {
@@ -462,8 +462,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
                 return null;
             }
 
-            Pattern pattern = Pattern.compile(FILENAME_PATTERN);
-            Matcher matcher = pattern.matcher(contentDisposition);
+            Matcher matcher = FILENAME_PATTERN.matcher(contentDisposition);
 
             if(matcher.find()) {
                 return strip(matcher.group(1), "\"");

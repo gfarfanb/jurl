@@ -27,7 +27,7 @@ public class XmlOutputReader implements OutputReader {
     }
 
     @Override
-    public Map<String, String> apply(Path sourcePath, Set<String> params, String paramPrefix) {
+    public Map<String, String> apply(Path sourcePath, Path outputPath, Set<String> params, String paramPrefix) {
         try(Reader fileReader = Files.newBufferedReader(sourcePath)) {
             XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
             XMLStreamReader xmlStreamReader  = xmlInputFactory.createXMLStreamReader(fileReader);

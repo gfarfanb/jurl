@@ -22,7 +22,9 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.ToNumberPolicy;
 import com.google.gson.reflect.TypeToken;
 import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.model.Credential;
@@ -31,7 +33,9 @@ public class LoaderUtils {
 
     private static final Logger LOGGER = Logger.getLogger(LoaderUtils.class.getName());
 
-    private static final Gson GSON = new Gson();
+    private static final Gson GSON = new GsonBuilder()
+        .setObjectToNumberStrategy(ToNumberPolicy.BIG_DECIMAL)
+        .create();
     private static final Map<String, List<String>> CACHED_LINES = new HashMap<>();
 
     public static Map<String, String> loadInternalJsonProperties(String internalFilePath) {

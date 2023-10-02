@@ -1,0 +1,67 @@
+{
+    "id": "8ae5e442-28a6-jk3a-9412-e3kw20b3ea33",
+    "name": "Json Output Input",
+    "times": 5,
+    "valid": true,
+    "ratio": 0.9,
+    "empty": null,
+    "elements": [
+        {
+            "record": "Alpha",
+            "value": 234.2,
+            "history": [
+                {
+                    "timestamp": "2023-09-29T07:49:30.02",
+                    "completed": false
+                },
+                {
+                    "timestamp": "2023-09-29T15:39:30.02",
+                    "completed": true
+                }
+            ]
+        },
+        {
+            "prefix": "Omega",
+            "value": 935.32,
+            "history": [
+                {
+                    "timestamp": "2023-09-29T07:49:30.02",
+                    "completed": false
+                },
+                {
+                    "timestamp": "2023-09-29T11:49:30.02",
+                    "completed": false
+                },
+                {
+                    "timestamp": "2023-09-29T12:50:30.02",
+                    "completed": true
+                },
+                {
+                    "timestamp": "2023-09-29T15:40:30.02",
+                    "completed": false
+                }
+            ]
+        },
+        {
+            "prefix": "Beta",
+            "value": 3923.23,
+            "history": [
+                {
+                    "timestamp": "2023-09-29T08:15:30.02",
+                    "completed": true
+                },
+                {
+                    "timestamp": "2023-09-29T09:23:45.02",
+                    "completed": true
+                },
+                {
+                    "timestamp": "2023-09-29T14:10:50.02",
+                    "completed": true
+                }
+            ]
+        }
+    ],
+    "tags": [
+        "A", "B", "C", "D", "E", "F", "G"
+    ]
+}

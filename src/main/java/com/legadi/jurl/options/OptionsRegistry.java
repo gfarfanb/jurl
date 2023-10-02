@@ -38,9 +38,7 @@ public class OptionsRegistry {
     }
 
     public static Option registerAddOn(String optionClass) {
-        Supplier<Option> optionSupplier = () -> instantiate(optionClass);
-
-        return registerOption(optionSupplier, true);
+        return registerOption(() -> instantiate(optionClass), true);
     }
 
     private static Option registerOption(Supplier<Option> optionSupplier) {
