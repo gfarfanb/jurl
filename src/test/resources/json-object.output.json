@@ -4,18 +4,18 @@
     "times": 5,
     "valid": true,
     "ratio": 0.9,
-    "empty": null,
+    "blank": null,
     "elements": [
         {
             "record": "Alpha",
             "value": 234.2,
             "history": [
                 {
-                    "timestamp": "2023-09-29T07:49:30.02",
+                    "timestamp": "2023-07-27T07:49:30.02",
                     "completed": false
                 },
                 {
-                    "timestamp": "2023-09-29T15:39:30.02",
+                    "timestamp": "2023-07-28T15:39:30.02",
                     "completed": true
                 }
             ]
@@ -25,11 +25,11 @@
             "value": 935.32,
             "history": [
                 {
-                    "timestamp": "2023-09-29T07:49:30.02",
+                    "timestamp": "2023-09-27T07:49:30.02",
                     "completed": false
                 },
                 {
-                    "timestamp": "2023-09-29T11:49:30.02",
+                    "timestamp": "2023-09-28T11:49:30.02",
                     "completed": false
                 },
                 {
@@ -37,7 +37,7 @@
                     "completed": true
                 },
                 {
-                    "timestamp": "2023-09-29T15:40:30.02",
+                    "timestamp": "2023-09-30T15:40:30.02",
                     "completed": false
                 }
             ]
@@ -47,15 +47,15 @@
             "value": 3923.23,
             "history": [
                 {
-                    "timestamp": "2023-09-29T08:15:30.02",
+                    "timestamp": "2023-08-27T08:15:30.02",
                     "completed": true
                 },
                 {
-                    "timestamp": "2023-09-29T09:23:45.02",
+                    "timestamp": "2023-08-28T09:23:45.02",
                     "completed": true
                 },
                 {
-                    "timestamp": "2023-09-29T14:10:50.02",
+                    "timestamp": "2023-08-29T14:10:50.02",
                     "completed": true
                 }
             ]
@@ -63,5 +63,6 @@
     ],
     "tags": [
         "A", "B", "C", "D", "E", "F", "G"
-    ]
+    ],
+    "empty": []
 }

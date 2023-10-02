@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
+import com.legadi.jurl.exception.CommandException;
 
 public class JsonOutputReader implements OutputReader {
 
@@ -71,7 +72,7 @@ public class JsonOutputReader implements OutputReader {
 
         Matcher arrayMatcher = ARRAY_CALL.matcher(callParts[partIndex]);
         String field = callParts[partIndex];
-        String element = "[]";
+        String element = "";
 
         if(arrayMatcher.find()) {
             field = arrayMatcher.group(1);
@@ -88,13 +89,15 @@ public class JsonOutputReader implements OutputReader {
         } else if(jsonRaw instanceof Map) {
             Map<String, Object> jsonObject = (Map<String, Object>) jsonRaw;
             String indexRaw = strip(element, "[]");
-            Object jsonElement = jsonObject.get(field);
-            Object objectValue = (jsonElement instanceof List)
-                ? getListValue(indexRaw, (List<Object>) jsonElement, partsKey)
-                : jsonElement;
+            Object objectValue = jsonObject.get(field);
+
+            if(objectValue instanceof List && isNotBlank(element)) {
+                objectValue = getListValue(indexRaw, (List<Object>) objectValue, partsKey);
+            }
+
             return getValue(partIndex + 1, callParts, objectValue, partsKey);
         } else {
-            return jsonRaw;
+            throw new CommandException("Param " + String.join(".", callParts) + " doesn't match with JSON response");
         }
     }
 
@@ -112,7 +115,11 @@ public class JsonOutputReader implements OutputReader {
         }
 
         if(isNumeric(indexRaw)) {
-            return jsonList.get(Integer.parseInt(indexRaw));
+            try {
+                return jsonList.get(Integer.parseInt(indexRaw));
+            } catch(IndexOutOfBoundsException ex) {
+                return null;
+            }
         }
 
         if(isBlank(indexRaw) || "any".equalsIgnoreCase(indexRaw)) {
@@ -121,7 +128,7 @@ public class JsonOutputReader implements OutputReader {
             return jsonList.get(anyIndex);
         }
 
-        throw new IllegalStateException("Invalid JSON array index: " + indexRaw);
+        throw new CommandException("Invalid JSON array index: " + indexRaw);
     }
 
     private boolean isArray(Path sourcePath) {

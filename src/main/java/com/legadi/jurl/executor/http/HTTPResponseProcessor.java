@@ -175,7 +175,7 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
         if(outputReader.isPresent()) {
             isPrintable = outputReader.get().isPrintable();
             outputValues = outputReader.get().apply(response.getResponsePath(),
-                settings.getExecutionOutputPath(), outputParams, OUTPUT_PREFIX);
+                settings.getOutputObjectPath(), outputParams, OUTPUT_PREFIX);
         } else {
             isPrintable = Arrays.stream(settings.getPrintableMimeTypes())
                 .anyMatch(type -> type.equalsIgnoreCase(contentType));
