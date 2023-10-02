@@ -26,6 +26,8 @@ import com.legadi.jurl.exception.CommandException;
 public class JsonOutputReader implements OutputReader {
 
     private static final Pattern ARRAY_CALL = Pattern.compile("(.*)(\\[.*\\])");
+    private static final String LIST_SIZE = "__size__";
+    private static final String LIST_IN_OBJECT_SIZE = "/__size__";
     private static final int FIRST_ELEMENT = 0;
 
     private final Map<String, Integer> anyIndexes = new HashMap<>();
@@ -54,6 +56,7 @@ public class JsonOutputReader implements OutputReader {
 
             if(value instanceof List || value instanceof Map) {
                 writeJsonFile(outputPath.resolve(elementCall), value);
+                output.put(param, outputPath.resolve(elementCall).toString());
             } else if(value == null) {
                 output.put(param, null);
             } else {
@@ -83,16 +86,31 @@ public class JsonOutputReader implements OutputReader {
 
         if(jsonRaw instanceof List) {
             List<Object> jsonList = (List<Object>) jsonRaw;
-            String indexRaw = strip(element, "[]");
-            Object listValue = getListValue(indexRaw, jsonList, partsKey);
-            return getValue(partIndex + 1, callParts, listValue, partsKey);
+
+            if(LIST_SIZE.equalsIgnoreCase(field)) {
+                return getValue(partIndex + 1, callParts, jsonList.size(), partsKey);
+            } else {
+                String indexRaw = strip(element, "[]");
+                Object listValue = getListValue(indexRaw, jsonList, partsKey);
+                return getValue(partIndex + 1, callParts, listValue, partsKey);
+            }
         } else if(jsonRaw instanceof Map) {
             Map<String, Object> jsonObject = (Map<String, Object>) jsonRaw;
+            boolean requiresSize = field.endsWith(LIST_IN_OBJECT_SIZE);
             String indexRaw = strip(element, "[]");
+
+            if(requiresSize) {
+                field = field.substring(0, field.length() - LIST_IN_OBJECT_SIZE.length());
+            }
+
             Object objectValue = jsonObject.get(field);
 
-            if(objectValue instanceof List && isNotBlank(element)) {
-                objectValue = getListValue(indexRaw, (List<Object>) objectValue, partsKey);
+            if(objectValue instanceof List) {
+                if(requiresSize) {
+                    return getValue(partIndex + 1, callParts, ((List<Object>) objectValue).size(), partsKey);
+                } else if(isNotBlank(element)) {
+                    objectValue = getListValue(indexRaw, (List<Object>) objectValue, partsKey);
+                }
             }
 
             return getValue(partIndex + 1, callParts, objectValue, partsKey);

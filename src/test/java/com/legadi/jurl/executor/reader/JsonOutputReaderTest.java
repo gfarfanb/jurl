@@ -75,18 +75,16 @@ public class JsonOutputReaderTest {
         ));
         Map<String, String> output = new JsonOutputReader().apply(sourcePath, outputPath, outputParams, "OUT:");
 
-        Assertions.assertTrue(output.isEmpty());
-
-        Map<String, Object> element0 = loadJsonFile(outputPath.resolve("elements[0]").toString(), new TypeToken<Map<String, Object>>() {});
+        Map<String, Object> element0 = loadJsonFile(output.get("OUT:elements[0]"), new TypeToken<Map<String, Object>>() {});
         Assertions.assertEquals("Alpha", element0.get("record"));
         Assertions.assertEquals(BigDecimal.valueOf(234.2), (BigDecimal) element0.get("value"));
         Assertions.assertEquals(2, ((List<Object>) element0.get("history")).size());
 
-        Map<String, Object> history3 = loadJsonFile(outputPath.resolve("elements[1].history[3]").toString(), new TypeToken<Map<String, Object>>() {});
+        Map<String, Object> history3 = loadJsonFile(output.get("OUT:elements[1].history[3]").toString(), new TypeToken<Map<String, Object>>() {});
         Assertions.assertEquals("2023-09-30T15:40:30.02", history3.get("timestamp"));
         Assertions.assertFalse((Boolean) history3.get("completed"));
 
-        List<Object> history = loadJsonFile(outputPath.resolve("elements[2].history").toString(), new TypeToken<List<Object>>() {});
+        List<Object> history = loadJsonFile(output.get("OUT:elements[2].history").toString(), new TypeToken<List<Object>>() {});
         Assertions.assertEquals(3, history.size());
     }
 
@@ -105,22 +103,20 @@ public class JsonOutputReaderTest {
         ));
         Map<String, String> output = new JsonOutputReader().apply(sourcePath, outputPath, outputParams, "OUT:");
 
-        Assertions.assertTrue(output.isEmpty());
-
-        Map<String, Object> first = loadJsonFile(outputPath.resolve("[first]").toString(), new TypeToken<Map<String, Object>>() {});
+        Map<String, Object> first = loadJsonFile(output.get("OUT:[first]").toString(), new TypeToken<Map<String, Object>>() {});
         Assertions.assertEquals("2023-09-27T07:49:30.02", first.get("timestamp"));
         Assertions.assertEquals("Begin", first.get("message"));
 
-        Map<String, Object> element0 = loadJsonFile(outputPath.resolve("[0]").toString(), new TypeToken<Map<String, Object>>() {});
+        Map<String, Object> element0 = loadJsonFile(output.get("OUT:[0]").toString(), new TypeToken<Map<String, Object>>() {});
         Assertions.assertEquals("2023-09-27T07:49:30.02", element0.get("timestamp"));
         Assertions.assertEquals("Begin", element0.get("message"));
 
-        Map<String, Object> element2 = loadJsonFile(outputPath.resolve("[2]").toString(), new TypeToken<Map<String, Object>>() {});
+        Map<String, Object> element2 = loadJsonFile(output.get("OUT:[2]").toString(), new TypeToken<Map<String, Object>>() {});
         Assertions.assertEquals("2023-09-29T07:49:30.02", element2.get("timestamp"));
         Assertions.assertEquals("Transaction B", element2.get("message"));
 
-        Map<String, Object> any_1 = loadJsonFile(outputPath.resolve("[]").toString(), new TypeToken<Map<String, Object>>() {});
-        Map<String, Object> any_2 = loadJsonFile(outputPath.resolve("[any]").toString(), new TypeToken<Map<String, Object>>() {});
+        Map<String, Object> any_1 = loadJsonFile(output.get("OUT:[]").toString(), new TypeToken<Map<String, Object>>() {});
+        Map<String, Object> any_2 = loadJsonFile(output.get("OUT:[any]").toString(), new TypeToken<Map<String, Object>>() {});
         Set<Object> timestamps = new HashSet<>(Arrays.asList(
             any_1.get("timestamp"), any_2.get("timestamp")
         ));
@@ -130,11 +126,11 @@ public class JsonOutputReaderTest {
         Assertions.assertEquals(1, timestamps.size());
         Assertions.assertEquals(1, messages.size());
 
-        Map<String, Object> last = loadJsonFile(outputPath.resolve("[last]").toString(), new TypeToken<Map<String, Object>>() {});
+        Map<String, Object> last = loadJsonFile(output.get("OUT:[last]").toString(), new TypeToken<Map<String, Object>>() {});
         Assertions.assertEquals("2023-10-01T15:39:30.02", last.get("timestamp"));
         Assertions.assertEquals("End", last.get("message"));
 
-        Map<String, Object> element4 = loadJsonFile(outputPath.resolve("[4]").toString(), new TypeToken<Map<String, Object>>() {});
+        Map<String, Object> element4 = loadJsonFile(output.get("OUT:[4]").toString(), new TypeToken<Map<String, Object>>() {});
         Assertions.assertEquals("2023-10-01T15:39:30.02", element4.get("timestamp"));
         Assertions.assertEquals("End", element4.get("message"));
     }
@@ -167,10 +163,45 @@ public class JsonOutputReaderTest {
     }
 
     @Test
-    public void paramDoesNotMatch() {
-        Path sourcePath = Paths.get("src/test/resources/json-list.output.json");
+    public void paramListSize() {
+        Path objectPath = Paths.get("src/test/resources/json-object.output.json");
+        Set<String> objectOutputParams = new HashSet<>(Arrays.asList(
+            "OUT:elements/__size__",
+            "OUT:elements[first].history/__size__"
+        ));
+
+        Map<String, String> objectObject = new JsonOutputReader().apply(objectPath, null, objectOutputParams, "OUT:");
+
+        Assertions.assertEquals("3", objectObject.get("OUT:elements/__size__"));
+        Assertions.assertEquals("2", objectObject.get("OUT:elements[first].history/__size__"));
+
+        Path listPath = Paths.get("src/test/resources/json-list.output.json");
+        Set<String> listOutputParams = new HashSet<>(Arrays.asList(
+            "OUT:__size__"
+        ));
+
+        Map<String, String> listObject = new JsonOutputReader().apply(listPath, null, listOutputParams, "OUT:");
+
+        Assertions.assertEquals("5", listObject.get("OUT:__size__"));
+    }
+
+    @Test
+    public void paramMissing() {
+        Path sourcePath = Paths.get("src/test/resources/json-object.output.json");
         Set<String> outputParams = new HashSet<>(Arrays.asList(
-            "OUT:[].missing.element"
+            "OUT:missing"
+        ));
+
+        Map<String, String> output = new JsonOutputReader().apply(sourcePath, null, outputParams, "OUT:");
+
+        Assertions.assertNull(output.get("OUT:missing"));
+    }
+
+    @Test
+    public void paramDoesNotMatch() {
+        Path sourcePath = Paths.get("src/test/resources/json-object.output.json");
+        Set<String> outputParams = new HashSet<>(Arrays.asList(
+            "OUT:missing.element"
         ));
 
         Assertions.assertThrows(CommandException.class, () ->
