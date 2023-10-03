@@ -27,9 +27,9 @@ public class JsonOutputReaderTest {
             "OUT:id",
             "OUT:name",
             "OUT:times",
-            "OUT:valid",
-            "OUT:ratio",
-            "OUT:blank",
+            "OUT:object.valid",
+            "OUT:object.ratio",
+            "OUT:object.blank",
             "OUT:elements[first].value",
             "OUT:elements[last].prefix",
             "OUT:elements[].history[any].completed",
@@ -44,9 +44,10 @@ public class JsonOutputReaderTest {
         Assertions.assertEquals("8ae5e442-28a6-jk3a-9412-e3kw20b3ea33", output.get("OUT:id"));
         Assertions.assertEquals("Json Output Input", output.get("OUT:name"));
         Assertions.assertEquals("5", output.get("OUT:times"));
-        Assertions.assertEquals("true", output.get("OUT:valid"));
-        Assertions.assertEquals("0.9", output.get("OUT:ratio"));
-        Assertions.assertNull(output.get("OUT:blank"));
+
+        Assertions.assertEquals("true", output.get("OUT:object.valid"));
+        Assertions.assertEquals("0.9", output.get("OUT:object.ratio"));
+        Assertions.assertNull(output.get("OUT:object.blank"));
 
         Assertions.assertEquals("234.2", output.get("OUT:elements[first].value"));
         Assertions.assertEquals("Beta", output.get("OUT:elements[last].prefix"));
@@ -163,29 +164,6 @@ public class JsonOutputReaderTest {
     }
 
     @Test
-    public void paramListSize() {
-        Path objectPath = Paths.get("src/test/resources/json-object.output.json");
-        Set<String> objectOutputParams = new HashSet<>(Arrays.asList(
-            "OUT:elements/__size__",
-            "OUT:elements[first].history/__size__"
-        ));
-
-        Map<String, String> objectObject = new JsonOutputReader().apply(objectPath, null, objectOutputParams, "OUT:");
-
-        Assertions.assertEquals("3", objectObject.get("OUT:elements/__size__"));
-        Assertions.assertEquals("2", objectObject.get("OUT:elements[first].history/__size__"));
-
-        Path listPath = Paths.get("src/test/resources/json-list.output.json");
-        Set<String> listOutputParams = new HashSet<>(Arrays.asList(
-            "OUT:__size__"
-        ));
-
-        Map<String, String> listObject = new JsonOutputReader().apply(listPath, null, listOutputParams, "OUT:");
-
-        Assertions.assertEquals("5", listObject.get("OUT:__size__"));
-    }
-
-    @Test
     public void paramMissing() {
         Path sourcePath = Paths.get("src/test/resources/json-object.output.json");
         Set<String> outputParams = new HashSet<>(Arrays.asList(
@@ -202,6 +180,80 @@ public class JsonOutputReaderTest {
         Path sourcePath = Paths.get("src/test/resources/json-object.output.json");
         Set<String> outputParams = new HashSet<>(Arrays.asList(
             "OUT:missing.element"
+        ));
+
+        Assertions.assertThrows(CommandException.class, () ->
+            new JsonOutputReader().apply(sourcePath, null, outputParams, "OUT:")
+        );
+    }
+
+    @Test
+    public void paramListSizeInList() {
+        Path sourcePath = Paths.get("src/test/resources/json-list.output.json");
+        Set<String> outputParams = new HashSet<>(Arrays.asList(
+            "OUT:__size__"
+        ));
+
+        Map<String, String> output = new JsonOutputReader().apply(sourcePath, null, outputParams, "OUT:");
+
+        Assertions.assertEquals("5", output.get("OUT:__size__"));
+    }
+
+    @Test
+    public void paramListSizeInObject() {
+        Path sourcePath = Paths.get("src/test/resources/json-object.output.json");
+        Set<String> outputParams = new HashSet<>(Arrays.asList(
+            "OUT:elements/__size__",
+            "OUT:elements[first].history/__size__"
+        ));
+
+        Map<String, String> output = new JsonOutputReader().apply(sourcePath, null, outputParams, "OUT:");
+
+        Assertions.assertEquals("3", output.get("OUT:elements/__size__"));
+        Assertions.assertEquals("2", output.get("OUT:elements[first].history/__size__"));
+    }
+
+    @Test
+    public void paramListSizeInListWrongDefinition() {
+        Path sourcePath = Paths.get("src/test/resources/json-list.output.json");
+        Set<String> outputParams = new HashSet<>(Arrays.asList(
+            "OUT:/__size__"
+        ));
+
+        Assertions.assertThrows(CommandException.class, () ->
+            new JsonOutputReader().apply(sourcePath, null, outputParams, "OUT:")
+        );
+    }
+
+    @Test
+    public void paramListSizeInObjectWrongDefinition() {
+        Path sourcePath = Paths.get("src/test/resources/json-object.output.json");
+        Set<String> outputParams = new HashSet<>(Arrays.asList(
+            "OUT:elements__size__"
+        ));
+
+        Assertions.assertThrows(CommandException.class, () ->
+            new JsonOutputReader().apply(sourcePath, null, outputParams, "OUT:")
+        );
+    }
+
+    @Test
+    public void paramListSizeInObjectNonList() {
+        Path sourcePath = Paths.get("src/test/resources/json-object.output.json");
+        Set<String> outputParams = new HashSet<>(Arrays.asList(
+            "OUT:object/__size__"
+        ));
+
+        Assertions.assertThrows(CommandException.class, () ->
+            new JsonOutputReader().apply(sourcePath, null, outputParams, "OUT:")
+        );
+    }
+
+    @Test
+    public void paramListSizeDoesNotMatch() {
+        Path sourcePath = Paths.get("src/test/resources/json-object.output.json");
+        Set<String> outputParams = new HashSet<>(Arrays.asList(
+            "OUT:missing.element/__size__"
         ));
 
         Assertions.assertThrows(CommandException.class, () ->

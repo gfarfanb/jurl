@@ -2,9 +2,11 @@
     "id": "8ae5e442-28a6-jk3a-9412-e3kw20b3ea33",
     "name": "Json Output Input",
     "times": 5,
-    "valid": true,
-    "ratio": 0.9,
-    "blank": null,
+    "object": {
+        "valid": true,
+        "ratio": 0.9,
+        "blank": null
+    },
     "elements": [
         {
             "record": "Alpha",

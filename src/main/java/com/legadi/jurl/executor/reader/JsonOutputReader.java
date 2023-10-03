@@ -84,36 +84,54 @@ public class JsonOutputReader implements OutputReader {
 
         partsKey += isNotBlank(field) ? "." + field : "";
 
+        if(field.endsWith(LIST_SIZE)) {
+            return getListSize(field, callParts, jsonRaw);
+        } else if(jsonRaw instanceof List) {
+            List<Object> jsonList = (List<Object>) jsonRaw;
+            String indexRaw = strip(element, "[]");
+            Object listValue = getListValue(indexRaw, jsonList, partsKey);
+            return getValue(partIndex + 1, callParts, listValue, partsKey);
+        } else if(jsonRaw instanceof Map) {
+            Map<String, Object> jsonObject = (Map<String, Object>) jsonRaw;
+            String indexRaw = strip(element, "[]");
+            Object objectValue = jsonObject.get(field);
+
+            if(objectValue instanceof List && isNotBlank(element)) {
+                objectValue = getListValue(indexRaw, (List<Object>) objectValue, partsKey);
+            }
+
+            return getValue(partIndex + 1, callParts, objectValue, partsKey);
+        } else {
+            throw new CommandException("Param " + String.join(".", callParts) + " doesn't match with JSON response");
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private int getListSize(String field, String[] callParts, Object jsonRaw) {
         if(jsonRaw instanceof List) {
             List<Object> jsonList = (List<Object>) jsonRaw;
 
-            if(LIST_SIZE.equalsIgnoreCase(field)) {
-                return getValue(partIndex + 1, callParts, jsonList.size(), partsKey);
-            } else {
-                String indexRaw = strip(element, "[]");
-                Object listValue = getListValue(indexRaw, jsonList, partsKey);
-                return getValue(partIndex + 1, callParts, listValue, partsKey);
+            if(!field.equals(LIST_SIZE)) {
+                throw new CommandException("Size from field must follow this sintax '__size__': " + field);
             }
+
+            return jsonList.size();
         } else if(jsonRaw instanceof Map) {
             Map<String, Object> jsonObject = (Map<String, Object>) jsonRaw;
-            boolean requiresSize = field.endsWith(LIST_IN_OBJECT_SIZE);
-            String indexRaw = strip(element, "[]");
 
-            if(requiresSize) {
-                field = field.substring(0, field.length() - LIST_IN_OBJECT_SIZE.length());
+            if(!field.endsWith(LIST_IN_OBJECT_SIZE)) {
+                throw new CommandException("Size from field must follow this sintax '<field>/__size__': " + field);
             }
+
+            field = field.substring(0, field.length() - LIST_IN_OBJECT_SIZE.length());
 
             Object objectValue = jsonObject.get(field);
 
             if(objectValue instanceof List) {
-                if(requiresSize) {
-                    return getValue(partIndex + 1, callParts, ((List<Object>) objectValue).size(), partsKey);
-                } else if(isNotBlank(element)) {
-                    objectValue = getListValue(indexRaw, (List<Object>) objectValue, partsKey);
-                }
+                return ((List<Object>) objectValue).size();
+            } else {
+                throw new CommandException("Field is not type list: " + field);
             }
-
-            return getValue(partIndex + 1, callParts, objectValue, partsKey);
         } else {
             throw new CommandException("Param " + String.join(".", callParts) + " doesn't match with JSON response");
         }
