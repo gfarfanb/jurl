@@ -6,11 +6,10 @@ import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNumeric;
 import static com.legadi.jurl.common.CommonUtils.nextIndex;
 import static com.legadi.jurl.common.CommonUtils.strip;
-import static com.legadi.jurl.common.LoaderUtils.loadJsonFile;
-import static com.legadi.jurl.common.WriterUtils.writeJsonFile;
+import static com.legadi.jurl.common.JsonUtils.isArrayFile;
+import static com.legadi.jurl.common.JsonUtils.loadJsonFile;
+import static com.legadi.jurl.common.JsonUtils.writeJsonFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +19,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
 import com.legadi.jurl.exception.CommandException;
 
 public class JsonOutputReader implements OutputReader {
@@ -45,7 +43,7 @@ public class JsonOutputReader implements OutputReader {
     @Override
     public Map<String, String> apply(Path sourcePath, Path outputPath, Set<String> params, String paramPrefix) {
         Map<String, String> output = new HashMap<>();
-        Object jsonContent = isArray(sourcePath)
+        Object jsonContent = isArrayFile(sourcePath)
             ? loadJsonFile(sourcePath.toString(), new TypeToken<List<Object>>() {})
             : loadJsonFile(sourcePath.toString(), new TypeToken<Map<String, Object>>() {});
 
@@ -165,20 +163,5 @@ public class JsonOutputReader implements OutputReader {
         }
 
         throw new CommandException("Invalid JSON array index: " + indexRaw);
-    }
-
-    private boolean isArray(Path sourcePath) {
-        try (JsonReader jsonReader = new JsonReader(Files.newBufferedReader(sourcePath))) {
-            switch (jsonReader.peek()) {
-                case BEGIN_OBJECT:
-                    return false;
-                case BEGIN_ARRAY:
-                    return true;
-                default:
-                    throw new IllegalStateException("Malformed JSON file: " + sourcePath);
-            }
-        } catch (IOException ex) {
-            throw new IllegalStateException("Unable to read JSON file: " + sourcePath, ex);
-        }
     }
 }

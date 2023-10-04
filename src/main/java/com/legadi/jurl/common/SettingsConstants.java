@@ -22,7 +22,8 @@ public class SettingsConstants {
     public static final String PROP_SETTINGS_PARAM_START_AT = "settingsParamStartAt";
     public static final String PROP_SETTINGS_PARAM_END_AT_LENGTH_MINUS = "settingsParamEndAtLengthMinus";
     public static final String PROP_SKIP_ASSERTIONS = "skipAssertions";
-    public static final String PROP_OVERRIDE_REQUEST_FILE = "overrideRequestFile";
+    public static final String PROP_MERGE_BODY_USING_TYPE = "mergeBodyUsingType";
+    public static final String PROP_OVERRIDE_REQUEST_FILE_PATH = "overrideRequestFilePath";
     public static final String PROP_PRINTABLE_MIME_TYPES = "printableMimeTypes";
 
     private SettingsConstants() {}

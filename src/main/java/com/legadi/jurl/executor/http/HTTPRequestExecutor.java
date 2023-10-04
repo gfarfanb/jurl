@@ -5,12 +5,14 @@ import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.CommonUtils.strip;
-import static com.legadi.jurl.common.LoaderUtils.printFile;
 import static com.legadi.jurl.common.RequestUtils.mergeRequestHeader;
+import static com.legadi.jurl.common.WriterUtils.expandFile;
+import static com.legadi.jurl.common.WriterUtils.printFile;
+import static com.legadi.jurl.common.WriterUtils.writeLine;
+import static com.legadi.jurl.executor.mixer.BodyMixerRegistry.findByBodyType;
 import static java.util.logging.Level.FINE;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -37,10 +39,11 @@ import com.google.gson.reflect.TypeToken;
 import com.legadi.jurl.common.CurlBuilder;
 import com.legadi.jurl.common.OutputPathBuilder;
 import com.legadi.jurl.common.Settings;
-import com.legadi.jurl.common.StringExpander;
 import com.legadi.jurl.common.URLBuilder;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.executor.RequestExecutor;
+import com.legadi.jurl.executor.mixer.BodyMixer;
+import com.legadi.jurl.executor.mixer.BodyMixer.MixerEntry;
 import com.legadi.jurl.model.AssertionEntry;
 import com.legadi.jurl.model.Credential;
 import com.legadi.jurl.model.MockEntry;
@@ -89,7 +92,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     }
 
     @Override
-    public void mergeAPI(Settings settings, HTTPRequestEntry api, HTTPRequestEntry request) {
+    public void mergeAPIDefinition(Settings settings, HTTPRequestEntry api, HTTPRequestEntry request) {
         mergeRequestHeader(api, request);
 
         if(isBlank(request.getMethod())) {
@@ -130,7 +133,28 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     }
 
     @Override
-    public void overrideRequest(Settings settings, HTTPRequestEntry request, String filename) {
+    public void mergeBodyFileWithBodyContent(Settings settings, HTTPRequestEntry request) {
+        if(isBlank(request.getBodyFilePath())) {
+            throw new RequestException(request, "request.bodyFilePath is null or empty");
+        }
+        if(isBlank(request.getBodyContent())) {
+            throw new RequestException(request, "request.bodyContent is null or empty");
+        }
+
+        BodyMixer mixer = findByBodyType(settings.getMergeBodyUsingType());
+        Path bodyTemporalPath = mixer.apply(settings, new MixerEntry()
+            .setRequestPath(request.getRequestPath())
+            .setRequestName(request.getName())
+            .setBodyFilePath(request.getBodyFilePath())
+            .setBodyContent(request.getBodyContent()));
+
+        request.setBodyContent(null);
+        request.setBodyFilePath(null);
+        request.setBodyTemporalPath(bodyTemporalPath.toString());
+    }
+
+    @Override
+    public void overrideRequestWithFile(Settings settings, HTTPRequestEntry request, String filename) {
         HTTPRequestParser parser = new HTTPRequestParser(settings);
         HTTPRequestEntry overrideRequest = parser.parseRequest(request.getRequestPath(), request.getName(), filename);
 
@@ -329,7 +353,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
                 return;
             }
 
-            throw new RequestException(request, "request.bodyContent or request.bodyFile is null or empty");
+            throw new RequestException(request, "request.bodyContent or request.bodyFilePath is null or empty");
         } catch(IOException ex) {
             throw new IllegalStateException("Unable to create output stream for request body", ex);
         }
@@ -344,24 +368,15 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
 
     private void sendBodyFile(DataOutputStream dataOutputStream, Settings settings, 
             HTTPRequestEntry request, CurlBuilder culrBuilder) throws IOException {
-        StringExpander stringExpander = new StringExpander(settings);
-        OutputPathBuilder pathBuilder = new OutputPathBuilder(stringExpander.getSettings())
+        OutputPathBuilder pathBuilder = new OutputPathBuilder(settings)
             .setRequestPath(request.getRequestPath())
             .setRequestName(request.getName())
             .setExtension("body");
         Path temporalBodyPath = pathBuilder.buildCommandPath();
         Path requestBodyPath = Paths.get(request.getBodyFilePath());
 
-        try(BufferedReader br = Files.newBufferedReader(requestBodyPath);
-                BufferedWriter writer = Files.newBufferedWriter(temporalBodyPath)) {
-            br
-                .lines()
-                .map(stringExpander::replaceAllInContent)
-                .forEach(line -> {
-                    writeBody(temporalBodyPath, writer, line);
-                    writeLine(dataOutputStream, line, request.getBodyCharset());
-                });
-        }
+        expandFile(settings, requestBodyPath, temporalBodyPath,
+            line -> writeLine(dataOutputStream, line, request.getBodyCharset()));
 
         request.setBodyTemporalPath(temporalBodyPath.toString());
         culrBuilder.setDataBinary(temporalBodyPath.toString());
@@ -553,24 +568,6 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         }
         
         return requestFile;
-    }
-
-    private void writeLine(DataOutputStream dataOutputStream, String line, String charset) {
-        try {
-            byte[] input = line.getBytes(charset);
-            dataOutputStream.write(input, 0, input.length);
-        } catch(IOException ex) {
-            throw new IllegalStateException("Unable to write line", ex);
-        }
-    }
-
-    private void writeBody(Path bodyPath, BufferedWriter writer, String line) {
-        try {
-            writer.write(line);
-            writer.newLine();
-        } catch(IOException ex) {
-            throw new IllegalStateException("Unable to write body request file: " + bodyPath, ex);
-        }
     }
 
     private String identifyMethod(HTTPRequestEntry request) {

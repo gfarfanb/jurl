@@ -1,11 +1,11 @@
 package com.legadi.jurl.common;
 
+import static com.legadi.jurl.common.JsonUtils.loadInternalJsonProperties;
+import static com.legadi.jurl.common.JsonUtils.loadJsonProperties;
 import static com.legadi.jurl.common.LoaderUtils.loadCredentials;
-import static com.legadi.jurl.common.LoaderUtils.loadInternalJsonProperties;
-import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
-import static com.legadi.jurl.common.CommonUtils.createDirectories;
 import static com.legadi.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_OUTPUT_PATH;
+import static com.legadi.jurl.common.WriterUtils.createDirectories;
 import static java.time.temporal.ChronoField.MILLI_OF_DAY;
 
 import java.nio.file.Path;

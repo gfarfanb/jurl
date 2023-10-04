@@ -4,11 +4,11 @@ import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
-import static com.legadi.jurl.common.CommonUtils.toJsonString;
-import static com.legadi.jurl.common.LoaderUtils.jsonToObject;
+import static com.legadi.jurl.common.JsonUtils.jsonToObject;
+import static com.legadi.jurl.common.JsonUtils.loadJsonFile;
+import static com.legadi.jurl.common.JsonUtils.loadJsonProperties;
+import static com.legadi.jurl.common.JsonUtils.toJsonString;
 import static com.legadi.jurl.common.LoaderUtils.loadCredentials;
-import static com.legadi.jurl.common.LoaderUtils.loadJsonFile;
-import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
 import static com.legadi.jurl.common.RequestUtils.mergeRequestHeader;
 import static com.legadi.jurl.common.WriterUtils.appendToFile;
 import static com.legadi.jurl.common.WriterUtils.writeFile;
@@ -262,11 +262,15 @@ public class RequestCommand {
 
         if(apiRaw != null) {
             RequestEntry<? extends MockEntry> api = jsonToObject(apiRaw, executor.type());
-            executor.mergeAPIDefinition(settings, api, request);
+            executor.mergeAPI(settings, api, request);
         }
 
-        if(isNotBlank(settings.getOverrideRequestFile())) {
-            executor.overrideWithFile(settings, request, settings.getOverrideRequestFile());
+        if(isNotBlank(settings.getMergeBodyUsingType())) {
+            executor.mergeBody(settings, request);
+        }
+
+        if(isNotBlank(settings.getOverrideRequestFilePath())) {
+            executor.overrideRequest(settings, request, settings.getOverrideRequestFilePath());
         }
 
         long beginTime = System.nanoTime();

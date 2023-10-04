@@ -1,7 +1,7 @@
 package com.legadi.jurl.api;
 
-import static com.legadi.jurl.common.LoaderUtils.loadJsonFile;
-import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
+import static com.legadi.jurl.common.JsonUtils.loadJsonFile;
+import static com.legadi.jurl.common.JsonUtils.loadJsonProperties;
 
 import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;

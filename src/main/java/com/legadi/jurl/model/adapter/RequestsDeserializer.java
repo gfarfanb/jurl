@@ -1,6 +1,6 @@
 package com.legadi.jurl.model.adapter;
 
-import static com.legadi.jurl.common.CommonUtils.toJsonString;
+import static com.legadi.jurl.common.JsonUtils.toJsonString;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;

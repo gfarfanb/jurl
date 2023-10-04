@@ -23,10 +23,12 @@ public class OptionsRegistry {
         registerOption(CurlPrintOption::new);
         registerOption(CustomGeneratorOption::new);
         registerOption(CustomHandlerOption::new);
+        registerOption(CustomMixerOption::new);
         registerOption(CustomReaderOption::new);
         registerOption(EnvironmentOption::new);
         registerOption(FlowExecutionOption::new);
         registerOption(HelpOption::new);
+        registerOption(MergeBodyOption::new);
         registerOption(MockRequestOption::new);
         registerOption(OpenEditorOption::new);
         registerOption(OverrideRequestOption::new);

@@ -1,9 +1,9 @@
 package com.legadi.jurl.common;
 
-import static com.legadi.jurl.common.CommonUtils.createDirectories;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.CommonUtils.stripStart;
+import static com.legadi.jurl.common.WriterUtils.createDirectories;
 
 import java.io.File;
 import java.nio.file.Path;

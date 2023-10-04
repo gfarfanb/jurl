@@ -24,15 +24,21 @@ public interface RequestExecutor<T extends RequestEntry<? extends MockEntry>, R 
 
     R executeRequest(Settings settings, T request) throws RequestException;
 
-    default void mergeAPIDefinition(Settings settings, RequestEntry<? extends MockEntry> api, RequestEntry<? extends MockEntry> request) {
-        mergeAPI(settings, cast(api), cast(request));
+    default void mergeAPI(Settings settings, RequestEntry<? extends MockEntry> api, RequestEntry<? extends MockEntry> request) {
+        mergeAPIDefinition(settings, cast(api), cast(request));
     }
 
-    void mergeAPI(Settings settings, T api, T request);
+    void mergeAPIDefinition(Settings settings, T api, T request);
 
-    default void overrideWithFile(Settings settings, RequestEntry<? extends MockEntry> request, String filename) {
-        overrideRequest(settings, cast(request), filename);
+    default void mergeBody(Settings settings, RequestEntry<? extends MockEntry> request) {
+        mergeBodyFileWithBodyContent(settings, cast(request));
     }
 
-    void overrideRequest(Settings settings, T request, String filename);
+    void mergeBodyFileWithBodyContent(Settings settings, T request);
+
+    default void overrideRequest(Settings settings, RequestEntry<? extends MockEntry> request, String filename) {
+        overrideRequestWithFile(settings, cast(request), filename);
+    }
+
+    void overrideRequestWithFile(Settings settings, T request, String filename);
 }

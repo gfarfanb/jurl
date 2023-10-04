@@ -1,18 +1,12 @@
 package com.legadi.jurl.common;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.regex.Pattern;
 
-import com.google.gson.Gson;
-
 public class CommonUtils {
 
-    private static final Gson GSON = new Gson();
     private static final Pattern NUMBER_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
     private static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvxyz0123456789";
     private static final String NUMERIC_STRING = "0123456789";
@@ -99,10 +93,6 @@ public class CommonUtils {
         return value.substring(0, length);
     }
 
-    public static String toJsonString(Object value) {
-        return GSON.toJson(value);
-    }
-
     public static boolean isNumeric(String value) {
         if (value == null) {
             return false; 
@@ -143,14 +133,5 @@ public class CommonUtils {
 
     public static int nextIndex(int length) {
         return (int) (length * Math.random());
-    }
-
-    public static Path createDirectories(Path path) {
-        try {
-            Files.createDirectories(path);
-        } catch(IOException ex) {
-            throw new IllegalStateException("Unable to create directory: " + path, ex);
-        }
-        return path;
     }
 }

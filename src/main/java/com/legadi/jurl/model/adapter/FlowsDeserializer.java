@@ -9,7 +9,7 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
-import com.legadi.jurl.common.CommonUtils;
+import com.legadi.jurl.common.JsonUtils;
 
 public class FlowsDeserializer implements JsonDeserializer<Map<String, String[]>> {
 
@@ -29,7 +29,7 @@ public class FlowsDeserializer implements JsonDeserializer<Map<String, String[]>
     private String[] toArray(JsonElement json) {
         return json.getAsJsonArray().asList()
             .stream()
-            .map(CommonUtils::toJsonString)
+            .map(JsonUtils::toJsonString)
             .toArray(String[]::new);
     }
 }

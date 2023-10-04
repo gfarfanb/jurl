@@ -1,6 +1,6 @@
 package com.legadi.jurl.executor.reader;
 
-import static com.legadi.jurl.common.LoaderUtils.loadJsonFile;
+import static com.legadi.jurl.common.JsonUtils.loadJsonFile;
 
 import java.math.BigDecimal;
 import java.nio.file.Path;

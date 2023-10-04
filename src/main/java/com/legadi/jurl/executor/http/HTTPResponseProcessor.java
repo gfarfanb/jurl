@@ -6,9 +6,9 @@ import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
-import static com.legadi.jurl.common.LoaderUtils.loadJsonProperties;
-import static com.legadi.jurl.common.LoaderUtils.printFile;
-import static com.legadi.jurl.common.WriterUtils.writeJsonFile;
+import static com.legadi.jurl.common.JsonUtils.loadJsonProperties;
+import static com.legadi.jurl.common.JsonUtils.writeJsonFile;
+import static com.legadi.jurl.common.WriterUtils.printFile;
 import static com.legadi.jurl.executor.reader.OutputReaderRegistry.findByContentType;
 
 import java.nio.file.Path;

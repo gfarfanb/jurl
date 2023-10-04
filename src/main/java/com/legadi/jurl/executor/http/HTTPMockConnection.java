@@ -2,7 +2,7 @@ package com.legadi.jurl.executor.http;
 
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
-import static com.legadi.jurl.common.CommonUtils.toJsonString;
+import static com.legadi.jurl.common.JsonUtils.toJsonString;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

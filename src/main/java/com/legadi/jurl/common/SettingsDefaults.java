@@ -1,6 +1,5 @@
 package com.legadi.jurl.common;
 
-import static com.legadi.jurl.common.CommonUtils.createDirectories;
 import static com.legadi.jurl.common.SettingsConstants.PROP_ADD_ON_OPTION_CLASSES;
 import static com.legadi.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_AS_FLOW;
@@ -9,9 +8,10 @@ import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_PATH;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_TIMES;
 import static com.legadi.jurl.common.SettingsConstants.PROP_HISTORY_PATH;
 import static com.legadi.jurl.common.SettingsConstants.PROP_INPUT_NAME;
+import static com.legadi.jurl.common.SettingsConstants.PROP_MERGE_BODY_USING_TYPE;
 import static com.legadi.jurl.common.SettingsConstants.PROP_MOCK_REQUEST;
 import static com.legadi.jurl.common.SettingsConstants.PROP_OPEN_EDITOR_COMMAND;
-import static com.legadi.jurl.common.SettingsConstants.PROP_OVERRIDE_REQUEST_FILE;
+import static com.legadi.jurl.common.SettingsConstants.PROP_OVERRIDE_REQUEST_FILE_PATH;
 import static com.legadi.jurl.common.SettingsConstants.PROP_PRINTABLE_MIME_TYPES;
 import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_AUTHORIZATION_TYPE;
 import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_BEHAVIOUR;
@@ -22,6 +22,7 @@ import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX
 import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX_REPLACE;
 import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_START_AT;
 import static com.legadi.jurl.common.SettingsConstants.PROP_SKIP_ASSERTIONS;
+import static com.legadi.jurl.common.WriterUtils.createDirectories;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -120,8 +121,12 @@ public interface SettingsDefaults {
         return get(PROP_SKIP_ASSERTIONS, Boolean::valueOf);
     }
 
-    default String getOverrideRequestFile() {
-        return get(PROP_OVERRIDE_REQUEST_FILE);
+    default String getMergeBodyUsingType() {
+        return get(PROP_MERGE_BODY_USING_TYPE);
+    }
+
+    default String getOverrideRequestFilePath() {
+        return get(PROP_OVERRIDE_REQUEST_FILE_PATH);
     }
 
     default String[] getPrintableMimeTypes() {

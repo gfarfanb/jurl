@@ -1,6 +1,6 @@
 package com.legadi.jurl.options;
 
-import static com.legadi.jurl.common.SettingsConstants.PROP_OVERRIDE_REQUEST_FILE;
+import static com.legadi.jurl.common.SettingsConstants.PROP_OVERRIDE_REQUEST_FILE_PATH;
 
 import com.legadi.jurl.common.Settings;
 
@@ -28,7 +28,7 @@ public class OverrideRequestOption extends Option {
 
     @Override
     public boolean execute(Settings settings, String[] args) {
-        settings.putOverride(PROP_OVERRIDE_REQUEST_FILE, args[0]);
+        settings.putOverride(PROP_OVERRIDE_REQUEST_FILE_PATH, args[0]);
         return true;
     }
 }
