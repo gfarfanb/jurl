@@ -27,16 +27,7 @@
             "endpoint": "/body/{{basic.functions.id}}",
             "method": "GET",
             "outputMappings": {
-                "basic.functions.access": "{{OUT:access}}",
-                "basic.functions.name": "{{OUT:name}}",
-                "basic.functions.email": "{{OUT:email}}",
-                "basic.functions.nickname": "{{OUT:nickname}}",
-                "basic.functions.amount": "{{OUT:amount}}",
-                "basic.functions.active": "{{OUT:active}}",
-                "basic.functions.coins": "{{OUT:coins}}",
-                "basic.functions.bio": "{{OUT:bio}}",
-                "basic.functions.type": "{{OUT:type}}",
-                "basic.functions.timestamp": "{{OUT:timestamp}}"
+                "basic.functions.entity": "{{HTTP:response.path}}"
             },
             "assertions": [
                 {
@@ -48,7 +39,8 @@
         "update": {
             "endpoint": "/body/{{basic.functions.id}}",
             "method": "PUT",
-            "bodyFilePath": "src/test/resources/basic-functions.body",
+            "bodyFilePath": "{{basic.functions.entity}}",
+            "bodyContent": "{ \"email\": \"jurl@test.com\" }",
             "assertions": [
                 {
                     "type": "EQUALS_TO",

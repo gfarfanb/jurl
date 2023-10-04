@@ -1,8 +1,8 @@
 package com.legadi.jurl.api;
 
 import static com.legadi.jurl.common.JsonUtils.loadJsonFile;
-import static com.legadi.jurl.common.JsonUtils.loadJsonProperties;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -106,7 +106,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertNull(obtainRequest.getBodyContent());
         Assertions.assertNull(obtainRequest.getBodyFilePath());
         Assertions.assertNull(obtainRequest.getRequestFile());
-        Assertions.assertEquals(10, obtainRequest.getOutputMappings().size());
+        Assertions.assertEquals(1, obtainRequest.getOutputMappings().size());
         Assertions.assertEquals(1, obtainRequest.getAssertions().size());
 
         HTTPResponseEntry obtainResponse = requestCatcher.get(new TypeToken<HTTPResponseEntry>() {}, obtainIdentifier);
@@ -123,18 +123,18 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertEquals(5, obtainResponse.getResponseHeaders().size());
 
         BasicFunctionsEntity obtainEntity = requestCatcher.get(new TypeToken<BasicFunctionsEntity>() {}, id);
-        Map<String, String> obtainOverride = loadJsonProperties(obtainSettings.getOverrideFilePath());
+        Map<String, Object> obtainInputBody = loadJsonFile(obtainSettings.get("basic.functions.entity"), new TypeToken<Map<String, Object>>() {});
 
-        Assertions.assertEquals(obtainEntity.getAccess().toString(), obtainOverride.get("basic.functions.access"));
-        Assertions.assertEquals(obtainEntity.getName(), obtainOverride.get("basic.functions.name"));
-        Assertions.assertEquals(obtainEntity.getEmail(), obtainOverride.get("basic.functions.email"));
-        Assertions.assertEquals(obtainEntity.getNickname(), obtainOverride.get("basic.functions.nickname"));
-        Assertions.assertEquals(obtainEntity.getAmount().toString(), obtainOverride.get("basic.functions.amount"));
-        Assertions.assertEquals(Boolean.toString(obtainEntity.isActive()), obtainOverride.get("basic.functions.active"));
-        Assertions.assertEquals(Integer.toString(obtainEntity.getCoins()), obtainOverride.get("basic.functions.coins"));
-        Assertions.assertEquals(obtainEntity.getBio(), obtainOverride.get("basic.functions.bio"));
-        Assertions.assertEquals(obtainEntity.getType(), obtainOverride.get("basic.functions.type"));
-        Assertions.assertEquals(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(obtainEntity.getTimestamp()), obtainOverride.get("basic.functions.timestamp"));
+        Assertions.assertEquals(obtainEntity.getAccess().toString(), obtainInputBody.get("access"));
+        Assertions.assertEquals(obtainEntity.getName(), obtainInputBody.get("name"));
+        Assertions.assertEquals(obtainEntity.getEmail(), obtainInputBody.get("email"));
+        Assertions.assertEquals(obtainEntity.getNickname(), obtainInputBody.get("nickname"));
+        Assertions.assertEquals(obtainEntity.getAmount(), obtainInputBody.get("amount"));
+        Assertions.assertEquals(obtainEntity.isActive(), obtainInputBody.get("active"));
+        Assertions.assertEquals(BigDecimal.valueOf(obtainEntity.getCoins()), obtainInputBody.get("coins"));
+        Assertions.assertEquals(obtainEntity.getBio(), obtainInputBody.get("bio"));
+        Assertions.assertEquals(obtainEntity.getType(), obtainInputBody.get("type"));
+        Assertions.assertEquals(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(obtainEntity.getTimestamp()), obtainInputBody.get("timestamp"));
 
         Optional<AssertionResult> obtainAssertionResult = requestCatcher.get(new TypeToken<Optional<AssertionResult>>() {}, obtainIdentifier);
         Assertions.assertTrue(obtainAssertionResult.isPresent());
@@ -144,7 +144,7 @@ public class CrudAPITest extends EmbeddedAPITest {
     }
 
     private void put(UUID id) {
-        UUID updateIdentifier = jurl("-n", "update", "src/test/resources/basic-functions.json");
+        UUID updateIdentifier = jurl("-n", "update", "-mb", "json", "src/test/resources/basic-functions.json");
         HTTPRequestEntry updateRequest = requestCatcher.get(new TypeToken<HTTPRequestEntry>() {}, updateIdentifier);
 
         Assertions.assertEquals("src/test/resources/basic-functions.json", updateRequest.getRequestPath());
@@ -160,7 +160,8 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertEquals(1, updateRequest.getHeaders().size());
         Assertions.assertEquals(StandardCharsets.UTF_8.name(), updateRequest.getBodyCharset());
         Assertions.assertNull(updateRequest.getBodyContent());
-        Assertions.assertEquals("src/test/resources/basic-functions.body", updateRequest.getBodyFilePath());
+        Assertions.assertNull(updateRequest.getBodyFilePath());
+        Assertions.assertNotNull(updateRequest.getBodyTemporalPath());
         Assertions.assertNull(updateRequest.getRequestFile());
         Assertions.assertTrue(updateRequest.getOutputMappings().isEmpty());
         Assertions.assertEquals(1, updateRequest.getAssertions().size());
@@ -190,7 +191,7 @@ public class CrudAPITest extends EmbeddedAPITest {
 
         Assertions.assertEquals(updateEntity.getAccess(), updateBody.getAccess());
         Assertions.assertEquals(updateEntity.getName(), updateBody.getName());
-        Assertions.assertEquals(updateEntity.getEmail(), updateBody.getEmail());
+        Assertions.assertEquals("jurl@test.com", updateBody.getEmail());
         Assertions.assertEquals(updateEntity.getNickname(), updateBody.getNickname());
         Assertions.assertEquals(updateEntity.getAmount(), updateBody.getAmount());
         Assertions.assertEquals(updateEntity.isActive(), updateBody.isActive());
