@@ -65,7 +65,6 @@ public class JsonOutputReader implements OutputReader {
         return output;
     }
 
-    @SuppressWarnings("unchecked")
     private Object getValue(int partIndex, String[] callParts, Object jsonRaw, String partsKey) {
         if(partIndex >= callParts.length) {
             return jsonRaw;
@@ -85,20 +84,9 @@ public class JsonOutputReader implements OutputReader {
         if(field.endsWith(LIST_SIZE)) {
             return getListSize(field, callParts, jsonRaw);
         } else if(jsonRaw instanceof List) {
-            List<Object> jsonList = (List<Object>) jsonRaw;
-            String indexRaw = strip(element, "[]");
-            Object listValue = getListValue(indexRaw, jsonList, partsKey);
-            return getValue(partIndex + 1, callParts, listValue, partsKey);
+            return getListValue(partIndex, element, callParts, jsonRaw, partsKey);
         } else if(jsonRaw instanceof Map) {
-            Map<String, Object> jsonObject = (Map<String, Object>) jsonRaw;
-            String indexRaw = strip(element, "[]");
-            Object objectValue = jsonObject.get(field);
-
-            if(objectValue instanceof List && isNotBlank(element)) {
-                objectValue = getListValue(indexRaw, (List<Object>) objectValue, partsKey);
-            }
-
-            return getValue(partIndex + 1, callParts, objectValue, partsKey);
+           return getMapValue(partIndex, field, element, callParts, jsonRaw, partsKey);
         } else {
             throw new CommandException("Param " + String.join(".", callParts) + " doesn't match with JSON response");
         }
@@ -135,7 +123,29 @@ public class JsonOutputReader implements OutputReader {
         }
     }
 
-    private Object getListValue(String indexRaw, List<Object> jsonList, String partsKey) {
+    @SuppressWarnings("unchecked")
+    private Object getListValue(int partIndex, String element, String[] callParts, Object jsonRaw, String partsKey) {
+        List<Object> jsonList = (List<Object>) jsonRaw;
+        String indexRaw = strip(element, "[]");
+        Object listValue = getListValueByIndex(indexRaw, jsonList, partsKey);
+        return getValue(partIndex + 1, callParts, listValue, partsKey);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Object getMapValue(int partIndex, String field, String element, String[] callParts,
+            Object jsonRaw, String partsKey) {
+         Map<String, Object> jsonObject = (Map<String, Object>) jsonRaw;
+        String indexRaw = strip(element, "[]");
+        Object objectValue = jsonObject.get(field);
+
+        if(objectValue instanceof List && isNotBlank(element)) {
+            objectValue = getListValueByIndex(indexRaw, (List<Object>) objectValue, partsKey);
+        }
+
+        return getValue(partIndex + 1, callParts, objectValue, partsKey);
+    }
+
+    private Object getListValueByIndex(String indexRaw, List<Object> jsonList, String partsKey) {
         if(isEmpty(jsonList)) {
             return null;
         }
