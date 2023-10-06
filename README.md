@@ -1,2 +1,2 @@
 # jurl
-Simple API development environment by command line and Java.
+CLI Java application to provides an API test/client tool.

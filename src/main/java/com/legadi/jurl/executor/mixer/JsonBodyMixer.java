@@ -11,6 +11,10 @@ import static com.legadi.jurl.common.WriterUtils.expandFile;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
 
 import com.google.gson.reflect.TypeToken;
 import com.legadi.jurl.common.OutputPathBuilder;
@@ -20,7 +24,7 @@ public class JsonBodyMixer implements BodyMixer {
 
     public enum ListRule {
 
-        REPLACE, ADD_BEGIN, ADD_END
+        REPLACE, ADD_BEGIN, ADD_END, MERGE
     }
 
     @Override
@@ -35,10 +39,10 @@ public class JsonBodyMixer implements BodyMixer {
 
         if(isArrayFile(temporalBodyPath)) {
             List<Object> list = jsonToObject(entry.getBodyContent(), new TypeToken<List<Object>>() {});
-            ListRule listRule = extractListRule(list);
+            RuleEntry ruleEntry = extractRuleEntry(list);
 
             json = mergeList(
-                listRule,
+                ruleEntry,
                 loadJsonFile(temporalBodyPath.toString(), new TypeToken<List<Object>>() {}),
                 list
             );
@@ -64,10 +68,10 @@ public class JsonBodyMixer implements BodyMixer {
                 ));
             } else if(updateEntry.getValue() instanceof List) {
                 List<Object> list = (List<Object>) updateEntry.getValue();
-                ListRule listRule = extractListRule(list);
+                RuleEntry ruleEntry = extractRuleEntry(list);
 
                 base.put(updateEntry.getKey(), mergeList(
-                    listRule, (List<Object>) base.get(updateEntry.getKey()), list
+                    ruleEntry, (List<Object>) base.get(updateEntry.getKey()), list
                 ));
             } else {
                 base.put(updateEntry.getKey(), updateEntry.getValue());
@@ -76,31 +80,65 @@ public class JsonBodyMixer implements BodyMixer {
         return base;
     }
 
-    private Object mergeList(ListRule listRule, List<Object> base, List<Object> update) {
-        switch(listRule) {
+    private Object mergeList(RuleEntry ruleEntry, List<Object> base, List<Object> update) {
+        switch(ruleEntry.getListMergeRule()) {
             case ADD_BEGIN:
                 update.addAll(base);
                 return update;
             case ADD_END:
                 base.addAll(update);
                 return base;
+            case MERGE:
+                return mergeList(ruleEntry.getKeyFields(), base, update);
             default:
                 return update;
         }
     }
 
-    private ListRule extractListRule(List<Object> list) {
+    @SuppressWarnings("unchecked")
+    private Object mergeList(Set<String> keyFields, List<Object> base, List<Object> update) {
+        if(isEmpty(keyFields)) {
+            base.addAll(update);
+            return base;
+        }
+
+        for(Object value : update) {
+            if(!(value instanceof Map)) {
+                base.add(value);
+                continue;
+            }
+            
+            Map<String, Object> updateObject = (Map<String, Object>) value;
+            Predicate<Map<String, Object>> targetPredicate = target ->
+                keyFields
+                    .stream()
+                    .allMatch(key -> Objects.equals(updateObject.get(key), target.get(key)));
+            Optional<Map<String, Object>> targetObject = base
+                .stream()
+                .map(object -> (Map<String, Object>) object)
+                .filter(targetPredicate)
+                .findFirst();
+
+            if(targetObject.isPresent()) {
+                mergeObject(targetObject.get(), updateObject);
+            }
+        }
+
+        return base;
+    }
+
+    private RuleEntry extractRuleEntry(List<Object> list) {
         if(isEmpty(list)) {
-            return ListRule.REPLACE;
+            return new RuleEntry();
         }
 
         try {
             String ruleElementRaw = toJsonString(list.get(0));
             RuleEntry ruleEntry = jsonToObject(ruleElementRaw, new TypeToken<RuleEntry>() {});
             list.remove(0);
-            return ruleEntry.getListMergeRule();
+            return ruleEntry;
         } catch(IllegalStateException ex) {
-            return ListRule.REPLACE;
+            return new RuleEntry();
         }
     }
 
@@ -118,7 +156,8 @@ public class JsonBodyMixer implements BodyMixer {
 
     public static class RuleEntry {
 
-        private ListRule listMergeRule;
+        private ListRule listMergeRule = ListRule.REPLACE;
+        private Set<String> keyFields;
 
         public ListRule getListMergeRule() {
             return listMergeRule;
@@ -126,6 +165,14 @@ public class JsonBodyMixer implements BodyMixer {
 
         public void setListMergeRule(ListRule listMergeRule) {
             this.listMergeRule = listMergeRule;
+        }
+
+        public Set<String> getKeyFields() {
+            return keyFields;
+        }
+
+        public void setKeyFields(Set<String> keyFields) {
+            this.keyFields = keyFields;
         }
     }
 }
