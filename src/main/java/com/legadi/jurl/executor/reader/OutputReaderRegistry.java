@@ -15,7 +15,6 @@ public class OutputReaderRegistry {
 
     static {
         registerReader(JsonOutputReader::new);
-        registerReader(XmlOutputReader::new);
     }
 
     public static void registerReader(String readerClass) {
