@@ -53,7 +53,7 @@ public class AssertionsRegistry {
         }
     }
 
-    private static void registerAssertionFunction(Supplier<AssertionFunction> assertionSupplier) {
+    public static void registerAssertionFunction(Supplier<AssertionFunction> assertionSupplier) {
         AssertionFunction assertionFunction = assertionSupplier.get();
 
         if(NAMES.contains(assertionFunction.name())) {

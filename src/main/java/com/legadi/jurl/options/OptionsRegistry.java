@@ -43,7 +43,7 @@ public class OptionsRegistry {
         return registerOption(() -> instantiate(optionClass), true);
     }
 
-    private static Option registerOption(Supplier<Option> optionSupplier) {
+    public static Option registerOption(Supplier<Option> optionSupplier) {
         return registerOption(optionSupplier, false);
     }
 

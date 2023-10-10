@@ -1,9 +1,6 @@
 package com.legadi.jurl.assertions;
 
-import java.util.Arrays;
-
 import com.legadi.jurl.exception.AssertionException;
-import com.legadi.jurl.exception.CommandException;
 
 public interface AssertionFunction {
 
@@ -15,15 +12,17 @@ public interface AssertionFunction {
 
     default void evaluate(String message, String[] args) throws AssertionException {
         if(args == null) {
-            throw new CommandException("No arguments for assertion: " + name()
-                + "(" + String.join(",", getArgs()) + ")");
+            throw new AssertionException(name(), getArgs(), args, "No arguments for assertion");
         }
         if(args.length < getArgs().length) {
-            throw new CommandException("Invalid number of arguments for assertion: " + name()
-                + "(" + String.join(",", getArgs()) + ") - " + Arrays.toString(args));
+            throw new AssertionException(name(), getArgs(), args, "Invalid number of arguments for assertion");
         }
-        if(!apply(args)) {
-            throw new AssertionException(name(), args, message);
+        try {
+            if(!apply(args)) {
+                throw new AssertionException(name(), getArgs(), args, message);
+            }
+        } catch(NullPointerException ex) {
+            throw new AssertionException(name(), getArgs(), args, "Null arguments are not allowed for assertion");
         }
     }
 }

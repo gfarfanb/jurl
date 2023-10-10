@@ -35,7 +35,7 @@ public class GeneratorsRegistry {
         registerGenerator(() -> instantiate(generatorClass));
     }
 
-    private static void registerGenerator(Supplier<Generator> generatorSupplier) {
+    public static void registerGenerator(Supplier<Generator> generatorSupplier) {
         GENERATORS.add(generatorSupplier);
     }
 

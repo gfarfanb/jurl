@@ -14,7 +14,7 @@ public class EndsWithAssertionFunction implements AssertionFunction {
 
     @Override
     public String[] getArgs() {
-        return new String[] { "value", "prefix" };
+        return new String[] { "value", "sufix" };
     }
 
     @Override
