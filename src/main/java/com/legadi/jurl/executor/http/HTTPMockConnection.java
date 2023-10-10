@@ -3,6 +3,7 @@ package com.legadi.jurl.executor.http;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.JsonUtils.toJsonString;
+import static java.util.logging.Level.FINE;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -18,6 +19,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import com.legadi.jurl.model.http.HTTPMockEntry;
@@ -28,6 +30,7 @@ public class HTTPMockConnection extends HttpURLConnection {
 
     private URL url;
     private int responseCode;
+    private long secondsDelay;
     private String responseContent;
     private String responseFilePath;
     private Map<String, List<String>> responseHeaders = new HashMap<>();
@@ -40,6 +43,7 @@ public class HTTPMockConnection extends HttpURLConnection {
 
         if(mockEntry != null) {
             this.responseCode = mockEntry.getStatusCode();
+            this.secondsDelay = mockEntry.getSecondsDelay();
             this.responseContent = mockEntry.getResponseContent();
             this.responseFilePath = mockEntry.getResponseFilePath();
 
@@ -104,6 +108,12 @@ public class HTTPMockConnection extends HttpURLConnection {
 
     @Override
     public InputStream getInputStream() throws IOException {
+        try {
+            TimeUnit.SECONDS.sleep(secondsDelay);
+        } catch(InterruptedException ex) {
+            LOGGER.log(FINE, "Error on sleeping mock", ex);
+        }
+
         if(isNotBlank(responseContent)) {
             LOGGER.fine("[mock-connection] Calling getInputStream():ByteArrayInputStream - " + responseContent);
             return new ByteArrayInputStream(responseContent.getBytes());

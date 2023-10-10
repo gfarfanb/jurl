@@ -1,0 +1,19 @@
+{
+    "name": "Json Input",
+    "type": "NEW",
+    "value": 557457.23,
+    "log": [
+        {
+            "timestamp": "2023-09-27T07:49:30.02",
+            "completed": false
+        },
+        {
+            "timestamp": "2023-09-28T11:49:30.02",
+            "completed": false
+        },
+        {
+            "timestamp": "2023-09-29T12:50:30.02",
+            "completed": true
+        }
+    ]
+}

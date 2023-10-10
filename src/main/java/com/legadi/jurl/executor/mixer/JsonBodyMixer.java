@@ -16,9 +16,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.reflect.TypeToken;
 import com.legadi.jurl.common.OutputPathBuilder;
 import com.legadi.jurl.common.Settings;
+import com.legadi.jurl.executor.mixer.adapter.RuleEntryDeserializer;
 
 public class JsonBodyMixer implements BodyMixer {
 
@@ -129,7 +131,7 @@ public class JsonBodyMixer implements BodyMixer {
 
     private RuleEntry extractRuleEntry(List<Object> list) {
         if(isEmpty(list)) {
-            return new RuleEntry();
+            return new RuleEntry(ListRule.REPLACE);
         }
 
         try {
@@ -138,7 +140,7 @@ public class JsonBodyMixer implements BodyMixer {
             list.remove(0);
             return ruleEntry;
         } catch(IllegalStateException ex) {
-            return new RuleEntry();
+            return new RuleEntry(ListRule.REPLACE);
         }
     }
 
@@ -154,10 +156,17 @@ public class JsonBodyMixer implements BodyMixer {
         return temporalBodyPath;
     }
 
+    @JsonAdapter(RuleEntryDeserializer.class)
     public static class RuleEntry {
 
-        private ListRule listMergeRule = ListRule.REPLACE;
+        private ListRule listMergeRule;
         private Set<String> keyFields;
+
+        public RuleEntry() {}
+
+        private RuleEntry(ListRule listMergeRule) {
+            this.listMergeRule = listMergeRule;
+        }
 
         public ListRule getListMergeRule() {
             return listMergeRule;

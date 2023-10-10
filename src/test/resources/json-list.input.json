@@ -1,0 +1,29 @@
+[
+    {
+        "name": "Json Input [0]",
+        "type": "NEW",
+        "value": 32432.34,
+        "properties": {
+            "enable": true,
+            "delay": 5
+        }
+    },
+    {
+        "name": "Json Input [1]",
+        "type": "UPDATED",
+        "value": 323.35,
+        "properties": {
+            "enable": true,
+            "delay": 1
+        }
+    },
+    {
+        "name": "Json Input [2]",
+        "type": "REMOVED",
+        "value": 2456.36,
+        "properties": {
+            "enable": false,
+            "delay": 0
+        }
+    }
+]

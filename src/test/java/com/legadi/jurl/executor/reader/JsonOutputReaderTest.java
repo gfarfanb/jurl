@@ -42,7 +42,7 @@ public class JsonOutputReaderTest {
         Map<String, String> output = new JsonOutputReader().apply(sourcePath, null, outputParams, "OUT:");
 
         Assertions.assertEquals("8ae5e442-28a6-jk3a-9412-e3kw20b3ea33", output.get("OUT:id"));
-        Assertions.assertEquals("Json Output Input", output.get("OUT:name"));
+        Assertions.assertEquals("Json Output", output.get("OUT:name"));
         Assertions.assertEquals("5", output.get("OUT:times"));
 
         Assertions.assertEquals("true", output.get("OUT:object.valid"));
