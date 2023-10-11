@@ -7,14 +7,14 @@ import java.util.Set;
 
 public interface OutputReader {
 
-    boolean accepts(String contentType);
+    String[] types();
 
     boolean isPrintable();
 
     Map<String, String> apply(Path sourcePath, Path outputPath, Set<String> params, String paramPrefix);
 
-    default boolean accepts(String contentType, String... types) {
-        return Arrays.stream(types)
+    default boolean accepts(String contentType) {
+        return Arrays.stream(types())
             .anyMatch(type -> type.equalsIgnoreCase(contentType));
     }
 }

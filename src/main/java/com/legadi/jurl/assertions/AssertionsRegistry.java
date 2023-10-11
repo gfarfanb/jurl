@@ -43,11 +43,14 @@ public class AssertionsRegistry {
         registerAssertionFunction(StartsWithAssertionFunction::new);
     }
 
+    private AssertionsRegistry() {}
+
     public static AssertionFunction registerAssertionFunction(String assertionClass) {
         if(REGISTERED.containsKey(assertionClass)) {
             return REGISTERED.get(assertionClass).get();
         } else {
             Supplier<AssertionFunction> assertionSupplier = () -> instantiate(assertionClass);
+            registerAssertionFunction(assertionSupplier);
             REGISTERED.put(assertionClass, assertionSupplier);
             return assertionSupplier.get();
         }
@@ -68,7 +71,7 @@ public class AssertionsRegistry {
         return ASSERTIONS
             .stream()
             .map(Supplier::get)
-            .filter(assertion -> assertion.name().equalsIgnoreCase(name))
+            .filter(assertion -> assertion.accepts(name))
             .findFirst()
             .orElseThrow(() -> new CommandException("Unable to obtain assertion function: " + name));
     }

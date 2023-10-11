@@ -7,9 +7,13 @@ import com.legadi.jurl.common.Settings;
 
 public interface BodyMixer {
 
-    boolean accepts(String bodyType);
+    String type();
 
     Path apply(Settings settings, MixerEntry entry);
+
+    default boolean accepts(String bodyType) {
+        return type().equalsIgnoreCase(bodyType);
+    }
 
     public static class MixerEntry {
 

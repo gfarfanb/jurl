@@ -31,6 +31,8 @@ public class GeneratorsRegistry {
         registerGenerator(UUIDGenerator::new);
     }
 
+    private GeneratorsRegistry() {}
+
     public static void registerGenerator(String generatorClass) {
         registerGenerator(() -> instantiate(generatorClass));
     }

@@ -30,8 +30,8 @@ public class JsonBodyMixer implements BodyMixer {
     }
 
     @Override
-    public boolean accepts(String bodyType) {
-        return "json".equalsIgnoreCase(bodyType);
+    public String type() {
+        return "json";
     }
 
     @Override

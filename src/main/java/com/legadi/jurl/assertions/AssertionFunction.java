@@ -10,6 +10,10 @@ public interface AssertionFunction {
 
     boolean apply(String[] args) throws AssertionException;
 
+    default boolean accepts(String name) {
+        return name().equalsIgnoreCase(name);
+    }
+
     default void evaluate(String message, String[] args) throws AssertionException {
         if(args == null) {
             throw new AssertionException(name(), getArgs(), args, "No arguments for assertion");

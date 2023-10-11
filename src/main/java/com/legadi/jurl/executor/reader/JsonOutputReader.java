@@ -31,8 +31,8 @@ public class JsonOutputReader implements OutputReader {
     private final Map<String, Integer> anyIndexes = new HashMap<>();
 
     @Override
-    public boolean accepts(String contentType) {
-        return accepts(contentType, "application/json", "application/ld+json");
+    public String[] types() {
+        return new String[] { "application/json", "application/ld+json" };
     }
 
     @Override

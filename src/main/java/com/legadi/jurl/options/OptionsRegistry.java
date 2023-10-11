@@ -39,6 +39,8 @@ public class OptionsRegistry {
         registerOption(TimesRepeatOption::new);
     }
 
+    private OptionsRegistry() {}
+
     public static Option registerAddOn(String optionClass) {
         return registerOption(() -> instantiate(optionClass), true);
     }
@@ -47,7 +49,7 @@ public class OptionsRegistry {
         return registerOption(optionSupplier, false);
     }
 
-    private static Option registerOption(Supplier<Option> optionSupplier, boolean isAddOn) {
+    public static Option registerOption(Supplier<Option> optionSupplier, boolean isAddOn) {
         Option option = optionSupplier.get();
 
         if(REGISTERED_OPTIONS.containsKey(option.getOpt()) || ADD_ON_OPTIONS.containsKey(option.getOpt())) {

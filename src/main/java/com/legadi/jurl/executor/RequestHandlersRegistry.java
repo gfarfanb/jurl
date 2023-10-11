@@ -23,6 +23,8 @@ public class RequestHandlersRegistry {
         registerHandler(HTTPRequestExecutor::new, HTTPResponseProcessor::new);
     }
 
+    private RequestHandlersRegistry() {}
+
     public static void registerHandler(String executorClass, String processorClass) {
         registerHandler(() -> instantiate(executorClass), () -> instantiate(processorClass));
     }

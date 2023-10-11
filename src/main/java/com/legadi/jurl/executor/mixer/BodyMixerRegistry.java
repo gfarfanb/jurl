@@ -18,6 +18,8 @@ public class BodyMixerRegistry {
         registerMixer(JsonBodyMixer::new);
     }
 
+    private BodyMixerRegistry() {}
+
     public static void registerMixer(String mixerClass) {
         registerMixer(() -> instantiate(mixerClass));
     }

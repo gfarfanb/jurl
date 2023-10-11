@@ -17,6 +17,8 @@ public class OutputReaderRegistry {
         registerReader(JsonOutputReader::new);
     }
 
+    private OutputReaderRegistry() {}
+
     public static void registerReader(String readerClass) {
         registerReader(() -> instantiate(readerClass));
     }
