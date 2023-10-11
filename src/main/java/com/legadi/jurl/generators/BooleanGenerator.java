@@ -1,22 +1,18 @@
 package com.legadi.jurl.generators;
 
-import java.util.Random;
+import static com.legadi.jurl.model.GeneratorType.BOOLEAN;
 
 import com.legadi.jurl.common.Settings;
 
 public class BooleanGenerator implements Generator {
 
-    private static final String BOOLEAN_PREFIX = "BOOLEAN:";
-
-    private final Random random = new Random();
-
     @Override
-    public boolean accepts(Settings settings, String param) {
-        return param.startsWith(BOOLEAN_PREFIX);
+    public String tag() {
+        return BOOLEAN.tag();
     }
 
     @Override
     public String getValue(Settings settings, String param) {
-        return Boolean.toString(random.nextBoolean());
+        return Boolean.toString(random().nextBoolean());
     }
 }

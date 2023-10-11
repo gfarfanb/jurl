@@ -1,23 +1,29 @@
 package com.legadi.jurl.generators;
 
-import java.io.Console;
+import static com.legadi.jurl.model.GeneratorType.INPUT;
+
+import java.util.Optional;
 
 import com.legadi.jurl.common.Settings;
 
 public class UserInputGenerator implements Generator {
 
-    private static final String INPUT_PREFIX = "INPUT:";
-
     @Override
-    public boolean accepts(Settings settings, String param) {
-        return param.startsWith(INPUT_PREFIX) && !settings.containsOverride(param);
+    public String tag() {
+        return INPUT.tag();
     }
 
     @Override
     public String getValue(Settings settings, String param) {
-        Console console = System.console();
-        String value = console.readLine(extractArg(INPUT_PREFIX, param));
-        settings.putOverride(param, value);
-        return value;
+        if(settings.containsOverride(param)) {
+            return settings.get(param);
+        } else {
+            String message = extractArg(param);
+            String value = Optional.ofNullable(System.console())
+                .map(console -> console.readLine(message))
+                .orElse(message);
+            settings.putOverride(param, value);
+            return value;
+        }
     }
 }

@@ -39,11 +39,11 @@ public class GeneratorsRegistry {
         GENERATORS.add(generatorSupplier);
     }
 
-    public static String getValueByGenerator(Settings settings, String param) {
+    public static String getValueByParam(Settings settings, String param) {
         List<Generator> generators = GENERATORS
             .stream()
             .map(Supplier::get)
-            .filter(generator -> generator.accepts(settings, param))
+            .filter(generator -> generator.accepts(param))
             .collect(Collectors.toCollection(ArrayList::new));
 
         if(generators.isEmpty()) {

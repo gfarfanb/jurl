@@ -1,0 +1,21 @@
+package com.legadi.jurl.generators;
+
+import static com.legadi.jurl.model.GeneratorType.UUID;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+public class UUIDGeneratorTest extends GeneratorTest {
+
+    public UUIDGeneratorTest() {
+        super(UUID);
+    }
+
+    @Test
+    public void uuidDefault() {
+        String value = Assertions.assertDoesNotThrow(() -> generate());
+
+        Assertions.assertNotNull(value);
+        Assertions.assertDoesNotThrow(() -> java.util.UUID.fromString(value));
+    }
+}

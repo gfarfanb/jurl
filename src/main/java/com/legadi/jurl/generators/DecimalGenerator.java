@@ -2,27 +2,23 @@ package com.legadi.jurl.generators;
 
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.nextNumber;
-
-import java.util.Random;
+import static com.legadi.jurl.model.GeneratorType.DECIMAL;
 
 import com.legadi.jurl.common.Settings;
 
 public class DecimalGenerator implements Generator {
 
-    private static final String DECIMAL_PREFIX = "DECIMAL:";
-    private static final int DEFAULT_LENGTH = 5;
-    private static final int DEFAULT_DECIMAL_LENGTH = 2;
-
-    private final Random random = new Random();
+    public static final int DEFAULT_LENGTH = 5;
+    public static final int DEFAULT_DECIMAL_LENGTH = 2;
 
     @Override
-    public boolean accepts(Settings settings, String param) {
-        return param.startsWith(DECIMAL_PREFIX);
+    public String tag() {
+        return DECIMAL.tag();
     }
 
     @Override
     public String getValue(Settings settings, String param) {
-        String arg = extractArg(DECIMAL_PREFIX, param);
+        String arg = extractArg(param);
         if(isNotBlank(arg)) {
             String[] parts = arg.split(",");
             if(parts.length >= 2) {
@@ -30,10 +26,8 @@ public class DecimalGenerator implements Generator {
             } else {
                 return nextNumber(Integer.parseInt(parts[0])) + "." + nextNumber(DEFAULT_DECIMAL_LENGTH);
             }
-        } else if(random.nextBoolean()) {
-            return nextNumber(DEFAULT_LENGTH) + "." + nextNumber(DEFAULT_DECIMAL_LENGTH);
         } else {
-            return Float.toString(random.nextFloat());
+            return nextNumber(DEFAULT_LENGTH) + "." + nextNumber(DEFAULT_DECIMAL_LENGTH);
         }
     }
 }

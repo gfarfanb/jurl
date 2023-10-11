@@ -1,7 +1,7 @@
 package com.legadi.jurl.common;
 
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
-import static com.legadi.jurl.generators.GeneratorsRegistry.getValueByGenerator;
+import static com.legadi.jurl.generators.GeneratorsRegistry.getValueByParam;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,7 +40,7 @@ public class StringExpander {
                     settings.getSettingsParamStartAt(),
                     paramTag.length() - settings.getSettingsParamEndAtLengthMinus()
                 );
-                String value = getValueByGenerator(settings, paramName);
+                String value = getValueByParam(settings, paramName);
 
                 if(value == null) {
                     value = values.getOrDefault(paramName,
