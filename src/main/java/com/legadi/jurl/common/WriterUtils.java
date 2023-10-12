@@ -60,7 +60,7 @@ public class WriterUtils {
             for(String line : lines) {
                 index++;
 
-                randomAccessFile.writeChars(line);
+                randomAccessFile.writeBytes(line);
 
                 if(index < lines.length) {
                     randomAccessFile.writeBytes(System.getProperty("line.separator"));
@@ -96,7 +96,7 @@ public class WriterUtils {
     public static Path createDirectories(Path path) {
         try {
             Files.createDirectories(path);
-        } catch(IOException ex) {
+        } catch(Exception ex) {
             throw new IllegalStateException("Unable to create directory: " + path, ex);
         }
         return path;

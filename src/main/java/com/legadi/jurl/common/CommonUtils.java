@@ -8,8 +8,9 @@ import java.util.regex.Pattern;
 public class CommonUtils {
 
     private static final Pattern NUMBER_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
-    private static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvxyz0123456789";
-    private static final String NUMERIC_STRING = "0123456789";
+
+    public static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvxyz0123456789";
+    public static final String NUMERIC_STRING = "0123456789";
 
     private CommonUtils() {}
 
@@ -109,13 +110,13 @@ public class CommonUtils {
     }
 
     public static String nextString(int length) {
-        return nextString(length, ALPHA_NUMERIC_STRING.length(), (i, index) ->
-            ALPHA_NUMERIC_STRING.charAt(index));
+        return nextString(length, ALPHA_NUMERIC_STRING.length(),
+            (i, index) -> ALPHA_NUMERIC_STRING.charAt(index));
     }
 
     public static String nextNumber(int length) {
-        return nextString(length, NUMERIC_STRING.length(), (i, index) ->
-            NUMERIC_STRING.charAt(i == 0 && index == 0 ? 1 : index));
+        return nextString(length, NUMERIC_STRING.length(),
+            (i, index) -> NUMERIC_STRING.charAt(i == 0 && index == 0 ? 1 : index));
     }
 
     public static <T> String nextString(int length, int sourceLength,

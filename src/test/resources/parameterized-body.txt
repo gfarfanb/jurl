@@ -1,0 +1,12 @@
+{
+    "access": "{{UUID:}}",
+    "name": "{{FULL_NAME:}}",
+    "email": "{{EMAIL:}}",
+    "nickname": "{{ALPHA_NUMERIC:}}",
+    "amount": {{DECIMAL:}},
+    "active": {{BOOLEAN:}},
+    "coins": {{INTEGER:}},
+    "bio": "{{LOREM_IPSUM:}}",
+    "type": "{{PICK_ANY:A,B,C}}",
+    "timestamp": "{{DATE_TIME:}}"
+}
