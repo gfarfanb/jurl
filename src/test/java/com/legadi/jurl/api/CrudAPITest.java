@@ -31,10 +31,10 @@ public class CrudAPITest extends EmbeddedAPITest {
     }
 
     private UUID post() {
-        UUID createIdentifier = jurl("-n", "create", "src/test/resources/basic-functions.json");
+        UUID createIdentifier = jurl("-n", "create", "src/test/resources/basic-functions.spec.json");
         HTTPRequestEntry createRequest = requestCatcher.get(new TypeToken<HTTPRequestEntry>() {}, createIdentifier);
 
-        Assertions.assertEquals("src/test/resources/basic-functions.json", createRequest.getRequestPath());
+        Assertions.assertEquals("src/test/resources/basic-functions.spec.json", createRequest.getRequestPath());
         Assertions.assertEquals("create", createRequest.getName());
         Assertions.assertNull(createRequest.getUrl());
         Assertions.assertEquals("http", createRequest.getProtocol());
@@ -72,7 +72,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertTrue(createResponse.getCurlCommand().contains(createEntity.getType()));
         Assertions.assertTrue(createResponse.getCurlCommand().contains(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(createEntity.getTimestamp())));
         Assertions.assertEquals("HTTP/1.1 201", createResponse.getResult());
-        Assertions.assertEquals("./executions/src/test/resources/basic-functions_json/create/" + createSettings.getExecutionTag() + ".response",
+        Assertions.assertEquals("./executions/src/test/resources/basic-functions_spec_json/create/" + createSettings.getExecutionTag() + ".response",
             createResponse.getResponsePath().toString());
         Assertions.assertEquals(201, createResponse.getStatusCode());
         Assertions.assertEquals(6, createResponse.getResponseHeaders().size());
@@ -88,10 +88,10 @@ public class CrudAPITest extends EmbeddedAPITest {
     }
 
     private void get(UUID id) {
-        UUID obtainIdentifier = jurl("-n", "obtain", "src/test/resources/basic-functions.json");
+        UUID obtainIdentifier = jurl("-n", "obtain", "src/test/resources/basic-functions.spec.json");
         HTTPRequestEntry obtainRequest = requestCatcher.get(new TypeToken<HTTPRequestEntry>() {}, obtainIdentifier);
 
-        Assertions.assertEquals("src/test/resources/basic-functions.json", obtainRequest.getRequestPath());
+        Assertions.assertEquals("src/test/resources/basic-functions.spec.json", obtainRequest.getRequestPath());
         Assertions.assertEquals("obtain", obtainRequest.getName());
         Assertions.assertNull(obtainRequest.getUrl());
         Assertions.assertEquals("http", obtainRequest.getProtocol());
@@ -117,7 +117,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertTrue(obtainResponse.getCurlCommand().contains("-H \"Content-Type: application/json\""));
         Assertions.assertTrue(obtainResponse.getCurlCommand().contains("http://localhost:" + port + "/basic/body/" + id));
         Assertions.assertEquals("HTTP/1.1 200", obtainResponse.getResult());
-        Assertions.assertEquals("./executions/src/test/resources/basic-functions_json/obtain/" + obtainSettings.getExecutionTag() + ".response",
+        Assertions.assertEquals("./executions/src/test/resources/basic-functions_spec_json/obtain/" + obtainSettings.getExecutionTag() + ".response",
             obtainResponse.getResponsePath().toString());
         Assertions.assertEquals(200, obtainResponse.getStatusCode());
         Assertions.assertEquals(5, obtainResponse.getResponseHeaders().size());
@@ -144,10 +144,10 @@ public class CrudAPITest extends EmbeddedAPITest {
     }
 
     private void put(UUID id) {
-        UUID updateIdentifier = jurl("-n", "update", "-mb", "json", "src/test/resources/basic-functions.json");
+        UUID updateIdentifier = jurl("-n", "update", "-mb", "json", "src/test/resources/basic-functions.spec.json");
         HTTPRequestEntry updateRequest = requestCatcher.get(new TypeToken<HTTPRequestEntry>() {}, updateIdentifier);
 
-        Assertions.assertEquals("src/test/resources/basic-functions.json", updateRequest.getRequestPath());
+        Assertions.assertEquals("src/test/resources/basic-functions.spec.json", updateRequest.getRequestPath());
         Assertions.assertEquals("update", updateRequest.getName());
         Assertions.assertNull(updateRequest.getUrl());
         Assertions.assertEquals("http", updateRequest.getProtocol());
@@ -202,10 +202,10 @@ public class CrudAPITest extends EmbeddedAPITest {
     }
 
     private void delete(UUID id) {
-        UUID removeIdentifier = jurl("-n", "remove", "src/test/resources/basic-functions.json");
+        UUID removeIdentifier = jurl("-n", "remove", "src/test/resources/basic-functions.spec.json");
         HTTPRequestEntry removeRequest = requestCatcher.get(new TypeToken<HTTPRequestEntry>() {}, removeIdentifier);
 
-        Assertions.assertEquals("src/test/resources/basic-functions.json", removeRequest.getRequestPath());
+        Assertions.assertEquals("src/test/resources/basic-functions.spec.json", removeRequest.getRequestPath());
         Assertions.assertEquals("remove", removeRequest.getName());
         Assertions.assertNull(removeRequest.getUrl());
         Assertions.assertEquals("http", removeRequest.getProtocol());

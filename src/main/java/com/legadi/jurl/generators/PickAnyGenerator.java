@@ -2,6 +2,7 @@ package com.legadi.jurl.generators;
 
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.nextIndex;
+import static com.legadi.jurl.common.CommonUtils.trim;
 import static com.legadi.jurl.model.GeneratorType.PICK_ANY;
 
 import com.legadi.jurl.common.Settings;
@@ -18,7 +19,7 @@ public class PickAnyGenerator implements Generator {
         String arg = extractArg(param);
         if(isNotBlank(arg)) {
             String[] values = arg.split(",");
-            return values[nextIndex(values.length)].trim();
+            return trim(values[nextIndex(values.length)]);
         } else {
             return "";
         }

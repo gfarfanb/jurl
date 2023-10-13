@@ -4,6 +4,7 @@ import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
+import static com.legadi.jurl.common.CommonUtils.trim;
 import static com.legadi.jurl.options.OptionsRegistry.findByArg;
 import static com.legadi.jurl.options.OptionsRegistry.registerAddOn;
 
@@ -96,7 +97,7 @@ public class OptionsReader {
                     continue;
                 }
 
-                Option option = registerAddOn(addOnOption.trim());
+                Option option = registerAddOn(trim(addOnOption));
                 LOGGER.info("Add-on registered: class=" + addOnOption
                     + " opt=" + option.getOpt()
                     + " alias=" + option.getAlias());

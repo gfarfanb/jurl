@@ -1,6 +1,7 @@
 package com.legadi.jurl.executor.http;
 
 import static com.legadi.jurl.common.CommonUtils.strip;
+import static com.legadi.jurl.common.CommonUtils.trim;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -107,9 +108,9 @@ public class HTTPRequestParser {
         Matcher matcher = headerPattern.matcher(line);
 
         if(matcher.find()) {
-            String header = matcher.group(0).trim();
+            String header = trim(matcher.group(0));
             matcher.find();
-            String value = matcher.group(0).trim();
+            String value = trim(matcher.group(0));
             request.getHeaders().put(header, value);
             return true;
         } else {
@@ -121,9 +122,9 @@ public class HTTPRequestParser {
         Matcher matcher = queryParamPattern.matcher(line);
 
         if(matcher.find()) {
-            String queryParam = matcher.group(0).trim();
+            String queryParam = trim(matcher.group(0));
             matcher.find();
-            String value = matcher.group(0).trim();
+            String value = trim(matcher.group(0));
             request.getQueryParams().put(queryParam, value);
             return true;
         } else {
@@ -135,9 +136,9 @@ public class HTTPRequestParser {
         Matcher matcher = outputMappingPattern.matcher(line);
 
         if(matcher.find()) {
-            String outputMapping = matcher.group(0).trim();
+            String outputMapping = trim(matcher.group(0));
             matcher.find();
-            String mapping = matcher.group(0).trim();
+            String mapping = trim(matcher.group(0));
             request.getOutputMappings().put(outputMapping, mapping);
             return true;
         } else {
@@ -149,9 +150,9 @@ public class HTTPRequestParser {
         Matcher matcher = assertionPattern.matcher(line);
 
         if(matcher.find()) {
-            String assertion = matcher.group(0).trim();
+            String assertion = trim(matcher.group(0));
             matcher.find();
-            String[] argsRaw = matcher.group(0).trim().split(" ");
+            String[] argsRaw = trim(matcher.group(0)).split(" ");
             List<String> args = new ArrayList<>();
             StringBuilder argBuilder = new StringBuilder();
             boolean isQuoted = false;

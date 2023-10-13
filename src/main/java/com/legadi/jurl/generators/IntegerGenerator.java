@@ -1,14 +1,11 @@
 package com.legadi.jurl.generators;
 
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
-import static com.legadi.jurl.common.CommonUtils.nextNumber;
 import static com.legadi.jurl.model.GeneratorType.INTEGER;
 
 import com.legadi.jurl.common.Settings;
 
-public class IntegerGenerator implements Generator {
-
-    public static final int DEFAULT_LENGTH = 5;
+public class IntegerGenerator extends NumberGenerator {
 
     @Override
     public String tag() {
@@ -19,9 +16,9 @@ public class IntegerGenerator implements Generator {
     public String getValue(Settings settings, String param) {
         String arg = extractArg(param);
         if(isNotBlank(arg)) {
-            return nextNumber(Integer.parseInt(arg));
+            return numberPart(Integer.parseInt(arg));
         } else {
-            return nextNumber(DEFAULT_LENGTH);
+            return numberPart(DEFAULT_LENGTH);
         }
     }
 }

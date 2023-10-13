@@ -1,19 +1,21 @@
 package com.legadi.jurl.common;
 
+import static com.legadi.jurl.common.CommonUtils.ALPHA_NUMERIC_STRING;
+import static com.legadi.jurl.common.CommonUtils.NUMERIC_STRING;
+import static com.legadi.jurl.common.CommonUtils.avoidFirstZero;
 import static com.legadi.jurl.common.CommonUtils.getOrDefault;
 import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.CommonUtils.isNumeric;
+import static com.legadi.jurl.common.CommonUtils.nextIndex;
 import static com.legadi.jurl.common.CommonUtils.nextNumber;
 import static com.legadi.jurl.common.CommonUtils.nextString;
 import static com.legadi.jurl.common.CommonUtils.strip;
 import static com.legadi.jurl.common.CommonUtils.stripEnd;
 import static com.legadi.jurl.common.CommonUtils.stripStart;
-import static com.legadi.jurl.common.CommonUtils.nextIndex;
-import static com.legadi.jurl.common.CommonUtils.ALPHA_NUMERIC_STRING;
-import static com.legadi.jurl.common.CommonUtils.NUMERIC_STRING;
+import static com.legadi.jurl.common.CommonUtils.trim;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -107,11 +109,21 @@ public class CommonUtilsTest {
     }
 
     @Test
+    public void trimValidation() {
+        Assertions.assertNull(trim(null));
+        Assertions.assertEquals("", trim(""));
+        Assertions.assertEquals("a", trim(" a "));
+        Assertions.assertEquals(". a .", trim(". a ."));
+    }
+
+    @Test
     public void stripValidation() {
         Assertions.assertNull(strip(null, null));
+        Assertions.assertEquals("", strip("", null));
+        Assertions.assertEquals("", strip("", ""));
         Assertions.assertEquals("a", strip(" a ", null));
         Assertions.assertEquals("a", strip(" a ", " "));
-        Assertions.assertEquals(" a ", strip(" a ", ""));
+        Assertions.assertEquals("a", strip(" a ", ""));
         Assertions.assertEquals("a", strip(". a .", "."));
         Assertions.assertEquals("a", strip(". a .", ". "));
     }
@@ -119,9 +131,11 @@ public class CommonUtilsTest {
     @Test
     public void stripStartValidation() {
         Assertions.assertNull(stripStart(null, null));
+        Assertions.assertEquals("", stripStart("", null));
+        Assertions.assertEquals("", stripStart("", ""));
         Assertions.assertEquals("a", stripStart(" a", null));
         Assertions.assertEquals("a", stripStart(" a", " "));
-        Assertions.assertEquals(" a", stripStart(" a", ""));
+        Assertions.assertEquals("a", stripStart(" a", ""));
         Assertions.assertEquals("a", stripStart(". a", "."));
         Assertions.assertEquals("a", stripStart(". a", ". "));
     }
@@ -129,9 +143,11 @@ public class CommonUtilsTest {
     @Test
     public void stripEndValidation() {
         Assertions.assertNull(stripEnd(null, null));
+        Assertions.assertEquals("", stripEnd("", null));
+        Assertions.assertEquals("", stripEnd("", ""));
         Assertions.assertEquals("a", stripEnd("a ", null));
         Assertions.assertEquals("a", stripEnd("a ", " "));
-        Assertions.assertEquals("a ", stripEnd("a ", ""));
+        Assertions.assertEquals("a", stripEnd("a ", ""));
         Assertions.assertEquals("a", stripEnd("a .", "."));
         Assertions.assertEquals("a", stripEnd("a .", ". "));
     }
@@ -145,13 +161,29 @@ public class CommonUtilsTest {
         Assertions.assertTrue(isNumeric("-1.1"));
         Assertions.assertFalse(isNumeric(null));
         Assertions.assertFalse(isNumeric(""));
+        Assertions.assertFalse(isNumeric(" "));
         Assertions.assertFalse(isNumeric("a"));
+        Assertions.assertFalse(isNumeric(" 0"));
+        Assertions.assertFalse(isNumeric(" -1"));
     }
 
     @Test
     public void getOrDefaultValidation() {
         Assertions.assertEquals("a", getOrDefault("a", "b"));
         Assertions.assertEquals("b", getOrDefault(null, "b"));
+    }
+
+    @Test
+    public void avoidFirstZeroValidation() {
+        Assertions.assertNull(avoidFirstZero(null, "1"));
+        Assertions.assertEquals("", avoidFirstZero("", "1"));
+        Assertions.assertEquals("a", avoidFirstZero("a", "1"));
+        Assertions.assertEquals("1", avoidFirstZero("0", "1"));
+        Assertions.assertEquals("10", avoidFirstZero("00", "1"));
+        Assertions.assertEquals("100", avoidFirstZero("000", "1"));
+        Assertions.assertEquals("1.5", avoidFirstZero("0.5", "1"));
+        Assertions.assertEquals("-1", avoidFirstZero("-1", "1"));
+        Assertions.assertEquals("-0.5", avoidFirstZero("-0.5", "1"));
     }
 
     @Test

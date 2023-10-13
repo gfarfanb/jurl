@@ -46,25 +46,27 @@ public class CommonUtils {
         return !isNotEmpty(array);
     }
 
+    public static String trim(String value) {
+        return strip(value, null);
+    }
+
     public static String strip(String value, String stripChars) {
         value = stripStart(value, stripChars);
         return stripEnd(value, stripChars);
     }
 
     public static String stripStart(String value, String stripChars) {
-        int length = (value == null ? 0 : value.length());
-        if(length == 0) {
+        if(value == null) {
             return value;
         }
+        stripChars = stripChars != null && stripChars.isEmpty() ? null : stripChars;
         int index = 0;
         if(stripChars == null) {
-            while(index != length && Character.isWhitespace(value.charAt(index))) {
+            while(index != value.length() && Character.isWhitespace(value.charAt(index))) {
                 index++;
             }
-        } else if(stripChars.isEmpty()) {
-            return value;
         } else {
-            while(index != length
+            while(index != value.length()
                     && (stripChars.indexOf(value.charAt(index)) != -1
                         || Character.isWhitespace(value.charAt(index)))) {
                 index++;
@@ -74,16 +76,15 @@ public class CommonUtils {
     }
 
     public static String stripEnd(String value, String stripChars) {
-        int length = (value == null ? 0 : value.length());
-        if(length == 0) {
+        if(value == null) {
             return value;
         }
+        stripChars = stripChars != null && stripChars.isEmpty() ? null : stripChars;
+        int length = value.length();
         if(stripChars == null) {
             while(length != 0 && Character.isWhitespace(value.charAt(length - 1))) {
                 length--;
             }
-        } else if(stripChars.isEmpty()) {
-            return value;
         } else {
             while(length != 0
                     && (stripChars.indexOf(value.charAt(length - 1)) != -1
@@ -109,24 +110,40 @@ public class CommonUtils {
         }
     }
 
+    public static String avoidFirstZero(String number, String zeroReplacer) {
+        if(!isNumeric(number)) {
+            return number;
+        }
+        char firstChar = number.charAt(0);
+        if(firstChar == '0') {
+            if(number.length() == 1) {
+                return zeroReplacer;
+            } else {
+                return zeroReplacer + number.substring(1);
+            }
+        } else {
+            return number;
+        }
+    }
+
     public static String nextString(int length) {
         return nextString(length, ALPHA_NUMERIC_STRING.length(),
-            (i, index) -> ALPHA_NUMERIC_STRING.charAt(index));
+            (i, randomIndex) -> ALPHA_NUMERIC_STRING.charAt(randomIndex));
     }
 
     public static String nextNumber(int length) {
         return nextString(length, NUMERIC_STRING.length(),
-            (i, index) -> NUMERIC_STRING.charAt(i == 0 && index == 0 ? 1 : index));
+            (i, randomIndex) -> NUMERIC_STRING.charAt(randomIndex));
     }
 
     public static <T> String nextString(int length, int sourceLength,
             BiFunction<Integer, Integer, T> indexMapper) {
         StringBuilder elements = new StringBuilder();
-        int index;
+        int randomIndex;
 
         for (int i = 0; i < length; i++) {
-            index = nextIndex(sourceLength);
-            elements.append(indexMapper.apply(i, index));
+            randomIndex = nextIndex(sourceLength);
+            elements.append(indexMapper.apply(i, randomIndex));
         }
 
         return elements.toString();

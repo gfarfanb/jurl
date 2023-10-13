@@ -1,6 +1,7 @@
 package com.legadi.jurl.common;
 
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
+import static com.legadi.jurl.common.CommonUtils.trim;
 
 import java.net.URL;
 import java.util.HashMap;
@@ -23,7 +24,7 @@ public class CurlBuilder {
     }
 
     public CurlBuilder setMethod(String method) {
-        this.method = "-X " + method;
+        this.method = "-X " + trim(method);
         return this;
     }
 
@@ -31,33 +32,33 @@ public class CurlBuilder {
         this.file = new StringBuilder()
             .append("-F ")
             .append("\"")
-            .append(field)
+            .append(trim(field))
             .append("=@")
-            .append(path)
-            .append(isNotBlank(filename) ? ";filename=" + filename : "")
-            .append(isNotBlank(mineType) ? ";type=" + mineType : "")
+            .append(trim(path))
+            .append(isNotBlank(filename) ? ";filename=" + trim(filename) : "")
+            .append(isNotBlank(mineType) ? ";type=" + trim(mineType) : "")
             .append("\"")
             .toString();
         return this;
     }
 
     public CurlBuilder setData(String bodyContent) {
-        this.data = "--data-raw \"" + bodyContent + "\"";
+        this.data = "--data-raw \"" + trim(bodyContent).replaceAll("\"","\\\\\"") + "\"";
         return this;
     }
 
     public CurlBuilder setDataBinary(String bodyFilePath) {
-        this.data = "--data-binary \"@" + bodyFilePath + "\"";
+        this.data = "--data-binary \"@" + trim(bodyFilePath) + "\"";
         return this;
     }
 
     public CurlBuilder addHeader(String headerKey, String headerValue) {
-        headers.put(headerKey, headerValue);
+        headers.put(trim(headerKey), trim(headerValue));
         return this;
     }
 
     public CurlBuilder addForm(String fieldName, String fieldValue) {
-        formFields.put(fieldName, fieldValue);
+        formFields.put(trim(fieldName), trim(fieldValue));
         return this;
     }
 

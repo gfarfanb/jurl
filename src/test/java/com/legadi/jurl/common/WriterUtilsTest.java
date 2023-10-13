@@ -150,7 +150,7 @@ public class WriterUtilsTest {
     @Test
     public void expandFileDefault() {
         Settings settings = new Settings();
-        Path input = Paths.get("src/test/resources/parameterized-body.txt");
+        Path input = Paths.get("src/test/resources/basic-functions.body.generators.txt");
         Path output = createDirectories(
                 settings.getExecutionPath().resolve("src/test/resources/writer-utils")
             )
@@ -175,7 +175,7 @@ public class WriterUtilsTest {
     @Test
     public void expandFileConsumer() {
         Settings settings = new Settings();
-        Path input = Paths.get("src/test/resources/parameterized-body.txt");
+        Path input = Paths.get("src/test/resources/basic-functions.body.generators.txt");
         Path output = createDirectories(
                 settings.getExecutionPath().resolve("src/test/resources/writer-utils")
             )
@@ -205,7 +205,7 @@ public class WriterUtilsTest {
     @Test
     public void expandFileFailed() {
         Settings settings = new Settings();
-        Path input = Paths.get("src/test/resources/parameterized-body.txt");
+        Path input = Paths.get("src/test/resources/basic-functions.body.generators.txt");
         Path output = settings.getExecutionPath()
             .resolve("directory/not/found/writer-utils")
             .resolve(UUID.randomUUID() + ".json");
@@ -240,7 +240,7 @@ public class WriterUtilsTest {
 
     @Test
     public void printFileDefault() {
-        Path file = Paths.get("src/test/resources/parameterized-body.txt");
+        Path file = Paths.get("src/test/resources/basic-functions.body.generators.txt");
 
         Assertions.assertDoesNotThrow(() -> printFile(file));
     }
