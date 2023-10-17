@@ -7,7 +7,7 @@
     <artifactId>jurl</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>jurl</name>
-    <description>Simple HTTP API development environment by command line.</description>
+    <description>CLI Java application to provides an API test/client tool.</description>
 
     <properties>
         <java.version>1.8</java.version>

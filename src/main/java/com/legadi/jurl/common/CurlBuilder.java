@@ -2,6 +2,7 @@ package com.legadi.jurl.common;
 
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.trim;
+import static com.legadi.jurl.common.CommonUtils.isEmpty;
 
 import java.net.URL;
 import java.util.HashMap;
@@ -65,31 +66,29 @@ public class CurlBuilder {
     public String build() {
         return new StringBuilder("curl")
             .append(isNotBlank(method) ? " " + method : "")
-            .append(buildHeaders())
-            .append(buildFormFields())
+            .append(build(headers, "-H", ": "))
+            .append(build(formFields, "-F", "="))
             .append(isNotBlank(file) ? " " + file : "")
             .append(isNotBlank(data) ? " " + data : "")
             .append(isNotBlank(url) ? " " + url : "")
             .toString();
     }
 
-    private String buildHeaders() {
-        if(headers.isEmpty()) {
+    private String build(Map<String, String> elements, String opt, String separator) {
+        if(isEmpty(elements)) {
             return "";
         }
-        return " " + headers.entrySet()
+        return " " + elements.entrySet()
             .stream()
-            .map(e -> "-H \"" + e.getKey() + ": " + e.getValue() + "\"")
-            .collect(Collectors.joining(" "));
-    }
-
-    private String buildFormFields() {
-        if(formFields.isEmpty()) {
-            return "";
-        }
-        return " " + formFields.entrySet()
-            .stream()
-            .map(e -> "-F \"" + e.getKey() + "=" + e.getValue() + "\"")
+            .map(e -> new StringBuilder()
+                .append(opt)
+                .append(" \"")
+                .append(e.getKey())
+                .append(separator)
+                .append(e.getValue())
+                .append("\"")
+                .toString()
+            )
             .collect(Collectors.joining(" "));
     }
 }

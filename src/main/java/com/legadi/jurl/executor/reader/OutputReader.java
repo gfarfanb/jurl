@@ -15,6 +15,6 @@ public interface OutputReader {
 
     default boolean accepts(String contentType) {
         return Arrays.stream(types())
-            .anyMatch(type -> type.equalsIgnoreCase(contentType));
+            .anyMatch(type -> contentType.toLowerCase().startsWith(type.toLowerCase()));
     }
 }
