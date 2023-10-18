@@ -2,7 +2,7 @@ package com.legadi.jurl.generators;
 
 import static com.legadi.jurl.common.CommonUtils.nextString;
 import static com.legadi.jurl.common.CommonUtils.trim;
-import static com.legadi.jurl.common.LoaderUtils.loadInternalLines;
+import static com.legadi.jurl.common.LoaderUtils.loadAndCacheInternalLines;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ public abstract class NamePartGenerator implements Generator {
     protected static final String WOMAN_GENDER = "WOMAN";
 
     protected String createNamePart(String file) {
-        List<String> content = loadInternalLines(file);
+        List<String> content = loadAndCacheInternalLines(file);
         int count = random().nextInt(1) + 1;
 
         return trim(

@@ -4,7 +4,6 @@ import static com.legadi.jurl.common.JsonUtils.loadJsonFile;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
@@ -14,6 +13,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -26,6 +27,7 @@ public class LoaderUtils {
     private static final Logger LOGGER = Logger.getLogger(LoaderUtils.class.getName());
 
     private static final Map<String, List<String>> CACHED_LINES = new HashMap<>();
+    private static final Lock LOCK = new ReentrantLock();
 
     private LoaderUtils() {}
 
@@ -51,22 +53,30 @@ public class LoaderUtils {
         }
     }
 
-    public static synchronized List<String> loadInternalLines(String internalFilePath) {
-        if(CACHED_LINES.containsKey(internalFilePath)) {
-            return new ArrayList<>(CACHED_LINES.get(internalFilePath));
-        }
+    public static List<String> loadAndCacheInternalLines(String internalFilePath) {
+        LOCK.lock();
 
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        try {
 
-        try(InputStream inputStream = classLoader.getResource(internalFilePath).openStream();
-                InputStreamReader inputReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-                BufferedReader bufferedReader = new BufferedReader(inputReader)) {
-            List<String> lines = bufferedReader.lines().collect(Collectors.toList());
+            if(CACHED_LINES.containsKey(internalFilePath)) {
+                return new ArrayList<>(CACHED_LINES.get(internalFilePath));
+            }
 
-            CACHED_LINES.put(internalFilePath, lines);
-            return new ArrayList<>(lines);
-        } catch(IOException ex) {
-            throw new IllegalStateException("Unable to obtain internal file: " + internalFilePath, ex);
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+            try(InputStream inputStream = classLoader.getResource(internalFilePath).openStream();
+                    InputStreamReader inputReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+                    BufferedReader bufferedReader = new BufferedReader(inputReader)) {
+                List<String> lines = bufferedReader.lines().collect(Collectors.toList());
+
+                CACHED_LINES.put(internalFilePath, lines);
+                return new ArrayList<>(lines);
+            } catch(Exception ex) {
+                throw new IllegalStateException("Unable to obtain internal file: " + internalFilePath, ex);
+            }
+
+        } finally {
+            LOCK.unlock();
         }
     }
 

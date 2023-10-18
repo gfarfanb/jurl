@@ -15,11 +15,10 @@ public class EnvironmentResource<T> {
         return getResource(environment).getOrDefault(key, defaultValue);
     }
 
-    public void put(String environment, String key, T value) {
-        getResource(environment).put(key, value);
-    }
-
     public void putAll(String environment, Map<String, T> resources) {
+        if(resources == null) {
+            return;
+        }
         getResource(environment).putAll(resources);
     }
 

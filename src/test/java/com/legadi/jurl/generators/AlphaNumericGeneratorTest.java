@@ -14,7 +14,7 @@ public class AlphaNumericGeneratorTest extends GeneratorTest {
     }
 
     @Test
-    public void alphaNumericDefault() {
+    public void alphaNumericValidation() {
         String value = generate();
 
         Assertions.assertNotNull(value);

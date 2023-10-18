@@ -12,7 +12,7 @@ public class UserInputGeneratorTest extends GeneratorTest {
     }
 
     @Test
-    public void userInputDefault() {
+    public void userInputValidation() {
         String message = "Input";
         String value = Assertions.assertDoesNotThrow(() -> generate(message));
 

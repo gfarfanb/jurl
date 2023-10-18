@@ -1,8 +1,6 @@
 package com.legadi.jurl.common;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -51,7 +49,7 @@ public class JsonUtils {
 
                 LOGGER.fine("Loaded JSON file: " + filePath);
                 return input;
-            } catch(IOException ex) {
+            } catch(Exception ex) {
                 throw new IllegalStateException("Unable to read JSON file: " + filePath, ex);
             }
         } else {
@@ -65,7 +63,7 @@ public class JsonUtils {
             InputStream jsonInputStream = classLoader.getResource(internalFilePath).openStream();
 
             return readJsonProperties(Paths.get(internalFilePath), jsonInputStream);
-        } catch(IOException ex) {
+        } catch(Exception ex) {
             throw new IllegalStateException("Unable to obtain internal file: " + internalFilePath, ex);
         }
     }
@@ -75,8 +73,8 @@ public class JsonUtils {
 
         if(jsonFile.exists()) {
             try {
-                return readJsonProperties(filePath, new FileInputStream(jsonFile));
-            } catch(FileNotFoundException ex) {
+                return readJsonProperties(filePath, Files.newInputStream(filePath));
+            } catch(Exception ex) {
                 throw new IllegalStateException("Unable to obtain file: " + filePath, ex);
             }
         } else {
@@ -92,7 +90,7 @@ public class JsonUtils {
             LOGGER.fine("Loaded JSON properties file: " + jsonPath);
 
             return jsonProperties;
-        } catch(IOException ex) {
+        } catch(Exception ex) {
             throw new IllegalStateException("Unable to read JSON properties: " + jsonPath, ex);
         }
     }
@@ -119,7 +117,7 @@ public class JsonUtils {
                 default:
                     throw new IllegalStateException("Malformed JSON file: " + sourcePath);
             }
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             throw new IllegalStateException("Unable to read JSON file: " + sourcePath, ex);
         }
     }

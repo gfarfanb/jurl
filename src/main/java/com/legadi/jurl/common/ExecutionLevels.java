@@ -86,7 +86,7 @@ public class ExecutionLevels {
             if(parent == null) {
                 return true;
             }
-            if(commands.contains(command)) {
+            if(parent.getCommands().contains(command)) {
                 return false;
             } else {
                 return validate(parent.getPreviousLevel(), command);

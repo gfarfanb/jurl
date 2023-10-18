@@ -12,7 +12,7 @@ public class BooleanGeneratorTest extends GeneratorTest {
     }
 
     @Test
-    public void booleanDefault() {
+    public void booleanValidation() {
         String value = Assertions.assertDoesNotThrow(() -> generate());
 
         Assertions.assertNotNull(value);

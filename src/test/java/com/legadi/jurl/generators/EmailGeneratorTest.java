@@ -1,6 +1,6 @@
 package com.legadi.jurl.generators;
 
-import static com.legadi.jurl.common.LoaderUtils.loadInternalLines;
+import static com.legadi.jurl.common.LoaderUtils.loadAndCacheInternalLines;
 import static com.legadi.jurl.model.GeneratorType.EMAIL;
 
 import java.util.HashSet;
@@ -20,8 +20,8 @@ public class EmailGeneratorTest extends GeneratorTest {
     }
 
     @Test
-    public void emailDefault() {
-        Set<String> domains = new HashSet<>(loadInternalLines("domains.txt"));
+    public void emailValidation() {
+        Set<String> domains = new HashSet<>(loadAndCacheInternalLines("domains.txt"));
         String value = generate();
 
         Assertions.assertNotNull(value);
@@ -37,7 +37,7 @@ public class EmailGeneratorTest extends GeneratorTest {
 
     @Test
     public void emailLength() {
-        Set<String> domains = new HashSet<>(loadInternalLines("domains.txt"));
+        Set<String> domains = new HashSet<>(loadAndCacheInternalLines("domains.txt"));
         String value = generate("20");
 
         Assertions.assertNotNull(value);

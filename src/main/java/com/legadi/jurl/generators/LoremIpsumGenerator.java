@@ -3,7 +3,7 @@ package com.legadi.jurl.generators;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.nextString;
 import static com.legadi.jurl.common.CommonUtils.strip;
-import static com.legadi.jurl.common.LoaderUtils.loadInternalLines;
+import static com.legadi.jurl.common.LoaderUtils.loadAndCacheInternalLines;
 import static com.legadi.jurl.model.GeneratorType.LOREM_IPSUM;
 
 import java.util.List;
@@ -33,7 +33,7 @@ public class LoremIpsumGenerator implements Generator {
     }
     
     private String createText(int words) {
-        List<String> content = loadInternalLines("lorem-ipsum.txt");
+        List<String> content = loadAndCacheInternalLines("lorem-ipsum.txt");
         AtomicInteger sentenceLength = new AtomicInteger(1);
         String text =  nextString(words, content.size(),
             (i, index) -> get(sentenceLength, content, i, index));

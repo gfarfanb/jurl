@@ -4,7 +4,6 @@ import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.CommonUtils.strip;
 import static com.legadi.jurl.common.CommonUtils.stripEnd;
-import static com.legadi.jurl.common.CommonUtils.stripStart;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +31,7 @@ public class URLBuilder {
     }
 
     public URLBuilder setDomain(String domain) {
-        this.domain = strip(domain, "/?&");
+        this.domain = strip(domain, ":/?&");
         return this;
     }
 
@@ -42,12 +41,12 @@ public class URLBuilder {
     }
 
     public URLBuilder setBasePath(String basePath) {
-        this.basePath = stripStart(basePath, "/?&");
+        this.basePath = strip(basePath, "/?&");
         return this;
     }
 
     public URLBuilder setEndpoint(String endpoint) {
-        this.endpoint = stripStart(endpoint, "/?&");
+        this.endpoint = strip(endpoint, "/?&");
         return this;
     }
 

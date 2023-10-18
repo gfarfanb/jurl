@@ -2,7 +2,7 @@ package com.legadi.jurl.generators;
 
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.nextString;
-import static com.legadi.jurl.common.LoaderUtils.loadInternalLines;
+import static com.legadi.jurl.common.LoaderUtils.loadAndCacheInternalLines;
 import static com.legadi.jurl.model.GeneratorType.EMAIL;
 
 import java.util.List;
@@ -27,7 +27,7 @@ public class EmailGenerator implements Generator {
         } else {
             nickname = nextString(random().nextInt(RANGE_LENGTH) + RANGE_LENGTH);
         }
-        List<String> domains = loadInternalLines("domains.txt");
+        List<String> domains = loadAndCacheInternalLines("domains.txt");
         int index = (int) (domains.size() * Math.random());
         return nickname + "@" + domains.get(index);
     }

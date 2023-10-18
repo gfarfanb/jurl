@@ -16,7 +16,7 @@ public class PickAnyGeneratorTest extends GeneratorTest {
     }
 
     @Test
-    public void pickAnyDefault() {
+    public void pickAnyValidation() {
         String value = generate();
 
         Assertions.assertNotNull(value);

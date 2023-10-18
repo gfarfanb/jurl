@@ -16,7 +16,7 @@ public class DateTimeGeneratorTest extends GeneratorTest {
     }
 
     @Test
-    public void dateTimeDefault() {
+    public void dateTimeValidation() {
         String value = generate();
 
         Assertions.assertNotNull(value);

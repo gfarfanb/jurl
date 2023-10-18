@@ -1,7 +1,7 @@
 package com.legadi.jurl.generators;
 
 import static com.legadi.jurl.common.CommonUtils.strip;
-import static com.legadi.jurl.common.LoaderUtils.loadInternalLines;
+import static com.legadi.jurl.common.LoaderUtils.loadAndCacheInternalLines;
 import static com.legadi.jurl.model.GeneratorType.LOREM_IPSUM;
 
 import java.util.HashSet;
@@ -19,8 +19,8 @@ public class LoremIpsumGeneratorTest extends GeneratorTest {
     }
 
     @Test
-    public void loremIpsumDefault() {
-        Set<String> lorem = new HashSet<>(loadInternalLines("lorem-ipsum.txt"));
+    public void loremIpsumValidation() {
+        Set<String> lorem = new HashSet<>(loadAndCacheInternalLines("lorem-ipsum.txt"));
         String value = generate();
 
         Assertions.assertNotNull(value);
@@ -36,7 +36,7 @@ public class LoremIpsumGeneratorTest extends GeneratorTest {
 
     @Test
     public void loremIpsumLength() {
-        Set<String> lorem = new HashSet<>(loadInternalLines("lorem-ipsum.txt"));
+        Set<String> lorem = new HashSet<>(loadAndCacheInternalLines("lorem-ipsum.txt"));
         String value = generate("1000");
 
         Assertions.assertNotNull(value);

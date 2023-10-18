@@ -1,6 +1,6 @@
 package com.legadi.jurl.generators;
 
-import static com.legadi.jurl.common.LoaderUtils.loadInternalLines;
+import static com.legadi.jurl.common.LoaderUtils.loadAndCacheInternalLines;
 import static com.legadi.jurl.model.GeneratorType.NAME;
 
 import java.util.HashSet;
@@ -16,8 +16,8 @@ public class NameGeneratorTest extends GeneratorTest {
     }
 
     @Test
-    public void nameDefault() {
-        Set<String> manNames = new HashSet<>(loadInternalLines("man-names.txt"));
+    public void nameValidation() {
+        Set<String> manNames = new HashSet<>(loadAndCacheInternalLines("man-names.txt"));
         String value = generate();
 
         Assertions.assertNotNull(value);
@@ -26,13 +26,13 @@ public class NameGeneratorTest extends GeneratorTest {
 
     @Test
     public void nameGender() {
-        Set<String> womanNames = new HashSet<>(loadInternalLines("woman-names.txt"));
+        Set<String> womanNames = new HashSet<>(loadAndCacheInternalLines("woman-names.txt"));
         String value = generate("WOMAN");
 
         Assertions.assertNotNull(value);
         Assertions.assertTrue(womanNames.contains(value));
 
-        Set<String> manNames = new HashSet<>(loadInternalLines("man-names.txt"));
+        Set<String> manNames = new HashSet<>(loadAndCacheInternalLines("man-names.txt"));
         String otherValue = generate("OTHER");
 
         Assertions.assertNotNull(otherValue);

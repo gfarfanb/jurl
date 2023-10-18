@@ -12,7 +12,7 @@ public class PasswordInputGeneratorTest extends GeneratorTest {
     }
 
     @Test
-    public void passwordInputDefault() {
+    public void passwordInputValidation() {
         String message = "P4s5w0rd";
         String value = Assertions.assertDoesNotThrow(() -> generate(message));
 

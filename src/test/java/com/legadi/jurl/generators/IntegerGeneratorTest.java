@@ -14,7 +14,7 @@ public class IntegerGeneratorTest extends GeneratorTest {
     }
 
     @Test
-    public void integerDefault() {
+    public void integerValidation() {
         String value = generate();
 
         Assertions.assertNotNull(value);

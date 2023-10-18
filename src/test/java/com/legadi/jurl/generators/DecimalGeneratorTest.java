@@ -16,7 +16,7 @@ public class DecimalGeneratorTest extends GeneratorTest {
     }
 
     @Test
-    public void decimalDefault() {
+    public void decimalValidation() {
         String value = generate();
 
         Assertions.assertNotNull(value);

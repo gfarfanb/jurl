@@ -1,6 +1,6 @@
 package com.legadi.jurl.generators;
 
-import static com.legadi.jurl.common.LoaderUtils.loadInternalLines;
+import static com.legadi.jurl.common.LoaderUtils.loadAndCacheInternalLines;
 import static com.legadi.jurl.model.GeneratorType.FULL_NAME;
 
 import java.util.HashSet;
@@ -18,9 +18,9 @@ public class FullNameGeneratorTest extends GeneratorTest {
     }
 
     @Test
-    public void fullNameDefault() {
-        Set<String> manNames = new HashSet<>(loadInternalLines("man-names.txt"));
-        Set<String> lastNames = new HashSet<>(loadInternalLines("last-names.txt"));
+    public void fullNameValidation() {
+        Set<String> manNames = new HashSet<>(loadAndCacheInternalLines("man-names.txt"));
+        Set<String> lastNames = new HashSet<>(loadAndCacheInternalLines("last-names.txt"));
         String value = generate();
 
         Assertions.assertNotNull(value);
@@ -36,8 +36,8 @@ public class FullNameGeneratorTest extends GeneratorTest {
 
     @Test
     public void fullNameGender() {
-        Set<String> womanNames = new HashSet<>(loadInternalLines("woman-names.txt"));
-        Set<String> lastNames = new HashSet<>(loadInternalLines("last-names.txt"));
+        Set<String> womanNames = new HashSet<>(loadAndCacheInternalLines("woman-names.txt"));
+        Set<String> lastNames = new HashSet<>(loadAndCacheInternalLines("last-names.txt"));
         String value = generate("WOMAN");
 
         Assertions.assertNotNull(value);
@@ -50,7 +50,7 @@ public class FullNameGeneratorTest extends GeneratorTest {
         Assertions.assertTrue(womanNames.contains(womanName));
         Assertions.assertTrue(lastNames.contains(lastName));
 
-        Set<String> manNames = new HashSet<>(loadInternalLines("man-names.txt"));
+        Set<String> manNames = new HashSet<>(loadAndCacheInternalLines("man-names.txt"));
         String valueOther = generate("OTHER");
 
         Assertions.assertNotNull(valueOther);

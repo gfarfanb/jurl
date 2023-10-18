@@ -12,7 +12,7 @@ public class UUIDGeneratorTest extends GeneratorTest {
     }
 
     @Test
-    public void uuidDefault() {
+    public void uuidValidation() {
         String value = Assertions.assertDoesNotThrow(() -> generate());
 
         Assertions.assertNotNull(value);
