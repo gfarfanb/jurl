@@ -3,29 +3,24 @@ package com.legadi.jurl.executor;
 import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
-import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
-import static com.legadi.jurl.common.JsonUtils.jsonToObject;
-import static com.legadi.jurl.common.JsonUtils.loadJsonFile;
 import static com.legadi.jurl.common.JsonUtils.loadJsonProperties;
 import static com.legadi.jurl.common.JsonUtils.toJsonString;
 import static com.legadi.jurl.common.LoaderUtils.loadCredentials;
 import static com.legadi.jurl.common.RequestUtils.mergeRequestHeader;
 import static com.legadi.jurl.common.WriterUtils.appendToFile;
 import static com.legadi.jurl.common.WriterUtils.writeFile;
-import static com.legadi.jurl.executor.RequestHandlersRegistry.findByRequest;
+import static com.legadi.jurl.executor.RequestHandlersRegistry.findExecutorByRequestType;
+import static com.legadi.jurl.executor.RequestHandlersRegistry.findProcessorByRequestType;
+import static com.legadi.jurl.parser.RequestParserRegistry.findByRequestType;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.OffsetDateTime;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.google.gson.reflect.TypeToken;
 import com.legadi.jurl.common.ExecutionLevels;
 import com.legadi.jurl.common.OutputPathBuilder;
 import com.legadi.jurl.common.Pair;
@@ -39,12 +34,12 @@ import com.legadi.jurl.model.AssertionResult;
 import com.legadi.jurl.model.HistoryEntry;
 import com.legadi.jurl.model.MockEntry;
 import com.legadi.jurl.model.RequestEntry;
-import com.legadi.jurl.model.RequestInputRaw;
+import com.legadi.jurl.model.RequestInput;
 import com.legadi.jurl.model.ResponseEntry;
 import com.legadi.jurl.model.StepEntry;
 import com.legadi.jurl.options.OptionsReader;
 import com.legadi.jurl.options.OptionsReader.OptionEntry;
-import com.legadi.jurl.options.SetInputNameOption;
+import com.legadi.jurl.parser.RequestParser;
 
 public class RequestCommand {
 
@@ -84,14 +79,14 @@ public class RequestCommand {
             throw new CommandException("Request input path is null or empty");
         }
 
-        RequestInputRaw requestInput = loadJsonFile(requestInputPath, new TypeToken<RequestInputRaw>() {});
+        RequestParser<?> requestParser = findByRequestType(settings.getRequestType());
+        RequestInput<?> requestInput = requestParser.parseInput(settings, Paths.get(requestInputPath));
 
-        requestInput.setPath(requestInputPath);
-
-        executeInputRaw(settings, requestInput, isMainInput);
+        executeInput(settings, requestInputPath, requestInput, isMainInput);
     }
 
-    private void executeInputRaw(Settings settings, RequestInputRaw requestInput, boolean isMainInput) {
+    private void executeInput(Settings settings, String requestInputPath,
+            RequestInput<?> requestInput, boolean isMainInput) {
         loadConfig(requestInput, settings, isMainInput);
 
         int times = settings.getTimes() > 0 ? settings.getTimes() : FIRST_EXECUTION;
@@ -103,60 +98,49 @@ public class RequestCommand {
                     if(index == FIRST_EXECUTION) {
                         executionLevels.nextLevel();
                     }
-                    processFlow(index, requestInput, new StringExpander(settings.createForNextExecution()));
+                    processFlow(index, requestInputPath, requestInput,
+                        new StringExpander(settings.createForNextExecution()));
                 } else {
-                    processRequest(index, requestInput, new StringExpander(settings.createForNextExecution()));
+                    processRequest(index, requestInputPath, requestInput,
+                        new StringExpander(settings.createForNextExecution()));
                 }
             });
     }
 
-    private void loadConfig(RequestInputRaw requestInput, Settings settings, boolean isMainInput) {
+    private void loadConfig(RequestInput<?> requestInput, Settings settings, boolean isMainInput) {
         String environment = settings.getEnvironment();
         Path configPath = settings.getConfigFilePath();
         Path credentialsPath = settings.getCredentialsFilePath();
 
         Settings.mergeProperties(environment, loadJsonProperties(configPath));
         Settings.mergeCredentials(environment, loadCredentials(credentialsPath));
-
-        if(isNotEmpty(requestInput.getConfigs())) {
-            Map<String, String> fileConfig = requestInput.getConfigs().getOrDefault(environment, new HashMap<>());
-
-            if(isMainInput) {
-                Settings.mergeProperties(environment, fileConfig);
-            } else {
-                settings.mergeOverrideProperties(fileConfig);
-            }
-        }
     }
 
-    private void processFlow(int index, RequestInputRaw requestInput, StringExpander stringExpander) {
+    private void processFlow(int index, String requestInputPath, RequestInput<?> requestInput,
+            StringExpander stringExpander) {
         if(isEmpty(requestInput.getFlows())) {
-            throw new CommandException("No flows are defined in the request file: " + requestInput.getPath());
+            throw new CommandException("No flows are defined in the request file: " + requestInputPath);
         }
 
         Settings settings = stringExpander.getSettings();
-        Pair<String, String[]> flowDef = pickFlow(requestInput, settings);
+        Pair<String, List<StepEntry>> flowDef = pickFlow(requestInput, settings);
 
         if(isEmpty(flowDef.getRight())) {
             throw new CommandException("No steps defined for the flow: "
-                + flowDef.getLeft() + " - " + requestInput.getPath());
+                + flowDef.getLeft() + " - " + requestInputPath);
         }
 
-        List<StepEntry> steps = Arrays.stream(flowDef.getRight())
-            .parallel()
-            .map(stringExpander::replaceAllInContent)
-            .map(step -> jsonToObject(step, new TypeToken<StepEntry>() {}))
-            .collect(Collectors.toList());
+        List<StepEntry> steps = flowDef.getRight();
         int stepIndex = 1;
 
         for(StepEntry step : steps) {
-            step.setName(flowDef.getLeft());
+            String name = flowDef.getLeft();
 
             try {
-                executeStep(settings.createForNextExecution(), step, requestInput);
+                executeStep(settings.createForNextExecution(), step, requestInputPath, requestInput);
             } catch(CommandException | RequestException ex) {
                 throw new CommandException(
-                    "[" + requestInput.getPath() + "/" + step.getName() + "]"
+                    "[" + requestInputPath + "/" + name + "]"
                     + (settings.getTimes() > 1 ? " index=" + index + " ": "")
                     + " step("+ stepIndex + "/" + steps.size() + ") "
                     + ex.getMessage());
@@ -166,7 +150,7 @@ public class RequestCommand {
         }
     }
 
-    private Pair<String, String[]> pickFlow(RequestInputRaw requestInput, Settings settings) {
+    private Pair<String, List<StepEntry>> pickFlow(RequestInput<?> requestInput, Settings settings) {
         String name = isNotBlank(settings.getInputName())
             ? settings.getInputName()
             : requestInput.getDefaultFlow();
@@ -179,65 +163,57 @@ public class RequestCommand {
         }
     }
 
-    private void executeStep(Settings settings, StepEntry step, RequestInputRaw requestInput) {
+    private void executeStep(Settings settings, StepEntry step, String requestInputPath,
+            RequestInput<?> requestInput) {
         if(isBlank(step.getRequestInputPath())) {
             throw new CommandException("Request input path is null or empty");
         }
 
-        executeOptions(settings, optionsReader.mapToOptionEntries(step.getOptions()));
+        executeOptions(settings, step.getOptions());
 
-        if(isNotBlank(step.getRequestInputName())) {
-            SetInputNameOption.setInputName(settings, step.getRequestInputName());
-            executeInputRaw(settings, requestInput, false);
+        if(isNotBlank(settings.getInputName())) {
+            executeInput(settings, requestInputPath, requestInput, false);
         } else {
             executeInputPath(settings, step.getRequestInputPath(), false);
         }
     }
 
-    private void processRequest(int index, RequestInputRaw requestInput, StringExpander stringExpander) {
+    private void processRequest(int index, String requestInputPath, RequestInput<?> requestInput,
+            StringExpander stringExpander) {
         if(isEmpty(requestInput.getRequests())) {
-            throw new CommandException("No requests are defined in the request file: " + requestInput.getPath());
+            throw new CommandException("No requests are defined in the request file: " + requestInputPath);
         }
 
         Settings settings = stringExpander.getSettings();
-        Pair<String, String> requestDef = pickRequest(requestInput, settings);
+        Pair<String, RequestEntry<? extends MockEntry>> requestDef = pickRequest(requestInput, settings);
 
-        if(isBlank(requestDef.getRight())) {
+        if(requestDef.getRight() == null) {
             throw new CommandException("No request defined for name: "
-                + requestDef.getLeft() + " - " + requestInput.getPath());
+                + requestDef.getLeft() + " - " + requestInputPath);
         }
-        if(index == FIRST_EXECUTION && executionLevels.wasExecuted(requestInput.getPath(), requestDef.getLeft())) {
+        if(index == FIRST_EXECUTION && executionLevels.wasExecuted(requestInputPath, requestDef.getLeft())) {
             throw new CommandException("Request input was already processed: "
-                + requestInput.getPath() + "/" + requestDef.getLeft() + " - " + executionLevels.getTrace());
+                + requestInputPath + "/" + requestDef.getLeft() + " - " + executionLevels.getTrace());
         }
 
-        String apiRaw = null;
-        RequestEntry<? extends MockEntry> apiHeader = null;
-        
-        if(isNotBlank(requestInput.getApi())) {
-            apiRaw = stringExpander.replaceAllInContent(requestInput.getApi());
-            apiHeader = jsonToObject(apiRaw, new TypeToken<RequestEntry<? extends MockEntry>>() {});
-        }
-        
-        String requestRaw = stringExpander.replaceAllInContent(requestDef.getRight());
-        RequestEntry<? extends MockEntry> requestHeader = jsonToObject(requestRaw, new TypeToken<RequestEntry<? extends MockEntry>>() {});
+        RequestEntry<? extends MockEntry> request = requestDef.getRight();
 
-        if(apiHeader != null) {
-            mergeRequestHeader(apiHeader, requestHeader);
+        if(requestInput.getApi() != null) {
+            mergeRequestHeader(requestInput.getApi(), request);
         }
 
         try {
-            executeRequest(settings, requestHeader, requestInput.getPath(), requestDef.getLeft(),
-                apiRaw, requestRaw);
+            executeRequest(settings, requestInputPath, requestInput.getApi(), request);
         } catch(CommandException | RequestException ex) {
             throw new CommandException(
-                "[" + requestInput.getPath() + "/" + requestDef.getLeft() + "] "
+                "[" + requestInputPath + "/" + requestDef.getLeft() + "] "
                 + (settings.getTimes() > 1 ? " index=" + index + " ": "")
                 + ex.getMessage());
         }
     }
 
-    private Pair<String, String> pickRequest(RequestInputRaw requestInput, Settings settings) {
+    private Pair<String, RequestEntry<? extends MockEntry>> pickRequest(
+            RequestInput<?> requestInput, Settings settings) {
         String name = isNotBlank(settings.getInputName())
             ? settings.getInputName()
             : requestInput.getDefaultRequest();
@@ -250,23 +226,17 @@ public class RequestCommand {
         }
     }
 
-    private void executeRequest(Settings settings, RequestEntry<? extends MockEntry> header,
-            String requestPath, String name, String apiRaw, String requestRaw) {
-        Pair<RequestExecutor<?, ?>, ResponseProcessor<?, ?>> handlers = findByRequest(header);
-        RequestExecutor<?, ?> executor = handlers.getLeft();
-        ResponseProcessor<?, ?> processor = handlers.getRight();
-        RequestEntry<? extends MockEntry> request = jsonToObject(requestRaw, executor.type());
+    private void executeRequest(Settings settings, String requestInputPath,
+            RequestEntry<? extends MockEntry> api, RequestEntry<? extends MockEntry> request) {
+        RequestExecutor<?, ?> executor = findExecutorByRequestType(settings.getRequestType());
+        ResponseProcessor<?, ?> processor = findProcessorByRequestType(settings.getRequestType());
 
-        request.setRequestPath(requestPath);
-        request.setName(name);
-
-        if(apiRaw != null) {
-            RequestEntry<? extends MockEntry> api = jsonToObject(apiRaw, executor.type());
+        if(api != null) {
             executor.mergeAPI(settings, api, request);
         }
 
         if(isNotBlank(settings.getMergeBodyUsingType())) {
-            executor.mergeBody(settings, request);
+            executor.mergeBody(settings, requestInputPath, request);
         }
 
         if(isNotBlank(settings.getOverrideRequestFilePath())) {
@@ -274,14 +244,14 @@ public class RequestCommand {
         }
 
         long beginTime = System.nanoTime();
-        ResponseEntry response = executor.execute(settings, request);
+        ResponseEntry response = executor.execute(settings, requestInputPath, request);
         long endTime = System.nanoTime();
 
         HistoryEntry historyEntry = new HistoryEntry();
         historyEntry.setCurl(response.getCurlCommand());
         historyEntry.setResult(response.getResult());
-        historyEntry.setRequestPath(requestPath);
-        historyEntry.setRequestName(name);
+        historyEntry.setRequestPath(requestInputPath);
+        historyEntry.setRequestName(request.getName());
         historyEntry.setEnvironment(settings.getEnvironment());
         historyEntry.setTimestamp(settings.getTimestamp().toEpochSecond(OffsetDateTime.now().getOffset()));
         historyEntry.setExecutionTag(settings.getExecutionTag());
@@ -294,7 +264,7 @@ public class RequestCommand {
             historyEntry.setFailures(r.getFailures());
         });
 
-        saveHistory(settings, historyEntry, request.getRequestPath(), request.getName());
+        saveHistory(settings, historyEntry, requestInputPath, request.getName());
 
         if(result.isPresent() && result.get().isSkip()) {
             throw new InvalidAssertionsFoundException();

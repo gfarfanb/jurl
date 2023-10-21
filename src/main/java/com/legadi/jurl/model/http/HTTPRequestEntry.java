@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import com.google.gson.annotations.Expose;
 import com.legadi.jurl.model.AssertionEntry;
 import com.legadi.jurl.model.RequestEntry;
 
@@ -18,8 +17,6 @@ public class HTTPRequestEntry extends RequestEntry<HTTPMockEntry> {
     private String bodyCharset = StandardCharsets.UTF_8.name();
     private String bodyContent;
     private String bodyFilePath;
-    @Expose(serialize = false, deserialize = false)
-    private String bodyTemporalPath;
     private HTTPRequestFileEntry requestFile;
     private Map<String, String> outputMappings = new HashMap<>();
     private List<AssertionEntry> assertions = new LinkedList<>();
@@ -70,14 +67,6 @@ public class HTTPRequestEntry extends RequestEntry<HTTPMockEntry> {
 
     public void setBodyFilePath(String bodyFilePath) {
         this.bodyFilePath = bodyFilePath;
-    }
-
-    public String getBodyTemporalPath() {
-        return bodyTemporalPath;
-    }
-
-    public void setBodyTemporalPath(String bodyTemporalPath) {
-        this.bodyTemporalPath = bodyTemporalPath;
     }
 
     public HTTPRequestFileEntry getRequestFile() {

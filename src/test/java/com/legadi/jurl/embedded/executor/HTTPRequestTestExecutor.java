@@ -21,10 +21,12 @@ public class HTTPRequestTestExecutor extends HTTPRequestExecutor {
     }
 
     @Override
-    public HTTPResponseEntry executeRequest(Settings settings, HTTPRequestEntry request) throws RequestException {
+    public HTTPResponseEntry executeRequest(Settings settings, String requestInputPath,
+            HTTPRequestEntry request) throws RequestException {
         requestCatcher.add(new TypeToken<Settings>() {}, identifier, settings);
+        requestCatcher.add(new TypeToken<String>() {}, identifier, requestInputPath);
         requestCatcher.add(new TypeToken<HTTPRequestEntry>() {}, identifier, request);
         return requestCatcher.add(new TypeToken<HTTPResponseEntry>() {},
-            identifier, super.executeRequest(settings, request));
+            identifier, super.executeRequest(settings, requestInputPath, request));
     }
 }

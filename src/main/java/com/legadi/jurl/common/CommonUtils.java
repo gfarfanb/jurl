@@ -1,6 +1,9 @@
 package com.legadi.jurl.common;
 
+import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.regex.Pattern;
@@ -95,6 +98,10 @@ public class CommonUtils {
         return value.substring(0, length);
     }
 
+    public static boolean isNotNumeric(String value) {
+        return !isNumeric(value);
+    }
+
     public static boolean isNumeric(String value) {
         if (value == null) {
             return false; 
@@ -151,5 +158,18 @@ public class CommonUtils {
 
     public static int nextIndex(int length) {
         return (int) (length * Math.random());
+    }
+
+    public static Map<String, Field> getAllFields(Class<?> type) {
+        Map<String, Field> fields = new HashMap<>();
+
+        while (type != null && type != Object.class) {
+            Arrays.stream(type.getDeclaredFields())
+                .forEach(f -> fields.put(f.getName(), f));
+
+            type = type.getSuperclass();
+        }
+
+        return fields;
     }
 }

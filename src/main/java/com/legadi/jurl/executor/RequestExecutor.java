@@ -9,20 +9,20 @@ import com.legadi.jurl.model.ResponseEntry;
 
 public interface RequestExecutor<T extends RequestEntry<? extends MockEntry>, R extends ResponseEntry> {
 
-    boolean accepts(RequestEntry<? extends MockEntry> request);
+    String type();
 
-    TypeToken<T> type();
+    TypeToken<T> requestType();
 
     @SuppressWarnings("unchecked")
     default T cast(RequestEntry<? extends MockEntry> request) {
         return (T) request;
     }
 
-    default R execute(Settings settings, RequestEntry<? extends MockEntry> request) throws RequestException {
-        return executeRequest(settings, cast(request));
+    default R execute(Settings settings, String requestPath, RequestEntry<? extends MockEntry> request) throws RequestException {
+        return executeRequest(settings, requestPath, cast(request));
     }
 
-    R executeRequest(Settings settings, T request) throws RequestException;
+    R executeRequest(Settings settings, String requestPath, T request) throws RequestException;
 
     default void mergeAPI(Settings settings, RequestEntry<? extends MockEntry> api, RequestEntry<? extends MockEntry> request) {
         mergeAPIDefinition(settings, cast(api), cast(request));
@@ -30,11 +30,11 @@ public interface RequestExecutor<T extends RequestEntry<? extends MockEntry>, R 
 
     void mergeAPIDefinition(Settings settings, T api, T request);
 
-    default void mergeBody(Settings settings, RequestEntry<? extends MockEntry> request) {
-        mergeBodyFileWithBodyContent(settings, cast(request));
+    default void mergeBody(Settings settings, String requestPath, RequestEntry<? extends MockEntry> request) {
+        mergeBodyFileWithBodyContent(settings, requestPath, cast(request));
     }
 
-    void mergeBodyFileWithBodyContent(Settings settings, T request);
+    void mergeBodyFileWithBodyContent(Settings settings, String requestPath, T request);
 
     default void overrideRequest(Settings settings, RequestEntry<? extends MockEntry> request, String filename) {
         overrideRequestWithFile(settings, cast(request), filename);

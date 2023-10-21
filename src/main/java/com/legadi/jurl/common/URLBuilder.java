@@ -1,13 +1,17 @@
 package com.legadi.jurl.common;
 
+import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
+import static com.legadi.jurl.common.CommonUtils.isNotNumeric;
 import static com.legadi.jurl.common.CommonUtils.strip;
 import static com.legadi.jurl.common.CommonUtils.stripEnd;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import com.legadi.jurl.exception.CommandException;
 
 public class URLBuilder {
 
@@ -35,8 +39,14 @@ public class URLBuilder {
         return this;
     }
 
-    public URLBuilder setPort(int port) {
-        this.port = port;
+    public URLBuilder setPort(String port) {
+        if(isBlank(port)) {
+            return this;
+        }
+        if(isNotNumeric(port)) {
+            throw new CommandException("Port is not an integer: " + port);
+        }
+        this.port = Integer.parseInt(port);
         return this;
     }
 

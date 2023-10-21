@@ -1,22 +1,21 @@
 package com.legadi.jurl.model.http;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.legadi.jurl.model.MockEntry;
 
 public class HTTPMockEntry extends MockEntry {
 
-    private Map<String, List<String>> responseHeaders = new HashMap<>();
+    private Map<String, String> responseHeaders = new HashMap<>();
     private String responseContent;
     private String responseFilePath;
 
-    public Map<String, List<String>> getResponseHeaders() {
+    public Map<String, String> getResponseHeaders() {
         return responseHeaders;
     }
 
-    public void setResponseHeaders(Map<String, List<String>> responseHeaders) {
+    public void setResponseHeaders(Map<String, String> responseHeaders) {
         this.responseHeaders = responseHeaders;
     }
 

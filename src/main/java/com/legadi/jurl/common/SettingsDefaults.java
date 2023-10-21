@@ -16,6 +16,7 @@ import static com.legadi.jurl.common.SettingsConstants.PROP_PRINTABLE_MIME_TYPES
 import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_AUTHORIZATION_TYPE;
 import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_BEHAVIOUR;
 import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_CREDENTIAL_ID;
+import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_TYPE;
 import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_END_AT_LENGTH_MINUS;
 import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX;
 import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX_MASK;
@@ -79,6 +80,10 @@ public interface SettingsDefaults {
 
     default RequestBehaviour getRequestBehaviour() {
         return get(PROP_REQUEST_BEHAVIOUR, RequestBehaviour::valueOf);
+    }
+
+    default String getRequestType() {
+        return get(PROP_REQUEST_TYPE);
     }
 
     default boolean isMockRequest() {

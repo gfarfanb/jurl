@@ -10,6 +10,7 @@ import static com.legadi.jurl.common.WriterUtils.expandFile;
 import static com.legadi.jurl.common.WriterUtils.printFile;
 import static com.legadi.jurl.common.WriterUtils.writeLine;
 import static com.legadi.jurl.executor.mixer.BodyMixerRegistry.findByBodyType;
+import static com.legadi.jurl.parser.RequestParserRegistry.findByRequestType;
 import static java.util.logging.Level.FINE;
 
 import java.io.BufferedReader;
@@ -46,16 +47,18 @@ import com.legadi.jurl.executor.mixer.BodyMixer;
 import com.legadi.jurl.executor.mixer.BodyMixer.MixerEntry;
 import com.legadi.jurl.model.AssertionEntry;
 import com.legadi.jurl.model.Credential;
-import com.legadi.jurl.model.MockEntry;
 import com.legadi.jurl.model.RequestBehaviour;
-import com.legadi.jurl.model.RequestEntry;
 import com.legadi.jurl.model.http.HTTPRequestEntry;
 import com.legadi.jurl.model.http.HTTPRequestFileEntry;
 import com.legadi.jurl.model.http.HTTPResponseEntry;
+import com.legadi.jurl.parser.HTTPRequestParser;
 
 public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HTTPResponseEntry> {
 
     private static final Logger LOGGER = Logger.getLogger(HTTPRequestExecutor.class.getName());
+
+    public static final String BODY_TEMPORAL_PATH = "http.request.executor/body.temporal.path";
+    public static final String REQUEST_FILE_BOUNDARY = "http.request.executor/request.file.boundary";
 
     private static final String MULTIPART_LINE_END = "\r\n";
     private static final String MULTIPART_TWO_HYPHENS = "--";
@@ -63,18 +66,18 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     private static final Pattern FILENAME_PATTERN = Pattern.compile(".*filename=(.*)");
 
     @Override
-    public boolean accepts(RequestEntry<? extends MockEntry> request) {
-        return (isNotBlank(request.getUrl()) && request.getUrl().startsWith("http"))
-            || (isNotBlank(request.getProtocol()) && request.getProtocol().startsWith("http"));
+    public String type() {
+        return "http";
     }
 
     @Override
-    public TypeToken<HTTPRequestEntry> type() {
+    public TypeToken<HTTPRequestEntry> requestType() {
         return new TypeToken<HTTPRequestEntry>() {};
     }
 
     @Override
-    public HTTPResponseEntry executeRequest(Settings settings, HTTPRequestEntry request) throws RequestException {
+    public HTTPResponseEntry executeRequest(Settings settings, String requestPath, HTTPRequestEntry request)
+            throws RequestException {
         CurlBuilder curlBuilder = new CurlBuilder();
         HttpURLConnection connection = createConnection(settings, request, curlBuilder);
 
@@ -85,10 +88,10 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         } else {
             addHeaders(connection, settings, request, curlBuilder);
             addMethod(connection, request, curlBuilder);
-            sendBody(connection, settings, request, curlBuilder);
+            sendBody(connection, settings, requestPath, request, curlBuilder);
         }
 
-        return buildResponse(connection, settings, request, curlBuilder);
+        return buildResponse(connection, settings, requestPath, request, curlBuilder);
     }
 
     @Override
@@ -133,7 +136,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     }
 
     @Override
-    public void mergeBodyFileWithBodyContent(Settings settings, HTTPRequestEntry request) {
+    public void mergeBodyFileWithBodyContent(Settings settings, String requestPath, HTTPRequestEntry request) {
         if(isBlank(request.getBodyFilePath())) {
             throw new RequestException(request, "request.bodyFilePath is null or empty");
         }
@@ -143,20 +146,21 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
 
         BodyMixer mixer = findByBodyType(settings.getMergeBodyUsingType());
         Path bodyTemporalPath = mixer.apply(settings, new MixerEntry()
-            .setRequestPath(request.getRequestPath())
+            .setRequestPath(requestPath)
             .setRequestName(request.getName())
             .setBodyFilePath(request.getBodyFilePath())
             .setBodyContent(request.getBodyContent()));
 
         request.setBodyContent(null);
         request.setBodyFilePath(null);
-        request.setBodyTemporalPath(bodyTemporalPath.toString());
+
+        settings.putOverride(BODY_TEMPORAL_PATH, bodyTemporalPath.toString());
     }
 
     @Override
     public void overrideRequestWithFile(Settings settings, HTTPRequestEntry request, String filename) {
-        HTTPRequestParser parser = new HTTPRequestParser(settings);
-        HTTPRequestEntry overrideRequest = parser.parseRequest(request.getRequestPath(), request.getName(), filename);
+        HTTPRequestParser parser = findByRequestType(type());
+        HTTPRequestEntry overrideRequest = parser.parseRequest(settings, Paths.get(filename));
 
         if(isNotEmpty(overrideRequest.getHeaders())) {
             request.setHeaders(overrideRequest.getHeaders());
@@ -174,10 +178,12 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             request.setOutputMappings(overrideRequest.getOutputMappings());
         }
 
-        if(isNotBlank(overrideRequest.getBodyTemporalPath())) {
-            request.setBodyContent(null);
-            request.setBodyFilePath(null);
-            request.setBodyTemporalPath(overrideRequest.getBodyTemporalPath());
+        if(isNotBlank(overrideRequest.getBodyContent())) {
+            request.setBodyContent(overrideRequest.getBodyContent());
+        }
+
+        if(isNotBlank(overrideRequest.getBodyFilePath())) {
+            request.setBodyFilePath(overrideRequest.getBodyFilePath());
         }
     }
 
@@ -288,9 +294,10 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         connection.setRequestProperty("Connection", "Keep-Alive");
         connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
 
-        request.getRequestFile().setBoundary(boundary);
         request.getHeaders().put("Connection", "Keep-Alive");
         request.getHeaders().put("Content-Type", "multipart/form-data; boundary=" + boundary);
+
+        settings.putOverride(REQUEST_FILE_BOUNDARY, boundary);
 
         addHeaders(connection, settings, request, curlBuilder);
     }
@@ -331,7 +338,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     }
 
     private void sendBody(HttpURLConnection connection, Settings settings, 
-            HTTPRequestEntry request, CurlBuilder culrBuilder) {
+            String requestPath, HTTPRequestEntry request, CurlBuilder culrBuilder) {
         if(!connection.getDoOutput()) {
             return;
         }
@@ -344,11 +351,11 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             }
 
             if(isNotBlank(request.getBodyFilePath())) {
-                sendBodyFile(dataOutputStream, settings, request, culrBuilder);
+                sendBodyFile(dataOutputStream, settings, requestPath, request, culrBuilder);
                 return;
             }
 
-            if(isNotBlank(request.getBodyTemporalPath())) {
+            if(settings.containsOverride(BODY_TEMPORAL_PATH)) {
                 sendBodyTemporal(dataOutputStream, settings, request, culrBuilder);
                 return;
             }
@@ -367,9 +374,9 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     }
 
     private void sendBodyFile(DataOutputStream dataOutputStream, Settings settings, 
-            HTTPRequestEntry request, CurlBuilder culrBuilder) throws IOException {
+            String requestPath, HTTPRequestEntry request, CurlBuilder culrBuilder) throws IOException {
         OutputPathBuilder pathBuilder = new OutputPathBuilder(settings)
-            .setRequestPath(request.getRequestPath())
+            .setRequestPath(requestPath)
             .setRequestName(request.getName())
             .setExtension("body");
         Path temporalBodyPath = pathBuilder.buildCommandPath();
@@ -378,7 +385,6 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         expandFile(settings, requestBodyPath, temporalBodyPath,
             line -> writeLine(dataOutputStream, line, request.getBodyCharset()));
 
-        request.setBodyTemporalPath(temporalBodyPath.toString());
         culrBuilder.setDataBinary(temporalBodyPath.toString());
 
         log(settings, null, temporalBodyPath);
@@ -386,7 +392,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
 
     private void sendBodyTemporal(DataOutputStream dataOutputStream, Settings settings, 
             HTTPRequestEntry request, CurlBuilder culrBuilder) throws IOException {
-        Path bodyPath = Paths.get(request.getBodyTemporalPath());
+        Path bodyPath = Paths.get(settings.get(BODY_TEMPORAL_PATH));
 
         try(BufferedReader br = Files.newBufferedReader(bodyPath)) {
             br
@@ -405,11 +411,12 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         String[] pathParts = requestFile.getPath().split("/");
         String filename = isNotBlank(requestFile.getName()) ? requestFile.getName() : pathParts[pathParts.length - 1];
         Map<String, String> formData = isNotEmpty(requestFile.getFormData()) ? requestFile.getFormData() : new HashMap<>();
+        String boundary = settings.get(REQUEST_FILE_BOUNDARY);
         StringBuilder printableFile = new StringBuilder();
 
         try(DataOutputStream dataOutputStream = new DataOutputStream(connection.getOutputStream());
                 FileInputStream fileInputStream = new FileInputStream(requestFile.getPath())) {
-            dataOutputStream.writeBytes(MULTIPART_TWO_HYPHENS + requestFile.getBoundary() + MULTIPART_LINE_END);
+            dataOutputStream.writeBytes(MULTIPART_TWO_HYPHENS + boundary + MULTIPART_LINE_END);
             dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"" + requestFile.getField() + "\"; filename=\"" + filename + "\"" + MULTIPART_LINE_END);
             dataOutputStream.writeBytes("Content-Transfer-Encoding: binary" + MULTIPART_LINE_END);
 
@@ -434,7 +441,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             dataOutputStream.writeBytes(MULTIPART_LINE_END);
 
             for(Map.Entry<String, String> formEntry : formData.entrySet()) {
-                dataOutputStream.writeBytes(MULTIPART_TWO_HYPHENS + requestFile.getBoundary() + MULTIPART_LINE_END);
+                dataOutputStream.writeBytes(MULTIPART_TWO_HYPHENS + boundary + MULTIPART_LINE_END);
                 dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"" + formEntry.getKey() + "\"" + MULTIPART_LINE_END);
                 dataOutputStream.writeBytes("Content-Type: text/plain" + MULTIPART_LINE_END);
                 dataOutputStream.writeBytes(MULTIPART_LINE_END);
@@ -442,7 +449,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
                 dataOutputStream.writeBytes(MULTIPART_LINE_END);
             };
 
-            dataOutputStream.writeBytes(MULTIPART_TWO_HYPHENS + requestFile.getBoundary() + MULTIPART_TWO_HYPHENS + MULTIPART_LINE_END);
+            dataOutputStream.writeBytes(MULTIPART_TWO_HYPHENS + boundary + MULTIPART_TWO_HYPHENS + MULTIPART_LINE_END);
 
             curlBuilder.setFile(requestFile.getField(), requestFile.getPath(), filename, requestFile.getMineType());
 
@@ -487,9 +494,9 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     }
 
     private Path readOutput(HttpURLConnection connection, Settings settings,
-            HTTPRequestEntry request, String filename) {
+            String requestPath, HTTPRequestEntry request, String filename) {
         OutputPathBuilder pathBuilder = new OutputPathBuilder(settings)
-                .setRequestPath(request.getRequestPath())
+                .setRequestPath(requestPath)
                 .setRequestName(request.getName())
                 .setFilename(filename)
                 .setExtension(isBlank(filename) ? "response" : null);
@@ -519,7 +526,8 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     }
 
     private HTTPResponseEntry buildResponse(HttpURLConnection connection,
-            Settings settings, HTTPRequestEntry request, CurlBuilder curlBuilder) {
+            Settings settings, String requestPath, HTTPRequestEntry request,
+            CurlBuilder curlBuilder) {
         HTTPResponseEntry response = new HTTPResponseEntry();
         StringBuilder printableResponse = new StringBuilder();
 
@@ -540,7 +548,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             response.setResult(response.getResponseHeaders().remove("HTTP:HEADER:RESULT"));
 
             String filename = getOutputFilename(response);
-            Path responsePath = readOutput(connection, settings, request, filename);
+            Path responsePath = readOutput(connection, settings, requestPath, request, filename);
 
             response.setResponsePath(responsePath);
 

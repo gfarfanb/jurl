@@ -45,7 +45,7 @@ public class HelpOption extends Option {
     @Override
     public boolean execute(Settings settings, String[] args) {
         StringBuilder helpMessage = new StringBuilder();
-        helpMessage.append("Simple API development environment by command line and Java.\n\n");
+        helpMessage.append("CLI Java application to provides an API test/client tool.\n\n");
         helpMessage.append("Usage: ");
 
         String os = System.getProperty("os.name").toLowerCase(Locale.ROOT);
@@ -55,7 +55,7 @@ public class HelpOption extends Option {
             helpMessage.append("sh jurl.sh ");
         }
 
-        helpMessage.append("[<option>]* [--help] [<add-on-option>]* <request-file>[.json]\n\n");
+        helpMessage.append("[<option>]* [--help] [<add-on-option>]* <request-file>\n\n");
         helpMessage.append("Options:\n");
         appendOptions(getOptions(), helpMessage);
         helpMessage.append("\n");

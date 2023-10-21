@@ -9,6 +9,7 @@
     "requestAuthorizationType": "EMPTY",
     "executionAsFlow": false,
     "requestBehaviour": "REQUEST",
+    "requestType": "http",
     "mockRequest": false,
     "openOutputInEditor": false,
     "executionTimes": 1,

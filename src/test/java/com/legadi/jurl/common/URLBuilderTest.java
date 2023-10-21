@@ -24,7 +24,7 @@ public class URLBuilderTest {
         URLBuilder builder = new URLBuilder()
             .setProtocol("http:://")
             .setDomain("/localhost:")
-            .setPort(1234)
+            .setPort("1234")
             .setBasePath("/api/")
             .setEndpoint("v1/");
 
@@ -75,7 +75,7 @@ public class URLBuilderTest {
         URLBuilder builder = new URLBuilder()
             .setProtocol("http:://")
             .setDomain("/localhost:1234")
-            .setPort(1234)
+            .setPort("1234")
             .setBasePath("/api/")
             .setEndpoint("v1/");
 

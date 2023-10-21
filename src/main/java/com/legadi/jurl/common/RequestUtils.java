@@ -20,7 +20,7 @@ public class RequestUtils {
         if(isBlank(request.getDomain())) {
             request.setDomain(api.getDomain());
         }
-        if(request.getPort() == 0) {
+        if(isBlank(request.getPort())) {
             request.setPort(api.getPort());
         }
         if(isBlank(request.getBasePath())) {

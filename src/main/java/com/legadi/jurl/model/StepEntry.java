@@ -1,32 +1,13 @@
 package com.legadi.jurl.model;
 
-import java.util.Map;
+import java.util.List;
 
-import com.google.gson.annotations.Expose;
+import com.legadi.jurl.options.OptionsReader.OptionEntry;
 
 public class StepEntry {
 
-    @Expose(serialize = false, deserialize = false)
-    private String name;
-    private String requestInputName;
     private String requestInputPath;
-    private Map<String, String[]> options;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getRequestInputName() {
-        return requestInputName;
-    }
-
-    public void setRequestInputName(String requestInputName) {
-        this.requestInputName = requestInputName;
-    }
+    private List<OptionEntry> options;
 
     public String getRequestInputPath() {
         return requestInputPath;
@@ -36,11 +17,11 @@ public class StepEntry {
         this.requestInputPath = requestInputPath;
     }
 
-    public Map<String, String[]> getOptions() {
+    public List<OptionEntry> getOptions() {
         return options;
     }
 
-    public void setOptions(Map<String, String[]> options) {
+    public void setOptions(List<OptionEntry> options) {
         this.options = options;
     }
 }

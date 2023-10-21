@@ -2,22 +2,18 @@ package com.legadi.jurl.executor;
 
 import static com.legadi.jurl.common.LoaderUtils.instantiate;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.executor.http.HTTPRequestExecutor;
 import com.legadi.jurl.executor.http.HTTPResponseProcessor;
-import com.legadi.jurl.model.MockEntry;
-import com.legadi.jurl.model.RequestEntry;
 
 public class RequestHandlersRegistry {
 
-    private static final List<Pair<Supplier<RequestExecutor<?, ?>>, Supplier<ResponseProcessor<?, ?>>>> EXECUTORS = new LinkedList<>();
+    private static final Map<String, Pair<Supplier<RequestExecutor<?, ?>>, Supplier<ResponseProcessor<?, ?>>>> HANDLERS = new HashMap<>();
 
     static {
         registerHandler(HTTPRequestExecutor::new, HTTPResponseProcessor::new);
@@ -31,24 +27,31 @@ public class RequestHandlersRegistry {
 
     public static void registerHandler(Supplier<RequestExecutor<?, ?>> requestExecutorSupplier,
             Supplier<ResponseProcessor<?, ?>> responseProcessorSupplier) {
-        EXECUTORS.add(new Pair<>(requestExecutorSupplier, responseProcessorSupplier));
+        RequestExecutor<?, ?> executor = requestExecutorSupplier.get();
+
+        HANDLERS.put(executor.type(), new Pair<>(requestExecutorSupplier, responseProcessorSupplier));
     }
 
-    public static Pair<RequestExecutor<?, ?>, ResponseProcessor<?, ?>> findByRequest(
-            RequestEntry<? extends MockEntry> request) {
-        List<Pair<RequestExecutor<?, ?>, ResponseProcessor<?, ?>>> executors = EXECUTORS
-            .stream()
-            .map(pair -> new Pair<RequestExecutor<?, ?>, ResponseProcessor<?, ?>>(
-                pair.getLeft().get(), pair.getRight().get()
-            ))
-            .filter(pair -> pair.getLeft().accepts(request))
-            .collect(Collectors.toCollection(ArrayList::new));
+    public static RequestExecutor<?, ?> findExecutorByRequestType(String requestType) {
+        Pair<Supplier<RequestExecutor<?, ?>>, Supplier<ResponseProcessor<?, ?>>> executor =
+            HANDLERS.get(requestType);
 
-        if(executors.isEmpty()) {
-            throw new CommandException("Unable to obtain request executor for:" + request);
+        if(executor == null) {
+            throw new CommandException("Unable to obtain request executor for: " + requestType);
         }
 
-        Pair<RequestExecutor<?, ?>, ResponseProcessor<?, ?>> lastExecutor = executors.get(executors.size() - 1);
-        return lastExecutor;
+        return executor.getLeft().get();
+    }
+
+    public static ResponseProcessor<?, ?> findProcessorByRequestType(
+            String requestType) {
+        Pair<Supplier<RequestExecutor<?, ?>>, Supplier<ResponseProcessor<?, ?>>> executor =
+            HANDLERS.get(requestType);
+
+        if(executor == null) {
+            throw new CommandException("Unable to obtain response processor for:" + requestType);
+        }
+
+        return executor.getRight().get();
     }
 }

@@ -3,8 +3,6 @@ package com.legadi.jurl.model.http;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.google.gson.annotations.Expose;
-
 public class HTTPRequestFileEntry {
 
     private String name;
@@ -12,8 +10,6 @@ public class HTTPRequestFileEntry {
     private String field;
     private String mineType;
     private Map<String, String> formData = new HashMap<>();
-    @Expose(serialize = false, deserialize = false)
-    private String boundary;
 
     public String getName() {
         return name;
@@ -53,13 +49,5 @@ public class HTTPRequestFileEntry {
 
     public void setFormData(Map<String, String> formData) {
         this.formData = formData;
-    }
-
-    public String getBoundary() {
-        return boundary;
-    }
-
-    public void setBoundary(String boundary) {
-        this.boundary = boundary;
     }
 }

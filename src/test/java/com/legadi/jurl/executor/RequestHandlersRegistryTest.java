@@ -1,6 +1,7 @@
 package com.legadi.jurl.executor;
 
-import static com.legadi.jurl.executor.RequestHandlersRegistry.findByRequest;
+import static com.legadi.jurl.executor.RequestHandlersRegistry.findExecutorByRequestType;
+import static com.legadi.jurl.executor.RequestHandlersRegistry.findProcessorByRequestType;
 import static com.legadi.jurl.executor.RequestHandlersRegistry.registerHandler;
 
 import java.util.Optional;
@@ -9,7 +10,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.google.gson.reflect.TypeToken;
-import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.exception.RequestException;
@@ -24,34 +24,38 @@ public class RequestHandlersRegistryTest {
     public void registerHandlerCustom() {
         registerHandler(TestRequestExecutor.class.getName(), TestResponseProcessor.class.getName());
 
-        Pair<RequestExecutor<?, ?>, ResponseProcessor<?, ?>> handlers = Assertions.assertDoesNotThrow(
-            () -> findByRequest(new TestRequest()));
+        RequestExecutor<?, ?> executor = Assertions.assertDoesNotThrow(
+            () -> findExecutorByRequestType("test"));
+        ResponseProcessor<?, ?> processor = Assertions.assertDoesNotThrow(
+            () -> findProcessorByRequestType("test"));
 
-        Assertions.assertNotNull(handlers);
-        Assertions.assertNotNull(handlers.getLeft());
-        Assertions.assertNotNull(handlers.getRight());
+        Assertions.assertNotNull(executor);
+        Assertions.assertNotNull(processor);
     }
 
     @Test
     public void notFound() {
         Assertions.assertThrows(CommandException.class,
-            () -> findByRequest(new RequestEntry<MockEntry>()));
+            () -> findExecutorByRequestType("not-found"));
+        Assertions.assertThrows(CommandException.class,
+            () -> findProcessorByRequestType("not-found"));
     }
 
     public static class TestRequestExecutor implements RequestExecutor<TestRequest, TestResponse> {
 
         @Override
-        public boolean accepts(RequestEntry<? extends MockEntry> request) {
-            return request instanceof TestRequest;
+        public String type() {
+            return "test";
         }
 
         @Override
-        public TypeToken<TestRequest> type() {
+        public TypeToken<TestRequest> requestType() {
             return new TypeToken<TestRequest>() {};
         }
 
         @Override
-        public TestResponse executeRequest(Settings settings, TestRequest request) throws RequestException {
+        public TestResponse executeRequest(Settings settings, String requestInputPath,
+                TestRequest request) throws RequestException {
             return new TestResponse();
         }
 
@@ -60,7 +64,8 @@ public class RequestHandlersRegistryTest {
         }
 
         @Override
-        public void mergeBodyFileWithBodyContent(Settings settings, TestRequest request) {
+        public void mergeBodyFileWithBodyContent(Settings settings, String requestInputPath,
+            TestRequest request) {
         }
 
         @Override

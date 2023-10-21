@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import com.legadi.jurl.model.http.HTTPMockEntry;
 
@@ -47,7 +48,13 @@ public class HTTPMockConnection extends HttpURLConnection {
             this.responseContent = mockEntry.getResponseContent();
             this.responseFilePath = mockEntry.getResponseFilePath();
 
-            this.responseHeaders.putAll(mockEntry.getResponseHeaders());
+            this.responseHeaders.putAll(mockEntry.getResponseHeaders()
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                    e -> e.getKey(),
+                    e -> Arrays.asList(e.getValue()))
+                ));
             this.responseHeaders.put(null, Arrays.asList("HTTP/1.1 " + responseCode));
         }
     }

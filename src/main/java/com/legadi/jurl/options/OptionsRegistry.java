@@ -24,6 +24,7 @@ public class OptionsRegistry {
         registerOption(CustomGeneratorOption::new);
         registerOption(CustomHandlerOption::new);
         registerOption(CustomMixerOption::new);
+        registerOption(CustomParserOption::new);
         registerOption(CustomReaderOption::new);
         registerOption(EnvironmentOption::new);
         registerOption(FlowExecutionOption::new);
@@ -33,6 +34,7 @@ public class OptionsRegistry {
         registerOption(OpenEditorOption::new);
         registerOption(OverrideRequestOption::new);
         registerOption(RequestPrintOption::new);
+        registerOption(RequestTypeOption::new);
         registerOption(SetInputNameOption::new);
         registerOption(SetValueOption::new);
         registerOption(SkipAssertionsOption::new);
