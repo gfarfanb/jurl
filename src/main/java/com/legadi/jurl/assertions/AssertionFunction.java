@@ -6,12 +6,16 @@ public interface AssertionFunction {
 
     String name();
 
+    default String alias() {
+        return "";
+    }
+
     String[] getArgs();
 
-    boolean apply(String[] args) throws AssertionException;
+    boolean apply(String[] args);
 
     default boolean accepts(String name) {
-        return name().equalsIgnoreCase(name);
+        return name().equalsIgnoreCase(name) || alias().equalsIgnoreCase(name);
     }
 
     default void evaluate(String message, String[] args) throws AssertionException {

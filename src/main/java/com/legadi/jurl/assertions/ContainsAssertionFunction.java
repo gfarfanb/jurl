@@ -3,8 +3,6 @@ package com.legadi.jurl.assertions;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.model.AssertionType.CONTAINS;
 
-import com.legadi.jurl.exception.AssertionException;
-
 public class ContainsAssertionFunction implements AssertionFunction {
 
     @Override
@@ -18,7 +16,7 @@ public class ContainsAssertionFunction implements AssertionFunction {
     }
 
     @Override
-    public boolean apply(String[] args) throws AssertionException {
+    public boolean apply(String[] args) {
         return isNotBlank(args[0])
             && isNotBlank(args[1])
             && args[0].contains(args[1]);

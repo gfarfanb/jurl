@@ -5,8 +5,6 @@ import static com.legadi.jurl.model.AssertionType.IS_BETWEEN;
 
 import java.math.BigDecimal;
 
-import com.legadi.jurl.exception.AssertionException;
-
 public class IsBetweenAssertionFunction implements AssertionFunction {
 
     @Override
@@ -20,7 +18,7 @@ public class IsBetweenAssertionFunction implements AssertionFunction {
     }
 
     @Override
-    public boolean apply(String[] args) throws AssertionException {
+    public boolean apply(String[] args) {
         return isNotBlank(args[0])
             && isNotBlank(args[1])
             && isNotBlank(args[2])

@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,39 +33,28 @@ import com.legadi.jurl.options.OptionsReader;
 
 public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
-    private static final String DEFAULT_REQUEST_PATTERN = "^(?i)@default-request[ ]*=(.*)";
-    private static final String DEFAULT_FLOW_PATTERN = "^(?i)@default-flow[ ]*=(.*)";
-    private static final String API_SPEC_PATTERN = "^(?i)###[ ]*api:(.*)";
-    private static final String REQUEST_SPEC_PATTERN = "^###(.*)";
-    private static final String URL_PATTERN = "^(?i)(http|https):\\/\\/(.*)";
-    private static final String HEADER_PATTERN = "^([\\w-]+): (.*)";
-    private static final String QUERY_PARAM_PATTERN = "^[&]*([\\w:.-_@]+)=(.*)";
-    private static final String FIELD_PATTERN = "^@([\\w]+)[ ]*=(.*)";
-    private static final String PARAM_VALUE_PATTERN = "^([\\w:.-_@]+)[ ]*=(.*)";
-    private static final String ASSERTION_PATTERN = "^([\\w:.-_@]+)! (.*)";
-    private static final String SECTION_PATTERN = "^(?i)\\/\\/[ ]*\\[(main|conditions|file|output|assertions|mock)\\].*";
-    private static final String FLOW_SPEC_PATTERN = "^(?i)###[ ]*flow:(.*)";
-    private static final String STEP_SPEC_PATTERN = "^(?i)-[ ]*step (.*)";
-    private static final String COMMENT_PATTERN = "^#(.*)";
-
     private static final Map<String, Field> REQUEST_FIELDS = getAllFields(HTTPRequestEntry.class);
     private static final Map<String, Field> REQUEST_FILE_FIELDS = getAllFields(HTTPRequestFileEntry.class);
     private static final Map<String, Field> MOCK_FIELDS = getAllFields(HTTPMockEntry.class);
 
-    private final Pattern defaultRequestPattern = Pattern.compile(DEFAULT_REQUEST_PATTERN);
-    private final Pattern defaultFlowPattern = Pattern.compile(DEFAULT_FLOW_PATTERN);
-    private final Pattern apiSpecPattern = Pattern.compile(API_SPEC_PATTERN);
-    private final Pattern requestSpecPattern = Pattern.compile(REQUEST_SPEC_PATTERN);
-    private final Pattern urlPattern = Pattern.compile(URL_PATTERN);
-    private final Pattern headerPattern = Pattern.compile(HEADER_PATTERN);
-    private final Pattern queryParamPattern = Pattern.compile(QUERY_PARAM_PATTERN);
-    private final Pattern fieldPattern = Pattern.compile(FIELD_PATTERN);
-    private final Pattern paramValuePattern = Pattern.compile(PARAM_VALUE_PATTERN);
-    private final Pattern assertionPattern = Pattern.compile(ASSERTION_PATTERN);
-    private final Pattern sectionPattern = Pattern.compile(SECTION_PATTERN);
-    private final Pattern flowSpecPattern = Pattern.compile(FLOW_SPEC_PATTERN);
-    private final Pattern stepSpecPattern = Pattern.compile(STEP_SPEC_PATTERN);
-    private final Pattern commentPattern = Pattern.compile(COMMENT_PATTERN);
+    private final Pattern defaultRequestPattern = Pattern.compile("^(?i)@default-request[ ]*=(.*)");
+    private final Pattern defaultFlowPattern = Pattern.compile("^(?i)@default-flow[ ]*=(.*)");
+    private final Pattern apiSpecPattern = Pattern.compile("^(?i)###[ ]*\\[api\\](.*)");
+    private final Pattern requestSpecPattern = Pattern.compile("^###(.*)");
+    private final Pattern fieldPattern = Pattern.compile("^@([\\w]+)[ ]*=(.*)");
+    private final Pattern urlPattern = Pattern.compile("^(?i)(http|https):\\/\\/(.*)");
+    private final Pattern urlMethodPattern = Pattern.compile("^(?i)([\\w]+) (http|https):\\/\\/(.*)");
+    private final Pattern headerPattern = Pattern.compile("^([\\w-]+): (.*)");
+    private final Pattern queryParamPattern = Pattern.compile("^[&]*([\\w:.-_@]+)=(.*)");
+    private final Pattern fileFieldPattern = Pattern.compile("^(?i)file @([\\w:.-_@]+)[ ]*=(.*)");
+    private final Pattern fileFormPattern = Pattern.compile("^(?i)file ([\\w:.-_@]+)[ ]*=(.*)");
+    private final Pattern mockFieldPattern = Pattern.compile("^(?i)mock @([\\w:.-_@]+)[ ]*=(.*)");
+    private final Pattern mockHeaderPattern = Pattern.compile("^(?i)mock ([\\w-]+): (.*)");
+    private final Pattern outputPattern = Pattern.compile("^(?i)output ([\\w:.-_@]+)[ ]*=(.*)");
+    private final Pattern assertionPattern = Pattern.compile("^(?i)assert ([\\w:.-_@]+) (.*)");
+    private final Pattern flowSpecPattern = Pattern.compile("^(?i)###[ ]*\\[flow\\](.*)");
+    private final Pattern stepSpecPattern = Pattern.compile("^(?i)step (.*)");
+    private final Pattern commentPattern = Pattern.compile("^#(.*)");
 
     @Override
     public String type() {
@@ -87,7 +77,6 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             AtomicReference<HTTPRequestEntry> apiCarrier = new AtomicReference<>(new HTTPRequestEntry());
             AtomicReference<HTTPRequestEntry> requestCarrier = new AtomicReference<>();
             AtomicReference<Pair<String, List<StepEntry>>> flowCarrier = new AtomicReference<>();
-            AtomicReference<Section> sectionCarrier = new AtomicReference<>();
 
             requestInput.setApi(apiCarrier.get());
 
@@ -97,6 +86,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                 if(isBlank(line)) {
                     continue;
                 }
+
                 if(addDefaultRequest(requestInput, line)) {
                     continue;
                 }
@@ -113,10 +103,6 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                     requestInput.getRequests().put(requestCarrier.get().getName(), requestCarrier.get());
                     continue;
                 }
-                if(isSection(sectionCarrier, line)) {
-                    section = sectionCarrier.get();
-                    continue;
-                }
                 if(isFlowSpec(flowCarrier, line)) {
                     section = Section.FLOW;
                     requestInput.getFlows().put(flowCarrier.get().getLeft(), flowCarrier.get().getRight());
@@ -128,28 +114,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                         decorateRequest(apiCarrier, line);
                         break;
                     case REQUEST:
-                    case MAIN:
                         decorateRequest(requestCarrier, line);
-                        break;
-                    case CONDITIONS:
-                        break;
-                    case FILE:
-                        decorateRequestFile(requestCarrier, line);
-                        break;
-                    case OUTPUT:
-                        validateRequest(requestCarrier);
-                        if(addParamValue(requestCarrier.get().getOutputMappings(), line)) {
-                            continue;
-                        }
-                        break;
-                    case ASSERTIONS:
-                        validateRequest(requestCarrier);
-                        if(addAssertion(requestCarrier.get(), line)) {
-                            continue;
-                        }
-                        break;
-                    case MOCK:
-                        decorateMock(requestCarrier, line);
                         break;
                     case FLOW:
                         decorateFlow(flowCarrier, line);
@@ -196,25 +161,65 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
     private void decorateRequest(AtomicReference<HTTPRequestEntry> requestCarrier, String line)
             throws IllegalAccessException {
-        validateRequest(requestCarrier);
+        if(requestCarrier.get() == null) {
+            throw new CommandException("Request file must define a request section:\n### <request-name>");
+        }
 
-        if(addURL(requestCarrier.get(), line)) {
+        HTTPRequestEntry request = requestCarrier.get();
+
+        if(addField(fieldPattern, REQUEST_FIELDS, () -> request, line)) {
             return;
         }
-        if(addHeader(requestCarrier.get().getHeaders(), line)) {
+        if(addURL(request, line)) {
             return;
         }
-        if(addQueryParam(requestCarrier.get(), line)) {
+        if(addURLMethod(request, line)) {
             return;
         }
-        if(addField(REQUEST_FIELDS, requestCarrier.get(), line)) {
+        if(addHeader(request, line)) {
             return;
         }
+        if(addQueryParam(request, line)) {
+            return;
+        }
+
+        Supplier<HTTPRequestFileEntry> fileSupplier = () -> {
+            if(request.getRequestFile() == null) {
+                request.setRequestFile(new HTTPRequestFileEntry());
+            }
+            return request.getRequestFile();
+        };
+        if(addField(fileFieldPattern, REQUEST_FILE_FIELDS, fileSupplier, line)) {
+            return;
+        }
+        if(addFileForm(fileSupplier, line)) {
+            return;
+        }
+
+        Supplier<HTTPMockEntry> mockSupplier = () -> {
+            if(request.getMockDefinition() == null) {
+                request.setMockDefinition(new HTTPMockEntry());
+            }
+            return request.getMockDefinition();
+        };
+        if(addField(mockFieldPattern, MOCK_FIELDS, mockSupplier, line)) {
+            return;
+        }
+        if(addMockHeader(mockSupplier, line)) {
+            return;
+        }
+
+        if(addOutputMapping(request, line)) {
+            return;
+        }
+        if(addAssertion(request, line)) {
+            return;
+        }
+
         if(isComment(line)) {
             return;
         }
 
-        HTTPRequestEntry request = requestCarrier.get();
         String body = request.getBodyContent();
 
         if(isBlank(body)) {
@@ -224,53 +229,9 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         }
     }
 
-    private void decorateRequestFile(AtomicReference<HTTPRequestEntry> requestCarrier, String line)
-            throws IllegalAccessException {
-        validateRequest(requestCarrier);
-
-        if(requestCarrier.get().getRequestFile() == null) {
-            requestCarrier.get().setRequestFile(new HTTPRequestFileEntry());
-        }
-
-        if(addField(REQUEST_FILE_FIELDS, requestCarrier.get().getRequestFile(), line)) {
-            return;
-        }
-        if(addParamValue(requestCarrier.get().getRequestFile().getFormData(), line)) {
-            return;
-        }
-    }
-
-    private void decorateMock(AtomicReference<HTTPRequestEntry> requestCarrier, String line)
-            throws IllegalAccessException {
-        validateRequest(requestCarrier);
-
-        if(requestCarrier.get().getMockDefinition() == null) {
-            requestCarrier.get().setMockDefinition(new HTTPMockEntry());
-        }
-
-        if(addHeader(requestCarrier.get().getMockDefinition().getResponseHeaders(), line)) {
-            return;
-        }
-        if(addField(MOCK_FIELDS, requestCarrier.get(), line)) {
-            return;
-        }
-        if(isComment(line)) {
-            return;
-        }
-
-        HTTPMockEntry mock = requestCarrier.get().getMockDefinition();
-        String response = mock.getResponseContent();
-
-        if(isBlank(response)) {
-            mock.setResponseContent(line);
-        } else {
-            mock.setResponseContent(response + System.lineSeparator() + line);
-        }
-    }
-
     private void decorateFlow(AtomicReference<Pair<String, List<StepEntry>>> flowCarrier, String line) {
         if(flowCarrier.get() == null) {
-            throw new CommandException("Request file must define a flow section:\n### flow:<flow-name>");
+            throw new CommandException("Request file must define a flow section:\n### [flow] <flow-name>");
         }
 
         if(addStep(flowCarrier.get().getRight(), line)) {
@@ -318,18 +279,6 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         }
     }
 
-    private boolean isSection(AtomicReference<Section> sectionCarrier, String line) {
-        Matcher matcher = sectionPattern.matcher(line);
-
-        if(matcher.find()) {
-            String name = trim(matcher.group(1));
-            sectionCarrier.set(Section.valueOf(name.toUpperCase()));
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     private boolean isFlowSpec(AtomicReference<Pair<String, List<StepEntry>>> flowCarrier, String line) {
         Matcher matcher = flowSpecPattern.matcher(line);
 
@@ -354,13 +303,25 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         }
     }
 
-    private boolean addHeader(Map<String, String> headers, String line) {
+    private boolean addURLMethod(HTTPRequestEntry request, String line) {
+        Matcher matcher = urlMethodPattern.matcher(line);
+
+        if(matcher.find()) {
+            request.setMethod(trim(matcher.group(1)));
+            request.setUrl(trim(matcher.group(2)) + "://" + trim(matcher.group(3)));
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean addHeader(HTTPRequestEntry request, String line) {
         Matcher matcher = headerPattern.matcher(line);
 
         if(matcher.find()) {
             String header = trim(matcher.group(1));
             String value = trim(matcher.group(2));
-            headers.put(header, value);
+            request.getHeaders().put(header, value);
             return true;
         } else {
             return false;
@@ -380,32 +341,59 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         }
     }
 
-    private boolean addField(Map<String, Field> fields, Object object, String line)
-            throws IllegalAccessException {
-        Matcher matcher = fieldPattern.matcher(line);
+    private boolean addField(Pattern pattern, Map<String, Field> fields,
+            Supplier<?> objectSupplier, String line) throws IllegalAccessException {
+        Matcher matcher = pattern.matcher(line);
 
         if(matcher.find()) {
             String fieldName = trim(matcher.group(1));
             String value = trim(matcher.group(2));
             Field field = fields.get(fieldName);
             if(field == null) {
-                throw new CommandException("Field not defined in " +object.getClass() + ": " + fieldName);
+                throw new CommandException("Field not defined in " + objectSupplier.get().getClass()
+                    + ": " + fieldName);
             }
             field.setAccessible(true);
-            field.set(object, value);
+            field.set(objectSupplier.get(), value);
             return true;
         } else {
             return false;
         }
     }
 
-    private boolean addParamValue(Map<String, String> values, String line) {
-        Matcher matcher = paramValuePattern.matcher(line);
+    private boolean addFileForm(Supplier<HTTPRequestFileEntry> fileSupplier, String line) {
+        Matcher matcher = fileFormPattern.matcher(line);
 
         if(matcher.find()) {
             String param = trim(matcher.group(1));
             String value = trim(matcher.group(2));
-            values.put(param, value);
+            fileSupplier.get().getFormData().put(param, value);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean addMockHeader(Supplier<HTTPMockEntry> mockSupplier, String line) {
+        Matcher matcher = mockHeaderPattern.matcher(line);
+
+        if(matcher.find()) {
+            String header = trim(matcher.group(1));
+            String value = trim(matcher.group(2));
+            mockSupplier.get().getResponseHeaders().put(header, value);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean addOutputMapping(HTTPRequestEntry request, String line) {
+        Matcher matcher = outputPattern.matcher(line);
+
+        if(matcher.find()) {
+            String param = trim(matcher.group(1));
+            String value = trim(matcher.group(2));
+            request.getOutputMappings().put(param, value);
             return true;
         } else {
             return false;
@@ -482,14 +470,8 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         return args.toArray(new String[args.size()]);
     }
 
-    private void validateRequest(AtomicReference<HTTPRequestEntry> requestCarrier) {
-        if(requestCarrier.get() == null) {
-            throw new CommandException("Request file must define a request section:### <request-name>");
-        }
-    }
-
     public enum Section {
 
-        DEFAULT, API, REQUEST, MAIN, CONDITIONS, FILE, OUTPUT, ASSERTIONS, MOCK, FLOW
+        DEFAULT, API, REQUEST, FLOW
     }
 }

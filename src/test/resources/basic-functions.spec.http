@@ -1,5 +1,5 @@
 
-### api:
+### [api]
 @protocol = http
 @domain = localhost
 @port = {{local.server.port}}
@@ -25,22 +25,18 @@ Content-Type: application/json
     "timestamp": "{{DATE_TIME:}}"
 }
 
-// [output]
-basic.functions.id = {{HTTP:header.Resource-ID}}
+output basic.functions.id = {{HTTP:header.Resource-ID}}
 
-// [assertions]
-EQUALS_TO! 201 {{HTTP:status}}
+assert EQUALS_TO 201 {{HTTP:status}}
 
 
 ### obtain
 @method = GET
 @endpoint = /body/{{basic.functions.id}}
 
-// [output]
-basic.functions.entity = {{HTTP:response.path}}
+output basic.functions.entity = {{HTTP:response.path}}
 
-// [assertions]
-EQUALS_TO! 200 {{HTTP:status}}
+assert EQUALS_TO 200 {{HTTP:status}}
 
 
 ### update
@@ -52,13 +48,11 @@ EQUALS_TO! 200 {{HTTP:status}}
     "email": "jurl@test.com"
 }
 
-// [assertions]
-EQUALS_TO! 204 {{HTTP:status}}
+assert EQUALS_TO 204 {{HTTP:status}}
 
 
 ### remove
 @method = DELETE
 @endpoint = /body/{{basic.functions.id}}
 
-// [assertions]
-EQUALS_TO! 204 {{HTTP:status}}
+assert EQUALS_TO 204 {{HTTP:status}}

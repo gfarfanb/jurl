@@ -5,8 +5,6 @@ import static com.legadi.jurl.model.AssertionType.IS_NOT_IN;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.legadi.jurl.exception.AssertionException;
-
 public class IsNotInAssertionFunction implements AssertionFunction {
 
     @Override
@@ -20,7 +18,7 @@ public class IsNotInAssertionFunction implements AssertionFunction {
     }
 
     @Override
-    public boolean apply(String[] args) throws AssertionException {
+    public boolean apply(String[] args) {
         return !IntStream.range(1, args.length)
             .mapToObj(index -> args[index])
             .collect(Collectors.toSet())

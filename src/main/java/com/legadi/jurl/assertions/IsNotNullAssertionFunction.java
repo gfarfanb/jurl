@@ -4,8 +4,6 @@ import static com.legadi.jurl.model.AssertionType.IS_NOT_NULL;
 
 import java.util.Objects;
 
-import com.legadi.jurl.exception.AssertionException;
-
 public class IsNotNullAssertionFunction implements AssertionFunction {
 
     @Override
@@ -19,7 +17,7 @@ public class IsNotNullAssertionFunction implements AssertionFunction {
     }
 
     @Override
-    public boolean apply(String[] args) throws AssertionException {
+    public boolean apply(String[] args) {
         return Objects.nonNull(args[0]);
     }
 

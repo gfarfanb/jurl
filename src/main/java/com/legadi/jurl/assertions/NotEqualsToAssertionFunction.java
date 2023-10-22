@@ -2,11 +2,11 @@ package com.legadi.jurl.assertions;
 
 import static com.legadi.jurl.model.AssertionType.NOT_EQUALS_TO;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
-import com.legadi.jurl.exception.AssertionException;
-
-public class NotEqualsToAssertionFunction implements AssertionFunction {
+public class NotEqualsToAssertionFunction extends OperatorAssertionFunction {
 
     @Override
     public String name() {
@@ -19,8 +19,17 @@ public class NotEqualsToAssertionFunction implements AssertionFunction {
     }
 
     @Override
-    public boolean apply(String[] args) throws AssertionException {
-        return !Objects.equals(args[0], args[1]);
+    protected boolean test(BigDecimal arg1, BigDecimal arg2) {
+        return arg1.compareTo(arg2) != 0;
     }
 
+    @Override
+    protected boolean test(LocalDateTime arg1, LocalDateTime arg2) {
+        return !arg1.isEqual(arg2);
+    }
+
+    @Override
+    protected boolean test(String arg1, String arg2) {
+        return !Objects.equals(arg1, arg2);
+    }
 }
