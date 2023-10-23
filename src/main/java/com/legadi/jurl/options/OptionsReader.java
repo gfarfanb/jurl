@@ -11,11 +11,8 @@ import static com.legadi.jurl.options.OptionsRegistry.registerAddOn;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.common.Settings;
@@ -33,7 +30,9 @@ public class OptionsReader {
     }
 
     private String extractOptionsAndRequestInputPath(String[] args) {
-        validateArgs(args);
+        if(isEmpty(args)) {
+            throw new CommandException("No args in the command, please use [--help] option");
+        }
 
         int index = 0;
         String lastArg = null;
@@ -81,12 +80,6 @@ public class OptionsReader {
         }
     }
 
-    private void validateArgs(String[] args) {
-        if(isEmpty(args)) {
-            throw new CommandException("No args in the command, please use [--help] option");
-        }
-    }
-
     public void registerAddOnOptions() {
         Settings settings = new Settings();
         String[] addOnOptions = settings.getAddOnOptionClasses();
@@ -111,33 +104,6 @@ public class OptionsReader {
 
     public String getRequestInputPath() {
         return requestInputPath;
-    }
-
-    public List<OptionEntry> mapToOptionEntries(Map<String, String[]> options) {
-        if(isEmpty(options)) {
-            return new LinkedList<>();
-        }
-
-        return options.entrySet()
-            .stream()
-            .map(e -> mapToOptionEntry(e.getKey(), e.getValue()))
-            .sorted(new OptionComparator())
-            .collect(Collectors.toList());
-    }
-
-    public OptionEntry mapToOptionEntry(String opt, String[] arguments) {
-        Option option = findByArg(opt);
-
-        if(option == null) {
-            throw new CommandException("Option not found: " + opt);
-        }
-        if(option.getArgs().length > 0
-                && (isEmpty(arguments) || arguments.length < option.getArgs().length)) {
-            throw new CommandException("Invalid args length for option: "
-                + Arrays.toString(arguments) + " - " + option);
-        }
-
-        return new OptionEntry(option, arguments);
     }
 
     public static class OptionEntry extends Pair<Option, String[]> {

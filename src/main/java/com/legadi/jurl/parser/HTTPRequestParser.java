@@ -234,7 +234,9 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             throw new CommandException("Request file must define a flow section:\n### [flow] <flow-name>");
         }
 
-        if(addStep(flowCarrier.get().getRight(), line)) {
+        List<StepEntry> steps = flowCarrier.get().getRight();
+
+        if(addStep(steps, line)) {
             return;
         }
     }
