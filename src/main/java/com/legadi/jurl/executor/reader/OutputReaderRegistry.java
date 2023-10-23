@@ -6,12 +6,15 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import com.legadi.jurl.common.Pair;
+
 public class OutputReaderRegistry {
 
-    private static final List<Supplier<OutputReader>> READERS = new LinkedList<>();
+    private static final List<Pair<Predicate<String>, Supplier<OutputReader>>> READERS = new LinkedList<>();
 
     static {
         registerReader(JsonOutputReader::new);
@@ -24,14 +27,16 @@ public class OutputReaderRegistry {
     }
 
     public static void registerReader(Supplier<OutputReader> outputReaderSupplier) {
-        READERS.add(outputReaderSupplier);
+        OutputReader reader = outputReaderSupplier.get();
+        READERS.add(new Pair<>(type -> reader.accepts(type), outputReaderSupplier));
     }
 
     public static Optional<OutputReader> findByContentType(String contentType) {
         List<OutputReader> readers = READERS
             .stream()
+            .filter(p -> p.getLeft().test(contentType))
+            .map(Pair::getRight)
             .map(Supplier::get)
-            .filter(reader -> reader.accepts(contentType))
             .collect(Collectors.toCollection(ArrayList::new));
 
         if(readers.isEmpty()) {

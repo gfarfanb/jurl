@@ -28,7 +28,6 @@ public class RequestHandlersRegistry {
     public static void registerHandler(Supplier<RequestExecutor<?, ?>> requestExecutorSupplier,
             Supplier<ResponseProcessor<?, ?>> responseProcessorSupplier) {
         RequestExecutor<?, ?> executor = requestExecutorSupplier.get();
-
         HANDLERS.put(executor.type(), new Pair<>(requestExecutorSupplier, responseProcessorSupplier));
     }
 

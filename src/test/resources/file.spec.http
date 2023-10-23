@@ -1,5 +1,5 @@
 
-### upload
+### [request] upload
 http://localhost:{{local.server.port}}/file
 
 file @name = uploaded.csv
@@ -13,7 +13,7 @@ file timestamp = {{DATE_TIME:}}
 assert EQUALS_TO 201 {{HTTP:status}}
 
 
-### uploadWithoutForm
+### [request] uploadWithoutForm
 http://localhost:{{local.server.port}}/file
 
 file @path = src/test/resources/file.csv
@@ -22,7 +22,7 @@ file @field = file
 assert EQUALS_TO 201 {{HTTP:status}}
 
 
-### download
+### [request] download
 GET http://localhost:{{local.server.port}}/file
 file=src/test/resources/file.csv
 &name=downloaded.csv
@@ -30,7 +30,7 @@ file=src/test/resources/file.csv
 assert EQUALS_TO 200 {{HTTP:status}}
 
 
-### downloadWithoutName
+### [request] downloadWithoutName
 GET http://localhost:{{local.server.port}}/file?
 file=src/test/resources/file.csv
 

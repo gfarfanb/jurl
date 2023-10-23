@@ -5,14 +5,16 @@ import static com.legadi.jurl.common.LoaderUtils.instantiate;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.common.Settings;
 
 public class GeneratorsRegistry {
 
-    private static final List<Supplier<Generator>> GENERATORS = new LinkedList<>();
+    private static final List<Pair<Predicate<String>, Supplier<Generator>>> GENERATORS = new LinkedList<>();
 
     static {
         registerGenerator(AlphaNumericGenerator::new);
@@ -38,14 +40,16 @@ public class GeneratorsRegistry {
     }
 
     public static void registerGenerator(Supplier<Generator> generatorSupplier) {
-        GENERATORS.add(generatorSupplier);
+        Generator generator = generatorSupplier.get();
+        GENERATORS.add(new Pair<>(param -> generator.accepts(param), generatorSupplier));
     }
 
     public static String getValueByParam(Settings settings, String param) {
         List<Generator> generators = GENERATORS
             .stream()
+            .filter(p -> p.getLeft().test(param))
+            .map(Pair::getRight)
             .map(Supplier::get)
-            .filter(generator -> generator.accepts(param))
             .collect(Collectors.toCollection(ArrayList::new));
 
         if(generators.isEmpty()) {

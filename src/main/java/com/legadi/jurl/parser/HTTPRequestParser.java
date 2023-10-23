@@ -40,7 +40,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     private final Pattern defaultRequestPattern = Pattern.compile("^(?i)@default-request[ ]*=(.*)");
     private final Pattern defaultFlowPattern = Pattern.compile("^(?i)@default-flow[ ]*=(.*)");
     private final Pattern apiSpecPattern = Pattern.compile("^(?i)###[ ]*\\[api\\](.*)");
-    private final Pattern requestSpecPattern = Pattern.compile("^###(.*)");
+    private final Pattern requestSpecPattern = Pattern.compile("^(?i)###[ ]*\\[request\\](.*)");
     private final Pattern fieldPattern = Pattern.compile("^@([\\w]+)[ ]*=(.*)");
     private final Pattern urlPattern = Pattern.compile("^(?i)(http|https):\\/\\/(.*)");
     private final Pattern urlMethodPattern = Pattern.compile("^(?i)([\\w]+) (http|https):\\/\\/(.*)");

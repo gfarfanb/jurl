@@ -8,13 +8,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.exception.CommandException;
 
 public class AssertionsRegistry {
 
-    private static final List<Supplier<AssertionFunction>> ASSERTIONS = new LinkedList<>();
+    private static final List<Pair<Predicate<String>, Supplier<AssertionFunction>>> ASSERTIONS = new LinkedList<>();
     private static final Map<String, Supplier<AssertionFunction>> REGISTERED = new HashMap<>();
     private static final Set<String> NAMES = new HashSet<>();
 
@@ -64,14 +66,15 @@ public class AssertionsRegistry {
         }
 
         NAMES.add(assertionFunction.name());
-        ASSERTIONS.add(assertionSupplier);
+        ASSERTIONS.add(new Pair<>(name -> assertionFunction.accepts(name), assertionSupplier));
     }
 
     public static AssertionFunction findByName(String name) {
         return ASSERTIONS
             .stream()
+            .filter(p -> p.getLeft().test(name))
+            .map(Pair::getRight)
             .map(Supplier::get)
-            .filter(assertion -> assertion.accepts(name))
             .findFirst()
             .orElseThrow(() -> new CommandException("Unable to obtain assertion function: " + name));
     }
