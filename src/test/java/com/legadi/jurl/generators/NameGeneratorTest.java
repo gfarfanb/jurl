@@ -1,7 +1,6 @@
 package com.legadi.jurl.generators;
 
 import static com.legadi.jurl.common.LoaderUtils.loadAndCacheInternalLines;
-import static com.legadi.jurl.model.GeneratorType.NAME;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -12,7 +11,7 @@ import org.junit.jupiter.api.Test;
 public class NameGeneratorTest extends GeneratorTest {
 
     public NameGeneratorTest() {
-        super(NAME);
+        super("NAME");
     }
 
     @Test

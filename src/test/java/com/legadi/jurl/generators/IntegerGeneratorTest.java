@@ -1,7 +1,5 @@
 package com.legadi.jurl.generators;
 
-import static com.legadi.jurl.model.GeneratorType.INTEGER;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +8,7 @@ import com.legadi.jurl.exception.CommandException;
 public class IntegerGeneratorTest extends GeneratorTest {
 
     public IntegerGeneratorTest() {
-        super(INTEGER);
+        super("INTEGER");
     }
 
     @Test

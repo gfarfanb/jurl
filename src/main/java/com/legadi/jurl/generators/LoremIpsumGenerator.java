@@ -4,7 +4,6 @@ import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.nextString;
 import static com.legadi.jurl.common.CommonUtils.strip;
 import static com.legadi.jurl.common.LoaderUtils.loadAndCacheInternalLines;
-import static com.legadi.jurl.model.GeneratorType.LOREM_IPSUM;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,15 +17,14 @@ public class LoremIpsumGenerator implements Generator {
     private static final int RANGE_LENGTH = 10;
 
     @Override
-    public String tag() {
-        return LOREM_IPSUM.tag();
+    public String name() {
+        return "LOREM_IPSUM";
     }
 
     @Override
     public String getValue(Settings settings, String param) {
-        String arg = extractArg(param);
-        if(isNotBlank(arg)) {
-            return createText(Integer.parseInt(arg));
+        if(isNotBlank(param)) {
+            return createText(Integer.parseInt(param));
         } else {
             return createText(DEFAULT_WORDS);
         }

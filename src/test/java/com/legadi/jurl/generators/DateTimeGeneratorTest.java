@@ -1,7 +1,5 @@
 package com.legadi.jurl.generators;
 
-import static com.legadi.jurl.model.GeneratorType.DATE_TIME;
-
 import java.time.format.DateTimeFormatter;
 
 import org.junit.jupiter.api.Assertions;
@@ -12,7 +10,7 @@ import com.legadi.jurl.exception.CommandException;
 public class DateTimeGeneratorTest extends GeneratorTest {
 
     public DateTimeGeneratorTest() {
-        super(DATE_TIME);
+        super("DATE_TIME");
     }
 
     @Test

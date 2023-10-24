@@ -2,6 +2,7 @@ package com.legadi.jurl.parser;
 
 import static com.legadi.jurl.common.CommonUtils.getAllFields;
 import static com.legadi.jurl.common.CommonUtils.isBlank;
+import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.strip;
 import static com.legadi.jurl.common.CommonUtils.trim;
 
@@ -39,11 +40,9 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
     private final Pattern defaultRequestPattern = Pattern.compile("^(?i)@default-request[ ]*=(.*)");
     private final Pattern defaultFlowPattern = Pattern.compile("^(?i)@default-flow[ ]*=(.*)");
-    private final Pattern apiSpecPattern = Pattern.compile("^(?i)###[ ]*\\[api\\](.*)");
-    private final Pattern requestSpecPattern = Pattern.compile("^(?i)###[ ]*\\[request\\](.*)");
+    private final Pattern sectionPattern = Pattern.compile("^(?i)###[ ]*\\[(api|request|flow)\\](.*)");
     private final Pattern fieldPattern = Pattern.compile("^@([\\w]+)[ ]*=(.*)");
-    private final Pattern urlPattern = Pattern.compile("^(?i)(http|https):\\/\\/(.*)");
-    private final Pattern urlMethodPattern = Pattern.compile("^(?i)([\\w]+) (http|https):\\/\\/(.*)");
+    private final Pattern urlMethodPattern = Pattern.compile("^(?i)([\\w]+)?[ ]*(http|https):\\/\\/(.*)");
     private final Pattern headerPattern = Pattern.compile("^([\\w-]+): (.*)");
     private final Pattern queryParamPattern = Pattern.compile("^[&]*([\\w:.-_@]+)=(.*)");
     private final Pattern fileFieldPattern = Pattern.compile("^(?i)file @([\\w:.-_@]+)[ ]*=(.*)");
@@ -52,7 +51,6 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     private final Pattern mockHeaderPattern = Pattern.compile("^(?i)mock ([\\w-]+): (.*)");
     private final Pattern outputPattern = Pattern.compile("^(?i)output ([\\w:.-_@]+)[ ]*=(.*)");
     private final Pattern assertionPattern = Pattern.compile("^(?i)assert ([\\w:.-_@]+) (.*)");
-    private final Pattern flowSpecPattern = Pattern.compile("^(?i)###[ ]*\\[flow\\](.*)");
     private final Pattern stepSpecPattern = Pattern.compile("^(?i)step (.*)");
     private final Pattern commentPattern = Pattern.compile("^#(.*)");
 
@@ -77,6 +75,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             AtomicReference<HTTPRequestEntry> apiCarrier = new AtomicReference<>(new HTTPRequestEntry());
             AtomicReference<HTTPRequestEntry> requestCarrier = new AtomicReference<>();
             AtomicReference<Pair<String, List<StepEntry>>> flowCarrier = new AtomicReference<>();
+            AtomicReference<Section> sectionCarrier = new AtomicReference<>();
 
             requestInput.setApi(apiCarrier.get());
 
@@ -94,18 +93,8 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                     continue;
                 }
 
-                if(isAPISpec(line)) {
-                    section = Section.API;
-                    continue;
-                }
-                if(isRequestSpec(requestCarrier, line)) {
-                    section = Section.REQUEST;
-                    requestInput.getRequests().put(requestCarrier.get().getName(), requestCarrier.get());
-                    continue;
-                }
-                if(isFlowSpec(flowCarrier, line)) {
-                    section = Section.FLOW;
-                    requestInput.getFlows().put(flowCarrier.get().getLeft(), flowCarrier.get().getRight());
+                if(isSection(sectionCarrier, requestCarrier, flowCarrier, requestInput, line)) {
+                    section = sectionCarrier.get();
                     continue;
                 }
 
@@ -168,9 +157,6 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         HTTPRequestEntry request = requestCarrier.get();
 
         if(addField(fieldPattern, REQUEST_FIELDS, () -> request, line)) {
-            return;
-        }
-        if(addURL(request, line)) {
             return;
         }
         if(addURLMethod(request, line)) {
@@ -263,42 +249,34 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         }
     }
 
-    private boolean isAPISpec(String line) {
-        Matcher matcher = apiSpecPattern.matcher(line);
-        return matcher.matches();
-    }
-
-    private boolean isRequestSpec(AtomicReference<HTTPRequestEntry> requestCarrier, String line) {
-        Matcher matcher = requestSpecPattern.matcher(line);
+    private boolean isSection(AtomicReference<Section> sectionCarrier,
+            AtomicReference<HTTPRequestEntry> requestCarrier,
+            AtomicReference<Pair<String, List<StepEntry>>> flowCarrier,
+            RequestInput<HTTPRequestEntry> requestInput, String line) {
+        Matcher matcher = sectionPattern.matcher(line);
 
         if(matcher.find()) {
-            HTTPRequestEntry request = new HTTPRequestEntry();
-            request.setName(trim(matcher.group(1)));
-            requestCarrier.set(request);
-            return true;
-        } else {
-            return false;
-        }
-    }
+            String section = trim(matcher.group(1)).toLowerCase();
 
-    private boolean isFlowSpec(AtomicReference<Pair<String, List<StepEntry>>> flowCarrier, String line) {
-        Matcher matcher = flowSpecPattern.matcher(line);
-
-        if(matcher.find()) {
-            String name = trim(matcher.group(0));
-            Pair<String, List<StepEntry>> flow = new Pair<>(name, new LinkedList<>());
-            flowCarrier.set(flow);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    private boolean addURL(HTTPRequestEntry request, String line) {
-        Matcher matcher = urlPattern.matcher(line);
-
-        if(matcher.matches()) {
-            request.setUrl(line);
+            switch(section) {
+                case "api":
+                    sectionCarrier.set(Section.API);
+                    break;
+                case "request":
+                    HTTPRequestEntry request = new HTTPRequestEntry();
+                    request.setName(trim(matcher.group(2)));
+                    requestCarrier.set(request);
+                    requestInput.getRequests().put(requestCarrier.get().getName(), requestCarrier.get());
+                    sectionCarrier.set(Section.REQUEST);
+                    break;
+                case "flow":
+                    String name = trim(matcher.group(2));
+                    Pair<String, List<StepEntry>> flow = new Pair<>(name, new LinkedList<>());
+                    flowCarrier.set(flow);
+                    requestInput.getFlows().put(flowCarrier.get().getLeft(), flowCarrier.get().getRight());
+                    sectionCarrier.set(Section.FLOW);
+                    break;
+            }
             return true;
         } else {
             return false;
@@ -309,7 +287,10 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         Matcher matcher = urlMethodPattern.matcher(line);
 
         if(matcher.find()) {
-            request.setMethod(trim(matcher.group(1)));
+            String method = trim(matcher.group(1));
+            if(isNotBlank(method)) {
+                request.setMethod(method);
+            }
             request.setUrl(trim(matcher.group(2)) + "://" + trim(matcher.group(3)));
             return true;
         } else {

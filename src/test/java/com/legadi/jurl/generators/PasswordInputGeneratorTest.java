@@ -1,14 +1,12 @@
 package com.legadi.jurl.generators;
 
-import static com.legadi.jurl.model.GeneratorType.PASSWORD;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class PasswordInputGeneratorTest extends GeneratorTest {
 
     public PasswordInputGeneratorTest() {
-        super(PASSWORD);
+        super("PASSWORD");
     }
 
     @Test
@@ -18,9 +16,9 @@ public class PasswordInputGeneratorTest extends GeneratorTest {
 
         Assertions.assertNotNull(value);
         Assertions.assertEquals("P4s5w0rd", value);
-        Assertions.assertEquals("P4s5w0rd", settings.get(type.tag() + message));
+        Assertions.assertEquals("P4s5w0rd", settings.get(message));
 
-        settings.putOverride(type.tag() + message, "0v3rrid3d_P4s5w0rd");
+        settings.putOverride(message, "0v3rrid3d_P4s5w0rd");
 
         String overrided = Assertions.assertDoesNotThrow(() -> generate(message));
 

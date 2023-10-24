@@ -2,19 +2,15 @@ package com.legadi.jurl.generators;
 
 import static com.legadi.jurl.common.LoaderUtils.instantiate;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.function.Predicate;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
-import com.legadi.jurl.common.Pair;
-import com.legadi.jurl.common.Settings;
+import com.legadi.jurl.exception.CommandException;
 
 public class GeneratorsRegistry {
 
-    private static final List<Pair<Predicate<String>, Supplier<Generator>>> GENERATORS = new LinkedList<>();
+    private static final Map<String, Supplier<Generator>> GENERATORS = new HashMap<>();
 
     static {
         registerGenerator(AlphaNumericGenerator::new);
@@ -41,22 +37,21 @@ public class GeneratorsRegistry {
 
     public static void registerGenerator(Supplier<Generator> generatorSupplier) {
         Generator generator = generatorSupplier.get();
-        GENERATORS.add(new Pair<>(param -> generator.accepts(param), generatorSupplier));
+
+        if(GENERATORS.containsKey(generator.name())) {
+            throw new CommandException("Generator [" + generator.name() + "] already exists");
+        }
+
+        GENERATORS.put(generator.name(), generatorSupplier);
     }
 
-    public static String getValueByParam(Settings settings, String param) {
-        List<Generator> generators = GENERATORS
-            .stream()
-            .filter(p -> p.getLeft().test(param))
-            .map(Pair::getRight)
-            .map(Supplier::get)
-            .collect(Collectors.toCollection(ArrayList::new));
+    public static Generator findGeneratorByName(String name) {
+        Supplier<Generator> generator = GENERATORS.get(name);
 
-        if(generators.isEmpty()) {
+        if(generator == null) {
             return null;
         }
 
-        Generator lastGenerator = generators.get(generators.size() - 1);
-        return lastGenerator.get(settings, param);
+        return generator.get();
     }
 }

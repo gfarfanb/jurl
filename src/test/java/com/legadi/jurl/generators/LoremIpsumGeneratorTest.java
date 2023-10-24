@@ -2,7 +2,6 @@ package com.legadi.jurl.generators;
 
 import static com.legadi.jurl.common.CommonUtils.strip;
 import static com.legadi.jurl.common.LoaderUtils.loadAndCacheInternalLines;
-import static com.legadi.jurl.model.GeneratorType.LOREM_IPSUM;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -15,7 +14,7 @@ import com.legadi.jurl.exception.CommandException;
 public class LoremIpsumGeneratorTest extends GeneratorTest {
 
     public LoremIpsumGeneratorTest() {
-        super(LOREM_IPSUM);
+        super("LOREM_IPSUM");
     }
 
     @Test

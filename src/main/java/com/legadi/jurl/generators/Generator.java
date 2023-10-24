@@ -12,13 +12,9 @@ public interface Generator {
 
     public static final Logger LOGGER = Logger.getLogger(Generator.class.getName());
 
-    String tag();
+    String name();
 
     String getValue(Settings settings, String param);
-
-    default boolean accepts(String param) {
-        return param.startsWith(tag());
-    }
 
     default String get(Settings settings, String param) {
         try {
@@ -29,10 +25,6 @@ public interface Generator {
             throw new CommandException("Unable to generate value from: "
                 + param + " - " + ex.getMessage());
         }
-    }
-
-    default String extractArg(String param) {
-        return param.substring(tag().length(), param.length());
     }
 
     default Random random() {

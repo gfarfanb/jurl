@@ -38,7 +38,7 @@ public class SettingsTest {
         Assertions.assertFalse(settings.isOpenOutputInEditor());
         Assertions.assertEquals(1, settings.getTimes());
         Assertions.assertTrue(settings.getInputName().isEmpty());
-        Assertions.assertEquals("(?:\\{\\{[\\w\\[:.,\\-\\]\\\\]+\\}\\})", settings.getSettingsParamRegex());
+        Assertions.assertEquals("(?:\\{\\{[\\w\\[:.-_@/,\\-\\]\\\\]+\\}\\})", settings.getSettingsParamRegex());
         Assertions.assertEquals("\\{\\{<param-name>\\}\\}", settings.getSettingsParamRegexMask());
         Assertions.assertEquals("<param-name>", settings.getSettingsParamRegexReplace());
         Assertions.assertEquals(2, settings.getSettingsParamStartAt());

@@ -1,7 +1,6 @@
 package com.legadi.jurl.generators;
 
 import static com.legadi.jurl.common.LoaderUtils.loadAndCacheInternalLines;
-import static com.legadi.jurl.model.GeneratorType.EMAIL;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -16,7 +15,7 @@ public class EmailGeneratorTest extends GeneratorTest {
     private static final int AT_LENGTH = 1;
 
     public EmailGeneratorTest() {
-        super(EMAIL);
+        super("EMAIL");
     }
 
     @Test

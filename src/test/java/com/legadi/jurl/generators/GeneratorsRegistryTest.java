@@ -1,6 +1,6 @@
 package com.legadi.jurl.generators;
 
-import static com.legadi.jurl.generators.GeneratorsRegistry.getValueByParam;
+import static com.legadi.jurl.generators.GeneratorsRegistry.findGeneratorByName;
 import static com.legadi.jurl.generators.GeneratorsRegistry.registerGenerator;
 
 import org.junit.jupiter.api.Assertions;
@@ -14,30 +14,31 @@ public class GeneratorsRegistryTest {
     public void registerGeneratorCustom() {
         registerGenerator(TestGenerator.class.getName());
 
-        String value = Assertions.assertDoesNotThrow(
-            () -> getValueByParam(null, "test"));
+        Generator generator = Assertions.assertDoesNotThrow(
+            () -> findGeneratorByName("test"));
 
-        Assertions.assertEquals("test", value);
+        Assertions.assertNotNull(generator);
+        Assertions.assertEquals("test-param", generator.getValue(null, "test-param"));
     }
 
     @Test
     public void notFound() {
-        String value = Assertions.assertDoesNotThrow(
-            () -> getValueByParam(null, "not-found"));
+        Generator generator = Assertions.assertDoesNotThrow(
+            () -> findGeneratorByName("not-found"));
 
-        Assertions.assertNull(value);
+        Assertions.assertNull(generator);
     }
 
     public static class TestGenerator implements Generator {
 
         @Override
-        public String tag() {
+        public String name() {
             return "test";
         }
 
         @Override
         public String getValue(Settings settings, String param) {
-            return "test";
+            return param;
         }
     }
 }

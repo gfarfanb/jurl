@@ -1,21 +1,19 @@
 package com.legadi.jurl.generators;
 
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
-import static com.legadi.jurl.model.GeneratorType.FULL_NAME;
 
 import com.legadi.jurl.common.Settings;
 
 public class FullNameGenerator extends NamePartGenerator {
 
     @Override
-    public String tag() {
-        return FULL_NAME.tag();
+    public String name() {
+        return "FULL_NAME";
     }
 
     @Override
     public String getValue(Settings settings, String param) {
-        String arg = extractArg(param);
-        if(isNotBlank(arg) && WOMAN_GENDER.equalsIgnoreCase(arg)) {
+        if(isNotBlank(param) && WOMAN_GENDER.equalsIgnoreCase(param)) {
             return createFullName("woman-names.txt");
         } else {
             return createFullName("man-names.txt");

@@ -1,7 +1,6 @@
 package com.legadi.jurl.generators;
 
 import static com.legadi.jurl.common.LoaderUtils.loadAndCacheInternalLines;
-import static com.legadi.jurl.model.GeneratorType.FULL_NAME;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,7 +13,7 @@ public class FullNameGeneratorTest extends GeneratorTest {
     private static final int WHITESPACE_LENGTH = 1;
 
     public FullNameGeneratorTest() {
-        super(FULL_NAME);
+        super("FULL_NAME");
     }
 
     @Test

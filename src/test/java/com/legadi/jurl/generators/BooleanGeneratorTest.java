@@ -1,14 +1,12 @@
 package com.legadi.jurl.generators;
 
-import static com.legadi.jurl.model.GeneratorType.BOOLEAN;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class BooleanGeneratorTest extends GeneratorTest {
 
     public BooleanGeneratorTest() {
-        super(BOOLEAN);
+        super("BOOLEAN");
     }
 
     @Test

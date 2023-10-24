@@ -43,8 +43,8 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
 
     private static final Logger LOGGER = Logger.getLogger(HTTPResponseProcessor.class.getName());
 
-    private static final String HTTP_PREFIX = "HTTP:";
-    private static final String OUTPUT_PREFIX = "OUT:";
+    private static final String HTTP_PREFIX = "HTTP/";
+    private static final String OUTPUT_PREFIX = "OUT/";
 
     @Override
     public Optional<AssertionResult> processResponse(Settings settings, HTTPRequestEntry request, HTTPResponseEntry response)
@@ -231,7 +231,6 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
                 }
                 
                 String[] args = Arrays.stream(assertionEntry.getArgs())
-                    .parallel()
                     .map(arg -> stringExpander.replaceAllInContent(values, arg))
                     .toArray(String[]::new);
 

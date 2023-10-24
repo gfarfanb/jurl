@@ -1,14 +1,12 @@
 package com.legadi.jurl.generators;
 
-import static com.legadi.jurl.model.GeneratorType.INPUT;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class UserInputGeneratorTest extends GeneratorTest {
 
     public UserInputGeneratorTest() {
-        super(INPUT);
+        super("INPUT");
     }
 
     @Test
@@ -18,9 +16,9 @@ public class UserInputGeneratorTest extends GeneratorTest {
 
         Assertions.assertNotNull(value);
         Assertions.assertEquals("Input", value);
-        Assertions.assertEquals("Input", settings.get(type.tag() + message));
+        Assertions.assertEquals("Input", settings.get(message));
 
-        settings.putOverride(type.tag() + message, "Overrided Input");
+        settings.putOverride(message, "Overrided Input");
 
         String overrided = Assertions.assertDoesNotThrow(() -> generate(message));
 

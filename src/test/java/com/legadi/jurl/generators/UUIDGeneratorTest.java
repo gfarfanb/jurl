@@ -1,14 +1,12 @@
 package com.legadi.jurl.generators;
 
-import static com.legadi.jurl.model.GeneratorType.UUID;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class UUIDGeneratorTest extends GeneratorTest {
 
     public UUIDGeneratorTest() {
-        super(UUID);
+        super("UUID");
     }
 
     @Test

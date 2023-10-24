@@ -1,7 +1,5 @@
 package com.legadi.jurl.generators;
 
-import static com.legadi.jurl.model.GeneratorType.DECIMAL;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +10,7 @@ public class DecimalGeneratorTest extends GeneratorTest {
     private static final int DOT_LENGTH = 1;
 
     public DecimalGeneratorTest() {
-        super(DECIMAL);
+        super("DECIMAL");
     }
 
     @Test
