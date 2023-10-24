@@ -84,7 +84,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertTrue(createAssertionResult.isPresent());
         Assertions.assertEquals(1, createAssertionResult.get().getAssertions());
         Assertions.assertEquals(0, createAssertionResult.get().getFailures());
-        Assertions.assertFalse(createAssertionResult.get().isSkip());
+        Assertions.assertTrue(createAssertionResult.get().isPassed());
 
         return UUID.fromString(createSettings.get("basic.functions.id"));
     }
@@ -143,7 +143,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertTrue(obtainAssertionResult.isPresent());
         Assertions.assertEquals(1, obtainAssertionResult.get().getAssertions());
         Assertions.assertEquals(0, obtainAssertionResult.get().getFailures());
-        Assertions.assertFalse(obtainAssertionResult.get().isSkip());
+        Assertions.assertTrue(obtainAssertionResult.get().isPassed());
     }
 
     private void put(UUID id) {
@@ -189,7 +189,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertTrue(updateAssertionResult.isPresent());
         Assertions.assertEquals(1, updateAssertionResult.get().getAssertions());
         Assertions.assertEquals(0, updateAssertionResult.get().getFailures());
-        Assertions.assertFalse(updateAssertionResult.get().isSkip());
+        Assertions.assertTrue(updateAssertionResult.get().isPassed());
 
         BasicFunctionsEntity updateEntity = requestCatcher.getLastSaved(new TypeToken<BasicFunctionsEntity>() {}).getRight();
         BasicFunctionsEntity updateBody = loadJsonFile(updateSettings.get(BODY_TEMPORAL_PATH), new TypeToken<BasicFunctionsEntity>() {});
@@ -245,6 +245,6 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertTrue(removeAssertionResult.isPresent());
         Assertions.assertEquals(1, removeAssertionResult.get().getAssertions());
         Assertions.assertEquals(0, removeAssertionResult.get().getFailures());
-        Assertions.assertFalse(removeAssertionResult.get().isSkip());
+        Assertions.assertTrue(removeAssertionResult.get().isPassed());
     }
 }

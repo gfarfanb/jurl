@@ -23,6 +23,7 @@ import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX
 import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX_REPLACE;
 import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_START_AT;
 import static com.legadi.jurl.common.SettingsConstants.PROP_SKIP_ASSERTIONS;
+import static com.legadi.jurl.common.SettingsConstants.PROP_SKIP_CONDITIONS;
 import static com.legadi.jurl.common.WriterUtils.createDirectories;
 
 import java.nio.file.Path;
@@ -120,6 +121,10 @@ public interface SettingsDefaults {
 
     default int getSettingsParamEndAtLengthMinus() {
         return get(PROP_SETTINGS_PARAM_END_AT_LENGTH_MINUS, Integer::parseInt);
+    }
+
+    default boolean isSkipConditions() {
+        return get(PROP_SKIP_CONDITIONS, Boolean::valueOf);
     }
 
     default boolean isSkipAssertions() {

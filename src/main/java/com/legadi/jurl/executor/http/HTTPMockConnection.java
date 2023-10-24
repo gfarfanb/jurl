@@ -1,5 +1,6 @@
 package com.legadi.jurl.executor.http;
 
+import static com.legadi.jurl.common.CommonUtils.isNotNumeric;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.JsonUtils.toJsonString;
@@ -23,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.model.http.HTTPMockEntry;
 
 public class HTTPMockConnection extends HttpURLConnection {
@@ -43,8 +45,16 @@ public class HTTPMockConnection extends HttpURLConnection {
         this.url = url;
 
         if(mockEntry != null) {
-            this.responseCode = mockEntry.getStatusCode();
-            this.secondsDelay = mockEntry.getSecondsDelay();
+            if(isNotBlank(mockEntry.getStatusCode()) && isNotNumeric(mockEntry.getStatusCode())) {
+                throw new CommandException("Mock 'statusCode' must be numeric: " + mockEntry.getStatusCode());
+            }
+            if(isNotBlank(mockEntry.getSecondsDelay()) && isNotNumeric(mockEntry.getSecondsDelay())) {
+                throw new CommandException("Mock 'secondsDelay' must be numeric: " + mockEntry.getSecondsDelay());
+            }
+            this.responseCode = isNotBlank(mockEntry.getStatusCode())
+                ? Integer.parseInt(mockEntry.getStatusCode()) : 0;
+            this.secondsDelay = isNotBlank(mockEntry.getSecondsDelay())
+                ? Long.parseLong(mockEntry.getSecondsDelay()) : 0;
             this.responseContent = mockEntry.getResponseContent();
             this.responseFilePath = mockEntry.getResponseFilePath();
 

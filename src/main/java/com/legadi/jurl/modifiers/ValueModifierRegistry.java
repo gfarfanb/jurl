@@ -16,7 +16,9 @@ public class ValueModifierRegistry {
     private static final List<Pair<Predicate<String>, Supplier<ValueModifier>>> MODIFIERS = new LinkedList<>();
 
     static {
-        
+        registerModifier(DateTimeValueModifier::new);
+        registerModifier(NumberValueModifier::new);
+        registerModifier(StringValueModifier::new);
     }
 
     private ValueModifierRegistry() {}

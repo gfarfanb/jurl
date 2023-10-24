@@ -5,7 +5,7 @@ public class AssertionResult {
     private final int assertions;
 
     private int failures;
-    private boolean skip;
+    private boolean passed = true;
 
     public AssertionResult(int assertions) {
         this.assertions = assertions;
@@ -23,11 +23,11 @@ public class AssertionResult {
         this.failures = failures;
     }
 
-    public boolean isSkip() {
-        return skip;
+    public boolean isPassed() {
+        return passed;
     }
 
-    public void setSkip(boolean skip) {
-        this.skip = skip;
+    public void setPassed(boolean passed) {
+        this.passed = passed;
     }
 }

@@ -1,9 +1,9 @@
 package com.legadi.jurl.common;
 
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
-import static com.legadi.jurl.common.CommonUtils.trim;
-import static com.legadi.jurl.common.CommonUtils.stripEnd;
 import static com.legadi.jurl.common.CommonUtils.strip;
+import static com.legadi.jurl.common.CommonUtils.stripEnd;
+import static com.legadi.jurl.common.CommonUtils.trim;
 import static com.legadi.jurl.generators.GeneratorsRegistry.findGeneratorByName;
 import static com.legadi.jurl.modifiers.ValueModifierRegistry.findModifierByDefinition;
 
@@ -14,7 +14,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.legadi.jurl.exception.InvalidInputEntryException;
+import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.generators.Generator;
 import com.legadi.jurl.modifiers.ValueModifier;
 
@@ -35,8 +35,7 @@ public class StringExpander {
         return replaceAllInContent(new HashMap<>(), content);
     }
 
-    public String replaceAllInContent(Map<String, String> values, 
-            String content) {
+    public String replaceAllInContent(Map<String, String> values, String content) {
         Pattern pattern = Pattern.compile(settings.getSettingsParamRegex());
         Matcher paramMatcher = pattern.matcher(content);
         Set<String> paramTags = new HashSet<>();
@@ -52,7 +51,7 @@ public class StringExpander {
                 Matcher paramNameMatcher = paramPattern.matcher(paramName);
 
                 if(!paramNameMatcher.find()) {
-                    throw new InvalidInputEntryException("Parameter is wrong defined: " + paramName
+                    throw new CommandException("Parameter is wrong defined: " + paramName
                         + " - expected \"<generator>:?[<modifier-definition>]?<property-name>\"");
                 }
 
@@ -74,7 +73,7 @@ public class StringExpander {
                     ValueModifier modifier = findModifierByDefinition(modifierDefinition);
 
                     if(modifier != null) {
-                        value = modifier.apply(settings, modifierDefinition, value);
+                        value = modifier.applyByDefinition(settings, modifierDefinition, value);
                     }
                 }
 

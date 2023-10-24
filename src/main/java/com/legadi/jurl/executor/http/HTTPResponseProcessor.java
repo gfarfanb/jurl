@@ -1,10 +1,7 @@
 package com.legadi.jurl.executor.http;
 
-import static com.legadi.jurl.assertions.AssertionsRegistry.findByName;
-import static com.legadi.jurl.assertions.AssertionsRegistry.registerAssertionFunction;
-import static com.legadi.jurl.common.CommonUtils.isBlank;
+import static com.legadi.jurl.assertions.AssertionsResolver.evaluate;
 import static com.legadi.jurl.common.CommonUtils.isEmpty;
-import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.JsonUtils.loadJsonProperties;
 import static com.legadi.jurl.common.JsonUtils.writeJsonFile;
@@ -24,16 +21,12 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import com.legadi.jurl.assertions.AssertionFunction;
 import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.common.StringExpander;
-import com.legadi.jurl.exception.AssertionException;
-import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.executor.ResponseProcessor;
 import com.legadi.jurl.executor.reader.OutputReader;
-import com.legadi.jurl.model.AssertionEntry;
 import com.legadi.jurl.model.AssertionResult;
 import com.legadi.jurl.model.RequestBehaviour;
 import com.legadi.jurl.model.http.HTTPRequestEntry;
@@ -69,7 +62,11 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
 
         saveOutput(stringExpander, values, request, response);
 
-        return evaluate(stringExpander, values, request.getAssertions());
+        if(settings.isSkipAssertions()) {
+            return Optional.empty();
+        } else {
+            return evaluate(settings, values, request.getAssertions());
+        }
     }
 
     private void mapOutput(Settings settings, HTTPResponseEntry response) {
@@ -200,49 +197,5 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
         }
 
         return outputValues;
-    }
-
-    private Optional<AssertionResult> evaluate(StringExpander stringExpander, Map<String, String> values,
-            List<AssertionEntry> assertions) {
-        if(isEmpty(assertions) || stringExpander.getSettings().isSkipAssertions()) {
-            return Optional.empty();
-        }
-
-        AssertionResult result = new AssertionResult(assertions.size());
-        int failures = 0;
-
-        for(AssertionEntry assertionEntry : assertions) {
-            try {
-                AssertionFunction function = null;
-                String message = null;
-
-                if(assertionEntry.getType() != null) {
-                    function = findByName(assertionEntry.getType().name());
-                } else if(isBlank(assertionEntry.getAssertionClass())) {
-                    throw new CommandException("Assertion class is null or empty, please specify a 'type' or an 'assertionClass'");
-                } else {
-                    String assertionClass = stringExpander.replaceAllInContent(values,
-                        assertionEntry.getAssertionClass());
-                    function = registerAssertionFunction(assertionClass);
-                }
-
-                if(isNotBlank(assertionEntry.getMessage())) {
-                    message = stringExpander.replaceAllInContent(values, assertionEntry.getMessage());
-                }
-                
-                String[] args = Arrays.stream(assertionEntry.getArgs())
-                    .map(arg -> stringExpander.replaceAllInContent(values, arg))
-                    .toArray(String[]::new);
-
-                function.evaluate(message, args);
-            } catch(AssertionException ex) {
-                LOGGER.warning(ex.getMessage());
-                result.setSkip(true);
-                failures++;
-            }
-        }
-
-        result.setFailures(failures);
-        return Optional.of(result);
     }
 }

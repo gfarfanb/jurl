@@ -1,7 +1,8 @@
 package com.legadi.jurl.options;
 
-import com.legadi.jurl.common.Settings;
 import static com.legadi.jurl.executor.mixer.BodyMixerRegistry.registerMixer;
+
+import com.legadi.jurl.common.Settings;
 
 public class CustomMixerOption extends Option {
 

@@ -19,6 +19,7 @@
     "settingsParamRegexReplace": "<param-name>",
     "settingsParamStartAt": 2,
     "settingsParamEndAtLengthMinus": 2,
+    "skipConditions": false,
     "skipAssertions": false,
     "mergeBodyUsingType": "",
     "overrideRequestFilePath": "",

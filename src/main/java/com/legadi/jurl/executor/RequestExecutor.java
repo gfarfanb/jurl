@@ -18,6 +18,12 @@ public interface RequestExecutor<T extends RequestEntry<? extends MockEntry>, R 
         return (T) request;
     }
 
+    default boolean accepts(Settings settings, RequestEntry<? extends MockEntry> request) {
+        return acceptsConditions(settings, cast(request));
+    }
+
+    boolean acceptsConditions(Settings settings, T request);
+
     default R execute(Settings settings, String requestPath, RequestEntry<? extends MockEntry> request) throws RequestException {
         return executeRequest(settings, requestPath, cast(request));
     }

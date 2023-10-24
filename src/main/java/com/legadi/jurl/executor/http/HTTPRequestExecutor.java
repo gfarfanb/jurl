@@ -1,5 +1,6 @@
 package com.legadi.jurl.executor.http;
 
+import static com.legadi.jurl.assertions.AssertionsResolver.evaluate;
 import static com.legadi.jurl.common.CommonUtils.getOrDefault;
 import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
@@ -46,6 +47,7 @@ import com.legadi.jurl.executor.RequestExecutor;
 import com.legadi.jurl.executor.mixer.BodyMixer;
 import com.legadi.jurl.executor.mixer.BodyMixer.MixerEntry;
 import com.legadi.jurl.model.AssertionEntry;
+import com.legadi.jurl.model.AssertionResult;
 import com.legadi.jurl.model.Credential;
 import com.legadi.jurl.model.RequestBehaviour;
 import com.legadi.jurl.model.http.HTTPRequestEntry;
@@ -73,6 +75,25 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     @Override
     public TypeToken<HTTPRequestEntry> requestType() {
         return new TypeToken<HTTPRequestEntry>() {};
+    }
+
+    @Override
+    public boolean acceptsConditions(Settings settings, HTTPRequestEntry request) {
+        if(settings.isSkipConditions()) {
+            return true;
+        }
+
+        RequestBehaviour behaviour = settings.getRequestBehaviour();
+
+        switch(behaviour) {
+            case CURL_ONLY:
+            case PRINT_ONLY:
+                return true;
+            default:
+                return evaluate(settings, request.getConditions())
+                    .map(AssertionResult::isPassed)
+                    .orElse(true);
+        }
     }
 
     @Override

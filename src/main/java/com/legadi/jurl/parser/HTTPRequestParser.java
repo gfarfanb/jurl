@@ -38,19 +38,13 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     private static final Map<String, Field> REQUEST_FILE_FIELDS = getAllFields(HTTPRequestFileEntry.class);
     private static final Map<String, Field> MOCK_FIELDS = getAllFields(HTTPMockEntry.class);
 
-    private final Pattern defaultRequestPattern = Pattern.compile("^(?i)@default-request[ ]*=(.*)");
-    private final Pattern defaultFlowPattern = Pattern.compile("^(?i)@default-flow[ ]*=(.*)");
+    private final Pattern defaultTypePattern = Pattern.compile("^(?i)@default-(request|flow)[ ]*=(.*)");
     private final Pattern sectionPattern = Pattern.compile("^(?i)###[ ]*\\[(api|request|flow)\\](.*)");
-    private final Pattern fieldPattern = Pattern.compile("^@([\\w]+)[ ]*=(.*)");
+    private final Pattern fieldPattern = Pattern.compile("^(?i)(file|mock|output)?[ ]*[@]?([\\w:.-_@]+)[ ]*=(.*)");
     private final Pattern urlMethodPattern = Pattern.compile("^(?i)([\\w]+)?[ ]*(http|https):\\/\\/(.*)");
-    private final Pattern headerPattern = Pattern.compile("^([\\w-]+): (.*)");
+    private final Pattern headerPattern = Pattern.compile("^(?i)(mock)?[ ]*([\\w-]+): (.*)");
     private final Pattern queryParamPattern = Pattern.compile("^[&]*([\\w:.-_@]+)=(.*)");
-    private final Pattern fileFieldPattern = Pattern.compile("^(?i)file @([\\w:.-_@]+)[ ]*=(.*)");
-    private final Pattern fileFormPattern = Pattern.compile("^(?i)file ([\\w:.-_@]+)[ ]*=(.*)");
-    private final Pattern mockFieldPattern = Pattern.compile("^(?i)mock @([\\w:.-_@]+)[ ]*=(.*)");
-    private final Pattern mockHeaderPattern = Pattern.compile("^(?i)mock ([\\w-]+): (.*)");
-    private final Pattern outputPattern = Pattern.compile("^(?i)output ([\\w:.-_@]+)[ ]*=(.*)");
-    private final Pattern assertionPattern = Pattern.compile("^(?i)assert ([\\w:.-_@]+) (.*)");
+    private final Pattern assertionPattern = Pattern.compile("^(?i)(condition|assert) ([\\w:.-_@]+) (.*)");
     private final Pattern stepSpecPattern = Pattern.compile("^(?i)step (.*)");
     private final Pattern commentPattern = Pattern.compile("^#(.*)");
 
@@ -86,13 +80,9 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                     continue;
                 }
 
-                if(addDefaultRequest(requestInput, line)) {
+                if(addDefaultType(requestInput, line)) {
                     continue;
                 }
-                if(addDefaultFlow(requestInput, line)) {
-                    continue;
-                }
-
                 if(isSection(sectionCarrier, requestCarrier, flowCarrier, requestInput, line)) {
                     section = sectionCarrier.get();
                     continue;
@@ -155,53 +145,34 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         }
 
         HTTPRequestEntry request = requestCarrier.get();
-
-        if(addField(fieldPattern, REQUEST_FIELDS, () -> request, line)) {
-            return;
-        }
-        if(addURLMethod(request, line)) {
-            return;
-        }
-        if(addHeader(request, line)) {
-            return;
-        }
-        if(addQueryParam(request, line)) {
-            return;
-        }
-
         Supplier<HTTPRequestFileEntry> fileSupplier = () -> {
             if(request.getRequestFile() == null) {
                 request.setRequestFile(new HTTPRequestFileEntry());
             }
             return request.getRequestFile();
         };
-        if(addField(fileFieldPattern, REQUEST_FILE_FIELDS, fileSupplier, line)) {
-            return;
-        }
-        if(addFileForm(fileSupplier, line)) {
-            return;
-        }
-
         Supplier<HTTPMockEntry> mockSupplier = () -> {
             if(request.getMockDefinition() == null) {
                 request.setMockDefinition(new HTTPMockEntry());
             }
             return request.getMockDefinition();
         };
-        if(addField(mockFieldPattern, MOCK_FIELDS, mockSupplier, line)) {
-            return;
-        }
-        if(addMockHeader(mockSupplier, line)) {
-            return;
-        }
 
-        if(addOutputMapping(request, line)) {
+        if(addURLMethod(request, line)) {
             return;
         }
-        if(addAssertion(request, line)) {
+        if(addHeader(request, mockSupplier, line)) {
             return;
         }
-
+        if(addQueryParam(request, line)) {
+            return;
+        }
+        if(addFieldOrVariable(request, fileSupplier, mockSupplier, line)) {
+            return;
+        }
+        if(addConditionOrAssertion(request, line)) {
+            return;
+        }
         if(isComment(line)) {
             return;
         }
@@ -227,22 +198,18 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         }
     }
 
-    private boolean addDefaultRequest(RequestInput<HTTPRequestEntry> requestInput, String line) {
-        Matcher matcher = defaultRequestPattern.matcher(line);
+    private boolean addDefaultType(RequestInput<HTTPRequestEntry> requestInput, String line) {
+        Matcher matcher = defaultTypePattern.matcher(line);
 
         if(matcher.find()) {
-            requestInput.setDefaultRequest(trim(matcher.group(0)));
-            return true;
-        } else {
-            return false;
-        }
-    }
+            String type = trim(matcher.group(1));
+            String value = trim(matcher.group(2));
 
-    private boolean addDefaultFlow(RequestInput<HTTPRequestEntry> requestInput, String line) {
-        Matcher matcher = defaultFlowPattern.matcher(line);
-
-        if(matcher.find()) {
-            requestInput.setDefaultFlow(trim(matcher.group(0)));
+            if(type.equalsIgnoreCase("request")) {
+                requestInput.setDefaultRequest(value);
+            } else if(type.equalsIgnoreCase("flow")) {
+                requestInput.setDefaultFlow(value);
+            }
             return true;
         } else {
             return false;
@@ -298,13 +265,20 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         }
     }
 
-    private boolean addHeader(HTTPRequestEntry request, String line) {
+    private boolean addHeader(HTTPRequestEntry request,
+            Supplier<HTTPMockEntry> mockSupplier, String line) {
         Matcher matcher = headerPattern.matcher(line);
 
         if(matcher.find()) {
-            String header = trim(matcher.group(1));
-            String value = trim(matcher.group(2));
-            request.getHeaders().put(header, value);
+            String type = trim(matcher.group(1));
+            String header = trim(matcher.group(2));
+            String value = trim(matcher.group(3));
+
+            if(type == null) {
+                request.getHeaders().put(header, value);
+            } else if(type.equalsIgnoreCase("mock")) {
+                mockSupplier.get().getResponseHeaders().put(header, value);
+            }
             return true;
         } else {
             return false;
@@ -324,82 +298,73 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         }
     }
 
-    private boolean addField(Pattern pattern, Map<String, Field> fields,
-            Supplier<?> objectSupplier, String line) throws IllegalAccessException {
-        Matcher matcher = pattern.matcher(line);
+    private boolean addFieldOrVariable(HTTPRequestEntry request,
+            Supplier<HTTPRequestFileEntry> fileSupplier, Supplier<HTTPMockEntry> mockSupplier,
+            String line) throws IllegalAccessException {
+        Matcher matcher = fieldPattern.matcher(line);
 
         if(matcher.find()) {
-            String fieldName = trim(matcher.group(1));
-            String value = trim(matcher.group(2));
-            Field field = fields.get(fieldName);
-            if(field == null) {
-                throw new CommandException("Field not defined in " + objectSupplier.get().getClass()
-                    + ": " + fieldName);
+            String type = trim(matcher.group(1));
+            String fieldName = trim(matcher.group(2));
+            String value = trim(matcher.group(3));
+            boolean isFieldRequired = line.contains("@");
+
+            if(type == null && isFieldRequired) {
+                addField(REQUEST_FIELDS, request, fieldName, value);
+            } else if(type.equalsIgnoreCase("file")) {
+                if(isFieldRequired) {
+                    addField(REQUEST_FILE_FIELDS, fileSupplier.get(), fieldName, value);
+                } else {
+                    fileSupplier.get().getFormData().put(fieldName, value);
+                }
+            } else if(type.equalsIgnoreCase("mock")) {
+                if(isFieldRequired) {
+                    addField(MOCK_FIELDS, mockSupplier.get(), fieldName, value);
+                }
+            } else if(type.equalsIgnoreCase("output")) {
+                request.getOutputMappings().put(fieldName, value);
             }
-            field.setAccessible(true);
-            field.set(objectSupplier.get(), value);
             return true;
         } else {
             return false;
         }
     }
 
-    private boolean addFileForm(Supplier<HTTPRequestFileEntry> fileSupplier, String line) {
-        Matcher matcher = fileFormPattern.matcher(line);
-
-        if(matcher.find()) {
-            String param = trim(matcher.group(1));
-            String value = trim(matcher.group(2));
-            fileSupplier.get().getFormData().put(param, value);
-            return true;
-        } else {
-            return false;
+    private void addField(Map<String, Field> fields, Object target, String fieldName, String value)
+            throws IllegalAccessException {
+        Field field = fields.get(fieldName);
+        if(field == null) {
+            throw new CommandException("Field not defined in " + target.getClass()
+                + ": " + fieldName);
         }
+        field.setAccessible(true);
+        field.set(target, value);
     }
 
-    private boolean addMockHeader(Supplier<HTTPMockEntry> mockSupplier, String line) {
-        Matcher matcher = mockHeaderPattern.matcher(line);
-
-        if(matcher.find()) {
-            String header = trim(matcher.group(1));
-            String value = trim(matcher.group(2));
-            mockSupplier.get().getResponseHeaders().put(header, value);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    private boolean addOutputMapping(HTTPRequestEntry request, String line) {
-        Matcher matcher = outputPattern.matcher(line);
-
-        if(matcher.find()) {
-            String param = trim(matcher.group(1));
-            String value = trim(matcher.group(2));
-            request.getOutputMappings().put(param, value);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    private boolean addAssertion(HTTPRequestEntry request, String line) {
+    private boolean addConditionOrAssertion(HTTPRequestEntry request, String line) {
         Matcher matcher = assertionPattern.matcher(line);
 
         if(matcher.find()) {
-            String assertion = trim(matcher.group(1));
-            String[] args = extractArgs(trim(matcher.group(2)));
+            String type = trim(matcher.group(1));
+            String assertion = trim(matcher.group(2));
+            String[] args = extractArgs(trim(matcher.group(3)));
+
             AssertionEntry entry = new AssertionEntry();
-            AssertionType type = AssertionType.valueOfName(assertion);
+            AssertionType assertionType = AssertionType.valueOfName(assertion);
 
             if(type != null) {
-                entry.setType(type);
+                entry.setType(assertionType);
             } else {
                 entry.setAssertionClass(assertion);
             }
 
             entry.setArgs(args);
-            request.getAssertions().add(entry);
+
+            if(type.equalsIgnoreCase("condition")) {
+                request.getConditions().add(entry);
+            } else if(type.equalsIgnoreCase("assert")) {
+                request.getAssertions().add(entry);
+            }
             return true;
         } else {
             return false;

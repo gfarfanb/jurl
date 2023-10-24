@@ -78,7 +78,7 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertTrue(uploadAssertionResult.isPresent());
         Assertions.assertEquals(1, uploadAssertionResult.get().getAssertions());
         Assertions.assertEquals(0, uploadAssertionResult.get().getFailures());
-        Assertions.assertFalse(uploadAssertionResult.get().isSkip());
+        Assertions.assertTrue(uploadAssertionResult.get().isPassed());
 
         Path filePath = Paths.get("src/test/resources/file.csv");
         Path temporalFilePath = uploadSettings.getExecutionPath().resolve(uploadEntity.getFilename());
@@ -140,7 +140,7 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertTrue(uploadAssertionResult.isPresent());
         Assertions.assertEquals(1, uploadAssertionResult.get().getAssertions());
         Assertions.assertEquals(0, uploadAssertionResult.get().getFailures());
-        Assertions.assertFalse(uploadAssertionResult.get().isSkip());
+        Assertions.assertTrue(uploadAssertionResult.get().isPassed());
 
         Path filePath = Paths.get("src/test/resources/file.csv");
         Path temporalFilePath = uploadSettings.getExecutionPath().resolve(uploadEntity.getFilename());
@@ -191,7 +191,7 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertTrue(downloadAssertionResult.isPresent());
         Assertions.assertEquals(1, downloadAssertionResult.get().getAssertions());
         Assertions.assertEquals(0, downloadAssertionResult.get().getFailures());
-        Assertions.assertFalse(downloadAssertionResult.get().isSkip());
+        Assertions.assertTrue(downloadAssertionResult.get().isPassed());
 
         File downloadedFile = downloadResponse.getResponsePath().toFile();
 
@@ -240,7 +240,7 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertTrue(downloadAssertionResult.isPresent());
         Assertions.assertEquals(1, downloadAssertionResult.get().getAssertions());
         Assertions.assertEquals(0, downloadAssertionResult.get().getFailures());
-        Assertions.assertFalse(downloadAssertionResult.get().isSkip());
+        Assertions.assertTrue(downloadAssertionResult.get().isPassed());
 
         File downloadedFile = downloadResponse.getResponsePath().toFile();
 

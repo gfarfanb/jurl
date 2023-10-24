@@ -54,6 +54,11 @@ public class RequestHandlersRegistryTest {
         }
 
         @Override
+        public boolean acceptsConditions(Settings settings, TestRequest request) {
+            return true;
+        };
+
+        @Override
         public TestResponse executeRequest(Settings settings, String requestInputPath,
                 TestRequest request) throws RequestException {
             return new TestResponse();

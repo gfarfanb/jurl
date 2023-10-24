@@ -2,22 +2,22 @@ package com.legadi.jurl.model;
 
 public class MockEntry {
 
-    protected int statusCode;
-    protected long secondsDelay;
+    protected String statusCode;
+    protected String secondsDelay;
 
-    public int getStatusCode() {
+    public String getStatusCode() {
         return statusCode;
     }
 
-    public void setStatusCode(int statusCode) {
+    public void setStatusCode(String statusCode) {
         this.statusCode = statusCode;
     }
 
-    public long getSecondsDelay() {
+    public String getSecondsDelay() {
         return secondsDelay;
     }
 
-    public void setSecondsDelay(long secondsDelay) {
+    public void setSecondsDelay(String secondsDelay) {
         this.secondsDelay = secondsDelay;
     }
 }

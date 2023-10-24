@@ -19,6 +19,7 @@ import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
 import com.legadi.jurl.common.ExecutionLevels;
@@ -42,6 +43,8 @@ import com.legadi.jurl.options.OptionsReader.OptionEntry;
 import com.legadi.jurl.parser.RequestParser;
 
 public class RequestCommand {
+
+    private static final Logger LOGGER = Logger.getLogger(RequestCommand.class.getName());
 
     private static final int FIRST_EXECUTION = 1;
 
@@ -231,6 +234,11 @@ public class RequestCommand {
         RequestExecutor<?, ?> executor = findExecutorByRequestType(settings.getRequestType());
         ResponseProcessor<?, ?> processor = findProcessorByRequestType(settings.getRequestType());
 
+        if(!executor.accepts(settings, request)) {
+            LOGGER.info("Request skipped because of the conditions - inputFile=" + requestInputPath + " request=" + request.getName());
+            return;
+        }
+
         if(api != null) {
             executor.mergeAPI(settings, api, request);
         }
@@ -266,7 +274,7 @@ public class RequestCommand {
 
         saveHistory(settings, historyEntry, requestInputPath, request.getName());
 
-        if(result.isPresent() && result.get().isSkip()) {
+        if(result.isPresent() && !result.get().isPassed()) {
             throw new InvalidAssertionsFoundException();
         }
     }
