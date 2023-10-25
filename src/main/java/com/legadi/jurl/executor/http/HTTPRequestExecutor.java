@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -147,7 +148,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             mergeRequestFile(api.getRequestFile(), request.getRequestFile());
         }
 
-        Map<String, String> outputMappings = new HashMap<>(api.getOutputMappings());
+        Map<String, String> outputMappings = new LinkedHashMap<>(api.getOutputMappings());
         outputMappings.putAll(request.getOutputMappings());
         request.setOutputMappings(outputMappings);
 

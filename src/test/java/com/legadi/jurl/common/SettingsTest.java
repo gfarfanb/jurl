@@ -38,11 +38,9 @@ public class SettingsTest {
         Assertions.assertFalse(settings.isOpenOutputInEditor());
         Assertions.assertEquals(1, settings.getTimes());
         Assertions.assertTrue(settings.getInputName().isEmpty());
-        Assertions.assertEquals("(?:\\{\\{[\\w\\[:.-_@/,\\-\\]\\\\]+\\}\\})", settings.getSettingsParamRegex());
-        Assertions.assertEquals("\\{\\{<param-name>\\}\\}", settings.getSettingsParamRegexMask());
-        Assertions.assertEquals("<param-name>", settings.getSettingsParamRegexReplace());
-        Assertions.assertEquals(2, settings.getSettingsParamStartAt());
-        Assertions.assertEquals(2, settings.getSettingsParamEndAtLengthMinus());
+        Assertions.assertEquals("(?:\\{\\{([\\w.,\\-:\\'@~|\\[\\]/\\\\]+)\\}\\})", settings.getSettingsParamRegex());
+        Assertions.assertEquals("\\{\\{", settings.getSettingsParamRegexBegin());
+        Assertions.assertEquals("\\}\\}", settings.getSettingsParamRegexEnd());
         Assertions.assertFalse(settings.isSkipAssertions());
         Assertions.assertTrue(settings.getMergeBodyUsingType().isEmpty());
         Assertions.assertTrue(settings.getOverrideRequestFilePath().isEmpty());

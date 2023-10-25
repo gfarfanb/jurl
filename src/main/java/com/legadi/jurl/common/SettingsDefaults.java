@@ -17,11 +17,9 @@ import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_AUTHORIZATIO
 import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_BEHAVIOUR;
 import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_CREDENTIAL_ID;
 import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_TYPE;
-import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_END_AT_LENGTH_MINUS;
 import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX;
-import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX_MASK;
-import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX_REPLACE;
-import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_START_AT;
+import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX_BEGIN;
+import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX_END;
 import static com.legadi.jurl.common.SettingsConstants.PROP_SKIP_ASSERTIONS;
 import static com.legadi.jurl.common.SettingsConstants.PROP_SKIP_CONDITIONS;
 import static com.legadi.jurl.common.WriterUtils.createDirectories;
@@ -107,20 +105,12 @@ public interface SettingsDefaults {
         return get(PROP_SETTINGS_PARAM_REGEX);
     }
 
-    default String getSettingsParamRegexMask() {
-        return get(PROP_SETTINGS_PARAM_REGEX_MASK);
+    default String getSettingsParamRegexBegin() {
+        return get(PROP_SETTINGS_PARAM_REGEX_BEGIN);
     }
 
-    default String getSettingsParamRegexReplace() {
-        return get(PROP_SETTINGS_PARAM_REGEX_REPLACE);
-    }
-
-    default int getSettingsParamStartAt() {
-        return get(PROP_SETTINGS_PARAM_START_AT, Integer::parseInt);
-    }
-
-    default int getSettingsParamEndAtLengthMinus() {
-        return get(PROP_SETTINGS_PARAM_END_AT_LENGTH_MINUS, Integer::parseInt);
+    default String getSettingsParamRegexEnd() {
+        return get(PROP_SETTINGS_PARAM_REGEX_END);
     }
 
     default boolean isSkipConditions() {

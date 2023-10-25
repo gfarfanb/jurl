@@ -1,15 +1,15 @@
 package com.legadi.jurl.modifiers;
 
 import java.math.BigDecimal;
+import java.util.function.Function;
 
-import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.exception.InvalidModifierOperationException;
 
 public class NumberValueModifier implements ValueModifier {
 
     @Override
     public String name() {
-        return "Number";
+        return "number";
     }
 
     @Override
@@ -18,9 +18,9 @@ public class NumberValueModifier implements ValueModifier {
     }
 
     @Override
-    public String apply(Settings settings, String[] args, String value) throws Exception {
+    public String apply(Function<String, String> getter, String[] args, String value) throws Exception {
         BigDecimal number = new BigDecimal(value);
-        BigDecimal input = new BigDecimal(settings.getOrDefault(args[1], args[1]));
+        BigDecimal input = new BigDecimal(getter.apply(args[1]));
 
         switch(args[0].toLowerCase()) {
             case "add":

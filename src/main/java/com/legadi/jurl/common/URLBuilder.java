@@ -71,7 +71,10 @@ public class URLBuilder {
         StringBuilder urlBuilder = new StringBuilder();
 
         if(isNotBlank(url)) {
-            urlBuilder.append(url);
+            urlBuilder
+                .append(url)
+                .append(isNotBlank(basePath) ? "/" + basePath : "")
+                .append(isNotBlank(endpoint) ? "/" + endpoint : "");
         } else {
             urlBuilder
                 .append(isNotBlank(protocol) ? protocol : "")

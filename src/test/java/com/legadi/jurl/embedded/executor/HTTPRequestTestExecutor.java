@@ -2,7 +2,6 @@ package com.legadi.jurl.embedded.executor;
 
 import java.util.UUID;
 
-import com.google.gson.reflect.TypeToken;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.embedded.util.RequestCatcher;
 import com.legadi.jurl.exception.RequestException;
@@ -23,10 +22,10 @@ public class HTTPRequestTestExecutor extends HTTPRequestExecutor {
     @Override
     public HTTPResponseEntry executeRequest(Settings settings, String requestInputPath,
             HTTPRequestEntry request) throws RequestException {
-        requestCatcher.add(new TypeToken<Settings>() {}, identifier, settings);
-        requestCatcher.add(new TypeToken<String>() {}, identifier, requestInputPath);
-        requestCatcher.add(new TypeToken<HTTPRequestEntry>() {}, identifier, request);
-        return requestCatcher.add(new TypeToken<HTTPResponseEntry>() {},
-            identifier, super.executeRequest(settings, requestInputPath, request));
+        requestCatcher.add(identifier, "settings", settings);
+        requestCatcher.add(identifier, "request-input-path", requestInputPath);
+        requestCatcher.add(identifier, "request", request);
+        return requestCatcher.add(identifier, "response",
+            super.executeRequest(settings, requestInputPath, request));
     }
 }

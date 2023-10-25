@@ -2,6 +2,7 @@ package com.legadi.jurl.model.http;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,7 @@ public class HTTPRequestEntry extends RequestEntry<HTTPMockEntry> {
     private String bodyFilePath;
     private HTTPRequestFileEntry requestFile;
     private List<AssertionEntry> conditions = new LinkedList<>();
-    private Map<String, String> outputMappings = new HashMap<>();
+    private Map<String, String> outputMappings = new LinkedHashMap<>();
     private List<AssertionEntry> assertions = new LinkedList<>();
 
     public String getMethod() {

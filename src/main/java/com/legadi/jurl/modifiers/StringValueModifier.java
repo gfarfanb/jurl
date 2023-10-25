@@ -1,13 +1,14 @@
 package com.legadi.jurl.modifiers;
 
-import com.legadi.jurl.common.Settings;
+import java.util.function.Function;
+
 import com.legadi.jurl.exception.InvalidModifierOperationException;
 
 public class StringValueModifier implements ValueModifier {
 
     @Override
     public String name() {
-        return "String";
+        return "string";
     }
 
     @Override
@@ -16,8 +17,8 @@ public class StringValueModifier implements ValueModifier {
     }
 
     @Override
-    public String apply(Settings settings, String[] args, String value) throws Exception {
-        String input = settings.getOrDefault(args[1], args[1]);
+    public String apply(Function<String, String> getter, String[] args, String value) throws Exception {
+        String input = getter.apply(args[1]);
 
         switch(args[0].toLowerCase()) {
             case "prefix":

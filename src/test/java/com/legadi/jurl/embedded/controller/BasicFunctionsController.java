@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.gson.reflect.TypeToken;
 import com.legadi.jurl.embedded.model.BasicFunctionsEntity;
 import com.legadi.jurl.embedded.util.RequestCatcher;
 
@@ -30,7 +29,7 @@ public class BasicFunctionsController {
     public ResponseEntity<String> post(@RequestBody BasicFunctionsEntity entity) {
         UUID id = UUID.randomUUID();
 
-        requestCatcher.add(new TypeToken<BasicFunctionsEntity>() {}, id, entity);
+        requestCatcher.add(id, "basic-body", entity);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Resource-ID", id.toString());
@@ -42,30 +41,30 @@ public class BasicFunctionsController {
 
     @GetMapping("/body/{id}")
     public ResponseEntity<Object> get(@PathVariable UUID id) {
-        if(!requestCatcher.contains(new TypeToken<BasicFunctionsEntity>() {}, id)) {
+        if(!requestCatcher.contains(id, "basic-body")) {
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.ok(requestCatcher.get(new TypeToken<BasicFunctionsEntity>() {}, id));
+        return ResponseEntity.ok(requestCatcher.get(id, "basic-body"));
     }
 
     @PutMapping("/body/{id}")
     public ResponseEntity<String> put(@PathVariable UUID id, @RequestBody BasicFunctionsEntity entity) {
-        if(!requestCatcher.contains(new TypeToken<BasicFunctionsEntity>() {}, id)) {
+        if(!requestCatcher.contains(id, "basic-body")) {
             return ResponseEntity.notFound().build();
         }
 
-        requestCatcher.add(new TypeToken<BasicFunctionsEntity>() {}, id, entity);
+        requestCatcher.add(id, "basic-body", entity);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/body/{id}")
     public ResponseEntity<String> delete(@PathVariable UUID id) {
-        if(!requestCatcher.contains(new TypeToken<BasicFunctionsEntity>() {}, id)) {
+        if(!requestCatcher.contains(id, "basic-body")) {
             return ResponseEntity.notFound().build();
         }
 
-        requestCatcher.remove(new TypeToken<BasicFunctionsEntity>() {}, id);
+        requestCatcher.remove(id, "basic-body");
         return ResponseEntity.noContent().build();
     }
 }

@@ -1,7 +1,6 @@
 package com.legadi.jurl.common;
 
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
-import static com.legadi.jurl.common.CommonUtils.strip;
 import static com.legadi.jurl.common.CommonUtils.stripEnd;
 import static com.legadi.jurl.common.CommonUtils.trim;
 import static com.legadi.jurl.generators.GeneratorsRegistry.findGeneratorByName;
@@ -20,10 +19,12 @@ import com.legadi.jurl.modifiers.ValueModifier;
 
 public class StringExpander {
 
-    private final Pattern paramPattern = Pattern.compile("^([\\w_]+:)?(\\[[\\w:.-_/]+\\])?(.*)$");
+    private final Pattern paramTagPattern = Pattern.compile("^([\\w_]+:)?(~(.*)~)?(.*)$");
+    private final Pattern paramPattern;
     private final Settings settings;
 
     public StringExpander(Settings settings) {
+        this.paramPattern = Pattern.compile(settings.getSettingsParamRegex());
         this.settings = settings;
     }
 
@@ -36,28 +37,27 @@ public class StringExpander {
     }
 
     public String replaceAllInContent(Map<String, String> values, String content) {
-        Pattern pattern = Pattern.compile(settings.getSettingsParamRegex());
-        Matcher paramMatcher = pattern.matcher(content);
+        if(content == null) {
+            return null;
+        }
+
+        Matcher paramMatcher = paramPattern.matcher(content);
         Set<String> paramTags = new HashSet<>();
 
         while(paramMatcher.find()) {
-            String paramTag = paramMatcher.group(0);
+            String paramTag = paramMatcher.group(1);
 
             if(!paramTags.contains(paramTag)) {
-                String paramName = paramTag.substring(
-                    settings.getSettingsParamStartAt(),
-                    paramTag.length() - settings.getSettingsParamEndAtLengthMinus()
-                );
-                Matcher paramNameMatcher = paramPattern.matcher(paramName);
+                Matcher paramTagMatcher = paramTagPattern.matcher(paramTag);
 
-                if(!paramNameMatcher.find()) {
-                    throw new CommandException("Parameter is wrong defined: " + paramName
-                        + " - expected \"<generator>:?[<modifier-definition>]?<property-name>\"");
+                if(!paramTagMatcher.find()) {
+                    throw new CommandException("Parameter is wrong defined: " + paramTag
+                        + " - expected \"<generator>:?~<modifier-definition>~?<property-name>\"");
                 }
 
-                Generator generator = findGeneratorByName(stripEnd(paramNameMatcher.group(1), ":"));
-                String modifierDefinition = strip(paramNameMatcher.group(2), "[]");
-                String property = trim(paramNameMatcher.group(3));
+                Generator generator = findGeneratorByName(stripEnd(paramTagMatcher.group(1), ":"));
+                String modifierDefinition = paramTagMatcher.group(3);
+                String property = trim(paramTagMatcher.group(4));
                 String value = null;
 
                 if(generator != null) {
@@ -73,14 +73,13 @@ public class StringExpander {
                     ValueModifier modifier = findModifierByDefinition(modifierDefinition);
 
                     if(modifier != null) {
-                        value = modifier.applyByDefinition(settings, modifierDefinition, value);
+                        value = modifier.applyByDefinition(settings, values, modifierDefinition, value);
                     }
                 }
 
                 if(isNotBlank(value)) {
-                    String paramRegex = settings.getSettingsParamRegexMask().replace(
-                        settings.getSettingsParamRegexReplace(), paramName
-                    );
+                    String paramRegex = settings.getSettingsParamRegexBegin()
+                        + paramTag + settings.getSettingsParamRegexEnd();
 
                     content = content.replaceAll(paramRegex, value);
                 }
@@ -98,13 +97,9 @@ public class StringExpander {
         Set<String> paramNames = new HashSet<>();
 
         while(matcher.find()) {
-            String paramTag = matcher.group(0);
-            String paramName = paramTag.substring(
-                settings.getSettingsParamStartAt(),
-                paramTag.length() - settings.getSettingsParamEndAtLengthMinus()
-            );
+            String paramTag = matcher.group(1);
 
-            paramNames.add(paramName);
+            paramNames.add(paramTag);
         }
 
         return paramNames;

@@ -21,7 +21,6 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.common.StringExpander;
 import com.legadi.jurl.exception.RequestException;
@@ -129,18 +128,14 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
             return;
         }
 
-        Map<String, String> outputProperties = request.getOutputMappings().entrySet()
-            .parallelStream()
-            .map(e -> new Pair<>(
-                e.getKey(),
-                stringExpander.replaceAllInContent(values, e.getValue())
-            ))
-            .collect(Collectors.toMap(
-                Pair::getLeft,
-                Pair::getRight,
-                (v1, v2) -> v2,
-                HashMap::new
-            ));
+        Map<String, String> outputProperties = new HashMap<>();
+
+        request.getOutputMappings().forEach((key, value) -> {
+            value = stringExpander.replaceAllInContent(values, value);
+
+            values.put(key, value);
+            outputProperties.put(key, value);
+        });
 
         Settings.mergeProperties(stringExpander.getSettings().getEnvironment(), outputProperties);
 

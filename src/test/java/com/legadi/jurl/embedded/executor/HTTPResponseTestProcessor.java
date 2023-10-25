@@ -3,7 +3,6 @@ package com.legadi.jurl.embedded.executor;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.google.gson.reflect.TypeToken;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.embedded.util.RequestCatcher;
 import com.legadi.jurl.executor.http.HTTPResponseProcessor;
@@ -23,7 +22,7 @@ public class HTTPResponseTestProcessor extends HTTPResponseProcessor {
 
     @Override
     public Optional<AssertionResult> processResponse(Settings settings, HTTPRequestEntry request, HTTPResponseEntry response) {
-        return requestCatcher.add(new TypeToken<Optional<AssertionResult>>() {},
-            identifier, super.processResponse(settings, request, response));
+        return requestCatcher.add(identifier, "assertion-result",
+            super.processResponse(settings, request, response));
     }
 }

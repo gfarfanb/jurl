@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import com.google.gson.reflect.TypeToken;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.embedded.model.FileFormEntity;
 import com.legadi.jurl.embedded.util.RequestCatcher;
@@ -72,7 +71,7 @@ public class FileFormController {
         entity.setType(file.getContentType());
         entity.setField(file.getName());
 
-        requestCatcher.add(new TypeToken<FileFormEntity>() {}, id, entity);
+        requestCatcher.add(id, "file-body", entity);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Resource-ID", id.toString());
