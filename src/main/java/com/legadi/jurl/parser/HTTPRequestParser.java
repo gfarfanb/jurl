@@ -341,12 +341,13 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
         if(matcher.find()) {
             String type = trim(matcher.group(1));
-            String fieldName = trim(matcher.group(2));
+            String fieldName = stringExpander.replaceAllInContent(
+                trim(matcher.group(2))
+            );
             String value = trim(matcher.group(3));
             boolean isFieldRequired = line.contains("@");
 
             if(type.equalsIgnoreCase("file")) {
-                fieldName = stringExpander.replaceAllInContent(fieldName);
                 value = stringExpander.replaceAllInContent(value);
 
                 if(isFieldRequired) {
@@ -355,7 +356,6 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                     fileSupplier.get().getFormData().put(fieldName, value);
                 }
             } else if(type.equalsIgnoreCase("mock")) {
-                fieldName = stringExpander.replaceAllInContent(fieldName);
                 value = stringExpander.replaceAllInContent(value);
 
                 if(isFieldRequired) {
