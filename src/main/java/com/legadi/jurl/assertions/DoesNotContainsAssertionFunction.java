@@ -1,13 +1,12 @@
 package com.legadi.jurl.assertions;
 
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
-import static com.legadi.jurl.model.AssertionType.DOES_NOT_CONTAINS;
 
 public class DoesNotContainsAssertionFunction implements AssertionFunction {
 
     @Override
     public String name() {
-        return DOES_NOT_CONTAINS.name();
+        return "DOES_NOT_CONTAINS";
     }
 
     @Override

@@ -1,7 +1,5 @@
 package com.legadi.jurl.assertions;
 
-import static com.legadi.jurl.model.AssertionType.IS_NOT_IN;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +8,7 @@ import com.legadi.jurl.exception.AssertionException;
 public class IsNotInAssertionFunctionTest extends AssertionFunctionTest<IsNotInAssertionFunction> {
 
     public IsNotInAssertionFunctionTest() {
-        super(IS_NOT_IN);
+        super("IS_NOT_IN");
     }
 
     @Test

@@ -1,13 +1,12 @@
 package com.legadi.jurl.assertions;
 
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
-import static com.legadi.jurl.model.AssertionType.STARTS_WITH;
 
 public class StartsWithAssertionFunction implements AssertionFunction {
 
     @Override
     public String name() {
-        return STARTS_WITH.name();
+        return "STARTS_WITH";
     }
 
     @Override

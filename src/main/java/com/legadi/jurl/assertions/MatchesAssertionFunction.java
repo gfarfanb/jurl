@@ -1,7 +1,5 @@
 package com.legadi.jurl.assertions;
 
-import static com.legadi.jurl.model.AssertionType.MATCHES;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -9,7 +7,7 @@ public class MatchesAssertionFunction implements AssertionFunction {
 
     @Override
     public String name() {
-        return MATCHES.name();
+        return "MATCHES";
     }
 
     @Override

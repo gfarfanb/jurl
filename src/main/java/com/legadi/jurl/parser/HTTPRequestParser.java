@@ -1,5 +1,6 @@
 package com.legadi.jurl.parser;
 
+import static com.legadi.jurl.assertions.AssertionsRegistry.containsName;
 import static com.legadi.jurl.common.CommonUtils.getAllFields;
 import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
@@ -392,10 +393,9 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             );
 
             AssertionEntry entry = new AssertionEntry();
-            AssertionType assertionType = AssertionType.valueOfName(assertion);
 
-            if(type != null) {
-                entry.setType(assertionType);
+            if(containsName(assertion)) {
+                entry.setName(assertion);
             } else {
                 entry.setAssertionClass(assertion);
             }
@@ -405,10 +405,12 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                     trim(matcher.group(3))
                 ));
                 entry.setArgs(args);
+                entry.setType(AssertionType.CONDITION);
                 request.getConditions().add(entry);
             } else if(type.equalsIgnoreCase("assert")) {
                 String[] args = extractArgs(trim(matcher.group(3)));
                 entry.setArgs(args);
+                entry.setType(AssertionType.ASSERTION);
                 request.getAssertions().add(entry);
             }
 

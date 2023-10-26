@@ -1,7 +1,5 @@
 package com.legadi.jurl.assertions;
 
-import static com.legadi.jurl.model.AssertionType.MATCHES;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +8,7 @@ import com.legadi.jurl.exception.AssertionException;
 public class MatchesAssertionFunctionTest extends AssertionFunctionTest<MatchesAssertionFunction> {
 
     public MatchesAssertionFunctionTest() {
-        super(MATCHES);
+        super("MATCHES");
     }
 
     @Test

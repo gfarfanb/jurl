@@ -1,13 +1,12 @@
 package com.legadi.jurl.assertions;
 
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
-import static com.legadi.jurl.model.AssertionType.END_WITH;
 
 public class EndsWithAssertionFunction implements AssertionFunction {
 
     @Override
     public String name() {
-        return END_WITH.name();
+        return "END_WITH";
     }
 
     @Override

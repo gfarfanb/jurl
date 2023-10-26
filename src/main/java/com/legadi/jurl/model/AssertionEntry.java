@@ -3,6 +3,7 @@ package com.legadi.jurl.model;
 public class AssertionEntry {
 
     private AssertionType type;
+    private String name;
     private String assertionClass;
     private String message;
     private String[] args = new String[0];
@@ -13,6 +14,14 @@ public class AssertionEntry {
 
     public void setType(AssertionType type) {
         this.type = type;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getAssertionClass() {

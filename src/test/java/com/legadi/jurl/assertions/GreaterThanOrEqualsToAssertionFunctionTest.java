@@ -1,7 +1,5 @@
 package com.legadi.jurl.assertions;
 
-import static com.legadi.jurl.model.AssertionType.GREATER_THAN_OR_EQUALS_TO;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +8,7 @@ import com.legadi.jurl.exception.AssertionException;
 public class GreaterThanOrEqualsToAssertionFunctionTest extends AssertionFunctionTest<GreaterThanOrEqualsToAssertionFunction> {
 
     public GreaterThanOrEqualsToAssertionFunctionTest() {
-        super(GREATER_THAN_OR_EQUALS_TO);
+        super("GREATER_THAN_OR_EQUALS_TO");
     }
 
     @Test

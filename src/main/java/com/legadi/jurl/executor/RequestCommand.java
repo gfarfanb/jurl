@@ -233,9 +233,11 @@ public class RequestCommand {
             RequestEntry<? extends MockEntry> api, RequestEntry<? extends MockEntry> request) {
         RequestExecutor<?, ?> executor = findExecutorByRequestType(settings.getRequestType());
         ResponseProcessor<?, ?> processor = findProcessorByRequestType(settings.getRequestType());
+        Optional<AssertionResult> conditionsResult = executor.accepts(settings, request);
 
-        if(!executor.accepts(settings, request)) {
-            LOGGER.info("Request skipped because of the conditions - inputFile=" + requestInputPath + " request=" + request.getName());
+        if(conditionsResult.isPresent() && !conditionsResult.get().isPassed()) {
+            LOGGER.info("Request skipped - inputFile=" + requestInputPath + " request=" + request.getName());
+            conditionsResult.get().getFailedMessages().forEach(LOGGER::info);
             return;
         }
 
@@ -265,16 +267,31 @@ public class RequestCommand {
         historyEntry.setExecutionTag(settings.getExecutionTag());
         historyEntry.setNanoTime(endTime - beginTime);
 
-        Optional<AssertionResult> result = processor.process(settings, request, response);
+        Optional<AssertionResult> assertionResult = processor.process(settings, request, response);
 
-        result.ifPresent(r -> {
-            historyEntry.setAssertions(r.getAssertions());
-            historyEntry.setFailures(r.getFailures());
-        });
+        if(assertionResult.isPresent()) {
+            historyEntry.setAssertions(assertionResult.get().getAssertions());
+            historyEntry.setFailures(assertionResult.get().getFailures());
+
+            if(!assertionResult.get().isPassed()) {
+                LOGGER.warning("Request failed - inputFile=" + requestInputPath
+                    + " request=" + request.getName()
+                    + " time(nano)=" + historyEntry.getNanoTime());
+                assertionResult.get().getFailedMessages().forEach(LOGGER::warning);
+            } else {
+                LOGGER.info("Request successful - inputFile=" + requestInputPath
+                    + " request=" + request.getName()
+                    + " time(nano)=" + historyEntry.getNanoTime());
+            }
+        } else {
+            LOGGER.info("Request successful - inputFile=" + requestInputPath
+                    + " request=" + request.getName()
+                    + " time(nano)=" + historyEntry.getNanoTime());
+        }
 
         saveHistory(settings, historyEntry, requestInputPath, request.getName());
 
-        if(result.isPresent() && !result.get().isPassed()) {
+        if(assertionResult.isPresent() && !assertionResult.get().isPassed()) {
             throw new InvalidAssertionsFoundException();
         }
     }

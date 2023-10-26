@@ -2,6 +2,7 @@ package com.legadi.jurl.assertions;
 
 import static com.legadi.jurl.assertions.AssertionsRegistry.findByName;
 import static com.legadi.jurl.assertions.AssertionsRegistry.registerAssertionFunction;
+import static com.legadi.jurl.assertions.AssertionsRegistry.containsName;
 import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
@@ -11,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.logging.Logger;
 
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.common.StringExpander;
@@ -21,8 +21,6 @@ import com.legadi.jurl.model.AssertionEntry;
 import com.legadi.jurl.model.AssertionResult;
 
 public class AssertionsResolver {
-
-    private static final Logger LOGGER = Logger.getLogger(AssertionsResolver.class.getName());
 
     private AssertionsResolver() {}
 
@@ -46,8 +44,8 @@ public class AssertionsResolver {
                 AssertionFunction function = null;
                 String message = null;
 
-                if(assertionEntry.getType() != null) {
-                    function = findByName(assertionEntry.getType().name());
+                if(containsName(assertionEntry.getName())) {
+                    function = findByName(assertionEntry.getName());
                 } else if(isBlank(assertionEntry.getAssertionClass())) {
                     throw new CommandException("Assertion class is null or empty, please specify a 'type' or an 'assertionClass'");
                 } else {
@@ -64,9 +62,9 @@ public class AssertionsResolver {
                     .map(arg -> stringExpander.replaceAllInContent(values, arg))
                     .toArray(String[]::new);
 
-                function.evaluate(message, args);
+                function.evaluate(assertionEntry, message, args);
             } catch(AssertionException ex) {
-                LOGGER.warning(ex.getMessage());
+                result.getFailedMessages().add(ex.getMessage());
                 result.setPassed(false);
                 failures++;
             }

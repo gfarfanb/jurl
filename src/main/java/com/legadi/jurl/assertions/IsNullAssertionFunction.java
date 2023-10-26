@@ -1,14 +1,12 @@
 package com.legadi.jurl.assertions;
 
-import static com.legadi.jurl.model.AssertionType.IS_NULL;
-
 import java.util.Objects;
 
 public class IsNullAssertionFunction implements AssertionFunction {
 
     @Override
     public String name() {
-        return IS_NULL.name();
+        return "IS_NULL";
     }
 
     @Override

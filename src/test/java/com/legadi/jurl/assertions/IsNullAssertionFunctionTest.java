@@ -1,7 +1,5 @@
 package com.legadi.jurl.assertions;
 
-import static com.legadi.jurl.model.AssertionType.IS_NULL;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +8,7 @@ import com.legadi.jurl.exception.AssertionException;
 public class IsNullAssertionFunctionTest extends AssertionFunctionTest<IsNullAssertionFunction> {
 
     public IsNullAssertionFunctionTest() {
-        super(IS_NULL);
+        super("IS_NULL");
     }
 
     @Test

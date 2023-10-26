@@ -1,7 +1,6 @@
 package com.legadi.jurl.assertions;
 
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
-import static com.legadi.jurl.model.AssertionType.IS_BETWEEN;
 
 import java.math.BigDecimal;
 
@@ -9,7 +8,7 @@ public class IsBetweenAssertionFunction implements AssertionFunction {
 
     @Override
     public String name() {
-        return IS_BETWEEN.name();
+        return "IS_BETWEEN";
     }
 
     @Override

@@ -6,15 +6,20 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.legadi.jurl.exception.AssertionException;
+import com.legadi.jurl.model.AssertionEntry;
 import com.legadi.jurl.model.AssertionType;
 
 public abstract class AssertionFunctionTest<T extends AssertionFunction> {
 
+    private final AssertionEntry assertionEntry;
     private final T function;
 
     @SuppressWarnings("unchecked")
-    public AssertionFunctionTest(AssertionType type) {
-        this.function = (T) findByName(type.name());
+    public AssertionFunctionTest(String name) {
+        this.function = (T) findByName(name);
+        this.assertionEntry = new AssertionEntry();
+        assertionEntry.setName(function.name());
+        assertionEntry.setType(AssertionType.ASSERTION);
     }
 
     @Test
@@ -26,6 +31,6 @@ public abstract class AssertionFunctionTest<T extends AssertionFunction> {
     }
 
     public void evaluate(String... args) {
-        function.evaluate("Test: " + function.getClass().getName(), args);
+        function.evaluate(assertionEntry, "Test: " + function.getClass().getName(), args);
     }
 }

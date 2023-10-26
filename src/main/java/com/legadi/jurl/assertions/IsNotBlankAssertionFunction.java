@@ -1,13 +1,12 @@
 package com.legadi.jurl.assertions;
 
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
-import static com.legadi.jurl.model.AssertionType.IS_NOT_BLANK;
 
 public class IsNotBlankAssertionFunction implements AssertionFunction {
 
     @Override
     public String name() {
-        return IS_NOT_BLANK.name();
+        return "IS_NOT_BLANK";
     }
 
     @Override

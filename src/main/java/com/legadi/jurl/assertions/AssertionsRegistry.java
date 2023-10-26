@@ -1,5 +1,8 @@
 package com.legadi.jurl.assertions;
 
+import static com.legadi.jurl.common.CommonUtils.isBlank;
+import static com.legadi.jurl.common.CommonUtils.isNotBlank;
+import static com.legadi.jurl.common.CommonUtils.trim;
 import static com.legadi.jurl.common.LoaderUtils.instantiate;
 
 import java.util.HashMap;
@@ -19,6 +22,7 @@ public class AssertionsRegistry {
     private static final List<Pair<Predicate<String>, Supplier<AssertionFunction>>> ASSERTIONS = new LinkedList<>();
     private static final Map<String, Supplier<AssertionFunction>> REGISTERED = new HashMap<>();
     private static final Set<String> NAMES = new HashSet<>();
+    private static final Set<String> ALIASES = new HashSet<>();
 
     static {
         registerAssertionFunction(ContainsAssertionFunction::new);
@@ -61,12 +65,23 @@ public class AssertionsRegistry {
     public static void registerAssertionFunction(Supplier<AssertionFunction> assertionSupplier) {
         AssertionFunction assertionFunction = assertionSupplier.get();
 
-        if(NAMES.contains(assertionFunction.name())) {
+        if(NAMES.contains(assertionFunction.name().toLowerCase())) {
             throw new CommandException("Assertion function [" + assertionFunction.name() + "] already exists");
         }
+        if(isNotBlank(assertionFunction.alias()) && ALIASES.contains(assertionFunction.alias().toLowerCase())) {
+            throw new CommandException("Assertion function with alias [" + assertionFunction.alias() + "] already exists");
+        }
 
-        NAMES.add(assertionFunction.name());
+        NAMES.add(assertionFunction.name().toLowerCase());
+        ALIASES.add(assertionFunction.alias().toLowerCase());
         ASSERTIONS.add(new Pair<>(name -> assertionFunction.accepts(name), assertionSupplier));
+    }
+
+    public static boolean containsName(String name) {
+        if(isBlank(name)) {
+            return false;
+        }
+        return NAMES.contains(trim(name).toLowerCase());
     }
 
     public static AssertionFunction findByName(String name) {

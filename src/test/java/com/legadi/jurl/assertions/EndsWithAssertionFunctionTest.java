@@ -1,7 +1,5 @@
 package com.legadi.jurl.assertions;
 
-import static com.legadi.jurl.model.AssertionType.END_WITH;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +8,7 @@ import com.legadi.jurl.exception.AssertionException;
 public class EndsWithAssertionFunctionTest extends AssertionFunctionTest<EndsWithAssertionFunction> {
 
     public EndsWithAssertionFunctionTest() {
-        super(END_WITH);
+        super("END_WITH");
     }
 
     @Test

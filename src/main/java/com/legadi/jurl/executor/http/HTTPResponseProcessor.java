@@ -129,12 +129,18 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
         }
 
         Map<String, String> outputProperties = new HashMap<>();
+        StringBuilder printableOutput = new StringBuilder();
 
         request.getOutputMappings().forEach((key, value) -> {
             value = stringExpander.replaceAllInContent(values, value);
 
             values.put(key, value);
             outputProperties.put(key, value);
+            printableOutput
+                .append("\n")
+                .append(key)
+                .append(" <- ")
+                .append(value);
         });
 
         Settings.mergeProperties(stringExpander.getSettings().getEnvironment(), outputProperties);
@@ -145,6 +151,9 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
         overrideProperties.putAll(outputProperties);
 
         writeJsonFile(overridePath, overrideProperties);
+
+        LOGGER.info("Output saved [" + stringExpander.getSettings().getEnvironment() + "]: " + overridePath);
+        LOGGER.info(printableOutput.toString());
     }
 
     private Map<String, String> readOutputValues(Settings settings, HTTPResponseEntry response,
@@ -182,10 +191,10 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
             StringBuilder printableOutput = new StringBuilder();
 
             outputValues.forEach((output, value) -> printableOutput
+                .append("\n")
                 .append(output)
                 .append(" <- ")
-                .append(value)
-                .append("\n"));
+                .append(value));
 
             LOGGER.info("Processed output [" + contentType + "]: " + response.getResponsePath());
             LOGGER.info(printableOutput.toString());

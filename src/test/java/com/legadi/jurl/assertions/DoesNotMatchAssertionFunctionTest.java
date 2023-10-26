@@ -1,7 +1,5 @@
 package com.legadi.jurl.assertions;
 
-import static com.legadi.jurl.model.AssertionType.DOES_NOT_MATCH;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +8,7 @@ import com.legadi.jurl.exception.AssertionException;
 public class DoesNotMatchAssertionFunctionTest extends AssertionFunctionTest<DoesNotMatchAssertionFunction> {
 
     public DoesNotMatchAssertionFunctionTest() {
-        super(DOES_NOT_MATCH);
+        super("DOES_NOT_MATCH");
     }
 
     @Test

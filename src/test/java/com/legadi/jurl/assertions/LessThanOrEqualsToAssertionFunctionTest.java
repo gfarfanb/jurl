@@ -1,7 +1,5 @@
 package com.legadi.jurl.assertions;
 
-import static com.legadi.jurl.model.AssertionType.LESS_THAN_OR_EQUALS_TO;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +8,7 @@ import com.legadi.jurl.exception.AssertionException;
 public class LessThanOrEqualsToAssertionFunctionTest extends AssertionFunctionTest<LessThanOrEqualsToAssertionFunction> {
 
     public LessThanOrEqualsToAssertionFunctionTest() {
-        super(LESS_THAN_OR_EQUALS_TO);
+        super("LESS_THAN_OR_EQUALS_TO");
     }
 
     @Test

@@ -18,7 +18,7 @@ import com.legadi.jurl.embedded.util.RequestCatcher;
 @RequestMapping("/oauth")
 public class AuthorizationController {
 
-    public static final long DEFAULT_EXPIRES = 3L;
+    public static final long DEFAULT_EXPIRES = 5L;
 
     @Autowired
     private RequestCatcher requestCatcher;

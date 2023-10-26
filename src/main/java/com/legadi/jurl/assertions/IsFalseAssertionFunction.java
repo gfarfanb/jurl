@@ -1,12 +1,10 @@
 package com.legadi.jurl.assertions;
 
-import static com.legadi.jurl.model.AssertionType.IS_FALSE;
-
 public class IsFalseAssertionFunction implements AssertionFunction {
 
     @Override
     public String name() {
-        return IS_FALSE.name();
+        return "IS_FALSE";
     }
 
     @Override

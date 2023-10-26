@@ -1,6 +1,5 @@
 package com.legadi.jurl.api;
 
-import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Assertions;
@@ -14,19 +13,18 @@ public class FlowAPITest extends EmbeddedAPITest {
     @Test
     public void authorization() {
         Settings settings = new Settings();
-        String previousToken = settings.getOrDefault("auth.token", null);
-        String previousExpirationDate = settings.getOrDefault("auth.expiration.date", null);
+        String previousToken = settings.getOrDefault("auth.access.token", null);
+        String previousExpirationMillis = settings.getOrDefault("auth.expiration.millis", null);
 
         UUID authIdentifier = jurl("src/test/resources/authorization.spec.http");
         Settings authSettings = requestCatcher.get(authIdentifier, "settings");
 
         String currentToken = Assertions.assertDoesNotThrow(
-            () -> authSettings.get("auth.token"));
-        String currentExpirationDate = Assertions.assertDoesNotThrow(
-            () -> authSettings.get("auth.expiration.date"));
+            () -> authSettings.get("auth.access.token"));
+        String currentExpirationMillis = Assertions.assertDoesNotThrow(
+            () -> authSettings.get("auth.expiration.millis"));
 
         Assertions.assertNotEquals(previousToken, currentToken);
-        Assertions.assertNotEquals(previousExpirationDate, currentExpirationDate);
-        Assertions.assertDoesNotThrow(() -> DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(currentExpirationDate));
+        Assertions.assertNotEquals(previousExpirationMillis, currentExpirationMillis);
     }
 }

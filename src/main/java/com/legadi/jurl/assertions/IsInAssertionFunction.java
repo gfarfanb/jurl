@@ -1,7 +1,5 @@
 package com.legadi.jurl.assertions;
 
-import static com.legadi.jurl.model.AssertionType.IS_IN;
-
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -9,7 +7,7 @@ public class IsInAssertionFunction implements AssertionFunction {
 
     @Override
     public String name() {
-        return IS_IN.name();
+        return "IS_IN";
     }
 
     @Override

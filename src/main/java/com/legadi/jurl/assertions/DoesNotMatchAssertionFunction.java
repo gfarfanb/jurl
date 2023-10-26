@@ -1,7 +1,5 @@
 package com.legadi.jurl.assertions;
 
-import static com.legadi.jurl.model.AssertionType.DOES_NOT_MATCH;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -9,7 +7,7 @@ public class DoesNotMatchAssertionFunction implements AssertionFunction {
 
     @Override
     public String name() {
-        return DOES_NOT_MATCH.name();
+        return "DOES_NOT_MATCH";
     }
 
     @Override

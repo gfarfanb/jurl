@@ -1,7 +1,5 @@
 package com.legadi.jurl.assertions;
 
-import static com.legadi.jurl.model.AssertionType.EQUALS_TO;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +8,7 @@ import com.legadi.jurl.exception.AssertionException;
 public class EqualsToAssertionFunctionTest extends AssertionFunctionTest<EqualsToAssertionFunction> {
 
     public EqualsToAssertionFunctionTest() {
-        super(EQUALS_TO);
+        super("EQUALS_TO");
     }
 
     @Test

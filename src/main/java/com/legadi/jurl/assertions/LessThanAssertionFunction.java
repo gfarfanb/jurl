@@ -1,15 +1,12 @@
 package com.legadi.jurl.assertions;
 
-import static com.legadi.jurl.model.AssertionType.LESS_THAN;
-
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 public class LessThanAssertionFunction extends OperatorAssertionFunction {
 
     @Override
     public String name() {
-        return LESS_THAN.name();
+        return "LESS_THAN";
     }
 
     @Override
@@ -25,11 +22,6 @@ public class LessThanAssertionFunction extends OperatorAssertionFunction {
     @Override
     protected boolean test(BigDecimal arg1, BigDecimal arg2) {
         return arg1.compareTo(arg2) < 0;
-    }
-
-    @Override
-    protected boolean test(LocalDateTime arg1, LocalDateTime arg2) {
-        return arg1.isBefore(arg2);
     }
 
     @Override

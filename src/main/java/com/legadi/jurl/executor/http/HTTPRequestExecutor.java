@@ -33,6 +33,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -79,9 +80,9 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     }
 
     @Override
-    public boolean acceptsConditions(Settings settings, HTTPRequestEntry request) {
+    public Optional<AssertionResult> acceptsConditions(Settings settings, HTTPRequestEntry request) {
         if(settings.isSkipConditions()) {
-            return true;
+            return Optional.empty();
         }
 
         RequestBehaviour behaviour = settings.getRequestBehaviour();
@@ -89,11 +90,9 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         switch(behaviour) {
             case CURL_ONLY:
             case PRINT_ONLY:
-                return true;
+                return Optional.empty();
             default:
-                return evaluate(settings, request.getConditions())
-                    .map(AssertionResult::isPassed)
-                    .orElse(true);
+                return evaluate(settings, request.getConditions());
         }
     }
 

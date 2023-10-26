@@ -1,11 +1,13 @@
 package com.legadi.jurl.embedded.executor;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.embedded.util.RequestCatcher;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.executor.http.HTTPRequestExecutor;
+import com.legadi.jurl.model.AssertionResult;
 import com.legadi.jurl.model.http.HTTPRequestEntry;
 import com.legadi.jurl.model.http.HTTPResponseEntry;
 
@@ -17,6 +19,13 @@ public class HTTPRequestTestExecutor extends HTTPRequestExecutor {
     public HTTPRequestTestExecutor(UUID identifier, RequestCatcher requestCatcher) {
         this.identifier = identifier;
         this.requestCatcher = requestCatcher;
+    }
+
+    @Override
+    public Optional<AssertionResult> acceptsConditions(Settings settings, HTTPRequestEntry request) {
+        Optional<AssertionResult> conditionResult = super.acceptsConditions(settings, request);
+        requestCatcher.add(identifier, "condition-result", conditionResult);
+        return conditionResult;
     }
 
     @Override

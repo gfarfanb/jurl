@@ -54,8 +54,8 @@ public class RequestHandlersRegistryTest {
         }
 
         @Override
-        public boolean acceptsConditions(Settings settings, TestRequest request) {
-            return true;
+        public Optional<AssertionResult> acceptsConditions(Settings settings, TestRequest request) {
+            return Optional.empty();
         };
 
         @Override
