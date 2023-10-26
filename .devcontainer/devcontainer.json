@@ -5,13 +5,16 @@
         "dockerfile": "../Dockerfile"
     },
     "features": {
-        "ghcr.io/devcontainers/features/git:1.1.5": {}
+        "ghcr.io/devcontainers/features/git:1.1.6": {}
     },
     "customizations": {
         "vscode": {
             "extensions": [
                 "vscjava.vscode-java-pack",
-                "redhat.fabric8-analytics"
+                "redhat.fabric8-analytics",
+                "waderyan.gitblame",
+                "mhutchie.git-graph",
+                "donjayamanne.githistory"
             ]
         }
     }
