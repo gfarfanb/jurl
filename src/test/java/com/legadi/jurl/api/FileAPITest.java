@@ -72,7 +72,10 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("./executions/src/test/resources/file_spec_http/upload/" + uploadSettings.getExecutionTag() + ".response",
             uploadResponse.getResponsePath().toString());
         Assertions.assertEquals(201, uploadResponse.getStatusCode());
-        Assertions.assertEquals(6, uploadResponse.getResponseHeaders().size());
+        Assertions.assertFalse(uploadResponse.getResponseHeaders().isEmpty());
+        Assertions.assertTrue(uploadResponse.getResponseHeaders().containsKey("Resource-ID"));
+        Assertions.assertDoesNotThrow(
+            () -> UUID.fromString(uploadResponse.getResponseHeaders().get("Resource-ID")));
 
         Optional<AssertionResult> uploadAssertionResult = requestCatcher.get(uploadCorrelationId, "assertion-result");
 
@@ -136,7 +139,10 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("./executions/src/test/resources/file_spec_http/uploadWithoutForm/" + uploadSettings.getExecutionTag() + ".response",
             uploadResponse.getResponsePath().toString());
         Assertions.assertEquals(201, uploadResponse.getStatusCode());
-        Assertions.assertEquals(6, uploadResponse.getResponseHeaders().size());
+        Assertions.assertFalse(uploadResponse.getResponseHeaders().isEmpty());
+        Assertions.assertTrue(uploadResponse.getResponseHeaders().containsKey("Resource-ID"));
+        Assertions.assertDoesNotThrow(
+            () -> UUID.fromString(uploadResponse.getResponseHeaders().get("Resource-ID")));
 
         Optional<AssertionResult> uploadAssertionResult = requestCatcher.get(uploadCorrelationId, "assertion-result");
 
@@ -187,7 +193,10 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("./executions/src/test/resources/file_spec_http/download/downloaded.csv",
             downloadResponse.getResponsePath().toString());
         Assertions.assertEquals(200, downloadResponse.getStatusCode());
-        Assertions.assertEquals(5, downloadResponse.getResponseHeaders().size());
+        Assertions.assertFalse(downloadResponse.getResponseHeaders().isEmpty());
+        Assertions.assertTrue(downloadResponse.getResponseHeaders().containsKey("Content-Disposition"));
+        Assertions.assertEquals("attachment; filename=downloaded.csv",
+            downloadResponse.getResponseHeaders().get("Content-Disposition"));
 
         Optional<AssertionResult> downloadAssertionResult = requestCatcher.get(downloadCorrelationId, "assertion-result");
 
@@ -236,7 +245,10 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("./executions/src/test/resources/file_spec_http/downloadWithoutName/" + downloadSettings.getExecutionTag() + ".response",
             downloadResponse.getResponsePath().toString());
         Assertions.assertEquals(200, downloadResponse.getStatusCode());
-        Assertions.assertEquals(5, downloadResponse.getResponseHeaders().size());
+        Assertions.assertFalse(downloadResponse.getResponseHeaders().isEmpty());
+        Assertions.assertTrue(downloadResponse.getResponseHeaders().containsKey("Content-Disposition"));
+        Assertions.assertEquals("attachment",
+            downloadResponse.getResponseHeaders().get("Content-Disposition"));
 
         Optional<AssertionResult> downloadAssertionResult = requestCatcher.get(downloadCorrelationId, "assertion-result");
 

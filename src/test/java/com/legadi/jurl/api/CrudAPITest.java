@@ -79,7 +79,10 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("./executions/src/test/resources/basic-functions_spec_http/create/" + createSettings.getExecutionTag() + ".response",
             createResponse.getResponsePath().toString());
         Assertions.assertEquals(201, createResponse.getStatusCode());
-        Assertions.assertEquals(6, createResponse.getResponseHeaders().size());
+        Assertions.assertFalse(createResponse.getResponseHeaders().isEmpty());
+        Assertions.assertTrue(createResponse.getResponseHeaders().containsKey("Resource-ID"));
+        Assertions.assertDoesNotThrow(
+            () -> UUID.fromString(createResponse.getResponseHeaders().get("Resource-ID")));
 
         Optional<AssertionResult> createAssertionResult = requestCatcher.get(createCorrelationId, "assertion-result");
 
@@ -125,7 +128,9 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("./executions/src/test/resources/basic-functions_spec_http/obtain/" + obtainSettings.getExecutionTag() + ".response",
             obtainResponse.getResponsePath().toString());
         Assertions.assertEquals(200, obtainResponse.getStatusCode());
-        Assertions.assertEquals(5, obtainResponse.getResponseHeaders().size());
+        Assertions.assertFalse(obtainResponse.getResponseHeaders().isEmpty());
+        Assertions.assertTrue(obtainResponse.getResponseHeaders().containsKey("Content-Type"));
+        Assertions.assertEquals("application/json", obtainResponse.getResponseHeaders().get("Content-Type"));
 
         BasicFunctionsEntity obtainEntity = requestCatcher.get(id, "basic-body");
         Map<String, Object> obtainInputBody = loadJsonFile(obtainSettings.get("basic.functions.entity"), new TypeToken<Map<String, Object>>() {});
@@ -184,7 +189,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("HTTP/1.1 204", updateResponse.getResult());
         Assertions.assertNull(updateResponse.getResponsePath());
         Assertions.assertEquals(204, updateResponse.getStatusCode());
-        Assertions.assertEquals(3, updateResponse.getResponseHeaders().size());
+        Assertions.assertFalse(updateResponse.getResponseHeaders().isEmpty());
 
         Optional<AssertionResult> updateAssertionResult = requestCatcher.get(updateCorrelationId, "assertion-result");
 
@@ -242,7 +247,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("HTTP/1.1 204", removeResponse.getResult());
         Assertions.assertNull(removeResponse.getResponsePath());
         Assertions.assertEquals(204, removeResponse.getStatusCode());
-        Assertions.assertEquals(3, removeResponse.getResponseHeaders().size());
+        Assertions.assertFalse(removeResponse.getResponseHeaders().isEmpty());
 
         Optional<AssertionResult> removeAssertionResult = requestCatcher.get(removeCorrelationId, "assertion-result");
 

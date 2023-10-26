@@ -240,7 +240,10 @@ public class RequestCommand {
         Optional<AssertionResult> conditionsResult = executor.accepts(settings, request);
 
         if(conditionsResult.isPresent() && !conditionsResult.get().isPassed()) {
-            LOGGER.info("Request skipped - inputFile=" + requestInputPath + " request=" + request.getName());
+            LOGGER.info("Request skipped - inputFile=" + requestInputPath
+                + " request=" + request.getName()
+                + " environment=" + settings.getEnvironment()
+                + " executionTag=" + settings.getExecutionTag());
             conditionsResult.get().getFailedMessages().forEach(LOGGER::info);
             return;
         }
@@ -280,16 +283,25 @@ public class RequestCommand {
             if(!assertionResult.get().isPassed()) {
                 LOGGER.warning("Request failed - inputFile=" + requestInputPath
                     + " request=" + request.getName()
+                    + " result=" + response.getResult()
+                    + " environment=" + settings.getEnvironment()
+                    + " executionTag=" + settings.getExecutionTag()
                     + " time(nano)=" + historyEntry.getNanoTime());
                 assertionResult.get().getFailedMessages().forEach(LOGGER::warning);
             } else {
                 LOGGER.info("Request successful - inputFile=" + requestInputPath
                     + " request=" + request.getName()
+                    + " result=" + response.getResult()
+                    + " environment=" + settings.getEnvironment()
+                    + " executionTag=" + settings.getExecutionTag()
                     + " time(nano)=" + historyEntry.getNanoTime());
             }
         } else {
             LOGGER.info("Request successful - inputFile=" + requestInputPath
                     + " request=" + request.getName()
+                    + " result=" + response.getResult()
+                    + " environment=" + settings.getEnvironment()
+                    + " executionTag=" + settings.getExecutionTag()
                     + " time(nano)=" + historyEntry.getNanoTime());
         }
 
