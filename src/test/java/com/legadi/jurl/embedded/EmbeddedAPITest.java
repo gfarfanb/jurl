@@ -30,7 +30,7 @@ public abstract class EmbeddedAPITest {
     protected RequestCatcher requestCatcher;
 
     public UUID jurl(String... args) {
-        UUID identifier = UUID.randomUUID();
+        UUID correlationId = UUID.randomUUID();
         List<String> arguments = new ArrayList<>();
         arguments.addAll(Arrays.asList(args));
 
@@ -39,12 +39,12 @@ public abstract class EmbeddedAPITest {
         Settings.mergeProperties(Settings.DEFAULT_ENVIRONMENT, properties);
 
         RequestHandlersRegistry.registerHandler(
-            () -> new HTTPRequestTestExecutor(identifier, requestCatcher),
-            () -> new HTTPResponseTestProcessor(identifier, requestCatcher)
+            () -> new HTTPRequestTestExecutor(correlationId, requestCatcher),
+            () -> new HTTPResponseTestProcessor(correlationId, requestCatcher)
         );
 
         new RequestCommand(arguments.toArray(new String[arguments.size()])).execute();
 
-        return identifier;
+        return correlationId;
     }
 }

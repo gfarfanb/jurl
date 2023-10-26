@@ -12,6 +12,7 @@ import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
         EMPTY(""),
         DEFAULT_TYPE("^(?i)@default-(request|flow)[ ]*=(.*)"),
+        SET_CONFIG("^(?i)@set-([\\w:.\\-_@~]+)[ ]*=(.*)"),
         SECTION("^(?i)###[ ]*\\[(api|request|flow)\\](.*)"),
         REQUEST_FIELD("^(?i)@([\\w:.\\-_@~]+)[ ]*=(.*)"),
         FIELD_VARIABLE("^(?i)(file|mock|output)[ ]*[@]?([\\w:.\\-_@~]+)[ ]*=(.*)"),
@@ -80,6 +82,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             AtomicReference<HTTPRequestEntry> apiCarrier = new AtomicReference<>(new HTTPRequestEntry());
             AtomicReference<HTTPRequestEntry> requestCarrier = new AtomicReference<>();
             AtomicReference<Pair<String, List<StepEntry>>> flowCarrier = new AtomicReference<>();
+            Map<String, String> config = new HashMap<>();
 
             requestInput.setApi(apiCarrier.get());
 
@@ -89,17 +92,18 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                     readSection(requestCarrier, flowCarrier, requestInput, line);
                     readComment(line);
 
-                    addDefaultType(stringExpander, requestInput, line);
+                    addDefaultType(stringExpander, requestInput, config, line);
+                    addConfig(stringExpander, config, line);
 
                     switch(section) {
                         case API:
-                            decorateRequest(stringExpander, apiCarrier, line);
+                            decorateRequest(stringExpander, apiCarrier, config, line);
                             break;
                         case REQUEST:
-                            decorateRequest(stringExpander, requestCarrier, line);
+                            decorateRequest(stringExpander, requestCarrier, config, line);
                             break;
                         case FLOW:
-                            decorateFlow(stringExpander, flowCarrier, line);
+                            decorateFlow(stringExpander, flowCarrier, config, line);
                             break;
                         default:
                             throw new CommandException("Section in request input is not defined yet");
@@ -130,7 +134,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
                     line = stringExpander.replaceAllInContent(line);
 
-                    decorateRequest(stringExpander, requestCarrier, line);
+                    decorateRequest(stringExpander, requestCarrier, new HashMap<>(), line);
                 } catch(ParsedLineException ex) {}
             }
 
@@ -141,7 +145,8 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     }
 
     private void decorateRequest(StringExpander stringExpander,
-            AtomicReference<HTTPRequestEntry> requestCarrier, String line)
+            AtomicReference<HTTPRequestEntry> requestCarrier,
+            Map<String, String> config, String line)
             throws IllegalAccessException {
         if(requestCarrier.get() == null) {
             throw new CommandException("Request file must define a request section:\n### <request-name>");
@@ -161,15 +166,15 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             return request.getMockDefinition();
         };
 
-        addURLMethod(stringExpander, request, line);
-        addQueryParam(stringExpander, request, line);
-        addHeader(stringExpander, request, mockSupplier, line);
-        addRequestField(stringExpander, request, line);
-        addFieldOrVariable(stringExpander, request, fileSupplier, mockSupplier, line);
-        addConditionOrAssertion(stringExpander, request, line);
+        addURLMethod(stringExpander, request, config, line);
+        addQueryParam(stringExpander, request, config, line);
+        addHeader(stringExpander, request, mockSupplier, config, line);
+        addRequestField(stringExpander, request, config, line);
+        addFieldOrVariable(stringExpander, request, fileSupplier, mockSupplier, config, line);
+        addConditionOrAssertion(stringExpander, request, config, line);
 
         String body = request.getBodyContent();
-        line = stringExpander.replaceAllInContent(line);
+        line = stringExpander.replaceAllInContent(config, line);
 
         if(isBlank(body)) {
             request.setBodyContent(line);
@@ -179,14 +184,15 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     }
 
     private void decorateFlow(StringExpander stringExpander,
-            AtomicReference<Pair<String, List<StepEntry>>> flowCarrier, String line) {
+            AtomicReference<Pair<String, List<StepEntry>>> flowCarrier,
+            Map<String, String> config, String line) {
         if(flowCarrier.get() == null) {
             throw new CommandException("Request file must define a flow section:\n### [flow] <flow-name>");
         }
 
         List<StepEntry> steps = flowCarrier.get().getRight();
 
-        addStep(stringExpander, steps, line);
+        addStep(stringExpander, steps, config, line);
     }
 
     private void readEmptyLine(String line) {
@@ -196,14 +202,15 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     }
 
     private void addDefaultType(StringExpander stringExpander,
-            RequestInput<HTTPRequestEntry> requestInput, String line) {
+            RequestInput<HTTPRequestEntry> requestInput,
+            Map<String, String> config, String line) {
         LinePattern linePattern = LinePattern.DEFAULT_TYPE;
         Matcher matcher = linePattern.getPattern().matcher(line);
 
         if(matcher.find()) {
             String type = trim(matcher.group(1));
             String value = stringExpander.replaceAllInContent(
-                trim(matcher.group(2))
+                config, trim(matcher.group(2))
             );
 
             if(type.equalsIgnoreCase("request")) {
@@ -211,6 +218,23 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             } else if(type.equalsIgnoreCase("flow")) {
                 requestInput.setDefaultFlow(value);
             }
+
+            commit(linePattern);
+        }
+    }
+
+    private void addConfig(StringExpander stringExpander,
+            Map<String, String> config, String line) {
+        LinePattern linePattern = LinePattern.SET_CONFIG;
+        Matcher matcher = linePattern.getPattern().matcher(line);
+
+        if(matcher.find()) {
+            String property = trim(matcher.group(1));
+            String value = stringExpander.replaceAllInContent(
+                trim(matcher.group(2))
+            );
+
+            config.put(property, value);
 
             commit(linePattern);
         }
@@ -250,16 +274,17 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         }
     }
 
-    private void addURLMethod(StringExpander stringExpander, HTTPRequestEntry request, String line) {
+    private void addURLMethod(StringExpander stringExpander, HTTPRequestEntry request,
+            Map<String, String> config, String line) {
         LinePattern linePattern = LinePattern.URL_METHOD;
         Matcher matcher = linePattern.getPattern().matcher(line);
 
         if(matcher.find()) {
             String method = stringExpander.replaceAllInContent(
-                trim(matcher.group(1))
+                config, trim(matcher.group(1))
             );
             String url = stringExpander.replaceAllInContent(
-                trim(matcher.group(2)) + "://" + trim(matcher.group(3))
+                config, trim(matcher.group(2)) + "://" + trim(matcher.group(3))
             );
 
             if(isNotBlank(method)) {
@@ -273,17 +298,17 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     }
 
     private void addHeader(StringExpander stringExpander, HTTPRequestEntry request,
-            Supplier<HTTPMockEntry> mockSupplier, String line) {
+            Supplier<HTTPMockEntry> mockSupplier, Map<String, String> config, String line) {
         LinePattern linePattern = LinePattern.HEADER;
         Matcher matcher = linePattern.getPattern().matcher(line);
 
         if(matcher.find()) {
             String type = trim(matcher.group(1));
             String header = stringExpander.replaceAllInContent(
-                trim(matcher.group(2))
+                config, trim(matcher.group(2))
             );
             String value = stringExpander.replaceAllInContent(
-                trim(matcher.group(3))
+                config, trim(matcher.group(3))
             );
 
             if(type == null) {
@@ -297,16 +322,16 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     }
 
     private void addQueryParam(StringExpander stringExpander, 
-            HTTPRequestEntry request, String line) {
+            HTTPRequestEntry request, Map<String, String> config, String line) {
         LinePattern linePattern = LinePattern.QUERY_PARAM;
         Matcher matcher = linePattern.getPattern().matcher(line);
 
         if(matcher.find()) {
             String queryParam = stringExpander.replaceAllInContent(
-                trim(matcher.group(1))
+                config, trim(matcher.group(1))
             );
             String value = stringExpander.replaceAllInContent(
-                trim(matcher.group(2))
+                config, trim(matcher.group(2))
             );
 
             request.getQueryParams().put(queryParam, value);
@@ -316,16 +341,17 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     }
 
     private void addRequestField(StringExpander stringExpander,
-            HTTPRequestEntry request, String line) throws IllegalAccessException {
+            HTTPRequestEntry request, Map<String, String> config, String line)
+            throws IllegalAccessException {
         LinePattern linePattern = LinePattern.REQUEST_FIELD;
         Matcher matcher = linePattern.getPattern().matcher(line);
 
         if(matcher.find()) {
             String fieldName = stringExpander.replaceAllInContent(
-                trim(matcher.group(1))
+                config, trim(matcher.group(1))
             );
             String value = stringExpander.replaceAllInContent(
-                trim(matcher.group(2))
+                config, trim(matcher.group(2))
             );
 
             addField(REQUEST_FIELDS, request, fieldName, value);
@@ -336,20 +362,20 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
     private void addFieldOrVariable(StringExpander stringExpander, HTTPRequestEntry request,
             Supplier<HTTPRequestFileEntry> fileSupplier, Supplier<HTTPMockEntry> mockSupplier,
-            String line) throws IllegalAccessException {
+            Map<String, String> config, String line) throws IllegalAccessException {
         LinePattern linePattern = LinePattern.FIELD_VARIABLE;
         Matcher matcher = linePattern.getPattern().matcher(line);
 
         if(matcher.find()) {
             String type = trim(matcher.group(1));
             String fieldName = stringExpander.replaceAllInContent(
-                trim(matcher.group(2))
+                config, trim(matcher.group(2))
             );
             String value = trim(matcher.group(3));
             boolean isFieldRequired = line.contains("@");
 
             if(type.equalsIgnoreCase("file")) {
-                value = stringExpander.replaceAllInContent(value);
+                value = stringExpander.replaceAllInContent(config, value);
 
                 if(isFieldRequired) {
                     addField(REQUEST_FILE_FIELDS, fileSupplier.get(), fieldName, value);
@@ -357,7 +383,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                     fileSupplier.get().getFormData().put(fieldName, value);
                 }
             } else if(type.equalsIgnoreCase("mock")) {
-                value = stringExpander.replaceAllInContent(value);
+                value = stringExpander.replaceAllInContent(config, value);
 
                 if(isFieldRequired) {
                     addField(MOCK_FIELDS, mockSupplier.get(), fieldName, value);
@@ -382,14 +408,14 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     }
 
     private void addConditionOrAssertion(StringExpander stringExpander,
-            HTTPRequestEntry request, String line) {
+            HTTPRequestEntry request, Map<String, String> config, String line) {
         LinePattern linePattern = LinePattern.CONDITION_ASSERTION;
         Matcher matcher = linePattern.getPattern().matcher(line);
 
         if(matcher.find()) {
             String type = trim(matcher.group(1));
             String assertion = stringExpander.replaceAllInContent(
-                trim(matcher.group(2))
+                config, trim(matcher.group(2))
             );
 
             AssertionEntry entry = new AssertionEntry();
@@ -402,7 +428,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
             if(type.equalsIgnoreCase("condition")) {
                 String[] args = extractArgs(stringExpander.replaceAllInContent(
-                    trim(matcher.group(3))
+                    config, trim(matcher.group(3))
                 ));
                 entry.setArgs(args);
                 entry.setType(AssertionType.CONDITION);
@@ -419,13 +445,13 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     }
 
     private void addStep(StringExpander stringExpander,
-            List<StepEntry> steps, String line) {
+            List<StepEntry> steps, Map<String, String> config, String line) {
         LinePattern linePattern = LinePattern.STEP_SPEC;
         Matcher matcher = linePattern.getPattern().matcher(line);
 
         if(matcher.find()) {
             String[] args = extractArgs(stringExpander.replaceAllInContent(
-                trim(matcher.group(0))
+                config, trim(matcher.group(1))
             ));
             OptionsReader optionsReader = new OptionsReader(args);
             StepEntry step = new StepEntry();

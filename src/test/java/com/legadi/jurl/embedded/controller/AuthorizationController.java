@@ -25,9 +25,9 @@ public class AuthorizationController {
 
     @PostMapping(value = "/token", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity<AuthToken> bearer(@RequestBody String body) {
-        UUID id = UUID.randomUUID();
+        UUID correlationId = UUID.randomUUID();
 
-        requestCatcher.add(id, "auth-body", body);
+        requestCatcher.add(correlationId, "auth-body", body);
 
         AuthToken authToken = new AuthToken();
         authToken.setAccessToken(UUID.randomUUID().toString());

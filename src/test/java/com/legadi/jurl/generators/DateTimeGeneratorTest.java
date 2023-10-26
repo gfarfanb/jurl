@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.legadi.jurl.common.DateTimeFormatterUtil;
 import com.legadi.jurl.exception.CommandException;
 
 public class DateTimeGeneratorTest extends GeneratorTest {
@@ -18,7 +19,7 @@ public class DateTimeGeneratorTest extends GeneratorTest {
         String value = generate();
 
         Assertions.assertNotNull(value);
-        Assertions.assertDoesNotThrow(() -> DateTimeGenerator.DEFAULT_FORMATTER.parse(value));
+        Assertions.assertDoesNotThrow(() -> DateTimeFormatterUtil.DEFAULT_FORMATTER.parse(value));
     }
 
     @Test

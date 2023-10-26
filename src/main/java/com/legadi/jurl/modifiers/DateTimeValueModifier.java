@@ -1,5 +1,7 @@
 package com.legadi.jurl.modifiers;
 
+import static com.legadi.jurl.common.DateTimeFormatterUtil.getFormatter;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -24,7 +26,7 @@ public class DateTimeValueModifier implements ValueModifier {
 
     @Override
     public String apply(Function<String, String> getter, String[] args, String value) throws Exception {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(args[1]);
+        DateTimeFormatter formatter = getFormatter(args[1]);
         LocalDateTime date = LocalDateTime.from(formatter.parse(value));
         ChronoUnit timeUnit = ChronoUnit.valueOf(args[2]);
         long input = Long.parseLong(getter.apply(args[3]));

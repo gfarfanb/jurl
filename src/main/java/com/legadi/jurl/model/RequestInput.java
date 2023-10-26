@@ -9,6 +9,7 @@ public class RequestInput<T extends RequestEntry<? extends MockEntry>> {
     private String defaultRequest;
     private String defaultFlow;
     private T api;
+    private Map<String, String> config = new HashMap<>();
     private Map<String, T> requests = new HashMap<>();
     private Map<String, List<StepEntry>> flows = new HashMap<>();
 
@@ -34,6 +35,14 @@ public class RequestInput<T extends RequestEntry<? extends MockEntry>> {
 
     public void setApi(T api) {
         this.api = api;
+    }
+
+    public Map<String, String> getConfig() {
+        return config;
+    }
+
+    public void setConfig(Map<String, String> config) {
+        this.config = config;
     }
 
     public Map<String, T> getRequests() {

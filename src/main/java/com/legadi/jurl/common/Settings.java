@@ -59,6 +59,10 @@ public class Settings implements SettingsDefaults {
         this(DEFAULT_ENVIRONMENT, new HashMap<>());
     }
 
+    public Settings(String environment) {
+        this(environment, new HashMap<>());
+    }
+
     private Settings(String environment, Map<String, String> overrideProperties) {
         this.environment = environment;
         this.overrideProperties = new HashMap<>(overrideProperties);
@@ -111,6 +115,16 @@ public class Settings implements SettingsDefaults {
     public String getOrDefault(String propertyName, String defaultValue) {
         return overrideProperties.getOrDefault(propertyName,
             SETTINGS.getOrDefault(environment, propertyName, defaultValue));
+    }
+
+    @Override
+    public String getOrDefaultWithValues(String propertyName, Map<String, String> values,
+            String defaultValue) {
+        return overrideProperties.getOrDefault(propertyName,
+                values.getOrDefault(propertyName,
+                    SETTINGS.getOrDefault(environment, propertyName, defaultValue)
+                )
+            );
     }
 
     public Path getConfigFilePath() {

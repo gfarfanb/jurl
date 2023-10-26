@@ -29,6 +29,7 @@ import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.common.StringExpander;
 import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.exception.InvalidAssertionsFoundException;
+import com.legadi.jurl.exception.RecursiveCommandException;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.exception.SkipExecutionException;
 import com.legadi.jurl.model.AssertionResult;
@@ -46,7 +47,7 @@ public class RequestCommand {
 
     private static final Logger LOGGER = Logger.getLogger(RequestCommand.class.getName());
 
-    private static final int FIRST_EXECUTION = 1;
+    private static final int FIRST_EXECUTION = 0;
 
     private final OptionsReader optionsReader;
     private final ExecutionLevels executionLevels;
@@ -117,6 +118,10 @@ public class RequestCommand {
 
         Settings.mergeProperties(environment, loadJsonProperties(configPath));
         Settings.mergeCredentials(environment, loadCredentials(credentialsPath));
+
+        if(isMainInput) {
+            Settings.mergeProperties(environment, requestInput.getConfig());
+        }
     }
 
     private void processFlow(int index, String requestInputPath, RequestInput<?> requestInput,
@@ -137,10 +142,13 @@ public class RequestCommand {
         int stepIndex = 1;
 
         for(StepEntry step : steps) {
+            Settings stepSettings = new Settings(settings.getEnvironment());
             String name = flowDef.getLeft();
 
             try {
-                executeStep(settings.createForNextExecution(), step, requestInputPath, requestInput);
+                executeStep(stepSettings, step, requestInputPath, requestInput);
+            } catch(RecursiveCommandException ex) {
+                throw ex;
             } catch(CommandException | RequestException ex) {
                 throw new CommandException(
                     "[" + requestInputPath + "/" + name + "]"
@@ -168,16 +176,12 @@ public class RequestCommand {
 
     private void executeStep(Settings settings, StepEntry step, String requestInputPath,
             RequestInput<?> requestInput) {
-        if(isBlank(step.getRequestInputPath())) {
-            throw new CommandException("Request input path is null or empty");
-        }
-
         executeOptions(settings, step.getOptions());
 
-        if(isNotBlank(settings.getInputName())) {
-            executeInput(settings, requestInputPath, requestInput, false);
-        } else {
+        if(isNotBlank(step.getRequestInputPath())) {
             executeInputPath(settings, step.getRequestInputPath(), false);
+        } else {
+            executeInput(settings, requestInputPath, requestInput, false);
         }
     }
 
@@ -195,7 +199,7 @@ public class RequestCommand {
                 + requestDef.getLeft() + " - " + requestInputPath);
         }
         if(index == FIRST_EXECUTION && executionLevels.wasExecuted(requestInputPath, requestDef.getLeft())) {
-            throw new CommandException("Request input was already processed: "
+            throw new RecursiveCommandException("Request input was already processed: "
                 + requestInputPath + "/" + requestDef.getLeft() + " - " + executionLevels.getTrace());
         }
 

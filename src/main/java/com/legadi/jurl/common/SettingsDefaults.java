@@ -26,6 +26,7 @@ import static com.legadi.jurl.common.WriterUtils.createDirectories;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.function.Function;
 
 import com.legadi.jurl.model.AuthorizationType;
@@ -40,6 +41,9 @@ public interface SettingsDefaults {
     <T> T getOrDefault(String propertyName, T defaultValue, Function<String, T> mapper);
 
     String getOrDefault(String propertyName, String defaultValue);
+
+    String getOrDefaultWithValues(String propertyName, Map<String, String> values,
+            String defaultValue);
 
     default Path getConfigPath() {
         return createDirectories(Paths.get(get(PROP_CONFIG_PATH)));

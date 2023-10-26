@@ -27,44 +27,45 @@ public class BasicFunctionsController {
 
     @PostMapping("/body")
     public ResponseEntity<String> post(@RequestBody BasicFunctionsEntity entity) {
-        UUID id = UUID.randomUUID();
+        UUID correlationId = UUID.randomUUID();
 
-        requestCatcher.add(id, "basic-body", entity);
+        requestCatcher.add(correlationId, "basic-body", entity);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Resource-ID", id.toString());
+        headers.set("Resource-ID", correlationId.toString());
 
         return ResponseEntity.status(HttpStatus.CREATED)
             .headers(headers)
             .body("Created");
     }
 
-    @GetMapping("/body/{id}")
-    public ResponseEntity<Object> get(@PathVariable UUID id) {
-        if(!requestCatcher.contains(id, "basic-body")) {
+    @GetMapping("/body/{correlationId}")
+    public ResponseEntity<Object> get(@PathVariable UUID correlationId) {
+        if(!requestCatcher.contains(correlationId, "basic-body")) {
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.ok(requestCatcher.get(id, "basic-body"));
+        return ResponseEntity.ok(requestCatcher.get(correlationId, "basic-body"));
     }
 
-    @PutMapping("/body/{id}")
-    public ResponseEntity<String> put(@PathVariable UUID id, @RequestBody BasicFunctionsEntity entity) {
-        if(!requestCatcher.contains(id, "basic-body")) {
+    @PutMapping("/body/{correlationId}")
+    public ResponseEntity<String> put(@PathVariable UUID correlationId,
+            @RequestBody BasicFunctionsEntity entity) {
+        if(!requestCatcher.contains(correlationId, "basic-body")) {
             return ResponseEntity.notFound().build();
         }
 
-        requestCatcher.add(id, "basic-body", entity);
+        requestCatcher.add(correlationId, "basic-body", entity);
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/body/{id}")
-    public ResponseEntity<String> delete(@PathVariable UUID id) {
-        if(!requestCatcher.contains(id, "basic-body")) {
+    @DeleteMapping("/body/{correlationId}")
+    public ResponseEntity<String> delete(@PathVariable UUID correlationId) {
+        if(!requestCatcher.contains(correlationId, "basic-body")) {
             return ResponseEntity.notFound().build();
         }
 
-        requestCatcher.remove(id, "basic-body");
+        requestCatcher.remove(correlationId, "basic-body");
         return ResponseEntity.noContent().build();
     }
 }

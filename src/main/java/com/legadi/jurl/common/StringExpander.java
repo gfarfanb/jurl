@@ -65,8 +65,7 @@ public class StringExpander {
                 }
 
                 if(value == null) {
-                    value = values.getOrDefault(property,
-                        settings.getOrDefault(property, ""));
+                    value = settings.getOrDefaultWithValues(property, values, "");
                 }
 
                 if(isNotBlank(modifierDefinition)) {

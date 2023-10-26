@@ -1,4 +1,32 @@
 
+### [request] authorization
+POST http://localhost:{{local.server.port}}/oauth/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials&client_id={{UUID:}}&client_secret={{UUID:}}
+
+condition LESS_THAN {{~default~0~auth.expiration.millis}} {{DATE_TIME:~datetime~epoch~ISO_LOCAL_DATE_TIME~MILLIS~0~}}
+
+output auth.access.token = {{OUT/access_token}}
+output auth.expires-in.secs = {{OUT/expires_in}}
+output auth.expiration.date = {{DATE_TIME:~datetime~plus~yyyy-MM-dd'T'HH:mm:ss.n~SECONDS~auth.expires-in.secs~}}
+output auth.expiration.millis = {{~datetime~epoch~ISO_LOCAL_DATE_TIME~MILLIS~0~auth.expiration.date}}
+
+assert EQUALS_TO 200 {{HTTP/status}}
+
+
 ### [flow] basicWithAuthorization
 
-step -n authorization authorization.spec.http
+@set-basic.with.authorization.tag = {{UUID:}}
+
+step -s flow.tag {{basic.with.authorization.tag}} -n authorization
+step -s flow.tag {{basic.with.authorization.tag}} -n create src/test/resources/basic-functions.spec.http
+step -s flow.tag {{basic.with.authorization.tag}} -n obtain src/test/resources/basic-functions.spec.http
+step -s flow.tag {{basic.with.authorization.tag}} -n update -mb json src/test/resources/basic-functions.spec.http
+step -s flow.tag {{basic.with.authorization.tag}} -n remove src/test/resources/basic-functions.spec.http
+
+
+### [flow] invalidRecursiveFlow
+
+step -n authorization
+step -n invalidRecursiveFlow -f src/test/resources/flow.spec.http

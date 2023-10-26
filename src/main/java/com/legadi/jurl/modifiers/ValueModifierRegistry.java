@@ -17,6 +17,7 @@ public class ValueModifierRegistry {
 
     static {
         registerModifier(DateTimeValueModifier::new);
+        registerModifier(DefaultValueModifier::new);
         registerModifier(NumberValueModifier::new);
         registerModifier(StringValueModifier::new);
     }

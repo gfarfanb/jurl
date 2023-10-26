@@ -46,7 +46,7 @@ public class FileFormController {
             @RequestPart MultipartFile file) throws IOException {
         Settings settings = new Settings();
         Path temporalFile = settings.getExecutionPath().resolve(file.getOriginalFilename());
-        UUID id = UUID.randomUUID();
+        UUID correlationId = UUID.randomUUID();
 
         try(InputStream fileInputStream = file.getInputStream();
                 OutputStream outputStream = Files.newOutputStream(temporalFile)) {
@@ -71,10 +71,10 @@ public class FileFormController {
         entity.setType(file.getContentType());
         entity.setField(file.getName());
 
-        requestCatcher.add(id, "file-body", entity);
+        requestCatcher.add(correlationId, "file-body", entity);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Resource-ID", id.toString());
+        headers.set("Resource-ID", correlationId.toString());
 
         return ResponseEntity.status(HttpStatus.CREATED)
             .headers(headers)
