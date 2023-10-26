@@ -1,4 +1,4 @@
-name: jurl
+name: jurl-maven-publish
 
 on:
   release:
