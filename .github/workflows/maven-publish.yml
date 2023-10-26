@@ -1,4 +1,4 @@
-name: jurl-maven-publish
+name: jurl Publish Package
 
 on:
   release:
