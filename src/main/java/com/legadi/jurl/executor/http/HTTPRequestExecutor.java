@@ -9,6 +9,7 @@ import static com.legadi.jurl.common.CommonUtils.strip;
 import static com.legadi.jurl.common.RequestUtils.mergeRequestHeader;
 import static com.legadi.jurl.common.WriterUtils.expandFile;
 import static com.legadi.jurl.common.WriterUtils.printFile;
+import static com.legadi.jurl.common.WriterUtils.writeFile;
 import static com.legadi.jurl.common.WriterUtils.writeLine;
 import static com.legadi.jurl.executor.mixer.BodyMixerRegistry.findByBodyType;
 import static com.legadi.jurl.parser.RequestParserRegistry.findByRequestType;
@@ -101,18 +102,24 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             throws RequestException {
         CurlBuilder curlBuilder = new CurlBuilder();
         HttpURLConnection connection = createConnection(settings, request, curlBuilder);
+        Path bodyPath = null;
+        Path sentFilePath = null;
 
         if(request.getRequestFile() != null) {
             addFileHeaders(connection, settings, request, curlBuilder);
             addFileMethod(connection, request, curlBuilder);
-            sendFile(connection, settings, request, curlBuilder);
+            sentFilePath = sendFile(connection, settings, request, curlBuilder);
         } else {
             addHeaders(connection, settings, request, curlBuilder);
             addMethod(connection, request, curlBuilder);
-            sendBody(connection, settings, requestPath, request, curlBuilder);
+            bodyPath = sendBody(connection, settings, requestPath, request, curlBuilder);
         }
 
-        return buildResponse(connection, settings, requestPath, request, curlBuilder);
+        HTTPResponseEntry response = buildResponse(connection, settings, requestPath, request, curlBuilder);
+        response.setBodyPath(bodyPath);
+        response.setSentFilePath(sentFilePath);
+
+        return response;
     }
 
     @Override
@@ -206,6 +213,33 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         if(isNotBlank(overrideRequest.getBodyFilePath())) {
             request.setBodyFilePath(overrideRequest.getBodyFilePath());
         }
+    }
+
+    @Override
+    public Map<String, Object> getDetailsFromResponse(HTTPResponseEntry response) {
+        if(response == null) {
+            return null;
+        }
+
+        Map<String, Object> details = new HashMap<>();
+
+        if(response.getBodyPath() != null) {
+            details.put("bodyPath", response.getBodyPath().toString());
+        }
+        if(response.getSentFilePath() != null) {
+            details.put("sentFilePath", response.getSentFilePath().toString());
+        }
+        if(response.getResponsePath() != null) {
+            details.put("responsePath", response.getResponsePath().toString());
+        }
+        if(response.getStatusCode() > 0) {
+            details.put("statusCode", response.getStatusCode());
+        }
+        if(isNotEmpty(response.getResponseHeaders())) {
+            details.put("responseHeaders", response.getResponseHeaders());
+        }
+
+        return details;
     }
 
     private void mergeRequestFile(HTTPRequestFileEntry api, HTTPRequestFileEntry request) {
@@ -358,27 +392,24 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         log(settings, printableHeaders.toString(), null);
     }
 
-    private void sendBody(HttpURLConnection connection, Settings settings, 
+    private Path sendBody(HttpURLConnection connection, Settings settings, 
             String requestPath, HTTPRequestEntry request, CurlBuilder culrBuilder) {
         if(!connection.getDoOutput()) {
-            return;
+            return null;
         }
 
         try(DataOutputStream dataOutputStream = new DataOutputStream(connection.getOutputStream())) {
 
             if(isNotBlank(request.getBodyContent())) {
-                sendBodyContent(dataOutputStream, settings, request, culrBuilder);
-                return;
+                return sendBodyContent(dataOutputStream, settings, requestPath, request, culrBuilder);
             }
 
             if(isNotBlank(request.getBodyFilePath())) {
-                sendBodyFile(dataOutputStream, settings, requestPath, request, culrBuilder);
-                return;
+                return sendBodyFile(dataOutputStream, settings, requestPath, request, culrBuilder);
             }
 
             if(settings.containsOverride(BODY_TEMPORAL_PATH)) {
-                sendBodyTemporal(dataOutputStream, settings, request, culrBuilder);
-                return;
+                return sendBodyTemporal(dataOutputStream, settings, request, culrBuilder);
             }
 
             throw new RequestException(request, "request.bodyContent or request.bodyFilePath is null or empty");
@@ -387,14 +418,25 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         }
     }
 
-    private void sendBodyContent(DataOutputStream dataOutputStream, Settings settings, 
-            HTTPRequestEntry request, CurlBuilder culrBuilder) {
+    private Path sendBodyContent(DataOutputStream dataOutputStream, Settings settings, 
+            String requestPath, HTTPRequestEntry request, CurlBuilder culrBuilder) {
+        OutputPathBuilder pathBuilder = new OutputPathBuilder(settings)
+            .setRequestPath(requestPath)
+            .setRequestName(request.getName())
+            .setExtension("body");
+        Path temporalBodyPath = pathBuilder.buildCommandPath();
+
         writeLine(dataOutputStream, request.getBodyContent(), request.getBodyCharset());
-        culrBuilder.setData(request.getBodyContent());
+        writeFile(temporalBodyPath, request.getBodyContent());
+
+        culrBuilder.setDataBinary(temporalBodyPath);
+
         log(settings, request.getBodyContent(), null);
+
+        return temporalBodyPath;
     }
 
-    private void sendBodyFile(DataOutputStream dataOutputStream, Settings settings, 
+    private Path sendBodyFile(DataOutputStream dataOutputStream, Settings settings, 
             String requestPath, HTTPRequestEntry request, CurlBuilder culrBuilder) throws IOException {
         OutputPathBuilder pathBuilder = new OutputPathBuilder(settings)
             .setRequestPath(requestPath)
@@ -406,12 +448,14 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         expandFile(settings, requestBodyPath, temporalBodyPath,
             line -> writeLine(dataOutputStream, line, request.getBodyCharset()));
 
-        culrBuilder.setDataBinary(temporalBodyPath.toString());
+        culrBuilder.setDataBinary(temporalBodyPath);
 
         log(settings, null, temporalBodyPath);
+
+        return temporalBodyPath;
     }
 
-    private void sendBodyTemporal(DataOutputStream dataOutputStream, Settings settings, 
+    private Path sendBodyTemporal(DataOutputStream dataOutputStream, Settings settings, 
             HTTPRequestEntry request, CurlBuilder culrBuilder) throws IOException {
         Path bodyPath = Paths.get(settings.get(BODY_TEMPORAL_PATH));
 
@@ -421,12 +465,14 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
                 .forEach(line -> writeLine(dataOutputStream, line, request.getBodyCharset()));
         }
 
-        culrBuilder.setDataBinary(bodyPath.toString());
+        culrBuilder.setDataBinary(bodyPath);
 
         log(settings, null, bodyPath);
+
+        return bodyPath;
     }
 
-    private void sendFile(HttpURLConnection connection, Settings settings,
+    private Path sendFile(HttpURLConnection connection, Settings settings,
             HTTPRequestEntry request, CurlBuilder curlBuilder) {
         HTTPRequestFileEntry requestFile = validateAndGetRequestFile(request);
         String[] pathParts = requestFile.getPath().split("/");
@@ -487,6 +533,8 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             });
 
             log(settings, printableFile.toString(), null);
+
+            return Paths.get(requestFile.getPath());
         } catch(IOException ex) {
             throw new IllegalStateException("Unable to create output stream for request file: " + requestFile.getPath(), ex);
         }

@@ -2,6 +2,7 @@ package com.legadi.jurl.common;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Paths;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -11,26 +12,11 @@ import com.legadi.jurl.embedded.EmbeddedAPITest;
 public class CurlBuilderTest extends EmbeddedAPITest {
 
     @Test
-    public void buildPostData() throws IOException {
-        CurlBuilder curlBuilder = new CurlBuilder()
-            .setUrl(new URL("http://localhost:" + port + "/basic/body"))
-            .setMethod("POST")
-            .setData("{\"name\": \"Test\"}")
-            .addHeader("Content-Type", "application/json");
-        String expected = "curl -X POST"
-            + " -H \"Content-Type: application/json\""
-            + " --data-raw \"{\\\"name\\\": \\\"Test\\\"}\""
-            + " http://localhost:" + port + "/basic/body";
-
-        Assertions.assertEquals(expected, curlBuilder.build());
-    }
-
-    @Test
     public void buildPostBinary() throws IOException {
         CurlBuilder curlBuilder = new CurlBuilder()
             .setUrl(new URL("http://localhost:" + port + "/basic/body"))
             .setMethod("POST")
-            .setDataBinary("src/test/resources/basic-functions.body.json")
+            .setDataBinary(Paths.get("src/test/resources/basic-functions.body.json"))
             .addHeader("Content-Type", "application/json");
         String expected = "curl -X POST"
             + " -H \"Content-Type: application/json\""

@@ -1,5 +1,7 @@
 package com.legadi.jurl.model;
 
+import java.util.Map;
+
 public class HistoryEntry {
 
     private String curl;
@@ -7,11 +9,13 @@ public class HistoryEntry {
     private String requestPath;
     private String requestName;
     private String environment;
+    private String workspacePath;
     private long timestamp;
     private String executionTag;
     private long nanoTime;
     private int assertions;
     private int failures;
+    private Map<String, Object> details;
 
     public String getCurl() {
         return curl;
@@ -53,6 +57,14 @@ public class HistoryEntry {
         this.environment = environment;
     }
 
+    public String getWorkspacePath() {
+        return workspacePath;
+    }
+
+    public void setWorkspacePath(String workspacePath) {
+        this.workspacePath = workspacePath;
+    }
+
     public long getTimestamp() {
         return timestamp;
     }
@@ -91,5 +103,13 @@ public class HistoryEntry {
 
     public void setFailures(int failures) {
         this.failures = failures;
+    }
+
+    public Map<String, Object> getDetails() {
+        return details;
+    }
+
+    public void setDetails(Map<String, Object> details) {
+        this.details = details;
     }
 }

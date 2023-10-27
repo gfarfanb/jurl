@@ -270,9 +270,11 @@ public class RequestCommand {
         historyEntry.setRequestPath(requestInputPath);
         historyEntry.setRequestName(request.getName());
         historyEntry.setEnvironment(settings.getEnvironment());
+        historyEntry.setWorkspacePath(settings.getWorkspacePath().toString());
         historyEntry.setTimestamp(settings.getTimestamp().toEpochSecond(OffsetDateTime.now().getOffset()));
         historyEntry.setExecutionTag(settings.getExecutionTag());
         historyEntry.setNanoTime(endTime - beginTime);
+        historyEntry.setDetails(executor.getDetails(response));
 
         Optional<AssertionResult> assertionResult = processor.process(settings, request, response);
 

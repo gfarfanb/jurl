@@ -5,6 +5,7 @@ import static com.legadi.jurl.common.CommonUtils.trim;
 import static com.legadi.jurl.common.CommonUtils.isEmpty;
 
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -43,13 +44,8 @@ public class CurlBuilder {
         return this;
     }
 
-    public CurlBuilder setData(String bodyContent) {
-        this.data = "--data-raw \"" + trim(bodyContent).replaceAll("\"","\\\\\"") + "\"";
-        return this;
-    }
-
-    public CurlBuilder setDataBinary(String bodyFilePath) {
-        this.data = "--data-binary \"@" + trim(bodyFilePath) + "\"";
+    public CurlBuilder setDataBinary(Path bodyFilePath) {
+        this.data = "--data-binary \"@" + trim(bodyFilePath.toString()) + "\"";
         return this;
     }
 

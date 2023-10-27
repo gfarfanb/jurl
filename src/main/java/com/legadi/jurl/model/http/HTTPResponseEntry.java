@@ -7,9 +7,27 @@ import com.legadi.jurl.model.ResponseEntry;
 
 public class HTTPResponseEntry extends ResponseEntry {
 
+    private Path bodyPath;
+    private Path sentFilePath;
     private Path responsePath;
     private int statusCode;
     private Map<String, String> responseHeaders;
+
+    public Path getBodyPath() {
+        return bodyPath;
+    }
+
+    public void setBodyPath(Path bodyPath) {
+        this.bodyPath = bodyPath;
+    }
+
+    public Path getSentFilePath() {
+        return sentFilePath;
+    }
+
+    public void setSentFilePath(Path sentFilePath) {
+        this.sentFilePath = sentFilePath;
+    }
 
     public Path getResponsePath() {
         return responsePath;

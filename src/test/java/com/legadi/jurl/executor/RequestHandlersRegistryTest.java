@@ -4,6 +4,8 @@ import static com.legadi.jurl.executor.RequestHandlersRegistry.findExecutorByReq
 import static com.legadi.jurl.executor.RequestHandlersRegistry.findProcessorByRequestType;
 import static com.legadi.jurl.executor.RequestHandlersRegistry.registerHandler;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Assertions;
@@ -75,6 +77,11 @@ public class RequestHandlersRegistryTest {
 
         @Override
         public void overrideRequestWithFile(Settings settings, TestRequest request, String filename) {
+        }
+
+        @Override
+        public Map<String, Object> getDetailsFromResponse(TestResponse response) {
+            return new HashMap<>();
         }
     }
 

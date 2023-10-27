@@ -55,26 +55,14 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertEquals(1, createRequest.getAssertions().size());
 
         HTTPResponseEntry createResponse = requestCatcher.get(createCorrelationId, "response");
-        BasicFunctionsEntity createEntity = requestCatcher
-            .<BasicFunctionsEntity>getLastSaved("basic-body")
-            .getRight();
         Settings createSettings = requestCatcher.get(createCorrelationId, "settings");
 
         Assertions.assertEquals("http://localhost:" + port + "/basic/body", createResponse.getRequestUrl());
         Assertions.assertTrue(createResponse.getCurlCommand().contains("-X POST"));
         Assertions.assertTrue(createResponse.getCurlCommand().contains("-H \"Content-Type: application/json\""));
         Assertions.assertTrue(createResponse.getCurlCommand().contains("http://localhost:" + port + "/basic/body"));
-        Assertions.assertTrue(createResponse.getCurlCommand().contains("--data-raw"));
-        Assertions.assertTrue(createResponse.getCurlCommand().contains(createEntity.getAccess().toString()));
-        Assertions.assertTrue(createResponse.getCurlCommand().contains(createEntity.getName()));
-        Assertions.assertTrue(createResponse.getCurlCommand().contains(createEntity.getEmail()));
-        Assertions.assertTrue(createResponse.getCurlCommand().contains(createEntity.getNickname()));
-        Assertions.assertTrue(createResponse.getCurlCommand().contains(createEntity.getAmount().toString()));
-        Assertions.assertTrue(createResponse.getCurlCommand().contains(Boolean.toString(createEntity.isActive())));
-        Assertions.assertTrue(createResponse.getCurlCommand().contains(Integer.toString(createEntity.getCoins())));
-        Assertions.assertTrue(createResponse.getCurlCommand().contains(createEntity.getBio()));
-        Assertions.assertTrue(createResponse.getCurlCommand().contains(createEntity.getType()));
-        Assertions.assertTrue(createResponse.getCurlCommand().contains(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(createEntity.getTimestamp())));
+        Assertions.assertTrue(createResponse.getCurlCommand().contains("--data-binary"));
+        Assertions.assertTrue(createResponse.getCurlCommand().contains("@" + createResponse.getBodyPath()));
         Assertions.assertEquals("HTTP/1.1 201", createResponse.getResult());
         Assertions.assertEquals("./executions/src/test/resources/basic-functions_spec_http/create/"
             + createSettings.getTimestamp().toLocalDate() + "/"
