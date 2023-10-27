@@ -5,12 +5,14 @@ import static com.legadi.jurl.common.JsonUtils.loadJsonProperties;
 import static com.legadi.jurl.common.LoaderUtils.loadCredentials;
 import static com.legadi.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_OUTPUT_PATH;
+import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_TAG;
+import static com.legadi.jurl.common.SettingsConstants.PROP_WORKSPACE_PATH;
 import static com.legadi.jurl.common.WriterUtils.createDirectories;
-import static java.time.temporal.ChronoField.MILLI_OF_DAY;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -24,6 +26,7 @@ public class Settings implements SettingsDefaults {
     private static final EnvironmentResource<Credential> CREDENTIALS = new EnvironmentResource<>();
     private static final Map<String, String> EMPTY = new HashMap<>();
 
+    public static final DateTimeFormatter TAG_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd.HH-mm-ss.n");
     public static final String DEFAULT_ENVIRONMENT = "default";
 
     private static final String DEFAULT_CONFIG_FILE = "config.json";
@@ -50,6 +53,7 @@ public class Settings implements SettingsDefaults {
         SETTINGS.putAll(DEFAULT_ENVIRONMENT, loadJsonProperties(executionOutputPath.resolve(DEFAULT_OVERRIDE_FILE)));
     }
 
+    private final Map<String, String> commandProperties;
     private final Map<String, String> userInputProperties;
     private final Map<String, String> overrideProperties;
     private final LocalDateTime timestamp;
@@ -65,10 +69,15 @@ public class Settings implements SettingsDefaults {
             Map<String, String> userInputProperties,
             Map<String, String> overrideProperties) {
         this.environment = environment;
+        this.commandProperties = new HashMap<>();
         this.userInputProperties = new HashMap<>(userInputProperties);
         this.overrideProperties = new HashMap<>(overrideProperties);
+
         this.timestamp = LocalDateTime.now();
-        this.executionTag = timestamp.toLocalDate() + "."  + timestamp.toLocalTime().getLong(MILLI_OF_DAY);
+        this.executionTag = TAG_FORMATTER.format(timestamp);
+
+        commandProperties.put(PROP_EXECUTION_TAG, executionTag);
+        commandProperties.put(PROP_WORKSPACE_PATH, getWorkspacePath().toString());
     }
 
     public LocalDateTime getTimestamp() {
@@ -119,10 +128,12 @@ public class Settings implements SettingsDefaults {
     @Override
     public String getOrDefaultWithValues(String propertyName, Map<String, String> values,
             String defaultValue) {
-        return userInputProperties.getOrDefault(propertyName,
-                overrideProperties.getOrDefault(propertyName,
-                    values.getOrDefault(propertyName,
-                        SETTINGS.getOrDefault(environment, propertyName, defaultValue)
+        return commandProperties.getOrDefault(propertyName, 
+                userInputProperties.getOrDefault(propertyName,
+                    overrideProperties.getOrDefault(propertyName,
+                        values.getOrDefault(propertyName,
+                            SETTINGS.getOrDefault(environment, propertyName, defaultValue)
+                        )
                     )
                 )
             );

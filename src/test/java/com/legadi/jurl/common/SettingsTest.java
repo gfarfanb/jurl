@@ -3,6 +3,7 @@ package com.legadi.jurl.common;
 import static com.legadi.jurl.common.LoaderUtils.loadCredentials;
 import static com.legadi.jurl.common.Settings.mergeCredentials;
 import static com.legadi.jurl.common.Settings.mergeProperties;
+import static com.legadi.jurl.common.Settings.TAG_FORMATTER;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -19,6 +20,14 @@ import com.legadi.jurl.model.Credential;
 import com.legadi.jurl.model.RequestBehaviour;
 
 public class SettingsTest {
+
+    @Test
+    public void getCommandProperties() {
+        Settings settings = new Settings();
+
+        Assertions.assertEquals(System.getProperty("user.dir"), settings.get("workspacePath"));
+        Assertions.assertDoesNotThrow(() -> TAG_FORMATTER.parse(settings.get("executionTag")));
+    }
 
     @Test
     public void getDefaults() {

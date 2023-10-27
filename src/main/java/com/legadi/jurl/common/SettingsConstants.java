@@ -2,6 +2,8 @@ package com.legadi.jurl.common;
 
 public class SettingsConstants {
 
+    public static final String PROP_EXECUTION_TAG = "executionTag";
+    public static final String PROP_WORKSPACE_PATH = "workspacePath";
     public static final String PROP_CONFIG_PATH = "configPath";
     public static final String PROP_EXECUTION_PATH = "executionPath";
     public static final String PROP_EXECUTION_OUTPUT_PATH = "executionOutputPath";

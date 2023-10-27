@@ -17,13 +17,13 @@ assert EQUALS_TO 200 {{HTTP/status}}
 
 ### [flow] basicWithAuthorization
 
-@set-basic.with.authorization.tag = {{UUID:}}
+@set-spec.path = {{workspacePath}}/src/test/resources
 
 step -s flow.tag {{basic.with.authorization.tag}} -n authorization
-step -s flow.tag {{basic.with.authorization.tag}} -n create src/test/resources/basic-functions.spec.http
-step -s flow.tag {{basic.with.authorization.tag}} -n obtain src/test/resources/basic-functions.spec.http
-step -s flow.tag {{basic.with.authorization.tag}} -n update -mb json src/test/resources/basic-functions.spec.http
-step -s flow.tag {{basic.with.authorization.tag}} -n remove src/test/resources/basic-functions.spec.http
+step -s flow.tag {{basic.with.authorization.tag}} -n create {{spec.path}}/basic-functions.spec.http
+step -s flow.tag {{basic.with.authorization.tag}} -n obtain {{spec.path}}/basic-functions.spec.http
+step -s flow.tag {{basic.with.authorization.tag}} -n update -mb json {{spec.path}}/basic-functions.spec.http
+step -s flow.tag {{basic.with.authorization.tag}} -n remove {{spec.path}}/basic-functions.spec.http
 
 
 ### [flow] invalidRecursiveFlow

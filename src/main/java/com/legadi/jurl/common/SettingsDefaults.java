@@ -45,6 +45,10 @@ public interface SettingsDefaults {
     String getOrDefaultWithValues(String propertyName, Map<String, String> values,
             String defaultValue);
 
+    default Path getWorkspacePath() {
+        return Paths.get(".").toAbsolutePath().normalize();
+    }
+
     default Path getConfigPath() {
         return createDirectories(Paths.get(get(PROP_CONFIG_PATH)));
     }

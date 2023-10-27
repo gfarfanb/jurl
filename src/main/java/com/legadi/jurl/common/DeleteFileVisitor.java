@@ -1,6 +1,5 @@
 package com.legadi.jurl.common;
 
-import static com.legadi.jurl.common.CommonUtils.trim;
 import static java.util.logging.Level.FINE;
 
 import java.io.IOException;
@@ -11,17 +10,16 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class DeleteFileVisitor extends SimpleFileVisitor<Path> {
 
     private static final Logger LOGGER = Logger.getLogger(DeleteFileVisitor.class.getName());
 
-    private final Pattern fileDatePattern = Pattern.compile("^.*(\\d{4}\\-\\d{2}\\-\\d{2}).*");
-    private final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE;
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     private final LocalDate untilDateInclusive;
 
     public DeleteFileVisitor(LocalDate untilDateInclusive) {
@@ -34,21 +32,17 @@ public class DeleteFileVisitor extends SimpleFileVisitor<Path> {
             return FileVisitResult.CONTINUE;
         }
 
+        LocalDateTime lastModifiedTime = LocalDateTime.ofInstant(
+            attrs.lastModifiedTime().toInstant(), ZoneOffset.UTC);
+
         if(untilDateInclusive == null) {
-            return silentDelete(file);
+            return silentDelete(file, lastModifiedTime(lastModifiedTime));
         }
 
-        Matcher matcher = fileDatePattern.matcher(file.getFileName().toString());
+        LocalDate fileDate = lastModifiedTime.toLocalDate();
 
-        if(matcher.find()) {
-            String extractedDate = trim(matcher.group(1));
-            LocalDate fileDate = LocalDate.from(formatter.parse(extractedDate));
-
-            if(fileDate.isBefore(untilDateInclusive) || fileDate.isEqual(untilDateInclusive)) {
-                return silentDelete(file);
-            } else {
-                return FileVisitResult.CONTINUE;
-            }
+        if(fileDate.isBefore(untilDateInclusive) || fileDate.isEqual(untilDateInclusive)) {
+            return silentDelete(file, lastModifiedTime(lastModifiedTime));
         } else {
             return FileVisitResult.CONTINUE;
         }
@@ -60,7 +54,7 @@ public class DeleteFileVisitor extends SimpleFileVisitor<Path> {
             return FileVisitResult.CONTINUE;
         }
 
-        return silentDelete(directory);
+        return silentDelete(directory, "empty-directory");
     }
 
     private boolean isDirectoryEmpty(Path directoryPath) {
@@ -72,10 +66,16 @@ public class DeleteFileVisitor extends SimpleFileVisitor<Path> {
         }
     }
 
-    private FileVisitResult silentDelete(Path path) {
+    private String lastModifiedTime(LocalDateTime lastModifiedTime) {
+        return "lastModifiedTime: " + formatter.format(lastModifiedTime);
+    }
+
+    private FileVisitResult silentDelete(Path path, String tag) {
         try {
             Files.delete(path);
-            LOGGER.info("Deleted: " + path);
+            LOGGER.info("Deleted"
+                + (tag != null ? " [" + tag + "]" : "")
+                + ": " + path);
         } catch(Exception ex) {
             LOGGER.log(FINE, "Unable to delete file: " + path + " - " + ex.getMessage(), ex);
         }

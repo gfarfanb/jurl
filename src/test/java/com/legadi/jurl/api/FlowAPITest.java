@@ -52,7 +52,11 @@ public class FlowAPITest extends EmbeddedAPITest {
 
     @Test
     public void authorizationAndCRUDFlow() {
-        jurl("-n", "basicWithAuthorization", "-f", "src/test/resources/flow.spec.http");
+        String basicWithAuthorizationTag = UUID.randomUUID().toString();
+
+        jurl("-n", "basicWithAuthorization",
+            "-s", "basic.with.authorization.tag", basicWithAuthorizationTag,
+            "-f", "src/test/resources/flow.spec.http");
 
         UUID commonCorrelationId = requestCatcher.getLastCorrelationId();
 
@@ -61,8 +65,7 @@ public class FlowAPITest extends EmbeddedAPITest {
 
         for(Pair<UUID, Settings> settingsRecord : settingsRecords) {
             Assertions.assertEquals(commonCorrelationId, settingsRecord.getLeft());
-            Assertions.assertTrue(settingsRecord.getRight().containsUserInput("flow.tag"));
-            Assertions.assertDoesNotThrow(() -> UUID.fromString(settingsRecord.getRight().get("flow.tag")));
+            Assertions.assertEquals(basicWithAuthorizationTag, settingsRecord.getRight().get("flow.tag"));
         }
 
         List<Pair<UUID, Optional<AssertionResult>>> assertionRecords = requestCatcher
