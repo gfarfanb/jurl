@@ -51,7 +51,7 @@ public class OutputPathBuilder {
     }
 
     public Path buildCommandPath() {
-        return buildFilePath(settings.getExecutionPath(), null);
+        return buildFilePath(settings.getExecutionPath(), settings.getTimestamp().toLocalDate().toString());
     }
 
     public Path buildHistoryPath() {

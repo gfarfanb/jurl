@@ -16,6 +16,7 @@ public class OutputPathBuilderTest {
             .setRequestName("command-path")
             .setExtension("body");
         Path expected = Paths.get("./executions/src/test/resources/output-command-builder/command-path/"
+            + settings.getTimestamp().toLocalDate() + "/"
             + settings.getExecutionTag() + ".body");
 
         Assertions.assertEquals(expected, pathBuilder.buildCommandPath());
@@ -26,7 +27,9 @@ public class OutputPathBuilderTest {
         Settings settings = new Settings();
         OutputPathBuilder pathBuilder = new OutputPathBuilder(settings)
             .setExtension("body");
-        Path expected = Paths.get("./executions/" + settings.getExecutionTag() + ".body");
+        Path expected = Paths.get("./executions/"
+            + settings.getTimestamp().toLocalDate() + "/"
+            + settings.getExecutionTag() + ".body");
 
         Assertions.assertEquals(expected, pathBuilder.buildCommandPath());
     }
@@ -40,8 +43,8 @@ public class OutputPathBuilderTest {
             .setFilename(settings.getTimestamp().toLocalDate().toString())
             .setExtension("history.json");
         Path expected = Paths.get("./history/src/test/resources/output-command-builder/history-path/"
-            + settings.getTimestamp().toLocalDate().toString() + "/"
-            + settings.getTimestamp().toLocalDate().toString() + ".history.json");
+            + settings.getTimestamp().toLocalDate() + "/"
+            + settings.getTimestamp().toLocalDate() + ".history.json");
 
         Assertions.assertEquals(expected, pathBuilder.buildHistoryPath());
     }
@@ -53,8 +56,8 @@ public class OutputPathBuilderTest {
             .setFilename(settings.getTimestamp().toLocalDate().toString())
             .setExtension("history.json");
         Path expected = Paths.get("./history/"
-            + settings.getTimestamp().toLocalDate().toString() + "/"
-            + settings.getTimestamp().toLocalDate().toString() + ".history.json");
+            + settings.getTimestamp().toLocalDate() + "/"
+            + settings.getTimestamp().toLocalDate() + ".history.json");
 
         Assertions.assertEquals(expected, pathBuilder.buildHistoryPath());
     }

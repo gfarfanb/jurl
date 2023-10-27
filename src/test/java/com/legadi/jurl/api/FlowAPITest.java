@@ -61,7 +61,7 @@ public class FlowAPITest extends EmbeddedAPITest {
 
         for(Pair<UUID, Settings> settingsRecord : settingsRecords) {
             Assertions.assertEquals(commonCorrelationId, settingsRecord.getLeft());
-            Assertions.assertTrue(settingsRecord.getRight().containsOverride("flow.tag"));
+            Assertions.assertTrue(settingsRecord.getRight().containsUserInput("flow.tag"));
             Assertions.assertDoesNotThrow(() -> UUID.fromString(settingsRecord.getRight().get("flow.tag")));
         }
 

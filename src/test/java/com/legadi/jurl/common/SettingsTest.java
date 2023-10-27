@@ -166,21 +166,6 @@ public class SettingsTest {
     }
 
     @Test
-    public void mergeOverridePropertiesValidation() {
-        Settings settings = new Settings();
-        Map<String, String> overrideProperties = new HashMap<>();
-
-        overrideProperties.put("property.1", "1");
-        overrideProperties.put("property.2", "2");
-        overrideProperties.put("property.3", "3");
-
-        Assertions.assertDoesNotThrow(() -> settings.mergeOverrideProperties(overrideProperties));
-        Assertions.assertEquals("1", settings.get("property.1"));
-        Assertions.assertEquals("2", settings.get("property.2"));
-        Assertions.assertEquals("3", settings.get("property.3"));
-    }
-
-    @Test
     public void getCredentialValidation() {
         Settings settings = new Settings();
         Path credentialsPath = Paths.get("src/test/resources/credentials.json");

@@ -18,7 +18,7 @@ public class UserInputGeneratorTest extends GeneratorTest {
         Assertions.assertEquals("Input", value);
         Assertions.assertEquals("Input", settings.get(message));
 
-        settings.putOverride(message, "Overrided Input");
+        settings.putUserInput(message, "Overrided Input");
 
         String overrided = Assertions.assertDoesNotThrow(() -> generate(message));
 

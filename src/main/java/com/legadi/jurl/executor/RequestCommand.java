@@ -142,7 +142,7 @@ public class RequestCommand {
         int stepIndex = 1;
 
         for(StepEntry step : steps) {
-            Settings stepSettings = new Settings(settings.getEnvironment());
+            Settings stepSettings = settings.createForStep();
             String name = flowDef.getLeft();
 
             try {

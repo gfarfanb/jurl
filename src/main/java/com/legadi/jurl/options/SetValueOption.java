@@ -26,7 +26,7 @@ public class SetValueOption extends Option {
 
     @Override
     public boolean execute(Settings settings, String[] args) {
-        settings.putOverride(args[0], args[1]);
+        settings.putUserInput(args[0], args[1]);
         return true;
     }
 }

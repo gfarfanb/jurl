@@ -18,7 +18,7 @@ public class PasswordInputGeneratorTest extends GeneratorTest {
         Assertions.assertEquals("P4s5w0rd", value);
         Assertions.assertEquals("P4s5w0rd", settings.get(message));
 
-        settings.putOverride(message, "0v3rrid3d_P4s5w0rd");
+        settings.putUserInput(message, "0v3rrid3d_P4s5w0rd");
 
         String overrided = Assertions.assertDoesNotThrow(() -> generate(message));
 

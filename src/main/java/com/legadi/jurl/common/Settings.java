@@ -22,6 +22,7 @@ public class Settings implements SettingsDefaults {
 
     private static final EnvironmentResource<String> SETTINGS = new EnvironmentResource<>();
     private static final EnvironmentResource<Credential> CREDENTIALS = new EnvironmentResource<>();
+    private static final Map<String, String> EMPTY = new HashMap<>();
 
     public static final String DEFAULT_ENVIRONMENT = "default";
 
@@ -49,6 +50,7 @@ public class Settings implements SettingsDefaults {
         SETTINGS.putAll(DEFAULT_ENVIRONMENT, loadJsonProperties(executionOutputPath.resolve(DEFAULT_OVERRIDE_FILE)));
     }
 
+    private final Map<String, String> userInputProperties;
     private final Map<String, String> overrideProperties;
     private final LocalDateTime timestamp;
     private final String executionTag;
@@ -56,15 +58,14 @@ public class Settings implements SettingsDefaults {
     private String environment;
 
     public Settings() {
-        this(DEFAULT_ENVIRONMENT, new HashMap<>());
+        this(DEFAULT_ENVIRONMENT, EMPTY, EMPTY);
     }
 
-    public Settings(String environment) {
-        this(environment, new HashMap<>());
-    }
-
-    private Settings(String environment, Map<String, String> overrideProperties) {
+    private Settings(String environment,
+            Map<String, String> userInputProperties,
+            Map<String, String> overrideProperties) {
         this.environment = environment;
+        this.userInputProperties = new HashMap<>(userInputProperties);
         this.overrideProperties = new HashMap<>(overrideProperties);
         this.timestamp = LocalDateTime.now();
         this.executionTag = timestamp.toLocalDate() + "."  + timestamp.toLocalTime().getLong(MILLI_OF_DAY);
@@ -93,8 +94,7 @@ public class Settings implements SettingsDefaults {
 
     @Override
     public String get(String propertyName) {
-        String value = overrideProperties.getOrDefault(propertyName,
-            SETTINGS.get(environment, propertyName));
+        String value = getOrDefault(propertyName, null);
         if(value == null) {
             throw new CommandException("Property not found: " + propertyName);
         }
@@ -113,16 +113,17 @@ public class Settings implements SettingsDefaults {
 
     @Override
     public String getOrDefault(String propertyName, String defaultValue) {
-        return overrideProperties.getOrDefault(propertyName,
-            SETTINGS.getOrDefault(environment, propertyName, defaultValue));
+        return getOrDefaultWithValues(propertyName, EMPTY, defaultValue);
     }
 
     @Override
     public String getOrDefaultWithValues(String propertyName, Map<String, String> values,
             String defaultValue) {
-        return overrideProperties.getOrDefault(propertyName,
-                values.getOrDefault(propertyName,
-                    SETTINGS.getOrDefault(environment, propertyName, defaultValue)
+        return userInputProperties.getOrDefault(propertyName,
+                overrideProperties.getOrDefault(propertyName,
+                    values.getOrDefault(propertyName,
+                        SETTINGS.getOrDefault(environment, propertyName, defaultValue)
+                    )
                 )
             );
     }
@@ -153,16 +154,20 @@ public class Settings implements SettingsDefaults {
         }
     }
 
+    public boolean containsUserInput(String propertyName) {
+        return userInputProperties.containsKey(propertyName);
+    }
+
+    public void putUserInput(String propertyName, String propertyValue) {
+        userInputProperties.put(propertyName, propertyValue);
+    }
+
     public boolean containsOverride(String propertyName) {
         return overrideProperties.containsKey(propertyName);
     }
 
     public void putOverride(String propertyName, String propertyValue) {
         overrideProperties.put(propertyName, propertyValue);
-    }
-
-    public void mergeOverrideProperties(Map<String, String> properties) {
-        overrideProperties.putAll(properties);
     }
 
     public Credential getCredential() {
@@ -175,7 +180,11 @@ public class Settings implements SettingsDefaults {
     }
 
     public Settings createForNextExecution() {
-        return new Settings(environment, overrideProperties);
+        return new Settings(environment, userInputProperties, overrideProperties);
+    }
+
+    public Settings createForStep() {
+        return new Settings(environment, userInputProperties, EMPTY);
     }
 
     public static void mergeProperties(String environment, Map<String, String> properties) {

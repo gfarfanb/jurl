@@ -69,7 +69,9 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertTrue(uploadResponse.getCurlCommand().contains(uploadEntity.getType()));
         Assertions.assertTrue(uploadResponse.getCurlCommand().contains(uploadEntity.getField()));
         Assertions.assertEquals("HTTP/1.1 201", uploadResponse.getResult());
-        Assertions.assertEquals("./executions/src/test/resources/file_spec_http/upload/" + uploadSettings.getExecutionTag() + ".response",
+        Assertions.assertEquals("./executions/src/test/resources/file_spec_http/upload/"
+            + uploadSettings.getTimestamp().toLocalDate() + "/"
+            + uploadSettings.getExecutionTag() + ".response",
             uploadResponse.getResponsePath().toString());
         Assertions.assertEquals(201, uploadResponse.getStatusCode());
         Assertions.assertFalse(uploadResponse.getResponseHeaders().isEmpty());
@@ -136,7 +138,9 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertNull(uploadEntity.getType());
         Assertions.assertTrue(uploadResponse.getCurlCommand().contains(uploadEntity.getField()));
         Assertions.assertEquals("HTTP/1.1 201", uploadResponse.getResult());
-        Assertions.assertEquals("./executions/src/test/resources/file_spec_http/uploadWithoutForm/" + uploadSettings.getExecutionTag() + ".response",
+        Assertions.assertEquals("./executions/src/test/resources/file_spec_http/uploadWithoutForm/"
+            + uploadSettings.getTimestamp().toLocalDate() + "/"
+            + uploadSettings.getExecutionTag() + ".response",
             uploadResponse.getResponsePath().toString());
         Assertions.assertEquals(201, uploadResponse.getStatusCode());
         Assertions.assertFalse(uploadResponse.getResponseHeaders().isEmpty());
@@ -184,13 +188,15 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertEquals(1, downloadRequest.getAssertions().size());
 
         HTTPResponseEntry downloadResponse = requestCatcher.get(downloadCorrelationId, "response");
+        Settings downloadSettings = requestCatcher.get(downloadCorrelationId, "settings");
 
         Assertions.assertTrue(downloadResponse.getRequestUrl().startsWith("http://localhost:" + port + "/file"));
         Assertions.assertTrue(downloadResponse.getRequestUrl().contains("file=src/test/resources/file.csv"));
         Assertions.assertTrue(downloadResponse.getRequestUrl().contains("name=downloaded.csv"));
         Assertions.assertTrue(downloadResponse.getCurlCommand().contains("-X GET"));
         Assertions.assertEquals("HTTP/1.1 200", downloadResponse.getResult());
-        Assertions.assertEquals("./executions/src/test/resources/file_spec_http/download/downloaded.csv",
+        Assertions.assertEquals("./executions/src/test/resources/file_spec_http/download/"
+            + downloadSettings.getTimestamp().toLocalDate() + "/downloaded.csv",
             downloadResponse.getResponsePath().toString());
         Assertions.assertEquals(200, downloadResponse.getStatusCode());
         Assertions.assertFalse(downloadResponse.getResponseHeaders().isEmpty());
@@ -242,7 +248,9 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertTrue(downloadResponse.getRequestUrl().contains("file=src/test/resources/file.csv"));
         Assertions.assertTrue(downloadResponse.getCurlCommand().contains("-X GET"));
         Assertions.assertEquals("HTTP/1.1 200", downloadResponse.getResult());
-        Assertions.assertEquals("./executions/src/test/resources/file_spec_http/downloadWithoutName/" + downloadSettings.getExecutionTag() + ".response",
+        Assertions.assertEquals("./executions/src/test/resources/file_spec_http/downloadWithoutName/"
+            + downloadSettings.getTimestamp().toLocalDate() + "/"
+            + downloadSettings.getExecutionTag() + ".response",
             downloadResponse.getResponsePath().toString());
         Assertions.assertEquals(200, downloadResponse.getStatusCode());
         Assertions.assertFalse(downloadResponse.getResponseHeaders().isEmpty());
