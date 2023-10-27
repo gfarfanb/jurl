@@ -20,6 +20,7 @@ public class OptionsRegistry {
     static {
         registerOption(AuthorizationBasicOption::new);
         registerOption(AuthorizationTokenOption::new);
+        registerOption(CleanOutputOption::new);
         registerOption(CurlPrintOption::new);
         registerOption(CustomGeneratorOption::new);
         registerOption(CustomHandlerOption::new);

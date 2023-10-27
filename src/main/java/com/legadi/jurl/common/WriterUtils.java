@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.function.Consumer;
 
 public class WriterUtils {
@@ -123,6 +124,22 @@ public class WriterUtils {
             System.out.println();
         } catch(IOException ex) {
             throw new IllegalStateException("Unable to print file: " + filePath, ex);
+        }
+    }
+
+    public static void cleanDirectory(Path directoryPath, LocalDate untilDateInclusive) {
+        if(directoryPath == null) {
+            return;
+        }
+
+        if(!Files.exists(directoryPath)) {
+            return;
+        }
+
+        try {
+            Files.walkFileTree(directoryPath, new DeleteFileVisitor(untilDateInclusive));
+        } catch(IOException ex) {
+            throw new IllegalStateException("Unable to clean directory [" + untilDateInclusive + "]: " + directoryPath, ex);
         }
     }
 }
