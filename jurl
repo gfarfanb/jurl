@@ -1,0 +1,23 @@
+#! /usr/bin/env bash
+
+JURL_CMD=$(find . -type f -name 'jurl-*.jar' | head -n 1)
+
+if [ -z "$JURL_CMD" ] ; then
+    echo "'jurl-<version>.jar' artifact not found." >&2
+    echo "Download the latest artifact from https://github.com/gfarfanb/jurl/packages" >&2
+    exit 1
+fi
+
+if [ -n "$JAVA_HOME" ] ; then
+    JAVA_CMD="$JAVA_HOME/bin/java"
+else
+    JAVA_CMD=$(which java)
+fi
+
+if [ ! -x "$JAVA_CMD" ] ; then
+    echo "'java' command is not installed or" >&2
+    echo "JAVA_HOME environment variable is not defined correctly" >&2
+    exit 1
+fi
+
+exec "$JAVA_CMD" -jar "$JURL_CMD" $* >&2
