@@ -81,7 +81,8 @@ public class AssertionsRegistry {
         if(isBlank(name)) {
             return false;
         }
-        return NAMES.contains(trim(name).toLowerCase());
+        name = trim(name).toLowerCase();
+        return NAMES.contains(name) || ALIASES.contains(name);
     }
 
     public static AssertionFunction findByName(String name) {

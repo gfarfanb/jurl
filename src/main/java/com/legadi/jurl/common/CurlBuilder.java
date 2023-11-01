@@ -21,7 +21,7 @@ public class CurlBuilder {
     private String data;
 
     public CurlBuilder setUrl(URL url) {
-        this.url = url.toString();
+        this.url = "\"" + url + "\"";
         return this;
     }
 

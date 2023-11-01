@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.legadi.jurl.common.Settings;
+import com.legadi.jurl.exception.CommandException;
 
 public class GeneratorsRegistryTest {
 
@@ -19,6 +20,12 @@ public class GeneratorsRegistryTest {
 
         Assertions.assertNotNull(generator);
         Assertions.assertEquals("test-param", generator.getValue(null, "test-param"));
+    }
+
+    @Test
+    public void duplicate() {
+        Assertions.assertThrows(CommandException.class,
+            () -> registerGenerator(DecimalGenerator::new));
     }
 
     @Test

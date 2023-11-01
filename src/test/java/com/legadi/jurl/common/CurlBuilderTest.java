@@ -21,7 +21,7 @@ public class CurlBuilderTest extends EmbeddedAPITest {
         String expected = "curl -X POST"
             + " -H \"Content-Type: application/json\""
             + " --data-binary \"@src/test/resources/basic-functions.body.json\""
-            + " http://localhost:" + port + "/basic/body";
+            + " \"http://localhost:" + port + "/basic/body\"";
 
         Assertions.assertEquals(expected, curlBuilder.build());
     }
@@ -30,7 +30,7 @@ public class CurlBuilderTest extends EmbeddedAPITest {
     public void buildWithoutMethod() throws IOException {
         CurlBuilder curlBuilder = new CurlBuilder()
             .setUrl(new URL("http://localhost:" + port + "/basic/body"));
-        String expected = "curl http://localhost:" + port + "/basic/body";
+        String expected = "curl \"http://localhost:" + port + "/basic/body\"";
 
         Assertions.assertEquals(expected, curlBuilder.build());
     }
@@ -55,7 +55,7 @@ public class CurlBuilderTest extends EmbeddedAPITest {
             + " -H \"Content-Type: multipart/form-data\""
             + " -F \"timestamp=2023-10-13T03:50:54.792\""
             + " -F \"file=@src/test/resources/file.csv;filename=uploaded.csv;type=text/csv\""
-            + " http://localhost:" + port + "/file";
+            + " \"http://localhost:" + port + "/file\"";
 
         Assertions.assertEquals(expected, curlBuilder.build());
     }
@@ -70,7 +70,7 @@ public class CurlBuilderTest extends EmbeddedAPITest {
         String expected = "curl -X POST"
             + " -H \"Content-Type: multipart/form-data\""
             + " -F \"file=@src/test/resources/file.csv\""
-            + " http://localhost:" + port + "/file";
+            + " \"http://localhost:" + port + "/file\"";
 
         Assertions.assertEquals(expected, curlBuilder.build());
     }

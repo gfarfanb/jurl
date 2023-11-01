@@ -13,11 +13,11 @@ public class AssertionsRegistryTest {
 
     @Test
     public void registerAssertionCustom() {
-        registerAssertionFunction(TestAssertion.class.getName());
+        registerAssertionFunction(TestAssertionFunction.class.getName());
 
-        Assertions.assertDoesNotThrow(() -> (TestAssertion) findByName("test"));
+        Assertions.assertDoesNotThrow(() -> (TestAssertionFunction) findByName("test"));
 
-        AssertionFunction registered = registerAssertionFunction(TestAssertion.class.getName());
+        AssertionFunction registered = registerAssertionFunction(TestAssertionFunction.class.getName());
 
         Assertions.assertNotNull(registered);
     }
@@ -34,7 +34,7 @@ public class AssertionsRegistryTest {
             () -> findByName("not-found"));
     }
 
-    public static class TestAssertion implements AssertionFunction {
+    public static class TestAssertionFunction implements AssertionFunction {
 
         @Override
         public String name() {
