@@ -1,6 +1,14 @@
 @echo off
 
-for /F "delims=" %%G in ('dir /b /s jurl-*.jar') do (
+if not "%JURL_HOME%"=="" goto jurlHomeFound
+set "JURL_PATTERN=jurl-*.jar"
+goto existsJurl
+
+:jurlHomeFound
+set "JURL_PATTERN=%JURL_HOME%\jurl-*.jar"
+
+:existsJurl
+for /F "delims=" %%G in ('dir /b /s %JURL_PATTERN%') do (
     set JURL_CMD=%%~G
     goto validateJava
 )

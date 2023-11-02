@@ -1,6 +1,10 @@
 #! /usr/bin/env bash
 
-JURL_CMD=$(find . -type f -name 'jurl-*.jar' | head -n 1)
+if [ -n "$JURL_HOME" ] ; then
+    JURL_CMD=$(find "$JURL_HOME" -type f -name 'jurl-*.jar' | head -n 1)
+else
+    JURL_CMD=$(find . -type f -name 'jurl-*.jar' | head -n 1)
+fi
 
 if [ -z "$JURL_CMD" ] ; then
     echo "'jurl-<version>.jar' artifact not found." >&2
