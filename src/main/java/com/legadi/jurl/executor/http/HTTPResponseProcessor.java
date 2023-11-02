@@ -7,6 +7,7 @@ import static com.legadi.jurl.common.JsonUtils.loadJsonProperties;
 import static com.legadi.jurl.common.JsonUtils.writeJsonFile;
 import static com.legadi.jurl.common.WriterUtils.printFile;
 import static com.legadi.jurl.executor.reader.OutputReaderRegistry.findByContentType;
+import static java.util.logging.Level.FINE;
 
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -57,9 +58,17 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
 
         StringExpander stringExpander = new StringExpander(settings);
         Set<String> outputParams = scanOutputParams(stringExpander, request);
-        Map<String, String> values = readOutputValues(settings, response, outputParams);
+        Map<String, String> values = null;
 
-        saveOutput(stringExpander, values, request, response);
+        try {
+            values = readOutputValues(settings, response, outputParams);
+            saveOutput(stringExpander, values, request, response);
+        } catch(Exception ex) {
+            LOGGER.warning("Unable to read response [" + response.getResponsePath()
+                + "] - " + ex.getMessage());
+            LOGGER.log(FINE, ex.getMessage(), ex);
+            values = new HashMap<>();
+        }
 
         if(settings.isSkipAssertions()) {
             return Optional.empty();

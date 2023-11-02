@@ -1,10 +1,12 @@
 package com.legadi.jurl;
 
 import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.INFO;
 
 import java.security.GeneralSecurityException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.net.ssl.HostnameVerifier;
@@ -27,7 +29,7 @@ public class JurlApplication {
     public static void main(String[] args) throws Exception {
         try {
             System.setProperty("java.util.logging.SimpleFormatter.format", "%5$s%6$s%n");
-            System.setProperty("java.util.logging.ConsoleHandler.level", "INFO");
+            System.setProperty("java.util.logging.ConsoleHandler.level", getLogLevel());
 
             setupConnectionstoAcceptAllHosts();
 
@@ -43,6 +45,21 @@ public class JurlApplication {
             LOGGER.log(SEVERE, ex.getMessage(), ex);
             System.exit(1);
         }
+    }
+
+    private static String getLogLevel() {
+        String jurlLogLevel = System.getenv("JURL_LOG_LEVEL");
+        Level logLevel = INFO;
+
+        if(jurlLogLevel != null) {
+            try {
+                logLevel = Level.parse(jurlLogLevel);
+            } catch(IllegalArgumentException ex) {
+                throw new IllegalStateException("Invalid 'jurl' log level: " + jurlLogLevel);
+            }
+        }
+
+        return logLevel.getName();
     }
 
     private static void setupConnectionstoAcceptAllHosts() throws GeneralSecurityException {
