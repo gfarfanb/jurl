@@ -8,7 +8,7 @@ goto existsJurl
 set "JURL_PATTERN=%JURL_HOME%\jurl-*.jar"
 
 :existsJurl
-for /F "delims=" %%G in ('dir /b /s %JURL_PATTERN%') do (
+for /F "delims=" %%G in ('dir /b /s "%JURL_PATTERN%"') do (
     set JURL_CMD=%%~G
     goto validateJava
 )
