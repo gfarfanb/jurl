@@ -3,9 +3,7 @@ package com.legadi.jurl.executor;
 import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
-import static com.legadi.jurl.common.JsonUtils.loadJsonProperties;
 import static com.legadi.jurl.common.JsonUtils.toJsonString;
-import static com.legadi.jurl.common.LoaderUtils.loadCredentials;
 import static com.legadi.jurl.common.RequestUtils.mergeRequestHeader;
 import static com.legadi.jurl.common.WriterUtils.appendToFile;
 import static com.legadi.jurl.common.WriterUtils.writeFile;
@@ -86,12 +84,9 @@ public class RequestCommand {
         RequestParser<?> requestParser = findByRequestType(settings.getRequestType());
         RequestInput<?> requestInput = requestParser.parseInput(settings, Paths.get(requestInputPath));
 
-        executeInput(settings, requestInputPath, requestInput, isMainInput);
-    }
-
-    private void executeInput(Settings settings, String requestInputPath,
-            RequestInput<?> requestInput, boolean isMainInput) {
-        loadConfig(requestInput, settings, isMainInput);
+        if(isMainInput) {
+            Settings.mergeCommonProperties(requestInput.getConfig());
+        }
 
         int times = settings.getTimes() > 0 ? settings.getTimes() : FIRST_EXECUTION;
 
@@ -109,19 +104,6 @@ public class RequestCommand {
                         new StringExpander(settings.createForNextExecution()));
                 }
             });
-    }
-
-    private void loadConfig(RequestInput<?> requestInput, Settings settings, boolean isMainInput) {
-        String environment = settings.getEnvironment();
-        Path configPath = settings.getConfigFilePath();
-        Path credentialsPath = settings.getCredentialsFilePath();
-
-        Settings.mergeProperties(environment, loadJsonProperties(configPath));
-        Settings.mergeCredentials(environment, loadCredentials(credentialsPath));
-
-        if(isMainInput) {
-            Settings.mergeProperties(environment, requestInput.getConfig());
-        }
     }
 
     private void processFlow(int index, String requestInputPath, RequestInput<?> requestInput,
@@ -181,7 +163,7 @@ public class RequestCommand {
         if(isNotBlank(step.getRequestInputPath())) {
             executeInputPath(settings, step.getRequestInputPath(), false);
         } else {
-            executeInput(settings, requestInputPath, requestInput, false);
+            executeInputPath(settings, requestInputPath, false);
         }
     }
 
@@ -240,10 +222,10 @@ public class RequestCommand {
         Optional<AssertionResult> conditionsResult = executor.accepts(settings, request);
 
         if(conditionsResult.isPresent() && !conditionsResult.get().isPassed()) {
-            LOGGER.info("Request skipped - inputFile=" + requestInputPath
-                + " request=" + request.getName()
-                + " environment=" + settings.getEnvironment()
-                + " executionTag=" + settings.getExecutionTag());
+            LOGGER.info("Request skipped - inputFile=\"" + requestInputPath + "\""
+                    + " request=\"" + request.getName() + "\""
+                    + " environment=\"" + settings.getEnvironment() + "\""
+                    + " executionTag=\"" + settings.getExecutionTag() + "\"");
             conditionsResult.get().getFailedMessages().forEach(LOGGER::info);
             return;
         }
@@ -283,29 +265,31 @@ public class RequestCommand {
             historyEntry.setFailures(assertionResult.get().getFailures());
 
             if(!assertionResult.get().isPassed()) {
-                LOGGER.warning("Request failed - inputFile=" + requestInputPath
-                    + " request=" + request.getName()
-                    + " result=" + response.getResult()
-                    + " environment=" + settings.getEnvironment()
-                    + " executionTag=" + settings.getExecutionTag()
+                LOGGER.warning("Request failed - inputFile=\"" + requestInputPath + "\""
+                    + " request=\"" + request.getName() + "\""
+                    + " result=\"" + response.getResult() + "\""
+                    + " environment=\"" + settings.getEnvironment() + "\""
+                    + " executionTag=\"" + settings.getExecutionTag() + "\""
                     + " time(nano)=" + historyEntry.getNanoTime());
                 assertionResult.get().getFailedMessages().forEach(LOGGER::warning);
             } else {
-                LOGGER.info("Request successful - inputFile=" + requestInputPath
-                    + " request=" + request.getName()
-                    + " result=" + response.getResult()
-                    + " environment=" + settings.getEnvironment()
-                    + " executionTag=" + settings.getExecutionTag()
+                LOGGER.info("Request successful - inputFile=\"" + requestInputPath + "\""
+                    + " request=\"" + request.getName() + "\""
+                    + " result=\"" + response.getResult() + "\""
+                    + " environment=\"" + settings.getEnvironment() + "\""
+                    + " executionTag=\"" + settings.getExecutionTag() + "\""
                     + " time(nano)=" + historyEntry.getNanoTime());
             }
         } else {
-            LOGGER.info("Request successful - inputFile=" + requestInputPath
-                    + " request=" + request.getName()
-                    + " result=" + response.getResult()
-                    + " environment=" + settings.getEnvironment()
-                    + " executionTag=" + settings.getExecutionTag()
+            LOGGER.info("Request successful - inputFile=\"" + requestInputPath + "\""
+                    + " request=\"" + request.getName() + "\""
+                    + " result=\"" + response.getResult() + "\""
+                    + " environment=\"" + settings.getEnvironment() + "\""
+                    + " executionTag=\"" + settings.getExecutionTag() + "\""
                     + " time(nano)=" + historyEntry.getNanoTime());
         }
+
+        LOGGER.info("");
 
         saveHistory(settings, historyEntry, requestInputPath, request.getName());
 

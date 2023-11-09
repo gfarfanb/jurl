@@ -1,5 +1,6 @@
 package com.legadi.jurl.common;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,6 +52,14 @@ public class CommonUtils {
 
     public static String trim(String value) {
         return strip(value, null);
+    }
+
+    public static String fileSeparatorAsDelimiter() {
+        if(File.separator.equals("\\")) {
+            return "\\\\";
+        } else {
+            return File.separator;
+        }
     }
 
     public static String strip(String value, String stripChars) {

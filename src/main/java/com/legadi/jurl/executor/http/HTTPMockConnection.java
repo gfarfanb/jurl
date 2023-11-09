@@ -1,8 +1,8 @@
 package com.legadi.jurl.executor.http;
 
-import static com.legadi.jurl.common.CommonUtils.isNotNumeric;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
+import static com.legadi.jurl.common.CommonUtils.isNotNumeric;
 import static com.legadi.jurl.common.JsonUtils.toJsonString;
 import static java.util.logging.Level.FINE;
 

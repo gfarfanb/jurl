@@ -37,7 +37,7 @@ public class Settings implements SettingsDefaults {
     private static final String FORMAT_OVERRIDE_FILE = "override.%s.json";
 
     static {
-        SETTINGS.putAll(DEFAULT_ENVIRONMENT, loadInternalJsonProperties("settings.default.json"));
+        SETTINGS.putAllInCommon(loadInternalJsonProperties("settings.default.json"));
 
         Path configPath = createDirectories(Paths.get(
             SETTINGS.get(DEFAULT_ENVIRONMENT, PROP_CONFIG_PATH)
@@ -200,6 +200,10 @@ public class Settings implements SettingsDefaults {
 
     public static void mergeProperties(String environment, Map<String, String> properties) {
         SETTINGS.putAll(environment, properties);
+    }
+
+    public static void mergeCommonProperties(Map<String, String> properties) {
+        SETTINGS.putAllInCommon(properties);
     }
 
     public static void mergeCredentials(String environment, Map<String, Credential> credentials) {

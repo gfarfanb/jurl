@@ -327,6 +327,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             switch(method) {
                 case "PUT":
                 case "POST":
+                case "PATCH":
                     output = true;
                     break;
                 default:
@@ -412,7 +413,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
                 return sendBodyTemporal(dataOutputStream, settings, request, culrBuilder);
             }
 
-            throw new RequestException(request, "request.bodyContent or request.bodyFilePath is null or empty");
+            return null;
         } catch(IOException ex) {
             throw new IllegalStateException("Unable to create output stream for request body", ex);
         }

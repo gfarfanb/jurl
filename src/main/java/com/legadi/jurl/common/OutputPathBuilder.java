@@ -1,5 +1,6 @@
 package com.legadi.jurl.common;
 
+import static com.legadi.jurl.common.CommonUtils.fileSeparatorAsDelimiter;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.CommonUtils.stripStart;
@@ -26,7 +27,7 @@ public class OutputPathBuilder {
     }
 
     public OutputPathBuilder setRequestPath(String requestPath) {
-        String[] pathParts = stripStart(requestPath, File.separator + ".").split(File.separator);
+        String[] pathParts = stripStart(requestPath, File.separator + ".").split(fileSeparatorAsDelimiter());
         this.requestPath = Arrays
             .stream(pathParts)
             .map(part -> part.replaceAll(" ", "_"))

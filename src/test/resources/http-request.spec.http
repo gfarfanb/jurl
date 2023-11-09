@@ -1,0 +1,27 @@
+@default-request=
+@default-flow=
+
+### [api]
+@protocol = http
+@domain = localhost
+@port = {{local.server.port}}
+@basePath = basic
+
+Content-Type: application/json
+
+### <request-name>
+
+mock @statusCode = 201
+mock @responseContent = {....}
+mock Accept: application/json
+
+file @mineType = text/csv
+file identifier = {{UUID:}}
+
+output basic.functions.id = {{HTTP:header.Resource-ID}}
+
+assert EQUALS_TO 201 {{HTTP:status}}
+
+### [flow] <flow-name>
+
+step <options>

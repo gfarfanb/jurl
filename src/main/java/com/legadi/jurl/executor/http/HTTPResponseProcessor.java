@@ -161,8 +161,9 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
 
         writeJsonFile(overridePath, overrideProperties);
 
-        LOGGER.info("Output saved [" + stringExpander.getSettings().getEnvironment() + "]: " + overridePath);
-        LOGGER.info(printableOutput.toString());
+        LOGGER.fine("");
+        LOGGER.fine("Output saved [" + stringExpander.getSettings().getEnvironment() + "]: " + overridePath);
+        LOGGER.fine(printableOutput.toString());
     }
 
     private Map<String, String> readOutputValues(Settings settings, HTTPResponseEntry response,
@@ -205,8 +206,9 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
                 .append(" <- ")
                 .append(value));
 
-            LOGGER.info("Processed output [" + contentType + "]: " + response.getResponsePath());
-            LOGGER.info(printableOutput.toString());
+            LOGGER.fine("");
+            LOGGER.fine("Processed output [" + contentType + "]: " + response.getResponsePath());
+            LOGGER.fine(printableOutput.toString());
         }
 
         return outputValues;

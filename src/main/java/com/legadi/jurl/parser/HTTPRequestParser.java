@@ -48,7 +48,8 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         SECTION("^(?i)###[ ]*\\[(api|request|flow)\\](.*)"),
         REQUEST_FIELD("^(?i)@([\\w:.\\-_@~]+)[ ]*=(.*)"),
         FIELD_VARIABLE("^(?i)(file|mock|output)[ ]*[@]?([\\w:.\\-_@~]+)[ ]*=(.*)"),
-        URL_METHOD("^(?i)([\\w]+)?[ ]*(http|https):\\/\\/(.*)"),
+        URL("^(?i)http.*"),
+        URL_METHOD("^(?i)(get|head|post|put|delete|connect|options|trace|patch)[ ]*(.*)"),
         HEADER("^(?i)(mock)?[ ]*([\\w\\-]+): (.*)"),
         QUERY_PARAM("^&([\\w:.\\-_@~]+)=(.*)"),
         CONDITION_ASSERTION("^(?i)(condition|assert) ([\\w:.\\-_@~]+) (.*)"),
@@ -166,6 +167,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             return request.getMockDefinition();
         };
 
+        addURL(stringExpander, request, config, line);
         addURLMethod(stringExpander, request, config, line);
         addQueryParam(stringExpander, request, config, line);
         addHeader(stringExpander, request, mockSupplier, config, line);
@@ -274,6 +276,22 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         }
     }
 
+    private void addURL(StringExpander stringExpander, HTTPRequestEntry request,
+            Map<String, String> config, String line) {
+        LinePattern linePattern = LinePattern.URL;
+        Matcher matcher = linePattern.getPattern().matcher(line);
+
+        if(matcher.matches()) {
+            String url = stringExpander.replaceAllInContent(
+                config, line
+            );
+
+            request.setUrl(url);
+
+            commit(linePattern);
+        }
+    }
+
     private void addURLMethod(StringExpander stringExpander, HTTPRequestEntry request,
             Map<String, String> config, String line) {
         LinePattern linePattern = LinePattern.URL_METHOD;
@@ -284,7 +302,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                 config, trim(matcher.group(1))
             );
             String url = stringExpander.replaceAllInContent(
-                config, trim(matcher.group(2)) + "://" + trim(matcher.group(3))
+                config, trim(matcher.group(2))
             );
 
             if(isNotBlank(method)) {
