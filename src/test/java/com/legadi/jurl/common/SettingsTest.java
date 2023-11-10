@@ -41,7 +41,6 @@ public class SettingsTest {
         Assertions.assertTrue(settings.getOpenEditorCommand().isEmpty());
         Assertions.assertTrue(settings.getCredentialId().isEmpty());
         Assertions.assertEquals(AuthorizationType.EMPTY, settings.getAuthorizationType());
-        Assertions.assertFalse(settings.isExecutionAsFlow());
         Assertions.assertEquals(RequestBehaviour.REQUEST, settings.getRequestBehaviour());
         Assertions.assertFalse(settings.isMockRequest());
         Assertions.assertFalse(settings.isOpenOutputInEditor());

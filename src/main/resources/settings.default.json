@@ -8,7 +8,6 @@
     "openEditorCommand": "",
     "requestCredentialId": "",
     "requestAuthorizationType": "EMPTY",
-    "executionAsFlow": false,
     "requestBehaviour": "REQUEST",
     "requestType": "http",
     "mockRequest": false,

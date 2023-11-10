@@ -7,7 +7,6 @@ import java.util.Map;
 public class RequestInput<T extends RequestEntry<? extends MockEntry>> {
 
     private String defaultRequest;
-    private String defaultFlow;
     private T api;
     private Map<String, String> config = new HashMap<>();
     private Map<String, T> requests = new HashMap<>();
@@ -19,14 +18,6 @@ public class RequestInput<T extends RequestEntry<? extends MockEntry>> {
 
     public void setDefaultRequest(String defaultRequest) {
         this.defaultRequest = defaultRequest;
-    }
-
-    public String getDefaultFlow() {
-        return defaultFlow;
-    }
-
-    public void setDefaultFlow(String defaultFlow) {
-        this.defaultFlow = defaultFlow;
     }
 
     public T getApi() {

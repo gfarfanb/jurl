@@ -10,6 +10,7 @@ import static com.legadi.jurl.common.WriterUtils.writeFile;
 import static com.legadi.jurl.executor.RequestHandlersRegistry.findExecutorByRequestType;
 import static com.legadi.jurl.executor.RequestHandlersRegistry.findProcessorByRequestType;
 import static com.legadi.jurl.parser.RequestParserRegistry.findByRequestType;
+import static java.util.logging.Level.FINE;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -22,7 +23,6 @@ import java.util.stream.IntStream;
 
 import com.legadi.jurl.common.ExecutionLevels;
 import com.legadi.jurl.common.OutputPathBuilder;
-import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.common.StringExpander;
 import com.legadi.jurl.exception.CommandException;
@@ -89,43 +89,45 @@ public class RequestCommand {
         }
 
         int times = settings.getTimes() > 0 ? settings.getTimes() : FIRST_EXECUTION;
+        String inputName = isNotBlank(settings.getInputName())
+            ? settings.getInputName()
+            : requestInput.getDefaultRequest();
+        boolean isExecutionAsFlow = requestInput.getFlows().containsKey(inputName);
 
         IntStream.range(0, times)
             .parallel()
             .forEach(index -> {
-                if(settings.isExecutionAsFlow()) {
+                if(isExecutionAsFlow) {
                     if(index == FIRST_EXECUTION) {
                         executionLevels.nextLevel();
                     }
-                    processFlow(index, requestInputPath, requestInput,
+                    processFlow(index, inputName, requestInputPath, requestInput,
                         new StringExpander(settings.createForNextExecution()));
                 } else {
-                    processRequest(index, requestInputPath, requestInput,
+                    processRequest(index, inputName, requestInputPath, requestInput,
                         new StringExpander(settings.createForNextExecution()));
                 }
             });
     }
 
-    private void processFlow(int index, String requestInputPath, RequestInput<?> requestInput,
-            StringExpander stringExpander) {
+    private void processFlow(int index, String flowName, String requestInputPath,
+            RequestInput<?> requestInput, StringExpander stringExpander) {
         if(isEmpty(requestInput.getFlows())) {
             throw new CommandException("No flows are defined in the request file: " + requestInputPath);
         }
 
         Settings settings = stringExpander.getSettings();
-        Pair<String, List<StepEntry>> flowDef = pickFlow(requestInput, settings);
+        List<StepEntry> steps = pickFlow(flowName, requestInput, settings);
 
-        if(isEmpty(flowDef.getRight())) {
+        if(isEmpty(steps)) {
             throw new CommandException("No steps defined for the flow: "
-                + flowDef.getLeft() + " - " + requestInputPath);
+                + steps + " - " + requestInputPath);
         }
 
-        List<StepEntry> steps = flowDef.getRight();
         int stepIndex = 1;
 
         for(StepEntry step : steps) {
             Settings stepSettings = settings.createForStep();
-            String name = flowDef.getLeft();
 
             try {
                 executeStep(stepSettings, step, requestInputPath, requestInput);
@@ -133,7 +135,7 @@ public class RequestCommand {
                 throw ex;
             } catch(CommandException | RequestException ex) {
                 throw new CommandException(
-                    "[" + requestInputPath + "/" + name + "]"
+                    "[" + requestInputPath + "/" + flowName + "]"
                     + (settings.getTimes() > 1 ? " index=" + index + " ": "")
                     + " step("+ stepIndex + "/" + steps.size() + ") "
                     + ex.getMessage());
@@ -143,16 +145,13 @@ public class RequestCommand {
         }
     }
 
-    private Pair<String, List<StepEntry>> pickFlow(RequestInput<?> requestInput, Settings settings) {
-        String name = isNotBlank(settings.getInputName())
-            ? settings.getInputName()
-            : requestInput.getDefaultFlow();
-
-        if(isNotBlank(name)) {
-            return new Pair<>(name, requestInput.getFlows().get(name));
+    private List<StepEntry> pickFlow(String flowName, RequestInput<?> requestInput,
+            Settings settings) {
+        if(isNotBlank(flowName)) {
+            return requestInput.getFlows().get(flowName);
         } else {
-            String flowName = requestInput.getFlows().keySet().stream().findFirst().get();
-            return new Pair<>(flowName, requestInput.getFlows().get(flowName));
+            flowName = requestInput.getFlows().keySet().stream().findFirst().get();
+            return requestInput.getFlows().get(flowName);
         }
     }
 
@@ -167,56 +166,51 @@ public class RequestCommand {
         }
     }
 
-    private void processRequest(int index, String requestInputPath, RequestInput<?> requestInput,
-            StringExpander stringExpander) {
+    private void processRequest(int index, String requestName, String requestInputPath,
+            RequestInput<?> requestInput, StringExpander stringExpander) {
         if(isEmpty(requestInput.getRequests())) {
             throw new CommandException("No requests are defined in the request file: " + requestInputPath);
         }
 
         Settings settings = stringExpander.getSettings();
-        Pair<String, RequestEntry<? extends MockEntry>> requestDef = pickRequest(requestInput, settings);
+        RequestEntry<? extends MockEntry> request = pickRequest(requestName, requestInput, settings);
 
-        if(requestDef.getRight() == null) {
+        if(request == null) {
             throw new CommandException("No request defined for name: "
-                + requestDef.getLeft() + " - " + requestInputPath);
+                + requestName + " - " + requestInputPath);
         }
-        if(index == FIRST_EXECUTION && executionLevels.wasExecuted(requestInputPath, requestDef.getLeft())) {
+        if(index == FIRST_EXECUTION && executionLevels.wasExecuted(requestInputPath, requestName)) {
             throw new RecursiveCommandException("Request input was already processed: "
-                + requestInputPath + "/" + requestDef.getLeft() + " - " + executionLevels.getTrace());
+                + requestInputPath + "/" + requestName + " - " + executionLevels.getTrace());
         }
-
-        RequestEntry<? extends MockEntry> request = requestDef.getRight();
 
         if(requestInput.getApi() != null) {
             mergeRequestHeader(requestInput.getApi(), request);
         }
 
         try {
-            executeRequest(settings, requestInputPath, requestInput.getApi(), request);
+            executeRequest(stringExpander, requestInputPath, requestInput.getApi(), request);
         } catch(CommandException | RequestException ex) {
             throw new CommandException(
-                "[" + requestInputPath + "/" + requestDef.getLeft() + "] "
+                "[" + requestInputPath + "/" + requestName + "] "
                 + (settings.getTimes() > 1 ? " index=" + index + " ": "")
                 + ex.getMessage());
         }
     }
 
-    private Pair<String, RequestEntry<? extends MockEntry>> pickRequest(
+    private RequestEntry<? extends MockEntry> pickRequest(String requestName,
             RequestInput<?> requestInput, Settings settings) {
-        String name = isNotBlank(settings.getInputName())
-            ? settings.getInputName()
-            : requestInput.getDefaultRequest();
-
-        if(isNotBlank(name)) {
-            return new Pair<>(name, requestInput.getRequests().get(name));
+        if(isNotBlank(requestName)) {
+            return requestInput.getRequests().get(requestName);
         } else {
-            String requestName = requestInput.getRequests().keySet().stream().findFirst().get();
-            return new Pair<>(requestName, requestInput.getRequests().get(requestName));
+            requestName = requestInput.getRequests().keySet().stream().findFirst().get();
+            return requestInput.getRequests().get(requestName);
         }
     }
 
-    private void executeRequest(Settings settings, String requestInputPath,
+    private void executeRequest(StringExpander stringExpander, String requestInputPath,
             RequestEntry<? extends MockEntry> api, RequestEntry<? extends MockEntry> request) {
+        Settings settings = stringExpander.getSettings();
         RequestExecutor<?, ?> executor = findExecutorByRequestType(settings.getRequestType());
         ResponseProcessor<?, ?> processor = findProcessorByRequestType(settings.getRequestType());
         Optional<AssertionResult> conditionsResult = executor.accepts(settings, request);
@@ -227,6 +221,7 @@ public class RequestCommand {
                     + " environment=\"" + settings.getEnvironment() + "\""
                     + " executionTag=\"" + settings.getExecutionTag() + "\"");
             conditionsResult.get().getFailedMessages().forEach(LOGGER::info);
+            LOGGER.info("");
             return;
         }
 
@@ -296,6 +291,10 @@ public class RequestCommand {
         if(assertionResult.isPresent() && !assertionResult.get().isPassed()) {
             throw new InvalidAssertionsFoundException();
         }
+
+        if(settings.isOpenOutputInEditor()) {
+            openEditorCommand(stringExpander);
+        }
     }
 
     private void saveHistory(Settings settings, HistoryEntry entry, String requestPath, String requestName) {
@@ -311,6 +310,25 @@ public class RequestCommand {
             appendToFile(historyFile, historyFile.length() - 1, ",", toJsonString(entry), "]");
         } else {
             writeFile(historyPath, "[", toJsonString(entry), "]");
+        }
+    }
+
+    private void openEditorCommand(StringExpander stringExpander) {
+        Settings settings = stringExpander.getSettings();
+
+        if(isBlank(settings.getOpenEditorCommand())) {
+            LOGGER.fine("'openEditorCommand' is null or empty");
+            return;
+        }
+
+        try {
+            String cmd = stringExpander.replaceAllInContent(settings.getOpenEditorCommand());
+            LOGGER.fine("Executing command: " + cmd);
+            Process process = Runtime.getRuntime().exec(cmd);
+            LOGGER.info("Command status [" + process.waitFor() + "]: " + cmd);
+        } catch(Exception ex) {
+            LOGGER.log(FINE, "Error on opening editor command - " + ex.getMessage(), ex);
+            ex.printStackTrace();
         }
     }
 }

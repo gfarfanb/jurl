@@ -20,6 +20,7 @@ public class ValueModifierRegistry {
         registerModifier(DefaultValueModifier::new);
         registerModifier(NumberValueModifier::new);
         registerModifier(StringValueModifier::new);
+        registerModifier(WindowsSeparatorValueModifier::new);
     }
 
     private ValueModifierRegistry() {}

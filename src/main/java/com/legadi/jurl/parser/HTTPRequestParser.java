@@ -13,9 +13,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -43,7 +45,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     public enum LinePattern {
 
         EMPTY(""),
-        DEFAULT_TYPE("^(?i)@default-(request|flow)[ ]*=(.*)"),
+        DEFAULT_TYPE("^(?i)@default-request[ ]*=(.*)"),
         SET_CONFIG("^(?i)@set-([\\w:.\\-_@~]+)[ ]*=(.*)"),
         SECTION("^(?i)###[ ]*\\[(api|request|flow)\\](.*)"),
         REQUEST_FIELD("^(?i)@([\\w:.\\-_@~]+)[ ]*=(.*)"),
@@ -83,6 +85,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             AtomicReference<HTTPRequestEntry> apiCarrier = new AtomicReference<>(new HTTPRequestEntry());
             AtomicReference<HTTPRequestEntry> requestCarrier = new AtomicReference<>();
             AtomicReference<Pair<String, List<StepEntry>>> flowCarrier = new AtomicReference<>();
+            Set<String> sectionNames = new HashSet<>();
             Map<String, String> config = new HashMap<>();
 
             requestInput.setApi(apiCarrier.get());
@@ -90,7 +93,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             for(String line : lines) {
                 try {
                     readEmptyLine(line);
-                    readSection(requestCarrier, flowCarrier, requestInput, line);
+                    readSection(sectionNames, requestCarrier, flowCarrier, requestInput, line);
                     readComment(line);
 
                     addDefaultType(stringExpander, requestInput, config, line);
@@ -210,16 +213,11 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         Matcher matcher = linePattern.getPattern().matcher(line);
 
         if(matcher.find()) {
-            String type = trim(matcher.group(1));
             String value = stringExpander.replaceAllInContent(
-                config, trim(matcher.group(2))
+                config, trim(matcher.group(1))
             );
 
-            if(type.equalsIgnoreCase("request")) {
-                requestInput.setDefaultRequest(value);
-            } else if(type.equalsIgnoreCase("flow")) {
-                requestInput.setDefaultFlow(value);
-            }
+            requestInput.setDefaultRequest(value);
 
             commit(linePattern);
         }
@@ -242,7 +240,8 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         }
     }
 
-    private void readSection(AtomicReference<HTTPRequestEntry> requestCarrier,
+    private void readSection(Set<String> sectionNames,
+            AtomicReference<HTTPRequestEntry> requestCarrier,
             AtomicReference<Pair<String, List<StepEntry>>> flowCarrier,
             RequestInput<HTTPRequestEntry> requestInput, String line) {
         LinePattern linePattern = LinePattern.SECTION;
@@ -251,6 +250,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         if(matcher.find()) {
             String type = trim(matcher.group(1)).toLowerCase();
             Section section = null;
+            String name = null;
 
             switch(type) {
                 case "api":
@@ -258,18 +258,25 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                     break;
                 case "request":
                     HTTPRequestEntry request = new HTTPRequestEntry();
-                    request.setName(trim(matcher.group(2)));
+                    name = trim(matcher.group(2));
+                    request.setName(name);
                     requestCarrier.set(request);
-                    requestInput.getRequests().put(requestCarrier.get().getName(), requestCarrier.get());
+                    requestInput.getRequests().put(name, requestCarrier.get());
                     section = Section.REQUEST;
                     break;
                 case "flow":
-                    String name = trim(matcher.group(2));
+                    name = trim(matcher.group(2));
                     Pair<String, List<StepEntry>> flow = new Pair<>(name, new LinkedList<>());
                     flowCarrier.set(flow);
-                    requestInput.getFlows().put(flowCarrier.get().getLeft(), flowCarrier.get().getRight());
+                    requestInput.getFlows().put(name, flowCarrier.get().getRight());
                     section = Section.FLOW;
                     break;
+            }
+
+            if(sectionNames.contains(name)) {
+                throw new CommandException("Request/Flow name already exists: " + name);
+            } else if(name != null) {
+                sectionNames.add(name);
             }
 
             commit(linePattern, section);

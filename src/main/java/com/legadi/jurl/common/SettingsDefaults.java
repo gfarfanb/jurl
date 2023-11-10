@@ -2,7 +2,6 @@ package com.legadi.jurl.common;
 
 import static com.legadi.jurl.common.SettingsConstants.PROP_ADD_ON_OPTION_CLASSES;
 import static com.legadi.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
-import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_AS_FLOW;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_OUTPUT_PATH;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_PATH;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_TIMES;
@@ -11,6 +10,7 @@ import static com.legadi.jurl.common.SettingsConstants.PROP_INPUT_NAME;
 import static com.legadi.jurl.common.SettingsConstants.PROP_MERGE_BODY_USING_TYPE;
 import static com.legadi.jurl.common.SettingsConstants.PROP_MOCK_REQUEST;
 import static com.legadi.jurl.common.SettingsConstants.PROP_OPEN_EDITOR_COMMAND;
+import static com.legadi.jurl.common.SettingsConstants.PROP_OPEN_OUTPUT_IN_EDITOR;
 import static com.legadi.jurl.common.SettingsConstants.PROP_OVERRIDE_REQUEST_FILE_PATH;
 import static com.legadi.jurl.common.SettingsConstants.PROP_PRINTABLE_MIME_TYPES;
 import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_AUTHORIZATION_TYPE;
@@ -81,10 +81,6 @@ public interface SettingsDefaults {
         return AuthorizationType.valueOf(get(PROP_REQUEST_AUTHORIZATION_TYPE));
     }
 
-    default boolean isExecutionAsFlow() {
-        return get(PROP_EXECUTION_AS_FLOW, Boolean::valueOf);
-    }
-
     default RequestBehaviour getRequestBehaviour() {
         return get(PROP_REQUEST_BEHAVIOUR, RequestBehaviour::valueOf);
     }
@@ -98,7 +94,7 @@ public interface SettingsDefaults {
     }
 
     default boolean isOpenOutputInEditor() {
-        return get(PROP_OPEN_EDITOR_COMMAND, Boolean::valueOf);
+        return get(PROP_OPEN_OUTPUT_IN_EDITOR, Boolean::valueOf);
     }
 
     default int getTimes() {

@@ -56,7 +56,7 @@ public class FlowAPITest extends EmbeddedAPITest {
 
         jurl("-n", "basicWithAuthorization",
             "-s", "basic.with.authorization.tag", basicWithAuthorizationTag,
-            "-f", "src/test/resources/flow.spec.http");
+            "src/test/resources/flow.spec.http");
 
         UUID commonCorrelationId = requestCatcher.getLastCorrelationId();
 
@@ -83,6 +83,6 @@ public class FlowAPITest extends EmbeddedAPITest {
     @Test
     public void invalidRecursiveFlow() {
         Assertions.assertThrows(RecursiveCommandException.class,
-            () -> jurl("-n", "invalidRecursiveFlow", "-f", "src/test/resources/flow.spec.http"));
+            () -> jurl("-n", "invalidRecursiveFlow", "src/test/resources/flow.spec.http"));
     }
 }

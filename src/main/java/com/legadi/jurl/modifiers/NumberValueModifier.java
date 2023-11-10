@@ -35,5 +35,4 @@ public class NumberValueModifier implements ValueModifier {
                 throw new InvalidModifierOperationException(args[0]);
         }
     }
-    
 }

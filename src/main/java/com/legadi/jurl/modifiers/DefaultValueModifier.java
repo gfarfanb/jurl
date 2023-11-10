@@ -24,5 +24,4 @@ public class DefaultValueModifier implements ValueModifier {
             return value;
         }
     }
-    
 }

@@ -29,7 +29,6 @@ public class OptionsRegistry {
         registerOption(CustomParserOption::new);
         registerOption(CustomReaderOption::new);
         registerOption(EnvironmentOption::new);
-        registerOption(FlowExecutionOption::new);
         registerOption(HelpOption::new);
         registerOption(MergeBodyOption::new);
         registerOption(MockRequestOption::new);

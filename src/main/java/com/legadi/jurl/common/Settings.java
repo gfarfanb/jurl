@@ -40,17 +40,17 @@ public class Settings implements SettingsDefaults {
         SETTINGS.putAllInCommon(loadInternalJsonProperties("settings.default.json"));
 
         Path configPath = createDirectories(Paths.get(
-            SETTINGS.get(DEFAULT_ENVIRONMENT, PROP_CONFIG_PATH)
+            SETTINGS.get(null, PROP_CONFIG_PATH)
         ));
 
-        SETTINGS.putAll(DEFAULT_ENVIRONMENT, loadJsonProperties(configPath.resolve(DEFAULT_CONFIG_FILE)));
-        CREDENTIALS.putAll(DEFAULT_ENVIRONMENT, loadCredentials(configPath.resolve(DEFAULT_CREDENTIALS_FILE)));
+        SETTINGS.putAllInCommon(loadJsonProperties(configPath.resolve(DEFAULT_CONFIG_FILE)));
+        CREDENTIALS.putAllInCommon(loadCredentials(configPath.resolve(DEFAULT_CREDENTIALS_FILE)));
 
         Path executionOutputPath = createDirectories(Paths.get(
-            SETTINGS.get(DEFAULT_ENVIRONMENT, PROP_EXECUTION_OUTPUT_PATH)
+            SETTINGS.get(null, PROP_EXECUTION_OUTPUT_PATH)
         ));
 
-        SETTINGS.putAll(DEFAULT_ENVIRONMENT, loadJsonProperties(executionOutputPath.resolve(DEFAULT_OVERRIDE_FILE)));
+        SETTINGS.putAllInCommon(loadJsonProperties(executionOutputPath.resolve(DEFAULT_OVERRIDE_FILE)));
     }
 
     private final Map<String, String> commandProperties;

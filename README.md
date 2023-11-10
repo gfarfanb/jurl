@@ -2,3 +2,10 @@
 
 # jurl
 CLI Java application to provides an API test/client tool.
+
+**config.json**
+```json
+{
+    "openEditorCommand": "\"C:\\Program Files\\Sublime Text\\subl.exe\" \"{{~win-separator~HTTP/response.path}}\""
+}
+```
