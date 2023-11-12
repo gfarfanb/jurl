@@ -117,6 +117,11 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                 }
             }
 
+            if(isNotBlank(requestInput.getDefaultRequest())
+                    && !sectionNames.contains(requestInput.getDefaultRequest())) {
+                throw new CommandException("Default request is not defined: " + requestInput.getDefaultRequest());
+            }
+
             return requestInput;
         } catch(IllegalAccessException | IOException ex) {
             throw new IllegalStateException("Unable to process override request file: " + requestPath, ex);
@@ -130,15 +135,14 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             StringExpander stringExpander = new StringExpander(settings);
 
             AtomicReference<HTTPRequestEntry> requestCarrier = new AtomicReference<>(new HTTPRequestEntry());
+            Map<String, String> config = new HashMap<>();
 
             for(String line : lines) {
                 try {
                     readEmptyLine(line);
                     readComment(line);
 
-                    line = stringExpander.replaceAllInContent(line);
-
-                    decorateRequest(stringExpander, requestCarrier, new HashMap<>(), line);
+                    decorateRequest(stringExpander, requestCarrier, config, line);
                 } catch(ParsedLineException ex) {}
             }
 
