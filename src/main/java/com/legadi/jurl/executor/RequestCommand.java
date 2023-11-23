@@ -86,7 +86,8 @@ public class RequestCommand {
         RequestInput<?> parsedRequestInput = requestParser.parseInput(settings, Paths.get(requestInputPath));
 
         if(isMainInput) {
-            Settings.mergeCommonProperties(parsedRequestInput.getConfig());
+            LOGGER.fine("Loading parsed config [" + settings.getEnvironment() + "]: " + parsedRequestInput.getConfig());
+            Settings.mergeProperties(settings.getEnvironment(), parsedRequestInput.getConfig());
         }
 
         RequestModifier<?, ?> modifier = findModifierByRequestType(settings.getRequestType());

@@ -26,13 +26,14 @@ public class Settings implements SettingsDefaults {
     public static final DateTimeFormatter TAG_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd.HH-mm-ss.n");
     public static final String DEFAULT_ENVIRONMENT = "default";
 
+    private static final String DEFAULT_SETTINGS_FILE = "settings.default.json";
     private static final String DEFAULT_CONFIG_FILE = "config.json";
     private static final String DEFAULT_OVERRIDE_FILE = "override.json";
     private static final String FORMAT_CONFIG_FILE = "config.%s.json";
     private static final String FORMAT_OVERRIDE_FILE = "override.%s.json";
 
     static {
-        SETTINGS.putAllInCommon(loadInternalJsonProperties("settings.default.json"));
+        SETTINGS.putAllInCommon(loadInternalJsonProperties(DEFAULT_SETTINGS_FILE));
 
         Path configPath = createDirectories(Paths.get(
             SETTINGS.get(null, PROP_CONFIG_PATH)
@@ -181,9 +182,5 @@ public class Settings implements SettingsDefaults {
 
     public static void mergeProperties(String environment, Map<String, String> properties) {
         SETTINGS.putAll(environment, properties);
-    }
-
-    public static void mergeCommonProperties(Map<String, String> properties) {
-        SETTINGS.putAllInCommon(properties);
     }
 }

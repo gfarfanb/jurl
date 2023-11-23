@@ -95,6 +95,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             Map<String, String> config = new HashMap<>();
 
             requestInput.setApi(apiCarrier.get());
+            requestInput.setConfig(config);
 
             LOGGER.fine("Processing lines of file: " + requestPath);
             processLines(lines, stringExpander, Section.DEFAULT, requestInput,
