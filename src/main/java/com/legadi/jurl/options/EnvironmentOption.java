@@ -1,7 +1,6 @@
 package com.legadi.jurl.options;
 
 import static com.legadi.jurl.common.JsonUtils.loadJsonProperties;
-import static com.legadi.jurl.common.LoaderUtils.loadCredentials;
 
 import java.nio.file.Path;
 
@@ -26,7 +25,7 @@ public class EnvironmentOption extends Option {
 
     @Override
     public String getDescription() {
-        return "Loads to the settings the following files:\n'./config[.<env>].json' and (optional) './credentials[.<env>].json'.";
+        return "Loads to the settings the file: \n'./config[.<env>].json'.";
     }
 
     @Override
@@ -37,11 +36,10 @@ public class EnvironmentOption extends Option {
 
         Path configPath = settings.getConfigFilePath();
         Path overridePath = settings.getOverrideFilePath();
-        Path credentialsPath = settings.getCredentialsFilePath();
 
         Settings.mergeProperties(environment, loadJsonProperties(configPath));
         Settings.mergeProperties(environment, loadJsonProperties(overridePath));
-        Settings.mergeCredentials(environment, loadCredentials(credentialsPath));
+
         return true;
     }
 }

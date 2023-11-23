@@ -1,7 +1,7 @@
 package com.legadi.jurl.api;
 
 import static com.legadi.jurl.common.JsonUtils.loadJsonFile;
-import static com.legadi.jurl.executor.http.HTTPRequestExecutor.BODY_TEMPORAL_PATH;
+import static com.legadi.jurl.executor.http.HTTPRequestModifier.BODY_TEMPORAL_PATH;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -40,7 +40,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("create", createRequest.getName());
         Assertions.assertNull(createRequest.getUrl());
         Assertions.assertEquals("http", createRequest.getProtocol());
-        Assertions.assertEquals("localhost", createRequest.getDomain());
+        Assertions.assertEquals("localhost", createRequest.getHost());
         Assertions.assertEquals(Integer.toString(port), createRequest.getPort());
         Assertions.assertEquals("basic", createRequest.getBasePath());
         Assertions.assertEquals("/body", createRequest.getEndpoint());
@@ -93,7 +93,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("obtain", obtainRequest.getName());
         Assertions.assertNull(obtainRequest.getUrl());
         Assertions.assertEquals("http", obtainRequest.getProtocol());
-        Assertions.assertEquals("localhost", obtainRequest.getDomain());
+        Assertions.assertEquals("localhost", obtainRequest.getHost());
         Assertions.assertEquals(Integer.toString(port), obtainRequest.getPort());
         Assertions.assertEquals("basic", obtainRequest.getBasePath());
         Assertions.assertEquals("/body/" + id, obtainRequest.getEndpoint());
@@ -155,7 +155,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("update", updateRequest.getName());
         Assertions.assertNull(updateRequest.getUrl());
         Assertions.assertEquals("http", updateRequest.getProtocol());
-        Assertions.assertEquals("localhost", updateRequest.getDomain());
+        Assertions.assertEquals("localhost", updateRequest.getHost());
         Assertions.assertEquals(Integer.toString(port), updateRequest.getPort());
         Assertions.assertEquals("basic", updateRequest.getBasePath());
         Assertions.assertEquals("/body/" + id, updateRequest.getEndpoint());
@@ -216,7 +216,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("remove", removeRequest.getName());
         Assertions.assertNull(removeRequest.getUrl());
         Assertions.assertEquals("http", removeRequest.getProtocol());
-        Assertions.assertEquals("localhost", removeRequest.getDomain());
+        Assertions.assertEquals("localhost", removeRequest.getHost());
         Assertions.assertEquals(Integer.toString(port), removeRequest.getPort());
         Assertions.assertEquals("basic", removeRequest.getBasePath());
         Assertions.assertEquals("/body/" + id, removeRequest.getEndpoint());

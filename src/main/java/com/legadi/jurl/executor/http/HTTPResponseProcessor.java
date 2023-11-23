@@ -40,6 +40,11 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
     private static final String OUTPUT_PREFIX = "OUT/";
 
     @Override
+    public String type() {
+        return "http";
+    }
+
+    @Override
     public Optional<AssertionResult> processResponse(Settings settings, HTTPRequestEntry request, HTTPResponseEntry response)
             throws RequestException {
         RequestBehaviour behaviour = settings.getRequestBehaviour();
@@ -75,6 +80,33 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
         } else {
             return evaluate(settings, values, request.getAssertions());
         }
+    }
+
+    @Override
+    public Map<String, Object> getDetailsFromResponse(HTTPResponseEntry response) {
+        if(response == null) {
+            return null;
+        }
+
+        Map<String, Object> details = new HashMap<>();
+
+        if(response.getBodyPath() != null) {
+            details.put("bodyPath", response.getBodyPath().toString());
+        }
+        if(response.getSentFilePath() != null) {
+            details.put("sentFilePath", response.getSentFilePath().toString());
+        }
+        if(response.getResponsePath() != null) {
+            details.put("responsePath", response.getResponsePath().toString());
+        }
+        if(response.getStatusCode() > 0) {
+            details.put("statusCode", response.getStatusCode());
+        }
+        if(isNotEmpty(response.getResponseHeaders())) {
+            details.put("responseHeaders", response.getResponseHeaders());
+        }
+
+        return details;
     }
 
     private void mapOutput(Settings settings, HTTPResponseEntry response) {

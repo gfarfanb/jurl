@@ -32,6 +32,7 @@ import com.legadi.jurl.model.AssertionType;
 import com.legadi.jurl.model.RequestInput;
 import com.legadi.jurl.model.StepEntry;
 import com.legadi.jurl.model.http.HTTPMockEntry;
+import com.legadi.jurl.model.http.HTTPRequestAuthEntry;
 import com.legadi.jurl.model.http.HTTPRequestEntry;
 import com.legadi.jurl.model.http.HTTPRequestFileEntry;
 import com.legadi.jurl.options.OptionsReader;
@@ -40,6 +41,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
     private static final Map<String, Field> REQUEST_FIELDS = getAllFields(HTTPRequestEntry.class);
     private static final Map<String, Field> REQUEST_FILE_FIELDS = getAllFields(HTTPRequestFileEntry.class);
+    private static final Map<String, Field> REQUEST_AUTH_FIELDS = getAllFields(HTTPRequestAuthEntry.class);
     private static final Map<String, Field> MOCK_FIELDS = getAllFields(HTTPMockEntry.class);
 
     public enum LinePattern {
@@ -49,7 +51,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         SET_CONFIG("^(?i)@set-([\\w:.\\-_@~]+)[ ]*=(.*)"),
         SECTION("^(?i)###[ ]*\\[(api|request|flow)\\](.*)"),
         REQUEST_FIELD("^(?i)@([\\w:.\\-_@~]+)[ ]*=(.*)"),
-        FIELD_VARIABLE("^(?i)(file|mock|output)[ ]*[@]?([\\w:.\\-_@~]+)[ ]*=(.*)"),
+        FIELD_VARIABLE("^(?i)(file|auth|mock|output)[ ]*[@]?([\\w:.\\-_@~]+)[ ]*=(.*)"),
         URL("^(?i)http.*"),
         URL_METHOD("^(?i)(get|head|post|put|delete|connect|options|trace|patch)[ ]*(.*)"),
         HEADER("^(?i)(mock)?[ ]*([\\w\\-]+): (.*)"),
@@ -110,7 +112,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                             decorateFlow(stringExpander, flowCarrier, config, line);
                             break;
                         default:
-                            throw new CommandException("Section in request input is not defined yet");
+                            throw new CommandException("No section (api, request, flow) defined in request input");
                     }
                 } catch(ParsedLineException ex) {
                     section = ex.getSection() != null ? ex.getSection() : section;
@@ -167,6 +169,12 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             }
             return request.getRequestFile();
         };
+        Supplier<HTTPRequestAuthEntry> authSupplier = () -> {
+            if(request.getRequestAuth() == null) {
+                request.setRequestAuth(new HTTPRequestAuthEntry());
+            }
+            return request.getRequestAuth();
+        };
         Supplier<HTTPMockEntry> mockSupplier = () -> {
             if(request.getMockDefinition() == null) {
                 request.setMockDefinition(new HTTPMockEntry());
@@ -179,7 +187,8 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         addQueryParam(stringExpander, request, config, line);
         addHeader(stringExpander, request, mockSupplier, config, line);
         addRequestField(stringExpander, request, config, line);
-        addFieldOrVariable(stringExpander, request, fileSupplier, mockSupplier, config, line);
+        addFieldOrVariable(stringExpander, request,
+            fileSupplier, authSupplier, mockSupplier, config, line);
         addConditionOrAssertion(stringExpander, request, config, line);
 
         String body = request.getBodyContent();
@@ -263,6 +272,11 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                 case "request":
                     HTTPRequestEntry request = new HTTPRequestEntry();
                     name = trim(matcher.group(2));
+
+                    if(isBlank(name)) {
+                        throw new CommandException("Request name is null or empty");
+                    }
+
                     request.setName(name);
                     requestCarrier.set(request);
                     requestInput.getRequests().put(name, requestCarrier.get());
@@ -270,6 +284,11 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                     break;
                 case "flow":
                     name = trim(matcher.group(2));
+
+                    if(isBlank(name)) {
+                        throw new CommandException("Flow name is null or empty");
+                    }
+
                     Pair<String, List<StepEntry>> flow = new Pair<>(name, new LinkedList<>());
                     flowCarrier.set(flow);
                     requestInput.getFlows().put(name, flowCarrier.get().getRight());
@@ -279,7 +298,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
             if(sectionNames.contains(name)) {
                 throw new CommandException("Request/Flow name already exists: " + name);
-            } else if(name != null) {
+            } else if(isNotBlank(name)) {
                 sectionNames.add(name);
             }
 
@@ -389,8 +408,11 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         }
     }
 
-    private void addFieldOrVariable(StringExpander stringExpander, HTTPRequestEntry request,
-            Supplier<HTTPRequestFileEntry> fileSupplier, Supplier<HTTPMockEntry> mockSupplier,
+    private void addFieldOrVariable(StringExpander stringExpander,
+            HTTPRequestEntry request,
+            Supplier<HTTPRequestFileEntry> fileSupplier,
+            Supplier<HTTPRequestAuthEntry> authSupplier,
+            Supplier<HTTPMockEntry> mockSupplier,
             Map<String, String> config, String line) throws IllegalAccessException {
         LinePattern linePattern = LinePattern.FIELD_VARIABLE;
         Matcher matcher = linePattern.getPattern().matcher(line);
@@ -410,6 +432,12 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                     addField(REQUEST_FILE_FIELDS, fileSupplier.get(), fieldName, value);
                 } else {
                     fileSupplier.get().getFormData().put(fieldName, value);
+                }
+            } else if(type.equalsIgnoreCase("auth")) {
+                value = stringExpander.replaceAllInContent(config, value);
+
+                if(isFieldRequired) {
+                    addField(REQUEST_AUTH_FIELDS, authSupplier.get(), fieldName, value);
                 }
             } else if(type.equalsIgnoreCase("mock")) {
                 value = stringExpander.replaceAllInContent(config, value);

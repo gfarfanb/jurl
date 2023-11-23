@@ -38,8 +38,9 @@ public abstract class EmbeddedAPITest {
         properties.put("local.server.port", Integer.toString(port));
         Settings.mergeProperties(Settings.DEFAULT_ENVIRONMENT, properties);
 
-        RequestHandlersRegistry.registerHandler(
-            () -> new HTTPRequestTestExecutor(correlationId, requestCatcher),
+        RequestHandlersRegistry.registerExecutor(
+            () -> new HTTPRequestTestExecutor(correlationId, requestCatcher));
+        RequestHandlersRegistry.registerProcessor(
             () -> new HTTPResponseTestProcessor(correlationId, requestCatcher)
         );
 

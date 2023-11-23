@@ -1,13 +1,14 @@
-package com.legadi.jurl.common;
+package com.legadi.jurl.executor.http;
 
-import static com.legadi.jurl.common.RequestUtils.mergeRequestHeader;
+import static com.legadi.jurl.executor.RequestHandlersRegistry.findModifierByRequestType;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.legadi.jurl.executor.RequestModifier;
 import com.legadi.jurl.model.http.HTTPRequestEntry;
 
-public class RequestUtilsTest {
+public class HTTPRequestModifierTest {
 
     @Test
     public void mergeRequestHeaderValidation() {
@@ -15,8 +16,8 @@ public class RequestUtilsTest {
 
         api.setUrl("https://localhost:9876");
         api.setProtocol("https");
-        api.setDomain("localhost:9876");
         api.setPort("9876");
+        api.setHost("localhost:9876");
         api.setBasePath("/api");
         api.setEndpoint("/v1");
 
@@ -24,16 +25,17 @@ public class RequestUtilsTest {
 
         request.setUrl("http://localhost:1234");
         request.setProtocol("http");
-        request.setDomain("localhost:1234");
+        request.setHost("localhost:1234");
         request.setPort("1234");
         request.setBasePath("/base");
         request.setEndpoint("/endpoint");
 
-        mergeRequestHeader(api, request);
+        RequestModifier<?, ?> modifier = findModifierByRequestType("http");
+        modifier.mergeHeader(api, request);
 
         Assertions.assertEquals("http://localhost:1234", request.getUrl());
         Assertions.assertEquals("http", request.getProtocol());
-        Assertions.assertEquals("localhost:1234", request.getDomain());
+        Assertions.assertEquals("localhost:1234", request.getHost());
         Assertions.assertEquals("1234", request.getPort());
         Assertions.assertEquals("/base", request.getBasePath());
         Assertions.assertEquals("/endpoint", request.getEndpoint());
@@ -45,18 +47,19 @@ public class RequestUtilsTest {
 
         api.setUrl("https://localhost:9876");
         api.setProtocol("https");
-        api.setDomain("localhost:9876");
+        api.setHost("localhost:9876");
         api.setPort("9876");
         api.setBasePath("/api");
         api.setEndpoint("/v1");
 
         HTTPRequestEntry request = new HTTPRequestEntry();
 
-        mergeRequestHeader(api, request);
+        RequestModifier<?, ?> modifier = findModifierByRequestType("http");
+        modifier.mergeHeader(api, request);
 
         Assertions.assertEquals("https://localhost:9876", request.getUrl());
         Assertions.assertEquals("https", request.getProtocol());
-        Assertions.assertEquals("localhost:9876", request.getDomain());
+        Assertions.assertEquals("localhost:9876", request.getHost());
         Assertions.assertEquals("9876", request.getPort());
         Assertions.assertEquals("/api", request.getBasePath());
         Assertions.assertEquals("/v1", request.getEndpoint());

@@ -3,7 +3,7 @@
 
 ### [api]
 @protocol = http
-@domain = localhost
+@host = localhost
 @port = {{local.server.port}}
 @basePath = basic
 

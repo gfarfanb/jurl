@@ -76,7 +76,7 @@ public class StringExpander {
                     }
                 }
 
-                if(isNotBlank(value)) {
+                if(value != null) {
                     String paramRegex = settings.getSettingsParamRegexBegin()
                         + paramTag + settings.getSettingsParamRegexEnd();
 

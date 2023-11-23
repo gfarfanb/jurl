@@ -1,57 +1,24 @@
 package com.legadi.jurl.common;
 
-import static com.legadi.jurl.common.JsonUtils.loadJsonFile;
-
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import com.google.gson.reflect.TypeToken;
-import com.legadi.jurl.exception.CommandException;
-import com.legadi.jurl.model.Credential;
-
 public class LoaderUtils {
-
-    private static final Logger LOGGER = Logger.getLogger(LoaderUtils.class.getName());
 
     private static final Map<String, List<String>> CACHED_LINES = new HashMap<>();
     private static final Lock LOCK = new ReentrantLock();
 
     private LoaderUtils() {}
-
-    public static Map<String, Credential> loadCredentials(Path credentialsPath) {
-        File credentialsFile = credentialsPath.toFile();
-
-        if(credentialsFile.exists()) {
-            Map<String, Credential> credentials = loadJsonFile(credentialsFile.toString(), new TypeToken<List<Credential>>() {})
-                .stream()
-                .collect(Collectors.toMap(
-                    Credential::getId,
-                    c -> c,
-                    (c1, c2) -> { throw new CommandException("Credential ID already exists: " + c1.getId()); },
-                    HashMap::new
-                ));
-
-            LOGGER.fine("Loaded credentials file: " + credentialsPath);
-
-            return credentials;
-        } else {
-            LOGGER.fine("Credentials file not found: " + credentialsPath);
-            return new HashMap<>();
-        }
-    }
 
     public static List<String> loadAndCacheInternalLines(String internalFilePath) {
         LOCK.lock();

@@ -16,17 +16,18 @@ public class OptionsRegistry {
 
     private static final Map<String, Supplier<Option>> REGISTERED_OPTIONS = new HashMap<>();
     private static final Map<String, Supplier<Option>> ADD_ON_OPTIONS = new HashMap<>();
+    private static final Map<Class<?>, Supplier<Option>> OPTION_BY_CLASS = new HashMap<>();
 
     static {
-        registerOption(AuthorizationBasicOption::new);
-        registerOption(AuthorizationTokenOption::new);
         registerOption(CleanOutputOption::new);
         registerOption(CurlPrintOption::new);
         registerOption(CustomGeneratorOption::new);
-        registerOption(CustomHandlerOption::new);
         registerOption(CustomMixerOption::new);
         registerOption(CustomModifierOption::new);
         registerOption(CustomParserOption::new);
+        registerOption(CustomRequestExecutorOption::new);
+        registerOption(CustomRequestModifierOption::new);
+        registerOption(CustomRequestProcessorOption::new);
         registerOption(CustomReaderOption::new);
         registerOption(EnvironmentOption::new);
         registerOption(HelpOption::new);
@@ -79,6 +80,8 @@ public class OptionsRegistry {
             registeredOptions.put(option.getAlias().toLowerCase(), optionSupplier);
         }
 
+        OPTION_BY_CLASS.put(option.getClass(), optionSupplier);
+
         return option;
     }
 
@@ -105,6 +108,16 @@ public class OptionsRegistry {
             return optionSupplier.get();
         } else {
             return null;
+        }
+    }
+
+    public static Option findByType(Class<?> optionClass) {
+        Supplier<Option> optionSupplier = OPTION_BY_CLASS.get(optionClass);
+
+        if(optionSupplier != null) {
+            return optionSupplier.get();
+        } else {
+            throw new IllegalStateException("Unable to find option by type: " + optionClass);
         }
     }
 }

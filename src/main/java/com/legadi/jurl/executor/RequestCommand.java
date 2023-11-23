@@ -4,10 +4,10 @@ import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.JsonUtils.toJsonString;
-import static com.legadi.jurl.common.RequestUtils.mergeRequestHeader;
 import static com.legadi.jurl.common.WriterUtils.appendToFile;
 import static com.legadi.jurl.common.WriterUtils.writeFile;
 import static com.legadi.jurl.executor.RequestHandlersRegistry.findExecutorByRequestType;
+import static com.legadi.jurl.executor.RequestHandlersRegistry.findModifierByRequestType;
 import static com.legadi.jurl.executor.RequestHandlersRegistry.findProcessorByRequestType;
 import static com.legadi.jurl.parser.RequestParserRegistry.findByRequestType;
 import static java.util.logging.Level.FINE;
@@ -23,6 +23,7 @@ import java.util.stream.IntStream;
 
 import com.legadi.jurl.common.ExecutionLevels;
 import com.legadi.jurl.common.OutputPathBuilder;
+import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.common.StringExpander;
 import com.legadi.jurl.exception.CommandException;
@@ -82,17 +83,19 @@ public class RequestCommand {
         }
 
         RequestParser<?> requestParser = findByRequestType(settings.getRequestType());
-        RequestInput<?> requestInput = requestParser.parseInput(settings, Paths.get(requestInputPath));
+        RequestInput<?> parsedRequestInput = requestParser.parseInput(settings, Paths.get(requestInputPath));
 
         if(isMainInput) {
-            Settings.mergeCommonProperties(requestInput.getConfig());
+            Settings.mergeCommonProperties(parsedRequestInput.getConfig());
         }
 
+        RequestModifier<?, ?> modifier = findModifierByRequestType(settings.getRequestType());
+        Pair<String, RequestInput<?>> requestInput = modifier.appendAuthenticationIfExists(
+                settings, parsedRequestInput);
+
         int times = settings.getTimes() > 0 ? settings.getTimes() : FIRST_EXECUTION;
-        String inputName = isNotBlank(settings.getInputName())
-            ? settings.getInputName()
-            : requestInput.getDefaultRequest();
-        boolean isExecutionAsFlow = requestInput.getFlows().containsKey(inputName);
+        String inputName = requestInput.getLeft();
+        boolean isExecutionAsFlow = requestInput.getRight().getFlows().containsKey(inputName);
 
         IntStream.range(0, times)
             .parallel()
@@ -101,10 +104,18 @@ public class RequestCommand {
                     if(index == FIRST_EXECUTION) {
                         executionLevels.nextLevel();
                     }
-                    processFlow(index, inputName, requestInputPath, requestInput,
+                    LOGGER.fine("Executing flow -"
+                        + " index=" + index
+                        + " inputName=\"" + inputName + "\""
+                        + " requestInputPath=\"" + requestInputPath + "\"");
+                    processFlow(index, inputName, requestInputPath, requestInput.getRight(),
                         new StringExpander(settings.createForNextExecution()));
                 } else {
-                    processRequest(index, inputName, requestInputPath, requestInput,
+                    LOGGER.fine("Executing request -"
+                        + " index=" + index
+                        + " inputName=\"" + inputName + "\""
+                        + " requestInputPath=\"" + requestInputPath + "\"");
+                    processRequest(index, inputName, requestInputPath, requestInput.getRight(),
                         new StringExpander(settings.createForNextExecution()));
                 }
             });
@@ -185,7 +196,8 @@ public class RequestCommand {
         }
 
         if(requestInput.getApi() != null) {
-            mergeRequestHeader(requestInput.getApi(), request);
+            RequestModifier<?, ?> modifier = findModifierByRequestType(settings.getRequestType());
+            modifier.mergeHeader(requestInput.getApi(), request);
         }
 
         try {
@@ -211,6 +223,7 @@ public class RequestCommand {
     private void executeRequest(StringExpander stringExpander, String requestInputPath,
             RequestEntry<? extends MockEntry> api, RequestEntry<? extends MockEntry> request) {
         Settings settings = stringExpander.getSettings();
+        RequestModifier<?, ?> modifier = findModifierByRequestType(settings.getRequestType());
         RequestExecutor<?, ?> executor = findExecutorByRequestType(settings.getRequestType());
         ResponseProcessor<?, ?> processor = findProcessorByRequestType(settings.getRequestType());
         Optional<AssertionResult> conditionsResult = executor.accepts(settings, request);
@@ -226,15 +239,15 @@ public class RequestCommand {
         }
 
         if(api != null) {
-            executor.mergeAPI(settings, api, request);
+            modifier.mergeAPI(settings, api, request);
         }
 
         if(isNotBlank(settings.getMergeBodyUsingType())) {
-            executor.mergeBody(settings, requestInputPath, request);
+            modifier.mergeBody(settings, requestInputPath, request);
         }
 
         if(isNotBlank(settings.getOverrideRequestFilePath())) {
-            executor.overrideRequest(settings, request, settings.getOverrideRequestFilePath());
+            modifier.overrideRequest(settings, request, settings.getOverrideRequestFilePath());
         }
 
         long beginTime = System.nanoTime();
@@ -251,7 +264,7 @@ public class RequestCommand {
         historyEntry.setTimestamp(settings.getTimestamp().toEpochSecond(OffsetDateTime.now().getOffset()));
         historyEntry.setExecutionTag(settings.getExecutionTag());
         historyEntry.setNanoTime(endTime - beginTime);
-        historyEntry.setDetails(executor.getDetails(response));
+        historyEntry.setDetails(processor.getDetails(response));
 
         Optional<AssertionResult> assertionResult = processor.process(settings, request, response);
 
@@ -260,7 +273,8 @@ public class RequestCommand {
             historyEntry.setFailures(assertionResult.get().getFailures());
 
             if(!assertionResult.get().isPassed()) {
-                LOGGER.warning("Request failed - inputFile=\"" + requestInputPath + "\""
+                LOGGER.warning("Request failed -"
+                    + " inputFile=\"" + requestInputPath + "\""
                     + " request=\"" + request.getName() + "\""
                     + " result=\"" + response.getResult() + "\""
                     + " environment=\"" + settings.getEnvironment() + "\""
@@ -268,7 +282,8 @@ public class RequestCommand {
                     + " time(nano)=" + historyEntry.getNanoTime());
                 assertionResult.get().getFailedMessages().forEach(LOGGER::warning);
             } else {
-                LOGGER.info("Request successful - inputFile=\"" + requestInputPath + "\""
+                LOGGER.info("Request successful -"
+                    + " inputFile=\"" + requestInputPath + "\""
                     + " request=\"" + request.getName() + "\""
                     + " result=\"" + response.getResult() + "\""
                     + " environment=\"" + settings.getEnvironment() + "\""
@@ -276,7 +291,8 @@ public class RequestCommand {
                     + " time(nano)=" + historyEntry.getNanoTime());
             }
         } else {
-            LOGGER.info("Request successful - inputFile=\"" + requestInputPath + "\""
+            LOGGER.info("Request successful -"
+                    + " inputFile=\"" + requestInputPath + "\""
                     + " request=\"" + request.getName() + "\""
                     + " result=\"" + response.getResult() + "\""
                     + " environment=\"" + settings.getEnvironment() + "\""

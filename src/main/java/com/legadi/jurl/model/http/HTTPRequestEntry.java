@@ -19,6 +19,7 @@ public class HTTPRequestEntry extends RequestEntry<HTTPMockEntry> {
     private String bodyContent;
     private String bodyFilePath;
     private HTTPRequestFileEntry requestFile;
+    private HTTPRequestAuthEntry requestAuth;
     private List<AssertionEntry> conditions = new LinkedList<>();
     private Map<String, String> outputMappings = new LinkedHashMap<>();
     private List<AssertionEntry> assertions = new LinkedList<>();
@@ -77,6 +78,14 @@ public class HTTPRequestEntry extends RequestEntry<HTTPMockEntry> {
 
     public void setRequestFile(HTTPRequestFileEntry requestFile) {
         this.requestFile = requestFile;
+    }
+
+    public HTTPRequestAuthEntry getRequestAuth() {
+        return requestAuth;
+    }
+
+    public void setRequestAuth(HTTPRequestAuthEntry requestAuth) {
+        this.requestAuth = requestAuth;
     }
 
     public List<AssertionEntry> getConditions() {

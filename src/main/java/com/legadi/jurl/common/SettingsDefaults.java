@@ -13,11 +13,10 @@ import static com.legadi.jurl.common.SettingsConstants.PROP_OPEN_EDITOR_COMMAND;
 import static com.legadi.jurl.common.SettingsConstants.PROP_OPEN_OUTPUT_IN_EDITOR;
 import static com.legadi.jurl.common.SettingsConstants.PROP_OVERRIDE_REQUEST_FILE_PATH;
 import static com.legadi.jurl.common.SettingsConstants.PROP_PRINTABLE_MIME_TYPES;
-import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_AUTHORIZATION_TYPE;
 import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_BEHAVIOUR;
-import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_CREDENTIAL_ID;
 import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_TYPE;
 import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX;
+import static com.legadi.jurl.common.SettingsConstants.PROP_SKIP_AUTHENTICATION;
 import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX_BEGIN;
 import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX_END;
 import static com.legadi.jurl.common.SettingsConstants.PROP_SKIP_ASSERTIONS;
@@ -29,7 +28,6 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.function.Function;
 
-import com.legadi.jurl.model.AuthorizationType;
 import com.legadi.jurl.model.RequestBehaviour;
 
 public interface SettingsDefaults {
@@ -73,14 +71,6 @@ public interface SettingsDefaults {
         return get(PROP_OPEN_EDITOR_COMMAND);
     }
 
-    default String getCredentialId() {
-        return get(PROP_REQUEST_CREDENTIAL_ID);
-    }
-
-    default AuthorizationType getAuthorizationType() {
-        return AuthorizationType.valueOf(get(PROP_REQUEST_AUTHORIZATION_TYPE));
-    }
-
     default RequestBehaviour getRequestBehaviour() {
         return get(PROP_REQUEST_BEHAVIOUR, RequestBehaviour::valueOf);
     }
@@ -115,6 +105,10 @@ public interface SettingsDefaults {
 
     default String getSettingsParamRegexEnd() {
         return get(PROP_SETTINGS_PARAM_REGEX_END);
+    }
+
+    default boolean isSkipAuthentication() {
+        return get(PROP_SKIP_AUTHENTICATION, Boolean::valueOf);
     }
 
     default boolean isSkipConditions() {

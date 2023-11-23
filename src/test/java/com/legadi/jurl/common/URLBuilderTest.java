@@ -23,7 +23,7 @@ public class URLBuilderTest {
     public void buildUrlParts() {
         URLBuilder builder = new URLBuilder()
             .setProtocol("http:://")
-            .setDomain("/localhost:")
+            .setHost("/localhost:")
             .setPort("1234")
             .setBasePath("/api/")
             .setEndpoint("v1/");
@@ -36,7 +36,7 @@ public class URLBuilderTest {
     public void buildUrlIncompleteParts() {
         URLBuilder builder = new URLBuilder();
 
-        Assertions.assertEquals(":///", builder.build());
+        Assertions.assertTrue(builder.build().isEmpty());
         Assertions.assertThrows(MalformedURLException.class,
             () -> new URL(builder.build()));
     }
@@ -74,7 +74,7 @@ public class URLBuilderTest {
     public void buildWrongUrl() {
         URLBuilder builder = new URLBuilder()
             .setProtocol("http:://")
-            .setDomain("/localhost:1234")
+            .setHost("/localhost:1234")
             .setPort("1234")
             .setBasePath("/api/")
             .setEndpoint("v1/");

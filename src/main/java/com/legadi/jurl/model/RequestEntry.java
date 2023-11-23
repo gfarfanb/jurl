@@ -5,7 +5,7 @@ public class RequestEntry<T extends MockEntry> {
     protected String name;
     protected String url;
     protected String protocol;
-    protected String domain;
+    protected String host;
     protected String port;
     protected String basePath;
     protected String endpoint;
@@ -35,12 +35,12 @@ public class RequestEntry<T extends MockEntry> {
         this.protocol = protocol;
     }
 
-    public String getDomain() {
-        return domain;
+    public String getHost() {
+        return host;
     }
 
-    public void setDomain(String domain) {
-        this.domain = domain;
+    public void setHost(String host) {
+        this.host = host;
     }
 
     public String getPort() {
@@ -81,7 +81,7 @@ public class RequestEntry<T extends MockEntry> {
             + "name=" + name
             + ", url=" + url
             + ", protocol=" + protocol
-            + ", domain=" + domain
+            + ", host=" + host
             + ", port=" + port
             + ", basePath=" + basePath
             + ", endpoint=" + endpoint

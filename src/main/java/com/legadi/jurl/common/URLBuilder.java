@@ -19,7 +19,7 @@ public class URLBuilder {
 
     private String url;
     private String protocol;
-    private String domain;
+    private String host;
     private int port;
     private String basePath;
     private String endpoint;
@@ -34,8 +34,8 @@ public class URLBuilder {
         return this;
     }
 
-    public URLBuilder setDomain(String domain) {
-        this.domain = strip(domain, ":/?&");
+    public URLBuilder setHost(String host) {
+        this.host = strip(host, ":/?&");
         return this;
     }
 
@@ -77,10 +77,9 @@ public class URLBuilder {
                 .append(isNotBlank(endpoint) ? "/" + endpoint : "");
         } else {
             urlBuilder
-                .append(isNotBlank(protocol) ? protocol : "")
-                .append("://")
-                .append(isNotBlank(domain) ? domain : "")
-                .append(port > 0 ? ":" + port : "/")
+                .append(isNotBlank(protocol) ? protocol + "://" : "")
+                .append(isNotBlank(host) ? host : "")
+                .append(port > 0 ? ":" + port : "")
                 .append(isNotBlank(basePath) ? "/" + basePath : "")
                 .append(isNotBlank(endpoint) ? "/" + endpoint : "");
         }

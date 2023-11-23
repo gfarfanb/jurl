@@ -6,13 +6,11 @@ import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.CommonUtils.strip;
-import static com.legadi.jurl.common.RequestUtils.mergeRequestHeader;
 import static com.legadi.jurl.common.WriterUtils.expandFile;
 import static com.legadi.jurl.common.WriterUtils.printFile;
 import static com.legadi.jurl.common.WriterUtils.writeFile;
 import static com.legadi.jurl.common.WriterUtils.writeLine;
-import static com.legadi.jurl.executor.mixer.BodyMixerRegistry.findByBodyType;
-import static com.legadi.jurl.parser.RequestParserRegistry.findByRequestType;
+import static com.legadi.jurl.executor.http.HTTPRequestModifier.BODY_TEMPORAL_PATH;
 import static java.util.logging.Level.FINE;
 
 import java.io.BufferedReader;
@@ -30,9 +28,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -47,22 +42,18 @@ import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.common.URLBuilder;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.executor.RequestExecutor;
-import com.legadi.jurl.executor.mixer.BodyMixer;
-import com.legadi.jurl.executor.mixer.BodyMixer.MixerEntry;
-import com.legadi.jurl.model.AssertionEntry;
 import com.legadi.jurl.model.AssertionResult;
-import com.legadi.jurl.model.Credential;
+import com.legadi.jurl.model.AuthorizationType;
 import com.legadi.jurl.model.RequestBehaviour;
+import com.legadi.jurl.model.http.HTTPRequestAuthEntry;
 import com.legadi.jurl.model.http.HTTPRequestEntry;
 import com.legadi.jurl.model.http.HTTPRequestFileEntry;
 import com.legadi.jurl.model.http.HTTPResponseEntry;
-import com.legadi.jurl.parser.HTTPRequestParser;
 
 public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HTTPResponseEntry> {
 
     private static final Logger LOGGER = Logger.getLogger(HTTPRequestExecutor.class.getName());
 
-    public static final String BODY_TEMPORAL_PATH = "http.request.executor/body.temporal.path";
     public static final String REQUEST_FILE_BOUNDARY = "http.request.executor/request.file.boundary";
 
     private static final String MULTIPART_LINE_END = "\r\n";
@@ -122,158 +113,21 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         return response;
     }
 
-    @Override
-    public void mergeAPIDefinition(Settings settings, HTTPRequestEntry api, HTTPRequestEntry request) {
-        mergeRequestHeader(api, request);
-
-        if(isBlank(request.getMethod())) {
-            request.setMethod(api.getMethod());
-        }
-
-        Map<String, String> queryParams = new HashMap<>(api.getQueryParams());
-        queryParams.putAll(request.getQueryParams());
-        request.setQueryParams(queryParams);
-
-        Map<String, String> headers = new HashMap<>(api.getHeaders());
-        headers.putAll(request.getHeaders());
-        request.setHeaders(headers);
-
-        if(isBlank(request.getBodyCharset())) {
-            request.setBodyCharset(api.getBodyCharset());
-        }
-        if(isBlank(request.getBodyContent())) {
-            request.setBodyContent(api.getBodyContent());
-        }
-        if(isBlank(request.getBodyFilePath())) {
-            request.setBodyFilePath(api.getBodyFilePath());
-        }
-
-        if(request.getRequestFile() == null) {
-            request.setRequestFile(api.getRequestFile());
-        } else if(api.getRequestFile() != null) {
-            mergeRequestFile(api.getRequestFile(), request.getRequestFile());
-        }
-
-        Map<String, String> outputMappings = new LinkedHashMap<>(api.getOutputMappings());
-        outputMappings.putAll(request.getOutputMappings());
-        request.setOutputMappings(outputMappings);
-
-        List<AssertionEntry> assertions = new LinkedList<>(api.getAssertions());
-        assertions.addAll(request.getAssertions());
-        request.setAssertions(assertions);
-    }
-
-    @Override
-    public void mergeBodyFileWithBodyContent(Settings settings, String requestPath, HTTPRequestEntry request) {
-        if(isBlank(request.getBodyFilePath())) {
-            throw new RequestException(request, "request.bodyFilePath is null or empty");
-        }
-        if(isBlank(request.getBodyContent())) {
-            throw new RequestException(request, "request.bodyContent is null or empty");
-        }
-
-        BodyMixer mixer = findByBodyType(settings.getMergeBodyUsingType());
-        Path bodyTemporalPath = mixer.apply(settings, new MixerEntry()
-            .setRequestPath(requestPath)
-            .setRequestName(request.getName())
-            .setBodyFilePath(request.getBodyFilePath())
-            .setBodyContent(request.getBodyContent()));
-
-        request.setBodyContent(null);
-        request.setBodyFilePath(null);
-
-        settings.putOverride(BODY_TEMPORAL_PATH, bodyTemporalPath.toString());
-    }
-
-    @Override
-    public void overrideRequestWithFile(Settings settings, HTTPRequestEntry request, String filename) {
-        HTTPRequestParser parser = findByRequestType(type());
-        HTTPRequestEntry overrideRequest = parser.parseRequest(settings, Paths.get(filename));
-
-        if(isNotEmpty(overrideRequest.getHeaders())) {
-            request.setHeaders(overrideRequest.getHeaders());
-        }
-
-        if(isNotEmpty(overrideRequest.getQueryParams())) {
-            request.setQueryParams(overrideRequest.getQueryParams());
-        }
-
-        if(isNotEmpty(overrideRequest.getAssertions())) {
-            request.setAssertions(overrideRequest.getAssertions());
-        }
-
-        if(isNotEmpty(overrideRequest.getOutputMappings())) {
-            request.setOutputMappings(overrideRequest.getOutputMappings());
-        }
-
-        if(isNotBlank(overrideRequest.getBodyContent())) {
-            request.setBodyContent(overrideRequest.getBodyContent());
-        }
-
-        if(isNotBlank(overrideRequest.getBodyFilePath())) {
-            request.setBodyFilePath(overrideRequest.getBodyFilePath());
-        }
-    }
-
-    @Override
-    public Map<String, Object> getDetailsFromResponse(HTTPResponseEntry response) {
-        if(response == null) {
-            return null;
-        }
-
-        Map<String, Object> details = new HashMap<>();
-
-        if(response.getBodyPath() != null) {
-            details.put("bodyPath", response.getBodyPath().toString());
-        }
-        if(response.getSentFilePath() != null) {
-            details.put("sentFilePath", response.getSentFilePath().toString());
-        }
-        if(response.getResponsePath() != null) {
-            details.put("responsePath", response.getResponsePath().toString());
-        }
-        if(response.getStatusCode() > 0) {
-            details.put("statusCode", response.getStatusCode());
-        }
-        if(isNotEmpty(response.getResponseHeaders())) {
-            details.put("responseHeaders", response.getResponseHeaders());
-        }
-
-        return details;
-    }
-
-    private void mergeRequestFile(HTTPRequestFileEntry api, HTTPRequestFileEntry request) {
-        if(isBlank(request.getName())) {
-            request.setName(api.getName());
-        }
-        if(isBlank(request.getPath())) {
-            request.setPath(api.getPath());
-        }
-        if(isBlank(request.getField())) {
-            request.setField(api.getField());
-        }
-        if(isBlank(request.getMineType())) {
-            request.setMineType(api.getMineType());
-        }
-
-        Map<String, String> formData = new HashMap<>(api.getFormData());
-        formData.putAll(request.getFormData());
-        request.setFormData(formData);
-    }
-
     private HttpURLConnection createConnection(Settings settings,
             HTTPRequestEntry request, CurlBuilder curlBuilder) {
         URLBuilder urlBuilder = new URLBuilder()
             .setUrl(request.getUrl())
             .setProtocol(request.getProtocol())
-            .setDomain(request.getDomain())
+            .setHost(request.getHost())
             .setPort(request.getPort())
             .setBasePath(request.getBasePath())
             .setEndpoint(request.getEndpoint())
             .addAllQueryParams(request.getQueryParams());
+        String generatedUrl = null;
 
         try {
-            URL url = new URL(urlBuilder.build());
+            generatedUrl = urlBuilder.build();
+            URL url = new URL(generatedUrl);
 
             curlBuilder.setUrl(url);
 
@@ -281,9 +135,9 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
 
             return createConnection(settings, request, url);
         } catch(MalformedURLException ex) {
-            throw new RequestException(request, "Malformed HTTP resource: " + request.getUrl());
+            throw new RequestException(request, "Malformed HTTP resource: " + generatedUrl);
         } catch(IOException ex) {
-            throw new RequestException(request, "Unable to create HTTP connection: " + request.getUrl());
+            throw new RequestException(request, "Unable to create HTTP connection: " + generatedUrl);
         }
     }
 
@@ -362,32 +216,40 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             HTTPRequestEntry request, CurlBuilder curlBuilder) {
         StringBuilder printableHeaders = new StringBuilder();
 
-        request.getHeaders().forEach(
-            (header, value) -> {
-                connection.setRequestProperty(header, value);
-                curlBuilder.addHeader(header, value);
-                printableHeaders.append(header).append(": ").append(value).append("\n");
-            }
-        );
+        request.getHeaders()
+            .entrySet()
+            .stream()
+            .filter(e -> isNotBlank(e.getKey()) && isNotBlank(e.getValue()))
+            .forEach(e -> {
+                connection.setRequestProperty(e.getKey(), e.getValue());
+                curlBuilder.addHeader(e.getKey(), e.getValue());
+                printableHeaders.append(e.getKey()).append(": ").append(e.getValue()).append("\n");
+            });
 
-        switch(settings.getAuthorizationType()) {
-            case BASIC:
-                Credential basicCredential = settings.getCredential();
-                String basicDecoded = basicCredential.getUsername() + ":" + basicCredential.getPassword();
-                String basicValue = Base64.getEncoder().encodeToString(basicDecoded.getBytes());
-                connection.setRequestProperty("Authorization", "Basic " + basicValue);
-                curlBuilder.addHeader("Authorization", "Basic " + basicValue);
-                printableHeaders.append("Authorization").append(": Basic ").append(basicValue).append("\n");
-                break;
-            case TOKEN:
-                Credential tokenCredential = settings.getCredential();
-                connection.setRequestProperty("Authorization", "Bearer " + tokenCredential.getToken());
-                curlBuilder.addHeader("Authorization", "Bearer " + tokenCredential.getToken());
-                printableHeaders.append("Authorization").append(": Bearer ").append(tokenCredential.getToken()).append("\n");
-                break;
-            default:
-                LOGGER.fine("Authorization type not specified");
-                break;
+        if(request.getRequestAuth() != null) {
+            HTTPRequestAuthEntry auth = request.getRequestAuth();
+            AuthorizationType authType = AuthorizationType.valueOfOrDefault(auth.getAuthType());
+
+            switch(authType) {
+                case BASIC:
+                    String username = settings.get(auth.getUsernameParam());
+                    String password = settings.get(auth.getPasswordParam());
+                    String basicDecoded = username + ":" + password;
+                    String basicValue = Base64.getEncoder().encodeToString(basicDecoded.getBytes());
+                    connection.setRequestProperty("Authorization", "Basic " + basicValue);
+                    curlBuilder.addHeader("Authorization", "Basic " + basicValue);
+                    printableHeaders.append("Authorization").append(": Basic ").append(basicValue).append("\n");
+                    break;
+                case TOKEN:
+                    String token = settings.get(auth.getTokenParam());
+                    connection.setRequestProperty("Authorization", "Bearer " + token);
+                    curlBuilder.addHeader("Authorization", "Bearer " + token);
+                    printableHeaders.append("Authorization").append(": Bearer ").append(token).append("\n");
+                    break;
+                default:
+                    LOGGER.fine("Authorization type not specified");
+                    break;
+            }
         }
 
         log(settings, printableHeaders.toString(), null);

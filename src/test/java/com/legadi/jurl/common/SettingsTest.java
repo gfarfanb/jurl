@@ -1,11 +1,8 @@
 package com.legadi.jurl.common;
 
-import static com.legadi.jurl.common.LoaderUtils.loadCredentials;
-import static com.legadi.jurl.common.Settings.mergeCredentials;
-import static com.legadi.jurl.common.Settings.mergeProperties;
 import static com.legadi.jurl.common.Settings.TAG_FORMATTER;
+import static com.legadi.jurl.common.Settings.mergeProperties;
 
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -15,8 +12,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.legadi.jurl.exception.CommandException;
-import com.legadi.jurl.model.AuthorizationType;
-import com.legadi.jurl.model.Credential;
 import com.legadi.jurl.model.RequestBehaviour;
 
 public class SettingsTest {
@@ -39,8 +34,6 @@ public class SettingsTest {
         Assertions.assertEquals(Paths.get("./history/"), settings.getHistoryPath());
         Assertions.assertEquals(1, settings.getAddOnOptionClasses().length);
         Assertions.assertTrue(settings.getOpenEditorCommand().isEmpty());
-        Assertions.assertTrue(settings.getCredentialId().isEmpty());
-        Assertions.assertEquals(AuthorizationType.EMPTY, settings.getAuthorizationType());
         Assertions.assertEquals(RequestBehaviour.REQUEST, settings.getRequestBehaviour());
         Assertions.assertFalse(settings.isMockRequest());
         Assertions.assertFalse(settings.isOpenOutputInEditor());
@@ -124,19 +117,6 @@ public class SettingsTest {
     }
 
     @Test
-    public void getCredentialsFilePathValidation() {
-        Settings settings = new Settings();
-        String configPath = settings.get("configPath");
-
-        Assertions.assertEquals(Paths.get("./config/credentials.json"), settings.getCredentialsFilePath());
-
-        settings.setEnvironment("test");
-        settings.putOverride("configPath", configPath);
-        
-        Assertions.assertEquals(Paths.get("./config/credentials.test.json"), settings.getCredentialsFilePath());
-    }
-
-    @Test
     public void getOverrideFilePathValidation() {
         Settings settings = new Settings();
         String executionOutputPath = settings.get("executionOutputPath");
@@ -174,35 +154,6 @@ public class SettingsTest {
     }
 
     @Test
-    public void getCredentialValidation() {
-        Settings settings = new Settings();
-        Path credentialsPath = Paths.get("src/test/resources/credentials.json");
-        Map<String, Credential> credentials = loadCredentials(credentialsPath);
-
-        mergeCredentials("default", credentials);
-
-        settings.putOverride("requestCredentialId", "test");
-
-        Credential credential = settings.getCredential();
-
-        Assertions.assertNotNull(credential);
-    }
-
-    @Test
-    public void getCredentialNotFound() {
-        Settings settings = new Settings();
-        Path credentialsPath = Paths.get("src/test/resources/credentials.json");
-        Map<String, Credential> credentials = loadCredentials(credentialsPath);
-
-        mergeCredentials("default", credentials);
-
-        settings.putOverride("requestCredentialId", "not-found");
-
-        Assertions.assertThrows(CommandException.class,
-            () -> settings.getCredential());
-    }
-
-    @Test
     public void createForNextExecutionValidation() {
         Settings settings = new Settings();
 
@@ -232,21 +183,5 @@ public class SettingsTest {
         Assertions.assertEquals("1", settings.get("property.1"));
         Assertions.assertEquals("2", settings.get("property.2"));
         Assertions.assertEquals("3", settings.get("property.3"));
-    }
-
-    @Test
-    public void mergeCredentialsValidation() {
-        Path credentialsPath = Paths.get("src/test/resources/credentials.json");
-        Map<String, Credential> credentials = loadCredentials(credentialsPath);
-
-        Assertions.assertDoesNotThrow(() -> mergeCredentials("default", credentials));
-
-        Settings settings = new Settings();
-
-        settings.putOverride("requestCredentialId", "test");
-
-        Credential credential = settings.getCredential();
-
-        Assertions.assertNotNull(credential);
     }
 }

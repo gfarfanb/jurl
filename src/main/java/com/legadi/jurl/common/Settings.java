@@ -2,7 +2,6 @@ package com.legadi.jurl.common;
 
 import static com.legadi.jurl.common.JsonUtils.loadInternalJsonProperties;
 import static com.legadi.jurl.common.JsonUtils.loadJsonProperties;
-import static com.legadi.jurl.common.LoaderUtils.loadCredentials;
 import static com.legadi.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_OUTPUT_PATH;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_TAG;
@@ -18,22 +17,18 @@ import java.util.Map;
 import java.util.function.Function;
 
 import com.legadi.jurl.exception.CommandException;
-import com.legadi.jurl.model.Credential;
 
 public class Settings implements SettingsDefaults {
 
     private static final EnvironmentResource<String> SETTINGS = new EnvironmentResource<>();
-    private static final EnvironmentResource<Credential> CREDENTIALS = new EnvironmentResource<>();
     private static final Map<String, String> EMPTY = new HashMap<>();
 
     public static final DateTimeFormatter TAG_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd.HH-mm-ss.n");
     public static final String DEFAULT_ENVIRONMENT = "default";
 
     private static final String DEFAULT_CONFIG_FILE = "config.json";
-    private static final String DEFAULT_CREDENTIALS_FILE = "credentials.json";
     private static final String DEFAULT_OVERRIDE_FILE = "override.json";
     private static final String FORMAT_CONFIG_FILE = "config.%s.json";
-    private static final String FORMAT_CREDENTIALS_FILE = "credentials.%s.json";
     private static final String FORMAT_OVERRIDE_FILE = "override.%s.json";
 
     static {
@@ -44,7 +39,6 @@ public class Settings implements SettingsDefaults {
         ));
 
         SETTINGS.putAllInCommon(loadJsonProperties(configPath.resolve(DEFAULT_CONFIG_FILE)));
-        CREDENTIALS.putAllInCommon(loadCredentials(configPath.resolve(DEFAULT_CREDENTIALS_FILE)));
 
         Path executionOutputPath = createDirectories(Paths.get(
             SETTINGS.get(null, PROP_EXECUTION_OUTPUT_PATH)
@@ -143,10 +137,6 @@ public class Settings implements SettingsDefaults {
         return getFilePath(getConfigPath(), DEFAULT_CONFIG_FILE, FORMAT_CONFIG_FILE);
     }
 
-    public Path getCredentialsFilePath() {
-        return getFilePath(getConfigPath(), DEFAULT_CREDENTIALS_FILE, FORMAT_CREDENTIALS_FILE);
-    }
-
     public Path getOverrideFilePath() {
         return getFilePath(getExecutionOutputPath(), DEFAULT_OVERRIDE_FILE, FORMAT_OVERRIDE_FILE);
     }
@@ -181,15 +171,6 @@ public class Settings implements SettingsDefaults {
         overrideProperties.put(propertyName, propertyValue);
     }
 
-    public Credential getCredential() {
-        String credentialId = getCredentialId();
-        Credential credential = CREDENTIALS.get(environment, credentialId);
-        if(credential == null) {
-            throw new CommandException("Credential not found: " + credentialId);
-        }
-        return credential;
-    }
-
     public Settings createForNextExecution() {
         return new Settings(environment, userInputProperties, overrideProperties);
     }
@@ -204,9 +185,5 @@ public class Settings implements SettingsDefaults {
 
     public static void mergeCommonProperties(Map<String, String> properties) {
         SETTINGS.putAllInCommon(properties);
-    }
-
-    public static void mergeCredentials(String environment, Map<String, Credential> credentials) {
-        CREDENTIALS.putAll(environment, credentials);
     }
 }

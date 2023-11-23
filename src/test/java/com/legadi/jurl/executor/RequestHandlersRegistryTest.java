@@ -2,7 +2,8 @@ package com.legadi.jurl.executor;
 
 import static com.legadi.jurl.executor.RequestHandlersRegistry.findExecutorByRequestType;
 import static com.legadi.jurl.executor.RequestHandlersRegistry.findProcessorByRequestType;
-import static com.legadi.jurl.executor.RequestHandlersRegistry.registerHandler;
+import static com.legadi.jurl.executor.RequestHandlersRegistry.registerExecutor;
+import static com.legadi.jurl.executor.RequestHandlersRegistry.registerProcessor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +25,8 @@ public class RequestHandlersRegistryTest {
 
     @Test
     public void registerHandlerCustom() {
-        registerHandler(TestRequestExecutor.class.getName(), TestResponseProcessor.class.getName());
+        registerExecutor(TestRequestExecutor.class.getName());
+        registerProcessor(TestResponseProcessor.class.getName());
 
         RequestExecutor<?, ?> executor = Assertions.assertDoesNotThrow(
             () -> findExecutorByRequestType("test"));
@@ -65,32 +67,24 @@ public class RequestHandlersRegistryTest {
                 TestRequest request) throws RequestException {
             return new TestResponse();
         }
-
-        @Override
-        public void mergeAPIDefinition(Settings settings, TestRequest api, TestRequest request) {
-        }
-
-        @Override
-        public void mergeBodyFileWithBodyContent(Settings settings, String requestInputPath,
-            TestRequest request) {
-        }
-
-        @Override
-        public void overrideRequestWithFile(Settings settings, TestRequest request, String filename) {
-        }
-
-        @Override
-        public Map<String, Object> getDetailsFromResponse(TestResponse response) {
-            return new HashMap<>();
-        }
     }
 
     public static class TestResponseProcessor implements ResponseProcessor<TestRequest, TestResponse> {
 
         @Override
+        public String type() {
+            return "test";
+        }
+
+        @Override
         public Optional<AssertionResult> processResponse(Settings settings, TestRequest request, TestResponse response)
                 throws RequestException {
             return Optional.empty();
+        }
+
+        @Override
+        public Map<String, Object> getDetailsFromResponse(TestResponse response) {
+            return new HashMap<>();
         }
     }
 

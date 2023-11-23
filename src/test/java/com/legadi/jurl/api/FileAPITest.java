@@ -36,7 +36,7 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("upload", uploadRequest.getName());
         Assertions.assertEquals("http://localhost:" + port + "/file", uploadRequest.getUrl());
         Assertions.assertNull(uploadRequest.getProtocol());
-        Assertions.assertNull(uploadRequest.getDomain());
+        Assertions.assertNull(uploadRequest.getHost());
         Assertions.assertNull(null, uploadRequest.getPort());
         Assertions.assertNull(uploadRequest.getBasePath());
         Assertions.assertNull(uploadRequest.getEndpoint());
@@ -105,7 +105,7 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("uploadWithoutForm", uploadRequest.getName());
         Assertions.assertEquals("http://localhost:" + port + "/file", uploadRequest.getUrl());
         Assertions.assertNull(uploadRequest.getProtocol());
-        Assertions.assertNull(uploadRequest.getDomain());
+        Assertions.assertNull(uploadRequest.getHost());
         Assertions.assertNull(null, uploadRequest.getPort());
         Assertions.assertNull(uploadRequest.getBasePath());
         Assertions.assertNull(uploadRequest.getEndpoint());
@@ -173,7 +173,7 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("download", downloadRequest.getName());
         Assertions.assertEquals("http://localhost:" + port + "/file", downloadRequest.getUrl());
         Assertions.assertNull(downloadRequest.getProtocol());
-        Assertions.assertNull(downloadRequest.getDomain());
+        Assertions.assertNull(downloadRequest.getHost());
         Assertions.assertNull(downloadRequest.getPort());
         Assertions.assertNull(downloadRequest.getBasePath());
         Assertions.assertNull(downloadRequest.getEndpoint());
@@ -227,7 +227,7 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("downloadWithoutName", downloadRequest.getName());
         Assertions.assertEquals("http://localhost:" + port + "/file?", downloadRequest.getUrl());
         Assertions.assertNull(downloadRequest.getProtocol());
-        Assertions.assertNull(downloadRequest.getDomain());
+        Assertions.assertNull(downloadRequest.getHost());
         Assertions.assertNull(downloadRequest.getPort());
         Assertions.assertNull(downloadRequest.getBasePath());
         Assertions.assertNull(downloadRequest.getEndpoint());
