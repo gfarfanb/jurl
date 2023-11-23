@@ -1,5 +1,6 @@
 package com.legadi.jurl.executor.http;
 
+import static com.legadi.jurl.common.CommonUtils.getOrDefault;
 import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
@@ -53,6 +54,9 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
             ? settings.getInputName()
             : requestInput.getDefaultRequest();
 
+        inputName = getOrDefault(inputName,
+            requestInput.getRequests().keySet().stream().findFirst().orElse(null));
+
         if(settings.isSkipAuthentication()) {
             return new Pair<>(inputName, requestInput);
         }
@@ -67,7 +71,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
 
         if(request.getRequestAuth() == null) {
             request.setRequestAuth(api.getRequestAuth());
-        } else if(api != null && api.getRequestAuth() != null) {
+        } else if(api.getRequestAuth() != null) {
             mergeRequestAuth(api.getRequestAuth(), request.getRequestAuth());
         }
 

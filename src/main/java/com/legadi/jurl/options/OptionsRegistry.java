@@ -40,6 +40,7 @@ public class OptionsRegistry {
         registerOption(SetInputNameOption::new);
         registerOption(SetValueOption::new);
         registerOption(SkipAssertionsOption::new);
+        registerOption(SkipAuthenticationOption::new);
         registerOption(SkipConditionsOption::new);
         registerOption(TimesRepeatOption::new);
     }

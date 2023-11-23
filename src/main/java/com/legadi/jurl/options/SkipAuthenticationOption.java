@@ -1,19 +1,19 @@
 package com.legadi.jurl.options;
 
-import static com.legadi.jurl.common.SettingsConstants.PROP_SKIP_ASSERTIONS;
+import static com.legadi.jurl.common.SettingsConstants.PROP_SKIP_AUTHENTICATION;
 
 import com.legadi.jurl.common.Settings;
 
-public class SkipAssertionsOption extends Option {
+public class SkipAuthenticationOption extends Option {
 
     @Override
     public String getOpt() {
-        return "--not-assert";
+        return "--not-auth";
     }
 
     @Override
     public String getAlias() {
-        return "-ns";
+        return "-na";
     }
 
     @Override
@@ -23,12 +23,12 @@ public class SkipAssertionsOption extends Option {
 
     @Override
     public String getDescription() {
-        return "Tells request to skip the assertions validation.";
+        return "Tells request to skip the authentication request.";
     }
 
     @Override
     public boolean execute(Settings settings, String[] args) {
-        settings.putOverride(PROP_SKIP_ASSERTIONS, Boolean.TRUE.toString());
+        settings.putOverride(PROP_SKIP_AUTHENTICATION, Boolean.TRUE.toString());
         return true;
     }
 

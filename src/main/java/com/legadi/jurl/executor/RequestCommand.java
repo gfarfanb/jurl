@@ -184,7 +184,7 @@ public class RequestCommand {
         }
 
         Settings settings = stringExpander.getSettings();
-        RequestEntry<? extends MockEntry> request = pickRequest(requestName, requestInput, settings);
+        RequestEntry<? extends MockEntry> request = requestInput.getRequests().get(requestName);
 
         if(request == null) {
             throw new CommandException("No request defined for name: "
@@ -195,10 +195,8 @@ public class RequestCommand {
                 + requestInputPath + "/" + requestName + " - " + executionLevels.getTrace());
         }
 
-        if(requestInput.getApi() != null) {
-            RequestModifier<?, ?> modifier = findModifierByRequestType(settings.getRequestType());
-            modifier.mergeHeader(requestInput.getApi(), request);
-        }
+        RequestModifier<?, ?> modifier = findModifierByRequestType(settings.getRequestType());
+        modifier.mergeHeader(requestInput.getApi(), request);
 
         try {
             executeRequest(stringExpander, requestInputPath, requestInput.getApi(), request);
@@ -207,16 +205,6 @@ public class RequestCommand {
                 "[" + requestInputPath + "/" + requestName + "] "
                 + (settings.getTimes() > 1 ? " index=" + index + " ": "")
                 + ex.getMessage());
-        }
-    }
-
-    private RequestEntry<? extends MockEntry> pickRequest(String requestName,
-            RequestInput<?> requestInput, Settings settings) {
-        if(isNotBlank(requestName)) {
-            return requestInput.getRequests().get(requestName);
-        } else {
-            requestName = requestInput.getRequests().keySet().stream().findFirst().get();
-            return requestInput.getRequests().get(requestName);
         }
     }
 
@@ -238,9 +226,7 @@ public class RequestCommand {
             return;
         }
 
-        if(api != null) {
-            modifier.mergeAPI(settings, api, request);
-        }
+        modifier.mergeAPI(settings, api, request);
 
         if(isNotBlank(settings.getMergeBodyUsingType())) {
             modifier.mergeBody(settings, requestInputPath, request);

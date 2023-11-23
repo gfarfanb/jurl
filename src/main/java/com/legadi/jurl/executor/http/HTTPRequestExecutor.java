@@ -219,7 +219,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         request.getHeaders()
             .entrySet()
             .stream()
-            .filter(e -> isNotBlank(e.getKey()) && isNotBlank(e.getValue()))
+            .filter(e -> isNotBlank(e.getKey()))
             .forEach(e -> {
                 connection.setRequestProperty(e.getKey(), e.getValue());
                 curlBuilder.addHeader(e.getKey(), e.getValue());

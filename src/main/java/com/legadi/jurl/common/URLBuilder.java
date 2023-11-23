@@ -85,7 +85,10 @@ public class URLBuilder {
         }
 
         if(urlBuilder.indexOf("?") > -1) {
-            queryParams.entrySet()
+            queryParams
+                .entrySet()
+                .stream()
+                .filter(e -> isNotBlank(e.getKey()))
                 .forEach(param -> urlBuilder
                     .append('&')
                     .append(param.getKey())
@@ -93,7 +96,10 @@ public class URLBuilder {
                     .append(param.getValue()));
         } else {
             AtomicBoolean first = new AtomicBoolean(true);
-            queryParams.entrySet()
+            queryParams
+                .entrySet()
+                .stream()
+                .filter(e -> isNotBlank(e.getKey()))
                 .forEach(param -> {
                     if(first.get()) {
                         first.set(false);

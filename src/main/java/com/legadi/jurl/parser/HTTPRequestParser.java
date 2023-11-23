@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,6 +41,8 @@ import com.legadi.jurl.options.OptionsReader;
 
 public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
+    private static final Logger LOGGER = Logger.getLogger(HTTPRequestParser.class.getName());
+
     private static final Map<String, Field> REQUEST_FIELDS = getAllFields(HTTPRequestEntry.class);
     private static final Map<String, Field> REQUEST_FILE_FIELDS = getAllFields(HTTPRequestFileEntry.class);
     private static final Map<String, Field> REQUEST_AUTH_FIELDS = getAllFields(HTTPRequestAuthEntry.class);
@@ -50,6 +54,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         DEFAULT_TYPE("^(?i)@default-request[ ]*=(.*)"),
         SET_CONFIG("^(?i)@set-([\\w:.\\-_@~]+)[ ]*=(.*)"),
         SECTION("^(?i)###[ ]*\\[(api|request|flow)\\](.*)"),
+        SOURCE("^(?i)source (.*)"),
         REQUEST_FIELD("^(?i)@([\\w:.\\-_@~]+)[ ]*=(.*)"),
         FIELD_VARIABLE("^(?i)(file|auth|mock|output)[ ]*[@]?([\\w:.\\-_@~]+)[ ]*=(.*)"),
         URL("^(?i)http.*"),
@@ -81,7 +86,6 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         try {
             List<String> lines = Files.readAllLines(requestPath);
             StringExpander stringExpander = new StringExpander(settings);
-            Section section = Section.DEFAULT;
 
             RequestInput<HTTPRequestEntry> requestInput = new RequestInput<>();
             AtomicReference<HTTPRequestEntry> apiCarrier = new AtomicReference<>(new HTTPRequestEntry());
@@ -92,32 +96,9 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
             requestInput.setApi(apiCarrier.get());
 
-            for(String line : lines) {
-                try {
-                    readEmptyLine(line);
-                    readSection(sectionNames, requestCarrier, flowCarrier, requestInput, line);
-                    readComment(line);
-
-                    addDefaultType(stringExpander, requestInput, config, line);
-                    addConfig(stringExpander, config, line);
-
-                    switch(section) {
-                        case API:
-                            decorateRequest(stringExpander, apiCarrier, config, line);
-                            break;
-                        case REQUEST:
-                            decorateRequest(stringExpander, requestCarrier, config, line);
-                            break;
-                        case FLOW:
-                            decorateFlow(stringExpander, flowCarrier, config, line);
-                            break;
-                        default:
-                            throw new CommandException("No section (api, request, flow) defined in request input");
-                    }
-                } catch(ParsedLineException ex) {
-                    section = ex.getSection() != null ? ex.getSection() : section;
-                }
-            }
+            LOGGER.fine("Processing lines of file: " + requestPath);
+            processLines(lines, stringExpander, Section.DEFAULT, requestInput,
+                apiCarrier, requestCarrier, flowCarrier, sectionNames, config);
 
             if(isNotBlank(requestInput.getDefaultRequest())
                     && !sectionNames.contains(requestInput.getDefaultRequest())) {
@@ -139,18 +120,71 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             AtomicReference<HTTPRequestEntry> requestCarrier = new AtomicReference<>(new HTTPRequestEntry());
             Map<String, String> config = new HashMap<>();
 
-            for(String line : lines) {
-                try {
-                    readEmptyLine(line);
-                    readComment(line);
-
-                    decorateRequest(stringExpander, requestCarrier, config, line);
-                } catch(ParsedLineException ex) {}
-            }
+            processLines(lines, stringExpander, requestCarrier, config);
 
             return requestCarrier.get();
         } catch(IllegalAccessException | IOException ex) {
             throw new IllegalStateException("Unable to process override request file: " + requestPath, ex);
+        }
+    }
+
+    private Section processLines(List<String> lines, StringExpander stringExpander, Section section,
+            RequestInput<HTTPRequestEntry> requestInput, AtomicReference<HTTPRequestEntry> apiCarrier,
+            AtomicReference<HTTPRequestEntry> requestCarrier,
+            AtomicReference<Pair<String, List<StepEntry>>> flowCarrier,
+            Set<String> sectionNames, Map<String, String> config)
+            throws IllegalAccessException, IOException {
+
+        for(String line : lines) {
+            try {
+                readEmptyLine(line);
+                readSection(sectionNames, requestCarrier, flowCarrier, requestInput, line);
+                readSource(line);
+                readComment(line);
+
+                addDefaultType(stringExpander, requestInput, config, line);
+                addConfig(stringExpander, config, line);
+
+                switch(section) {
+                    case API:
+                        decorateRequest(stringExpander, apiCarrier, config, line);
+                        break;
+                    case REQUEST:
+                        decorateRequest(stringExpander, requestCarrier, config, line);
+                        break;
+                    case FLOW:
+                        decorateFlow(stringExpander, flowCarrier, config, line);
+                        break;
+                    default:
+                        throw new CommandException("No section (api, request, flow) defined in request input");
+                }
+            } catch(ParsedLineException ex) {
+                section = ex.getSection() != null ? ex.getSection() : section;
+
+                if(ex.getSourcePath() != null) {
+                    List<String> sourceLines = Files.readAllLines(ex.getSourcePath());
+
+                    LOGGER.fine("Processing lines of sourced file: " + ex.getSourcePath());
+                    section = processLines(sourceLines, stringExpander, section, requestInput,
+                        apiCarrier, requestCarrier, flowCarrier, sectionNames, config);
+                }
+            }
+        }
+
+        return section;
+    }
+
+    private void processLines(List<String> lines, StringExpander stringExpander,
+            AtomicReference<HTTPRequestEntry> requestCarrier, Map<String, String> config)
+            throws IllegalAccessException {
+
+        for(String line : lines) {
+            try {
+                readEmptyLine(line);
+                readComment(line);
+
+                decorateRequest(stringExpander, requestCarrier, config, line);
+            } catch(ParsedLineException ex) {}
         }
     }
 
@@ -303,6 +337,18 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             }
 
             commit(linePattern, section);
+        }
+    }
+
+    private void readSource(String line) {
+        LinePattern linePattern = LinePattern.SOURCE;
+        Matcher matcher = linePattern.getPattern().matcher(line);
+
+        if(matcher.find()) {
+            String source = trim(matcher.group(1)).toLowerCase();
+            Path sourcePath = Paths.get(source);
+
+            commit(linePattern, sourcePath);
         }
     }
 
@@ -557,11 +603,15 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     }
 
     private void commit(LinePattern linePattern) {
-        commit(linePattern, null);
+        throw new ParsedLineException(linePattern, null, null);
+    }
+
+    private void commit(LinePattern linePattern, Path sourcePath) {
+        throw new ParsedLineException(linePattern, null, sourcePath);
     }
 
     private void commit(LinePattern linePattern, Section section) {
-        throw new ParsedLineException(linePattern, section);
+        throw new ParsedLineException(linePattern, section, null);
     }
 
     public enum Section {
@@ -573,10 +623,12 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
         private final LinePattern linePattern;
         private final Section section;
+        private final Path sourcePath;
 
-        public ParsedLineException(LinePattern linePattern, Section section) {
+        public ParsedLineException(LinePattern linePattern, Section section, Path sourcePath) {
             this.linePattern = linePattern;
             this.section = section;
+            this.sourcePath = sourcePath;
         }
 
         public LinePattern getLinePattern() {
@@ -585,6 +637,10 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
         public Section getSection() {
             return section;
+        }
+
+        public Path getSourcePath() {
+            return sourcePath;
         }
     }
 }

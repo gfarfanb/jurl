@@ -33,6 +33,6 @@ public class SetInputNameOption extends Option {
     }
 
     public static void setInputName(Settings settings, String inputName) {
-        settings.putUserInput(PROP_INPUT_NAME, inputName);
+        settings.putOverride(PROP_INPUT_NAME, inputName);
     }
 }
