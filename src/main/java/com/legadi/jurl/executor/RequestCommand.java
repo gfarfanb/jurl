@@ -62,7 +62,7 @@ public class RequestCommand {
         Settings settings = new Settings();
 
         executeOptions(settings, optionsReader.getOptionEntries());
-        executeInputPath(settings, optionsReader.getRequestInputPath(), true);
+        executeInputPath(settings, optionsReader.getRequestInputPath());
     }
 
     private void executeOptions(Settings settings, List<OptionEntry> optionEntries) {
@@ -77,18 +77,13 @@ public class RequestCommand {
         }
     }
 
-    private void executeInputPath(Settings settings, String requestInputPath, boolean isMainInput) {
+    private void executeInputPath(Settings settings, String requestInputPath) {
         if(isBlank(requestInputPath)) {
             throw new CommandException("Request input path is null or empty");
         }
 
         RequestParser<?> requestParser = findByRequestType(settings.getRequestType());
         RequestInput<?> parsedRequestInput = requestParser.parseInput(settings, Paths.get(requestInputPath));
-
-        if(isMainInput) {
-            LOGGER.fine("Loading parsed config [" + settings.getEnvironment() + "]: " + parsedRequestInput.getConfig());
-            Settings.mergeProperties(settings.getEnvironment(), parsedRequestInput.getConfig());
-        }
 
         RequestModifier<?, ?> modifier = findModifierByRequestType(settings.getRequestType());
         Pair<String, RequestInput<?>> requestInput = modifier.appendAuthenticationIfExists(
@@ -172,9 +167,9 @@ public class RequestCommand {
         executeOptions(settings, step.getOptions());
 
         if(isNotBlank(step.getRequestInputPath())) {
-            executeInputPath(settings, step.getRequestInputPath(), false);
+            executeInputPath(settings, step.getRequestInputPath());
         } else {
-            executeInputPath(settings, requestInputPath, false);
+            executeInputPath(settings, requestInputPath);
         }
     }
 

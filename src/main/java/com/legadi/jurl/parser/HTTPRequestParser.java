@@ -4,6 +4,7 @@ import static com.legadi.jurl.assertions.AssertionsRegistry.containsName;
 import static com.legadi.jurl.common.CommonUtils.getAllFields;
 import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
+import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.CommonUtils.strip;
 import static com.legadi.jurl.common.CommonUtils.trim;
 
@@ -106,6 +107,11 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                 throw new CommandException("Default request is not defined: " + requestInput.getDefaultRequest());
             }
 
+            if(isNotEmpty(config)) {
+                LOGGER.fine("Loading parsed config [" + settings.getEnvironment() + "]: " + config);
+                Settings.mergeProperties(settings.getEnvironment(), config);
+            }
+
             return requestInput;
         } catch(IllegalAccessException | IOException ex) {
             throw new IllegalStateException("Unable to process override request file: " + requestPath, ex);
@@ -122,6 +128,11 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             Map<String, String> config = new HashMap<>();
 
             processLines(lines, stringExpander, requestCarrier, config);
+
+            if(isNotEmpty(config)) {
+                LOGGER.fine("Loading parsed config [" + settings.getEnvironment() + "]: " + config);
+                Settings.mergeProperties(settings.getEnvironment(), config);
+            }
 
             return requestCarrier.get();
         } catch(IllegalAccessException | IOException ex) {
@@ -183,6 +194,8 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             try {
                 readEmptyLine(line);
                 readComment(line);
+
+                addConfig(stringExpander, config, line);
 
                 decorateRequest(stringExpander, requestCarrier, config, line);
             } catch(ParsedLineException ex) {}
