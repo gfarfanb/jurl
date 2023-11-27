@@ -433,10 +433,29 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
                 .setFilename(filename)
                 .setExtension(isBlank(filename) ? "response" : null);
         Path responsePath = pathBuilder.buildCommandPath();
+
+        if(readOutput(true, connection, responsePath)) {
+            return responsePath;
+        } else if(readOutput(false, connection, responsePath)) {
+            return responsePath;
+        } else {
+            responsePath.toFile().delete();
+            return null;
+        }
+    }
+
+    private boolean readOutput(boolean requireConnectionStream, HttpURLConnection connection, Path responsePath) {
+        String streamName = requireConnectionStream ? "connection-stream" : "error-stream";
         boolean wasOutputWritten = false;
 
-        try(InputStream inputStream = connection.getInputStream();
+        try(InputStream inputStream = requireConnectionStream 
+                ? connection.getInputStream() : connection.getErrorStream();
                 OutputStream outputStream = Files.newOutputStream(responsePath)) {
+
+            if(inputStream == null) {
+                LOGGER.fine("'" + streamName + "' is null");
+                return false;
+            }
 
             byte[] buffer = new byte[8 * 1024];
             int bytesRead;
@@ -444,16 +463,11 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
                 outputStream.write(buffer, 0, bytesRead);
                 wasOutputWritten = true;
             }
-        } catch(IOException ex) {
-            LOGGER.log(FINE, "Error on reading response", ex);
-            return null;
-        }
 
-        if(wasOutputWritten) {
-            return responsePath;
-        } else {
-            responsePath.toFile().delete();
-            return null;
+            return wasOutputWritten;
+        } catch(IOException ex) {
+            LOGGER.log(FINE, "Error on reading response from '" + streamName + "'", ex);
+            return false;
         }
     }
 
