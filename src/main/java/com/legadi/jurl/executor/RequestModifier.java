@@ -1,20 +1,25 @@
 package com.legadi.jurl.executor;
 
+import java.util.List;
+
 import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.model.MockEntry;
 import com.legadi.jurl.model.RequestEntry;
 import com.legadi.jurl.model.RequestInput;
 import com.legadi.jurl.model.ResponseEntry;
+import com.legadi.jurl.options.OptionsReader.OptionEntry;
 
 public interface RequestModifier<T extends RequestEntry<? extends MockEntry>, R extends ResponseEntry>
         extends RequestType<T, R> {
 
-    default Pair<String, RequestInput<?>> appendAuthenticationIfExists(Settings settings, RequestInput<?> requestInput) {
-        return appendAuthenticationDefinition(settings, cast(requestInput));
+    default Pair<String, RequestInput<?>> appendAuthenticationIfExists(Settings settings,
+            RequestInput<?> requestInput, List<OptionEntry> options) {
+        return appendAuthenticationDefinition(settings, cast(requestInput), options);
     }
 
-    Pair<String, RequestInput<?>> appendAuthenticationDefinition(Settings settings, RequestInput<T> requestInput);
+    Pair<String, RequestInput<?>> appendAuthenticationDefinition(Settings settings,
+        RequestInput<T> requestInput, List<OptionEntry> options);
 
     default void mergeHeader(RequestEntry<? extends MockEntry> api,
             RequestEntry<? extends MockEntry> request) {

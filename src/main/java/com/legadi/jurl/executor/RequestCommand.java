@@ -87,7 +87,7 @@ public class RequestCommand {
 
         RequestModifier<?, ?> modifier = findModifierByRequestType(settings.getRequestType());
         Pair<String, RequestInput<?>> requestInput = modifier.appendAuthenticationIfExists(
-                settings, parsedRequestInput);
+                settings, parsedRequestInput, optionsReader.getOptionEntries());
 
         int times = settings.getTimes() > 0 ? settings.getTimes() : FIRST_EXECUTION;
         String inputName = requestInput.getLeft();

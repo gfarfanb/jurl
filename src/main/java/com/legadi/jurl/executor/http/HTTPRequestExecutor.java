@@ -439,7 +439,6 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         } else if(readOutput(false, connection, responsePath)) {
             return responsePath;
         } else {
-            responsePath.toFile().delete();
             return null;
         }
     }
@@ -454,6 +453,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
 
             if(inputStream == null) {
                 LOGGER.fine("'" + streamName + "' is null");
+                responsePath.toFile().delete();
                 return false;
             }
 
@@ -464,9 +464,14 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
                 wasOutputWritten = true;
             }
 
+            if(!wasOutputWritten) {
+                responsePath.toFile().delete();
+            }
+
             return wasOutputWritten;
         } catch(IOException ex) {
             LOGGER.log(FINE, "Error on reading response from '" + streamName + "'", ex);
+            responsePath.toFile().delete();
             return false;
         }
     }

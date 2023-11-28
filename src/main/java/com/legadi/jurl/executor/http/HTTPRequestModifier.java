@@ -49,7 +49,8 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
 
     @Override
     public Pair<String, RequestInput<?>> appendAuthenticationDefinition(
-            Settings settings, RequestInput<HTTPRequestEntry> requestInput) {
+            Settings settings, RequestInput<HTTPRequestEntry> requestInput,
+            List<OptionEntry> options) {
         String inputName = isNotBlank(settings.getInputName())
             ? settings.getInputName()
             : requestInput.getDefaultRequest();
@@ -93,7 +94,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         }
 
         EXECUTED_AUTH_FLOWS.add(authFlowName);
-        requestInput.getFlows().put(authFlowName, createAuthAndRequestFlow(inputName, auth));
+        requestInput.getFlows().put(authFlowName, createAuthAndRequestFlow(inputName, auth, options));
 
         return new Pair<>(authFlowName, requestInput);
     }
@@ -213,7 +214,8 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         }
     }
 
-    private List<StepEntry> createAuthAndRequestFlow(String inputName, HTTPRequestAuthEntry auth) {
+    private List<StepEntry> createAuthAndRequestFlow(String inputName, HTTPRequestAuthEntry auth,
+            List<OptionEntry> options) {
         List<StepEntry> steps = new LinkedList<>();
 
         StepEntry authStep = new StepEntry();
@@ -233,7 +235,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         steps.add(authStep);
 
         StepEntry requestStep = new StepEntry();
-        List<OptionEntry> requestOptions = new LinkedList<>();
+        List<OptionEntry> requestOptions = new LinkedList<>(options);
 
         requestOptions.add(new OptionEntry(findByType(SetInputNameOption.class),
             new String[] { inputName }));
