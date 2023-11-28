@@ -142,4 +142,13 @@ public class WriterUtils {
             throw new IllegalStateException("Unable to clean directory [" + untilDateInclusive + "]: " + directoryPath, ex);
         }
     }
+
+    public static boolean deleteFileFromPath(Path filePath) {
+        try {
+            filePath.toFile().delete();
+            return true;
+        } catch(Exception ex) {
+            return false;
+        }
+    }
 }

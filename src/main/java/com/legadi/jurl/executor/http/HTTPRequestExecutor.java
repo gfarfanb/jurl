@@ -10,6 +10,7 @@ import static com.legadi.jurl.common.WriterUtils.expandFile;
 import static com.legadi.jurl.common.WriterUtils.printFile;
 import static com.legadi.jurl.common.WriterUtils.writeFile;
 import static com.legadi.jurl.common.WriterUtils.writeLine;
+import static com.legadi.jurl.common.WriterUtils.deleteFileFromPath;
 import static com.legadi.jurl.executor.http.HTTPRequestModifier.BODY_TEMPORAL_PATH;
 import static java.util.logging.Level.FINE;
 
@@ -453,7 +454,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
 
             if(inputStream == null) {
                 LOGGER.fine("'" + streamName + "' is null");
-                responsePath.toFile().delete();
+                deleteFileFromPath(responsePath);
                 return false;
             }
 
@@ -465,13 +466,13 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             }
 
             if(!wasOutputWritten) {
-                responsePath.toFile().delete();
+                deleteFileFromPath(responsePath);
             }
 
             return wasOutputWritten;
         } catch(IOException ex) {
             LOGGER.log(FINE, "Error on reading response from '" + streamName + "'", ex);
-            responsePath.toFile().delete();
+            deleteFileFromPath(responsePath);
             return false;
         }
     }
