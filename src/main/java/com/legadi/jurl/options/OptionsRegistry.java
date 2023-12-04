@@ -31,6 +31,7 @@ public class OptionsRegistry {
         registerOption(CustomReaderOption::new);
         registerOption(EnvironmentCopyOption::new);
         registerOption(EnvironmentOption::new);
+        registerOption(EnvironmentRemoveValueOption::new);
         registerOption(EnvironmentSetValueOption::new);
         registerOption(HelpOption::new);
         registerOption(MergeBodyOption::new);

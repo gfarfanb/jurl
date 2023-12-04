@@ -11,12 +11,12 @@ public class EnvironmentCopyOption extends Option {
 
     @Override
     public String getOpt() {
-        return "--copy-env";
+        return "--env-copy";
     }
 
     @Override
     public String getAlias() {
-        return "-ce";
+        return "-ec";
     }
 
     @Override
