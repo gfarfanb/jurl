@@ -29,7 +29,9 @@ public class OptionsRegistry {
         registerOption(CustomRequestModifierOption::new);
         registerOption(CustomRequestProcessorOption::new);
         registerOption(CustomReaderOption::new);
+        registerOption(EnvironmentCopyOption::new);
         registerOption(EnvironmentOption::new);
+        registerOption(EnvironmentSetValueOption::new);
         registerOption(HelpOption::new);
         registerOption(MergeBodyOption::new);
         registerOption(MockRequestOption::new);
