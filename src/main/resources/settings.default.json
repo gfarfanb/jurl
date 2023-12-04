@@ -1,8 +1,8 @@
 {
     "workspacePath": null,
     "configPath": "./config/",
+    "configOutputPath": "./config/.output/",
     "executionPath": "./executions/",
-    "executionOutputPath": "./executions/.output/",
     "historyPath": "./history/",
     "addOnOptionClasses": "",
     "openEditorCommand": "",

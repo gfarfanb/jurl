@@ -1,8 +1,8 @@
 package com.legadi.jurl.common;
 
 import static com.legadi.jurl.common.SettingsConstants.PROP_ADD_ON_OPTION_CLASSES;
+import static com.legadi.jurl.common.SettingsConstants.PROP_CONFIG_OUTPUT_PATH;
 import static com.legadi.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
-import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_OUTPUT_PATH;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_PATH;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_TIMES;
 import static com.legadi.jurl.common.SettingsConstants.PROP_HISTORY_PATH;
@@ -16,10 +16,10 @@ import static com.legadi.jurl.common.SettingsConstants.PROP_PRINTABLE_MIME_TYPES
 import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_BEHAVIOUR;
 import static com.legadi.jurl.common.SettingsConstants.PROP_REQUEST_TYPE;
 import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX;
-import static com.legadi.jurl.common.SettingsConstants.PROP_SKIP_AUTHENTICATION;
 import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX_BEGIN;
 import static com.legadi.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX_END;
 import static com.legadi.jurl.common.SettingsConstants.PROP_SKIP_ASSERTIONS;
+import static com.legadi.jurl.common.SettingsConstants.PROP_SKIP_AUTHENTICATION;
 import static com.legadi.jurl.common.SettingsConstants.PROP_SKIP_CONDITIONS;
 import static com.legadi.jurl.common.WriterUtils.createDirectories;
 
@@ -51,12 +51,12 @@ public interface SettingsDefaults {
         return createDirectories(Paths.get(get(PROP_CONFIG_PATH)));
     }
 
-    default Path getExecutionPath() {
-        return createDirectories(Paths.get(get(PROP_EXECUTION_PATH)));
+    default Path getConfigOutputPath() {
+        return createDirectories(Paths.get(get(PROP_CONFIG_OUTPUT_PATH)));
     }
 
-    default Path getExecutionOutputPath() {
-        return createDirectories(Paths.get(get(PROP_EXECUTION_OUTPUT_PATH)));
+    default Path getExecutionPath() {
+        return createDirectories(Paths.get(get(PROP_EXECUTION_PATH)));
     }
 
     default Path getHistoryPath() {

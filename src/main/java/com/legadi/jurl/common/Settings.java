@@ -3,7 +3,7 @@ package com.legadi.jurl.common;
 import static com.legadi.jurl.common.JsonUtils.loadInternalJsonProperties;
 import static com.legadi.jurl.common.JsonUtils.loadJsonProperties;
 import static com.legadi.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
-import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_OUTPUT_PATH;
+import static com.legadi.jurl.common.SettingsConstants.PROP_CONFIG_OUTPUT_PATH;
 import static com.legadi.jurl.common.SettingsConstants.PROP_EXECUTION_TAG;
 import static com.legadi.jurl.common.SettingsConstants.PROP_WORKSPACE_PATH;
 import static com.legadi.jurl.common.WriterUtils.createDirectories;
@@ -42,7 +42,7 @@ public class Settings implements SettingsDefaults {
         SETTINGS.putAllInCommon(loadJsonProperties(configPath.resolve(DEFAULT_CONFIG_FILE)));
 
         Path executionOutputPath = createDirectories(Paths.get(
-            SETTINGS.get(null, PROP_EXECUTION_OUTPUT_PATH)
+            SETTINGS.get(null, PROP_CONFIG_OUTPUT_PATH)
         ));
 
         SETTINGS.putAllInCommon(loadJsonProperties(executionOutputPath.resolve(DEFAULT_OVERRIDE_FILE)));
@@ -139,11 +139,11 @@ public class Settings implements SettingsDefaults {
     }
 
     public Path getOverrideFilePath() {
-        return getFilePath(getExecutionOutputPath(), DEFAULT_OVERRIDE_FILE, FORMAT_OVERRIDE_FILE);
+        return getFilePath(getConfigOutputPath(), DEFAULT_OVERRIDE_FILE, FORMAT_OVERRIDE_FILE);
     }
 
     public Path getOutputObjectPath() {
-        return createDirectories(getExecutionOutputPath().resolve(getEnvironment()));
+        return createDirectories(getConfigOutputPath().resolve(getEnvironment()));
     }
 
     private Path getFilePath(Path basePath, String defaultFile, String formatFile) {

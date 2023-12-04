@@ -29,8 +29,8 @@ public class SettingsTest {
         Settings settings = new Settings();
 
         Assertions.assertEquals(Paths.get("./config/"), settings.getConfigPath());
+        Assertions.assertEquals(Paths.get("./config/.output/"), settings.getConfigOutputPath());
         Assertions.assertEquals(Paths.get("./executions/"), settings.getExecutionPath());
-        Assertions.assertEquals(Paths.get("./executions/.output/"), settings.getExecutionOutputPath());
         Assertions.assertEquals(Paths.get("./history/"), settings.getHistoryPath());
         Assertions.assertEquals(1, settings.getAddOnOptionClasses().length);
         Assertions.assertTrue(settings.getOpenEditorCommand().isEmpty());
@@ -119,27 +119,27 @@ public class SettingsTest {
     @Test
     public void getOverrideFilePathValidation() {
         Settings settings = new Settings();
-        String executionOutputPath = settings.get("executionOutputPath");
+        String configOutputPath = settings.get("configOutputPath");
 
-        Assertions.assertEquals(Paths.get("./executions/.output/override.json"), settings.getOverrideFilePath());
+        Assertions.assertEquals(Paths.get("./config/.output/override.json"), settings.getOverrideFilePath());
 
         settings.setEnvironment("test");
-        settings.putOverride("executionOutputPath", executionOutputPath);
+        settings.putOverride("configOutputPath", configOutputPath);
         
-        Assertions.assertEquals(Paths.get("./executions/.output/override.test.json"), settings.getOverrideFilePath());
+        Assertions.assertEquals(Paths.get("./config/.output/override.test.json"), settings.getOverrideFilePath());
     }
 
     @Test
     public void getOutputObjectPathValidation() {
         Settings settings = new Settings();
-        String executionOutputPath = settings.get("executionOutputPath");
+        String configOutputPath = settings.get("configOutputPath");
 
-        Assertions.assertEquals(Paths.get("./executions/.output/default"), settings.getOutputObjectPath());
+        Assertions.assertEquals(Paths.get("./config/.output/default"), settings.getOutputObjectPath());
 
         settings.setEnvironment("test");
-        settings.putOverride("executionOutputPath", executionOutputPath);
+        settings.putOverride("configOutputPath", configOutputPath);
         
-        Assertions.assertEquals(Paths.get("./executions/.output/test"), settings.getOutputObjectPath());
+        Assertions.assertEquals(Paths.get("./config/.output/test"), settings.getOutputObjectPath());
     }
 
     @Test
