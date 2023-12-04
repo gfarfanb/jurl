@@ -1,11 +1,14 @@
 package com.legadi.jurl.executor.http;
 
 import static com.legadi.jurl.assertions.AssertionsResolver.evaluate;
+import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isEmpty;
+import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.JsonUtils.loadJsonProperties;
 import static com.legadi.jurl.common.JsonUtils.writeJsonFile;
 import static com.legadi.jurl.common.WriterUtils.printFile;
+import static com.legadi.jurl.executor.decoder.OutputDecoderRegistry.findByContentEncoding;
 import static com.legadi.jurl.executor.reader.OutputReaderRegistry.findByContentType;
 import static java.util.logging.Level.FINE;
 
@@ -26,6 +29,7 @@ import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.common.StringExpander;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.executor.ResponseProcessor;
+import com.legadi.jurl.executor.decoder.OutputDecoder;
 import com.legadi.jurl.executor.reader.OutputReader;
 import com.legadi.jurl.model.AssertionResult;
 import com.legadi.jurl.model.RequestBehaviour;
@@ -59,18 +63,19 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
                 break;
         }
 
-        mapOutput(settings, response);
+        Path responsePath = unzipResponse(response);
+
+        mapOutput(settings, response, responsePath);
 
         StringExpander stringExpander = new StringExpander(settings);
         Set<String> outputParams = scanOutputParams(stringExpander, request);
         Map<String, String> values = null;
 
         try {
-            values = readOutputValues(settings, response, outputParams);
+            values = readOutputValues(settings, response, outputParams, responsePath);
             saveOutput(stringExpander, values, request, response);
         } catch(Exception ex) {
-            LOGGER.warning("Unable to read response [" + response.getResponsePath()
-                + "] - " + ex.getMessage());
+            LOGGER.warning("Unable to read response [" + responsePath + "] - " + ex.getMessage());
             LOGGER.log(FINE, ex.getMessage(), ex);
             values = new HashMap<>();
         }
@@ -109,13 +114,13 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
         return details;
     }
 
-    private void mapOutput(Settings settings, HTTPResponseEntry response) {
+    private void mapOutput(Settings settings, HTTPResponseEntry response, Path responsePath) {
         settings.putOverride(HTTP_PREFIX + "url", response.getRequestUrl());
         settings.putOverride(HTTP_PREFIX + "curl", response.getCurlCommand());
         settings.putOverride(HTTP_PREFIX + "status", Integer.toString(response.getStatusCode()));
 
-        if(response.getResponsePath() != null) {
-            settings.putOverride(HTTP_PREFIX + "response.path", response.getResponsePath().toString());
+        if(responsePath != null) {
+            settings.putOverride(HTTP_PREFIX + "response.path", responsePath.toString());
         }
 
         if(isNotEmpty(response.getResponseHeaders())) {
@@ -198,9 +203,31 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
         LOGGER.fine(printableOutput.toString());
     }
 
+    private Path unzipResponse(HTTPResponseEntry response) {
+        String contentEncoding = response.getResponseHeaders()
+            .entrySet()
+            .stream()
+            .filter(e -> "Content-Encoding".equalsIgnoreCase(e.getKey()))
+            .map(Map.Entry::getValue)
+            .findFirst()
+            .orElse("");
+
+        if(isBlank(contentEncoding)) {
+            return response.getResponsePath();
+        }
+
+        Optional<OutputDecoder> outputDecoder = findByContentEncoding(contentEncoding);
+
+        if(outputDecoder.isPresent()) {
+            return outputDecoder.get().apply(response.getResponsePath());
+        } else {
+            return response.getResponsePath();
+        }
+    }
+
     private Map<String, String> readOutputValues(Settings settings, HTTPResponseEntry response,
-            Set<String> outputParams) {
-        if(response.getResponsePath() == null) {
+            Set<String> outputParams, Path responsePath) {
+        if(responsePath == null) {
             return new HashMap<>();
         }
 
@@ -211,13 +238,20 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
             .map(Map.Entry::getValue)
             .findFirst()
             .orElse("");
-        Optional<OutputReader> outputReader = findByContentType(contentType);
+        Optional<OutputReader> outputReader;
+
+        if(isNotBlank(contentType)) {
+            outputReader = findByContentType(contentType);
+        } else {
+            outputReader = Optional.empty();
+        }
+
         Map<String, String> outputValues;
         boolean isPrintable;
 
         if(outputReader.isPresent()) {
             isPrintable = outputReader.get().isPrintable();
-            outputValues = outputReader.get().apply(response.getResponsePath(),
+            outputValues = outputReader.get().apply(responsePath,
                 settings.getOutputObjectPath(), outputParams, OUTPUT_PREFIX);
         } else {
             isPrintable = Arrays.stream(settings.getPrintableMimeTypes())
@@ -226,7 +260,7 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
         }
 
         if(isPrintable) {
-            printFile(response.getResponsePath());
+            printFile(responsePath);
         }
 
         if(isNotEmpty(outputValues)) {
@@ -239,7 +273,7 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
                 .append(value));
 
             LOGGER.fine("");
-            LOGGER.fine("Processed output [" + contentType + "]: " + response.getResponsePath());
+            LOGGER.fine("Processed output [" + contentType + "]: " + responsePath);
             LOGGER.fine(printableOutput.toString());
         }
 

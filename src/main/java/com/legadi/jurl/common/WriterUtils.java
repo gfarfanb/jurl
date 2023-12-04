@@ -83,12 +83,12 @@ public class WriterUtils {
         try(BufferedReader br = Files.newBufferedReader(inputFilePath);
                 BufferedWriter writer = Files.newBufferedWriter(outputFilePath)) {
             br
-            .lines()
-            .map(stringExpander::replaceAllInContent)
-            .forEach(line -> {
-                writeLine(writer, line);
-                lineConsumer.accept(line);
-            });
+                .lines()
+                .map(stringExpander::replaceAllInContent)
+                .forEach(line -> {
+                    writeLine(writer, line);
+                    lineConsumer.accept(line);
+                });
         } catch(IOException ex) {
             throw new IllegalStateException("Unable to write expand file [" + inputFilePath + "]: " + outputFilePath, ex);
         }
