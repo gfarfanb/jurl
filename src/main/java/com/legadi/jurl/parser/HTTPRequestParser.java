@@ -1,5 +1,6 @@
 package com.legadi.jurl.parser;
 
+import static com.legadi.jurl.options.OptionsRegistry.findByArg;
 import static com.legadi.jurl.assertions.AssertionsRegistry.containsName;
 import static com.legadi.jurl.common.CommonUtils.getAllFields;
 import static com.legadi.jurl.common.CommonUtils.isBlank;
@@ -38,7 +39,9 @@ import com.legadi.jurl.model.http.HTTPMockEntry;
 import com.legadi.jurl.model.http.HTTPRequestAuthEntry;
 import com.legadi.jurl.model.http.HTTPRequestEntry;
 import com.legadi.jurl.model.http.HTTPRequestFileEntry;
+import com.legadi.jurl.options.Option;
 import com.legadi.jurl.options.OptionsReader;
+import com.legadi.jurl.options.OptionsReader.OptionEntry;
 
 public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
@@ -62,7 +65,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         URL_METHOD("^(?i)(get|head|post|put|delete|connect|options|trace|patch)[ ]*(.*)"),
         HEADER("^(?i)(mock)?[ ]*([\\w\\-]+): (.*)"),
         QUERY_PARAM("^&([\\w:.\\-_@~]+)=(.*)"),
-        CONDITION_ASSERTION("^(?i)(condition|assert) ([\\w:.\\-_@~]+) (.*)"),
+        CONDITION_ASSERTION_OPT("^(?i)(condition|assert|opt) ([\\w:.\\-_@~]+) (.*)"),
         STEP_SPEC("^(?i)step (.*)"),
         COMMENT("^#(.*)");
 
@@ -526,35 +529,35 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
     private void addConditionOrAssertion(StringExpander stringExpander,
             HTTPRequestEntry request, Map<String, String> config, String line) {
-        LinePattern linePattern = LinePattern.CONDITION_ASSERTION;
+        LinePattern linePattern = LinePattern.CONDITION_ASSERTION_OPT;
         Matcher matcher = linePattern.getPattern().matcher(line);
 
         if(matcher.find()) {
             String type = trim(matcher.group(1));
-            String assertion = stringExpander.replaceAllInContent(
+            String nameOrClass = stringExpander.replaceAllInContent(
                 config, trim(matcher.group(2))
             );
-
-            AssertionEntry entry = new AssertionEntry();
-
-            if(containsName(assertion)) {
-                entry.setName(assertion);
-            } else {
-                entry.setAssertionClass(assertion);
-            }
 
             if(type.equalsIgnoreCase("condition")) {
                 String[] args = extractArgs(stringExpander.replaceAllInContent(
                     config, trim(matcher.group(3))
                 ));
+                AssertionEntry entry = createAssertion(nameOrClass);
                 entry.setArgs(args);
                 entry.setType(AssertionType.CONDITION);
                 request.getConditions().add(entry);
             } else if(type.equalsIgnoreCase("assert")) {
                 String[] args = extractArgs(trim(matcher.group(3)));
+                AssertionEntry entry = createAssertion(nameOrClass);
                 entry.setArgs(args);
                 entry.setType(AssertionType.ASSERTION);
                 request.getAssertions().add(entry);
+            } else if(type.equalsIgnoreCase("opt")) {
+                Option option = findByArg(nameOrClass);
+                String[] args = extractArgs(stringExpander.replaceAllInContent(
+                    config, trim(matcher.group(3))
+                ));
+                request.getOptions().add(new OptionEntry(option, args));
             }
 
             commit(linePattern);
@@ -614,6 +617,18 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         }
 
         return args.toArray(new String[args.size()]);
+    }
+
+    private AssertionEntry createAssertion(String nameOrClass) {
+        AssertionEntry entry = new AssertionEntry();
+
+        if(containsName(nameOrClass)) {
+            entry.setName(nameOrClass);
+        } else {
+            entry.setAssertionClass(nameOrClass);
+        }
+
+        return entry;
     }
 
     private void commit(LinePattern linePattern) {

@@ -191,6 +191,8 @@ public class RequestCommand {
                 + requestInputPath + "/" + requestName + " - " + executionLevels.getTrace());
         }
 
+        executeOptions(settings, request.getOptions());
+
         RequestModifier<?, ?> modifier = findModifierByRequestType(settings.getRequestType());
         modifier.mergeHeader(requestInput.getApi(), request);
 

@@ -1,5 +1,12 @@
 package com.legadi.jurl.model;
 
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import com.legadi.jurl.options.OptionsReader.OptionEntry;
+
 public class RequestEntry<T extends MockEntry> {
 
     protected String name;
@@ -10,6 +17,11 @@ public class RequestEntry<T extends MockEntry> {
     protected String basePath;
     protected String endpoint;
     protected T mockDefinition;
+
+    protected List<AssertionEntry> conditions = new LinkedList<>();
+    protected Map<String, String> outputMappings = new LinkedHashMap<>();
+    protected List<AssertionEntry> assertions = new LinkedList<>();
+    protected List<OptionEntry> options = new LinkedList<>();
 
     public String getName() {
         return name;
@@ -73,6 +85,38 @@ public class RequestEntry<T extends MockEntry> {
 
     public void setMockDefinition(T mockDefinition) {
         this.mockDefinition = mockDefinition;
+    }
+
+    public List<AssertionEntry> getConditions() {
+        return conditions;
+    }
+
+    public void setConditions(List<AssertionEntry> conditions) {
+        this.conditions = conditions;
+    }
+
+    public Map<String, String> getOutputMappings() {
+        return outputMappings;
+    }
+
+    public void setOutputMappings(Map<String, String> outputMappings) {
+        this.outputMappings = outputMappings;
+    }
+
+    public List<AssertionEntry> getAssertions() {
+        return assertions;
+    }
+
+    public void setAssertions(List<AssertionEntry> assertions) {
+        this.assertions = assertions;
+    }
+
+    public List<OptionEntry> getOptions() {
+        return options;
+    }
+
+    public void setOptions(List<OptionEntry> options) {
+        this.options = options;
     }
 
     @Override

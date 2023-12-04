@@ -2,12 +2,8 @@ package com.legadi.jurl.model.http;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
-import com.legadi.jurl.model.AssertionEntry;
 import com.legadi.jurl.model.RequestEntry;
 
 public class HTTPRequestEntry extends RequestEntry<HTTPMockEntry> {
@@ -20,9 +16,6 @@ public class HTTPRequestEntry extends RequestEntry<HTTPMockEntry> {
     private String bodyFilePath;
     private HTTPRequestFileEntry requestFile;
     private HTTPRequestAuthEntry requestAuth;
-    private List<AssertionEntry> conditions = new LinkedList<>();
-    private Map<String, String> outputMappings = new LinkedHashMap<>();
-    private List<AssertionEntry> assertions = new LinkedList<>();
 
     public String getMethod() {
         return method;
@@ -86,29 +79,5 @@ public class HTTPRequestEntry extends RequestEntry<HTTPMockEntry> {
 
     public void setRequestAuth(HTTPRequestAuthEntry requestAuth) {
         this.requestAuth = requestAuth;
-    }
-
-    public List<AssertionEntry> getConditions() {
-        return conditions;
-    }
-
-    public void setConditions(List<AssertionEntry> conditions) {
-        this.conditions = conditions;
-    }
-
-    public Map<String, String> getOutputMappings() {
-        return outputMappings;
-    }
-
-    public void setOutputMappings(Map<String, String> outputMappings) {
-        this.outputMappings = outputMappings;
-    }
-
-    public List<AssertionEntry> getAssertions() {
-        return assertions;
-    }
-
-    public void setAssertions(List<AssertionEntry> assertions) {
-        this.assertions = assertions;
     }
 }
