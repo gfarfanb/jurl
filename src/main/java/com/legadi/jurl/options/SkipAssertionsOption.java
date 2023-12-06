@@ -7,12 +7,12 @@ import com.legadi.jurl.common.Settings;
 public class SkipAssertionsOption extends Option {
 
     @Override
-    public String getOpt() {
+    public String name() {
         return "--not-assert";
     }
 
     @Override
-    public String getAlias() {
+    public String alias() {
         return "-ns";
     }
 

@@ -12,13 +12,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
+import com.legadi.jurl.common.ObjectsRegistry;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.embedded.config.EmbeddedConfig;
 import com.legadi.jurl.embedded.executor.HTTPRequestTestExecutor;
 import com.legadi.jurl.embedded.executor.HTTPResponseTestProcessor;
 import com.legadi.jurl.embedded.util.RequestCatcher;
 import com.legadi.jurl.executor.RequestCommand;
-import com.legadi.jurl.executor.RequestHandlersRegistry;
+import com.legadi.jurl.executor.RequestExecutor;
+import com.legadi.jurl.executor.ResponseProcessor;
 
 @SpringBootTest(classes = EmbeddedConfig.class, webEnvironment = WebEnvironment.RANDOM_PORT)
 public abstract class EmbeddedAPITest {
@@ -38,10 +40,10 @@ public abstract class EmbeddedAPITest {
         properties.put("local.server.port", Integer.toString(port));
         Settings.mergeProperties(Settings.DEFAULT_ENVIRONMENT, properties);
 
-        RequestHandlersRegistry.registerExecutor(
-            () -> new HTTPRequestTestExecutor(correlationId, requestCatcher));
-        RequestHandlersRegistry.registerProcessor(
-            () -> new HTTPResponseTestProcessor(correlationId, requestCatcher)
+        ObjectsRegistry.register(RequestExecutor.class, 
+            HTTPRequestTestExecutor.class, correlationId, requestCatcher);
+        ObjectsRegistry.register(ResponseProcessor.class,
+            HTTPResponseTestProcessor.class, correlationId, requestCatcher
         );
 
         new RequestCommand(arguments.toArray(new String[arguments.size()])).execute();

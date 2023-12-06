@@ -1,6 +1,6 @@
 package com.legadi.jurl.assertions;
 
-import static com.legadi.jurl.assertions.AssertionsRegistry.findByName;
+import static com.legadi.jurl.common.ObjectsRegistry.findByNameOrFail;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -16,7 +16,7 @@ public abstract class AssertionFunctionTest<T extends AssertionFunction> {
 
     @SuppressWarnings("unchecked")
     public AssertionFunctionTest(String name) {
-        this.function = (T) findByName(name);
+        this.function = (T) findByNameOrFail(AssertionFunction.class, name);
         this.assertionEntry = new AssertionEntry();
         assertionEntry.setName(function.name());
         assertionEntry.setType(AssertionType.ASSERTION);

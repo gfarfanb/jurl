@@ -5,14 +5,18 @@ import static java.util.logging.Level.FINE;
 import java.util.Random;
 import java.util.logging.Logger;
 
+import com.legadi.jurl.common.Named;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.exception.CommandException;
 
-public interface Generator {
+public interface Generator extends Named {
 
     public static final Logger LOGGER = Logger.getLogger(Generator.class.getName());
 
-    String name();
+    @Override
+    default boolean allowOverride() {
+        return false;
+    }
 
     String getValue(Settings settings, String param);
 

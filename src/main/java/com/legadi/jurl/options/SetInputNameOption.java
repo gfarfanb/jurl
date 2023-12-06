@@ -7,12 +7,12 @@ import com.legadi.jurl.common.Settings;
 public class SetInputNameOption extends Option {
 
     @Override
-    public String getOpt() {
+    public String name() {
         return "--name";
     }
 
     @Override
-    public String getAlias() {
+    public String alias() {
         return "-n";
     }
 

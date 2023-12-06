@@ -1,6 +1,6 @@
 package com.legadi.jurl.executor.http;
 
-import static com.legadi.jurl.executor.RequestHandlersRegistry.findModifierByRequestType;
+import static com.legadi.jurl.common.ObjectsRegistry.findByNameOrFail;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -30,7 +30,7 @@ public class HTTPRequestModifierTest {
         request.setBasePath("/base");
         request.setEndpoint("/endpoint");
 
-        RequestModifier<?, ?> modifier = findModifierByRequestType("http");
+        RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
         modifier.mergeHeader(api, request);
 
         Assertions.assertEquals("http://localhost:1234", request.getUrl());
@@ -54,7 +54,7 @@ public class HTTPRequestModifierTest {
 
         HTTPRequestEntry request = new HTTPRequestEntry();
 
-        RequestModifier<?, ?> modifier = findModifierByRequestType("http");
+        RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
         modifier.mergeHeader(api, request);
 
         Assertions.assertEquals("https://localhost:9876", request.getUrl());

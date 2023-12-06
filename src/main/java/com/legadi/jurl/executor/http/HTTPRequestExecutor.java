@@ -6,11 +6,11 @@ import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.CommonUtils.strip;
+import static com.legadi.jurl.common.WriterUtils.deleteFileFromPath;
 import static com.legadi.jurl.common.WriterUtils.expandFile;
 import static com.legadi.jurl.common.WriterUtils.printFile;
 import static com.legadi.jurl.common.WriterUtils.writeFile;
 import static com.legadi.jurl.common.WriterUtils.writeLine;
-import static com.legadi.jurl.common.WriterUtils.deleteFileFromPath;
 import static com.legadi.jurl.executor.http.HTTPRequestModifier.BODY_TEMPORAL_PATH;
 import static java.util.logging.Level.FINE;
 
@@ -63,7 +63,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     private static final Pattern FILENAME_PATTERN = Pattern.compile(".*filename=(.*)");
 
     @Override
-    public String type() {
+    public String name() {
         return "http";
     }
 

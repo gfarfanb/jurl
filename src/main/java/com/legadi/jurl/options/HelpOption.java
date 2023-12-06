@@ -1,12 +1,11 @@
 package com.legadi.jurl.options;
 
-import static com.legadi.jurl.options.OptionsRegistry.getAddOns;
-import static com.legadi.jurl.options.OptionsRegistry.getOptions;
+import static com.legadi.jurl.common.ObjectsRegistry.getAllRegisteredByClassOf;
+import static com.legadi.jurl.common.ObjectsRegistry.getAllRegisteredByNameOf;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import com.legadi.jurl.common.Settings;
@@ -18,12 +17,12 @@ public class HelpOption extends Option {
     private static final int TAB_LENGTH = 2;
 
     @Override
-    public String getOpt() {
+    public String name() {
         return "--help";
     }
 
     @Override
-    public String getAlias() {
+    public String alias() {
         return "-h";
     }
 
@@ -57,17 +56,17 @@ public class HelpOption extends Option {
 
         helpMessage.append("[<option>]* [--help] [<add-on-option>]* <request-file>\n\n");
         helpMessage.append("Options:\n");
-        appendOptions(getOptions(), helpMessage);
+        appendOptions(getAllRegisteredByClassOf(Option.class), helpMessage);
         helpMessage.append("\n");
         helpMessage.append("Add-on options:\n");
-        appendOptions(getAddOns(), helpMessage);
+        appendOptions(getAllRegisteredByNameOf(Option.class), helpMessage);
 
         LOGGER.info(helpMessage.toString());
 
         return false;
     }
 
-    private void appendOptions(Set<Option> options, StringBuilder helpMessage) {
+    private void appendOptions(List<Option> options, StringBuilder helpMessage) {
         List<Option> opts = new LinkedList<>(options);
         int maxLength = options.stream()
             .map(Option::toString)
@@ -75,7 +74,7 @@ public class HelpOption extends Option {
             .max()
             .orElse(0) + TAB_LENGTH + 1;
 
-        opts.sort((o1, o2) -> o1.getOpt().compareTo(o2.getOpt()));
+        opts.sort((o1, o2) -> o1.name().compareTo(o2.name()));
 
         for(Option option : opts) {
             String optionLine = option.toString();

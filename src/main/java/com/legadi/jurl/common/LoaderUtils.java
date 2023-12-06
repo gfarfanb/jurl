@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,14 +48,24 @@ public class LoaderUtils {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T> T instantiate(String typeClass) {
+    public static Class<?> typeOf(String typeClass) {
         try {
-            Class<T> type = (Class<T>) Class.forName(typeClass);
-            Constructor<T> constructor = type.getConstructor();
-            return constructor.newInstance();
+            return Class.forName(typeClass);
+        } catch(ClassNotFoundException ex) {
+            throw new IllegalStateException("Class not found for name: " + typeClass);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T instantiate(Class<?> typeClass, Object... args) {
+        try {
+            Class<T> type = (Class<T>) typeClass;
+            Class<?>[] argTypes = args == null || args.length == 0
+                ? new Class<?>[0] : Arrays.stream(args).map(Object::getClass).toArray(Class[]::new);
+            Constructor<T> constructor = type.getConstructor(argTypes);
+            return constructor.newInstance(args);
         } catch(Exception ex) {
-            throw new IllegalStateException("Unable to instance from: " + typeClass, ex);
+            throw new IllegalStateException("Unable to instance from class: " + typeClass, ex);
         }
     }
 }

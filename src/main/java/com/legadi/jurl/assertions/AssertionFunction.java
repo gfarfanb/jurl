@@ -1,23 +1,19 @@
 package com.legadi.jurl.assertions;
 
+import com.legadi.jurl.common.Named;
 import com.legadi.jurl.exception.AssertionException;
 import com.legadi.jurl.model.AssertionEntry;
 
-public interface AssertionFunction {
+public interface AssertionFunction extends Named {
 
-    String name();
-
-    default String alias() {
-        return "";
+    @Override
+    default boolean allowOverride() {
+        return false;
     }
 
     String[] getArgs();
 
     boolean apply(String[] args);
-
-    default boolean accepts(String name) {
-        return name().equalsIgnoreCase(name) || alias().equalsIgnoreCase(name);
-    }
 
     default void evaluate(AssertionEntry entry, String message, String[] args) throws AssertionException {
         if(args == null) {

@@ -1,13 +1,13 @@
 package com.legadi.jurl.parser;
 
-import static com.legadi.jurl.options.OptionsRegistry.findByArg;
-import static com.legadi.jurl.assertions.AssertionsRegistry.containsName;
 import static com.legadi.jurl.common.CommonUtils.getAllFields;
 import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.CommonUtils.strip;
 import static com.legadi.jurl.common.CommonUtils.trim;
+import static com.legadi.jurl.common.ObjectsRegistry.containsName;
+import static com.legadi.jurl.common.ObjectsRegistry.findByNameOrFail;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -27,6 +27,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.legadi.jurl.assertions.AssertionFunction;
 import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.common.StringExpander;
@@ -553,7 +554,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                 entry.setType(AssertionType.ASSERTION);
                 request.getAssertions().add(entry);
             } else if(type.equalsIgnoreCase("opt")) {
-                Option option = findByArg(nameOrClass);
+                Option option = findByNameOrFail(Option.class, nameOrClass);
                 String[] args = extractArgs(stringExpander.replaceAllInContent(
                     config, trim(matcher.group(3))
                 ));
@@ -622,7 +623,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     private AssertionEntry createAssertion(String nameOrClass) {
         AssertionEntry entry = new AssertionEntry();
 
-        if(containsName(nameOrClass)) {
+        if(containsName(AssertionFunction.class, nameOrClass)) {
             entry.setName(nameOrClass);
         } else {
             entry.setAssertionClass(nameOrClass);

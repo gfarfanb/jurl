@@ -7,12 +7,12 @@ import com.legadi.jurl.common.Settings;
 public class MockRequestOption extends Option {
 
     @Override
-    public String getOpt() {
+    public String name() {
         return "--mock";
     }
 
     @Override
-    public String getAlias() {
+    public String alias() {
         return "-m";
     }
 

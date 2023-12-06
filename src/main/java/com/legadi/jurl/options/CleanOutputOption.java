@@ -12,12 +12,12 @@ public class CleanOutputOption extends Option {
     public static final String ALL_FILES = "all";
 
     @Override
-    public String getOpt() {
+    public String name() {
         return "--remove";
     }
 
     @Override
-    public String getAlias() {
+    public String alias() {
         return "-rm";
     }
 

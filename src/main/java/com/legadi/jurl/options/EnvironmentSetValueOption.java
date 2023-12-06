@@ -10,12 +10,12 @@ import com.legadi.jurl.common.Settings;
 public class EnvironmentSetValueOption extends Option {
 
     @Override
-    public String getOpt() {
+    public String name() {
         return "--env-set";
     }
 
     @Override
-    public String getAlias() {
+    public String alias() {
         return "-es";
     }
 

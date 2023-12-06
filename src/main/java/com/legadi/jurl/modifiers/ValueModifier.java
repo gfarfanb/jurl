@@ -5,19 +5,21 @@ import static com.legadi.jurl.common.CommonUtils.strip;
 import java.util.Map;
 import java.util.function.Function;
 
+import com.legadi.jurl.common.Evaluable;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.exception.InvalidModifierOperationException;
 import com.legadi.jurl.exception.ModifierException;
 
-public interface ValueModifier {
+public interface ValueModifier extends Evaluable {
+
+    @Override
+    default boolean accepts(String definition) {
+        return definition.startsWith(name());
+    }
 
     String name();
 
     String[] getArgs();
-
-    default boolean accepts(String definition) {
-        return definition.startsWith(name());
-    }
 
     String apply(Function<String, String> getter, String[] args, String value) throws Exception;
 

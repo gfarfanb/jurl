@@ -1,13 +1,17 @@
 package com.legadi.jurl.executor;
 
+import com.legadi.jurl.common.Named;
 import com.legadi.jurl.model.MockEntry;
 import com.legadi.jurl.model.RequestEntry;
 import com.legadi.jurl.model.RequestInput;
 import com.legadi.jurl.model.ResponseEntry;
 
-public interface RequestType<T extends RequestEntry<? extends MockEntry>, R extends ResponseEntry> {
+public interface RequestType<T extends RequestEntry<? extends MockEntry>, R extends ResponseEntry> extends Named {
 
-    String type();
+    @Override
+    default boolean allowOverride() {
+        return true;
+    }
 
     @SuppressWarnings("unchecked")
     default RequestInput<T> cast(RequestInput<?> requestInput) {

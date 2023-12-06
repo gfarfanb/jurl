@@ -7,12 +7,12 @@ import com.legadi.jurl.common.Settings;
 public class OpenEditorOption extends Option {
 
     @Override
-    public String getOpt() {
+    public String name() {
         return "--open-editor";
     }
 
     @Override
-    public String getAlias() {
+    public String alias() {
         return "-oe";
     }
 

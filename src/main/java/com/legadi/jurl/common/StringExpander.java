@@ -3,12 +3,13 @@ package com.legadi.jurl.common;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.stripEnd;
 import static com.legadi.jurl.common.CommonUtils.trim;
-import static com.legadi.jurl.generators.GeneratorsRegistry.findGeneratorByName;
-import static com.legadi.jurl.modifiers.ValueModifierRegistry.findModifierByDefinition;
+import static com.legadi.jurl.common.ObjectsRegistry.find;
+import static com.legadi.jurl.common.ObjectsRegistry.findByName;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -55,13 +56,13 @@ public class StringExpander {
                         + " - expected \"<generator>:?~<modifier-definition>~?<property-name>\"");
                 }
 
-                Generator generator = findGeneratorByName(stripEnd(paramTagMatcher.group(1), ":"));
+                Optional<Generator> generator = findByName(Generator.class, stripEnd(paramTagMatcher.group(1), ":"));
                 String modifierDefinition = paramTagMatcher.group(3);
                 String property = trim(paramTagMatcher.group(4));
                 String value = null;
 
-                if(generator != null) {
-                    value = generator.get(settings, property);
+                if(generator.isPresent()) {
+                    value = generator.get().get(settings, property);
                 }
 
                 if(value == null) {
@@ -69,10 +70,10 @@ public class StringExpander {
                 }
 
                 if(isNotBlank(modifierDefinition)) {
-                    ValueModifier modifier = findModifierByDefinition(modifierDefinition);
+                    Optional<ValueModifier> modifier = find(ValueModifier.class, modifierDefinition);
 
-                    if(modifier != null) {
-                        value = modifier.applyByDefinition(settings, values, modifierDefinition, value);
+                    if(modifier.isPresent()) {
+                        value = modifier.get().applyByDefinition(settings, values, modifierDefinition, value);
                     }
                 }
 

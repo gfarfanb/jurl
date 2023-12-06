@@ -4,9 +4,8 @@ import static com.legadi.jurl.common.CommonUtils.getOrDefault;
 import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
-import static com.legadi.jurl.executor.mixer.BodyMixerRegistry.findByBodyType;
-import static com.legadi.jurl.options.OptionsRegistry.findByType;
-import static com.legadi.jurl.parser.RequestParserRegistry.findByRequestType;
+import static com.legadi.jurl.common.ObjectsRegistry.findByType;
+import static com.legadi.jurl.common.ObjectsRegistry.findOrFail;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,6 +34,7 @@ import com.legadi.jurl.model.http.HTTPResponseEntry;
 import com.legadi.jurl.options.OptionsReader.OptionEntry;
 import com.legadi.jurl.options.SetInputNameOption;
 import com.legadi.jurl.parser.HTTPRequestParser;
+import com.legadi.jurl.parser.RequestParser;
 
 public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HTTPResponseEntry> {
 
@@ -43,7 +43,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
     private static final Set<String> EXECUTED_AUTH_FLOWS = new HashSet<>();
 
     @Override
-    public String type() {
+    public String name() {
         return "http";
     }
 
@@ -171,7 +171,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
             throw new RequestException(request, "request.bodyContent is null or empty");
         }
 
-        BodyMixer mixer = findByBodyType(settings.getMergeBodyUsingType());
+        BodyMixer mixer = findOrFail(BodyMixer.class, settings.getMergeBodyUsingType());
         Path bodyTemporalPath = mixer.apply(settings, new MixerEntry()
             .setRequestPath(requestPath)
             .setRequestName(request.getName())
@@ -186,7 +186,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
 
     @Override
     public void overrideRequestWithFile(Settings settings, HTTPRequestEntry request, String filename) {
-        HTTPRequestParser parser = findByRequestType(type());
+        HTTPRequestParser parser = findOrFail(RequestParser.class, name());
         HTTPRequestEntry overrideRequest = parser.parseRequest(settings, Paths.get(filename));
 
         if(isNotEmpty(overrideRequest.getHeaders())) {

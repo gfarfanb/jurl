@@ -9,12 +9,12 @@ import com.legadi.jurl.exception.CommandException;
 public class TimesRepeatOption extends Option {
 
     @Override
-    public String getOpt() {
+    public String name() {
         return "--times";
     }
 
     @Override
-    public String getAlias() {
+    public String alias() {
         return "-t";
     }
 

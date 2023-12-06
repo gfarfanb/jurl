@@ -8,12 +8,12 @@ import com.legadi.jurl.model.RequestBehaviour;
 public class RequestPrintOption extends Option {
 
     @Override
-    public String getOpt() {
+    public String name() {
         return "--print";
     }
 
     @Override
-    public String getAlias() {
+    public String alias() {
         return "-p";
     }
 

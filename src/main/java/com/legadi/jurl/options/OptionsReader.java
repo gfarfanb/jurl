@@ -5,13 +5,14 @@ import static com.legadi.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.CommonUtils.trim;
-import static com.legadi.jurl.options.OptionsRegistry.findByArg;
-import static com.legadi.jurl.options.OptionsRegistry.registerAddOn;
+import static com.legadi.jurl.common.ObjectsRegistry.findByName;
+import static com.legadi.jurl.common.ObjectsRegistry.register;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import com.legadi.jurl.common.Pair;
@@ -38,18 +39,18 @@ public class OptionsReader {
         String lastArg = null;
 
         while(index < args.length) {
-            Option option = null;
+            Optional<Option> option = null;
 
             try {
-                option = findByArg(args[index]);
+                option = findByName(Option.class, args[index]);
 
-                if(option == null) {
+                if(!option.isPresent()) {
                     lastArg = args[index];
                     index++;
                     continue;
                 }
 
-                String[] optionArgs = option.getArgs();
+                String[] optionArgs = option.get().getArgs();
                 String arguments[];
 
                 if(optionArgs.length > 0) {
@@ -59,7 +60,7 @@ public class OptionsReader {
                     arguments = new String[0];
                 }
 
-                optionEntries.add(new OptionEntry(option, arguments));
+                optionEntries.add(new OptionEntry(option.get(), arguments));
 
                 index += arguments.length + 1;
             } catch(Exception ex) {
@@ -90,10 +91,10 @@ public class OptionsReader {
                     continue;
                 }
 
-                Option option = registerAddOn(trim(addOnOption));
+                Option option = register(Option.class, trim(addOnOption));
                 LOGGER.info("Add-on registered: class=" + addOnOption
-                    + " opt=" + option.getOpt()
-                    + " alias=" + option.getAlias());
+                    + " opt=" + option.name()
+                    + " alias=" + option.alias());
             }
         }
     }

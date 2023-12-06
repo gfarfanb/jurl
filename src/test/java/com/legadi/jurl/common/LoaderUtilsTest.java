@@ -1,6 +1,5 @@
 package com.legadi.jurl.common;
 
-import static com.legadi.jurl.common.LoaderUtils.instantiate;
 import static com.legadi.jurl.common.LoaderUtils.loadAndCacheInternalLines;
 
 import java.util.List;
@@ -27,20 +26,6 @@ public class LoaderUtilsTest {
     public void loadAndCacheInternalLinesFileNotFound() {
         Assertions.assertThrows(IllegalStateException.class,
             () -> loadAndCacheInternalLines("lines-file-not-found.txt"));
-    }
-
-    @Test
-    public void instantiateValidation() {
-        TestLoader instance = Assertions.assertDoesNotThrow(
-            () -> instantiate(TestLoader.class.getName()));
-
-        Assertions.assertNotNull(instance);
-    }
-
-    @Test
-    public void instantiateConstructorWithArguments() {
-        Assertions.assertThrows(IllegalStateException.class,
-            () -> instantiate(TestLoaderArgs.class.getName()));
     }
 
     public static class TestLoader {

@@ -3,17 +3,19 @@ package com.legadi.jurl.executor.mixer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import com.legadi.jurl.common.Evaluable;
 import com.legadi.jurl.common.Settings;
 
-public interface BodyMixer {
+public interface BodyMixer extends Evaluable {
+
+    @Override
+    default boolean accepts(String bodyType) {
+        return type().equalsIgnoreCase(bodyType);
+    }
 
     String type();
 
     Path apply(Settings settings, MixerEntry entry);
-
-    default boolean accepts(String bodyType) {
-        return type().equalsIgnoreCase(bodyType);
-    }
 
     public static class MixerEntry {
 

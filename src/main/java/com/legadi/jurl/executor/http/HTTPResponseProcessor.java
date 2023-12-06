@@ -7,9 +7,8 @@ import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.JsonUtils.loadJsonProperties;
 import static com.legadi.jurl.common.JsonUtils.writeJsonFile;
+import static com.legadi.jurl.common.ObjectsRegistry.find;
 import static com.legadi.jurl.common.WriterUtils.printFile;
-import static com.legadi.jurl.executor.decoder.OutputDecoderRegistry.findByContentEncoding;
-import static com.legadi.jurl.executor.reader.OutputReaderRegistry.findByContentType;
 import static java.util.logging.Level.FINE;
 
 import java.nio.file.Path;
@@ -44,7 +43,7 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
     private static final String OUTPUT_PREFIX = "OUT/";
 
     @Override
-    public String type() {
+    public String name() {
         return "http";
     }
 
@@ -216,7 +215,7 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
             return response.getResponsePath();
         }
 
-        Optional<OutputDecoder> outputDecoder = findByContentEncoding(contentEncoding);
+        Optional<OutputDecoder> outputDecoder = find(OutputDecoder.class, contentEncoding);
 
         if(outputDecoder.isPresent()) {
             return outputDecoder.get().apply(response.getResponsePath());
@@ -241,7 +240,7 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
         Optional<OutputReader> outputReader;
 
         if(isNotBlank(contentType)) {
-            outputReader = findByContentType(contentType);
+            outputReader = find(OutputReader.class, contentType);
         } else {
             outputReader = Optional.empty();
         }

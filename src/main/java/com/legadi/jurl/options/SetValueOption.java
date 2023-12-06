@@ -5,12 +5,12 @@ import com.legadi.jurl.common.Settings;
 public class SetValueOption extends Option {
 
     @Override
-    public String getOpt() {
+    public String name() {
         return "--set";
     }
 
     @Override
-    public String getAlias() {
+    public String alias() {
         return "-s";
     }
 

@@ -4,12 +4,10 @@ import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.JsonUtils.toJsonString;
+import static com.legadi.jurl.common.ObjectsRegistry.findByNameOrFail;
+import static com.legadi.jurl.common.ObjectsRegistry.findOrFail;
 import static com.legadi.jurl.common.WriterUtils.appendToFile;
 import static com.legadi.jurl.common.WriterUtils.writeFile;
-import static com.legadi.jurl.executor.RequestHandlersRegistry.findExecutorByRequestType;
-import static com.legadi.jurl.executor.RequestHandlersRegistry.findModifierByRequestType;
-import static com.legadi.jurl.executor.RequestHandlersRegistry.findProcessorByRequestType;
-import static com.legadi.jurl.parser.RequestParserRegistry.findByRequestType;
 import static java.util.logging.Level.FINE;
 
 import java.io.File;
@@ -82,10 +80,10 @@ public class RequestCommand {
             throw new CommandException("Request input path is null or empty");
         }
 
-        RequestParser<?> requestParser = findByRequestType(settings.getRequestType());
+        RequestParser<?> requestParser = findOrFail(RequestParser.class, settings.getRequestType());
         RequestInput<?> parsedRequestInput = requestParser.parseInput(settings, Paths.get(requestInputPath));
 
-        RequestModifier<?, ?> modifier = findModifierByRequestType(settings.getRequestType());
+        RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, settings.getRequestType());
         Pair<String, RequestInput<?>> requestInput = modifier.appendAuthenticationIfExists(
                 settings, parsedRequestInput, optionsReader.getOptionEntries());
 
@@ -193,7 +191,7 @@ public class RequestCommand {
 
         executeOptions(settings, request.getOptions());
 
-        RequestModifier<?, ?> modifier = findModifierByRequestType(settings.getRequestType());
+        RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, settings.getRequestType());
         modifier.mergeHeader(requestInput.getApi(), request);
 
         try {
@@ -209,9 +207,9 @@ public class RequestCommand {
     private void executeRequest(StringExpander stringExpander, String requestInputPath,
             RequestEntry<? extends MockEntry> api, RequestEntry<? extends MockEntry> request) {
         Settings settings = stringExpander.getSettings();
-        RequestModifier<?, ?> modifier = findModifierByRequestType(settings.getRequestType());
-        RequestExecutor<?, ?> executor = findExecutorByRequestType(settings.getRequestType());
-        ResponseProcessor<?, ?> processor = findProcessorByRequestType(settings.getRequestType());
+        RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, settings.getRequestType());
+        RequestExecutor<?, ?> executor = findByNameOrFail(RequestExecutor.class, settings.getRequestType());
+        ResponseProcessor<?, ?> processor = findByNameOrFail(ResponseProcessor.class, settings.getRequestType());
         Optional<AssertionResult> conditionsResult = executor.accepts(settings, request);
 
         if(conditionsResult.isPresent() && !conditionsResult.get().isPassed()) {

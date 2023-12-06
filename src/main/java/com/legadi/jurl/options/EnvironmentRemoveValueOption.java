@@ -10,12 +10,12 @@ import com.legadi.jurl.common.Settings;
 public class EnvironmentRemoveValueOption extends Option {
 
     @Override
-    public String getOpt() {
+    public String name() {
         return "--env-rm";
     }
 
     @Override
-    public String getAlias() {
+    public String alias() {
         return "-er";
     }
 

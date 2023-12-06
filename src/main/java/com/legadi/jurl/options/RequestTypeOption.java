@@ -7,12 +7,12 @@ import com.legadi.jurl.common.Settings;
 public class RequestTypeOption extends Option {
 
     @Override
-    public String getOpt() {
+    public String name() {
         return "--request-type";
     }
 
     @Override
-    public String getAlias() {
+    public String alias() {
         return "-rt";
     }
 

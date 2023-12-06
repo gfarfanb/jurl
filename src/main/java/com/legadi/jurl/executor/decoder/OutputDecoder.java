@@ -3,14 +3,17 @@ package com.legadi.jurl.executor.decoder;
 import java.nio.file.Path;
 import java.util.Arrays;
 
-public interface OutputDecoder {
+import com.legadi.jurl.common.Evaluable;
 
-    String[] types();
+public interface OutputDecoder extends Evaluable {
 
-    Path apply(Path sourcePath);
-
+    @Override
     default boolean accepts(String contentEncoding) {
         return Arrays.stream(types())
             .anyMatch(type -> type.equalsIgnoreCase(contentEncoding));
     }
+
+    String[] types();
+
+    Path apply(Path sourcePath);
 }

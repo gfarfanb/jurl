@@ -7,12 +7,12 @@ import com.legadi.jurl.common.Settings;
 public class OverrideRequestOption extends Option {
 
     @Override
-    public String getOpt() {
+    public String name() {
         return "--override-request";
     }
 
     @Override
-    public String getAlias() {
+    public String alias() {
         return "-or";
     }
 

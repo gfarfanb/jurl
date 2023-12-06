@@ -8,12 +8,12 @@ import com.legadi.jurl.model.RequestBehaviour;
 public class CurlPrintOption extends Option {
 
     @Override
-    public String getOpt() {
+    public String name() {
         return "--curl";
     }
 
     @Override
-    public String getAlias() {
+    public String alias() {
         return "-c";
     }
 

@@ -9,12 +9,12 @@ import com.legadi.jurl.common.Settings;
 public class EnvironmentOption extends Option {
 
     @Override
-    public String getOpt() {
+    public String name() {
         return "--env";
     }
 
     @Override
-    public String getAlias() {
+    public String alias() {
         return "-e";
     }
 

@@ -7,12 +7,12 @@ import com.legadi.jurl.common.Settings;
 public class SkipConditionsOption extends Option {
 
     @Override
-    public String getOpt() {
+    public String name() {
         return "--no-conditions";
     }
 
     @Override
-    public String getAlias() {
+    public String alias() {
         return "-nc";
     }
 

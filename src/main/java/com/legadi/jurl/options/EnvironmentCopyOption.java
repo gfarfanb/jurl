@@ -10,12 +10,12 @@ import com.legadi.jurl.common.Settings;
 public class EnvironmentCopyOption extends Option {
 
     @Override
-    public String getOpt() {
+    public String name() {
         return "--env-copy";
     }
 
     @Override
-    public String getAlias() {
+    public String alias() {
         return "-ec";
     }
 

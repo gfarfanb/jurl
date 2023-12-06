@@ -1,6 +1,8 @@
 package com.legadi.jurl.generators;
 
-import static com.legadi.jurl.generators.GeneratorsRegistry.findGeneratorByName;
+import static com.legadi.jurl.common.ObjectsRegistry.findByName;
+
+import java.util.Optional;
 
 import com.legadi.jurl.common.Settings;
 
@@ -19,7 +21,9 @@ public abstract class GeneratorTest {
     }
 
     public String generate(String arg) {
-        Generator generator = findGeneratorByName(type);
-        return generator.get(settings, arg);
+        Optional<Generator> generatorOptional = findByName(Generator.class, type);
+        return generatorOptional
+            .map(generator -> generator.get(settings, arg))
+            .orElse(null);
     }
 }

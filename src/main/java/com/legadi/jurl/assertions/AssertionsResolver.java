@@ -1,11 +1,11 @@
 package com.legadi.jurl.assertions;
 
-import static com.legadi.jurl.assertions.AssertionsRegistry.findByName;
-import static com.legadi.jurl.assertions.AssertionsRegistry.registerAssertionFunction;
-import static com.legadi.jurl.assertions.AssertionsRegistry.containsName;
 import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
+import static com.legadi.jurl.common.ObjectsRegistry.containsName;
+import static com.legadi.jurl.common.ObjectsRegistry.findByNameOrFail;
+import static com.legadi.jurl.common.ObjectsRegistry.register;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -44,14 +44,14 @@ public class AssertionsResolver {
                 AssertionFunction function = null;
                 String message = null;
 
-                if(containsName(assertionEntry.getName())) {
-                    function = findByName(assertionEntry.getName());
+                if(containsName(AssertionFunction.class, assertionEntry.getName())) {
+                    function = findByNameOrFail(AssertionFunction.class, assertionEntry.getName());
                 } else if(isBlank(assertionEntry.getAssertionClass())) {
                     throw new CommandException("Assertion class is null or empty, please specify a 'type' or an 'assertionClass'");
                 } else {
                     String assertionClass = stringExpander.replaceAllInContent(values,
                         assertionEntry.getAssertionClass());
-                    function = registerAssertionFunction(assertionClass);
+                    function = register(AssertionFunction.class, assertionClass);
                 }
 
                 if(isNotBlank(assertionEntry.getMessage())) {

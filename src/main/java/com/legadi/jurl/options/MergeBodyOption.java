@@ -7,12 +7,12 @@ import com.legadi.jurl.common.Settings;
 public class MergeBodyOption extends Option {
 
     @Override
-    public String getOpt() {
+    public String name() {
         return "--merge-body";
     }
 
     @Override
-    public String getAlias() {
+    public String alias() {
         return "-mb";
     }
 
