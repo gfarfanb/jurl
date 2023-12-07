@@ -47,13 +47,17 @@ public class SettingsTest {
         Assertions.assertTrue(settings.getOverrideRequestFilePath().isEmpty());
         Assertions.assertArrayEquals(new String[] {
                 "application/graphql+json",
+                "application/javascript",
                 "application/vnd.mozilla.xul+xml",
+                "application/x-www-form-urlencoded",
                 "application/xhtml+xml",
+                "application/xml",
                 "text/css",
                 "text/csv",
                 "text/html",
                 "text/javascript",
-                "text/plain"
+                "text/plain",
+                "text/xml"
             },
             settings.getPrintableMimeTypes());
     }
