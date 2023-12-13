@@ -3,11 +3,14 @@ package com.legadi.jurl.common;
 import static com.legadi.jurl.common.CommonUtils.ALPHA_NUMERIC_STRING;
 import static com.legadi.jurl.common.CommonUtils.NUMERIC_STRING;
 import static com.legadi.jurl.common.CommonUtils.avoidFirstZero;
+import static com.legadi.jurl.common.CommonUtils.fileSeparatorAsDelimiter;
+import static com.legadi.jurl.common.CommonUtils.getAllFields;
 import static com.legadi.jurl.common.CommonUtils.getOrDefault;
 import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
+import static com.legadi.jurl.common.CommonUtils.isNotNumeric;
 import static com.legadi.jurl.common.CommonUtils.isNumeric;
 import static com.legadi.jurl.common.CommonUtils.nextIndex;
 import static com.legadi.jurl.common.CommonUtils.nextNumber;
@@ -17,6 +20,7 @@ import static com.legadi.jurl.common.CommonUtils.stripEnd;
 import static com.legadi.jurl.common.CommonUtils.stripStart;
 import static com.legadi.jurl.common.CommonUtils.trim;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -117,6 +121,12 @@ public class CommonUtilsTest {
     }
 
     @Test
+    public void fileSeparatorAsDelimiterValidation() {
+        String delimiter = fileSeparatorAsDelimiter();
+        Assertions.assertTrue(delimiter.equals("\\\\") || delimiter.equals("/"));
+    }
+
+    @Test
     public void stripValidation() {
         Assertions.assertNull(strip(null, null));
         Assertions.assertEquals("", strip("", null));
@@ -133,6 +143,7 @@ public class CommonUtilsTest {
         Assertions.assertNull(stripStart(null, null));
         Assertions.assertEquals("", stripStart("", null));
         Assertions.assertEquals("", stripStart("", ""));
+        Assertions.assertEquals("", stripStart("", " "));
         Assertions.assertEquals("a", stripStart(" a", null));
         Assertions.assertEquals("a", stripStart(" a", " "));
         Assertions.assertEquals("a", stripStart(" a", ""));
@@ -145,6 +156,7 @@ public class CommonUtilsTest {
         Assertions.assertNull(stripEnd(null, null));
         Assertions.assertEquals("", stripEnd("", null));
         Assertions.assertEquals("", stripEnd("", ""));
+        Assertions.assertEquals("", stripEnd("", " "));
         Assertions.assertEquals("a", stripEnd("a ", null));
         Assertions.assertEquals("a", stripEnd("a ", " "));
         Assertions.assertEquals("a", stripEnd("a ", ""));
@@ -164,7 +176,21 @@ public class CommonUtilsTest {
         Assertions.assertFalse(isNumeric(" "));
         Assertions.assertFalse(isNumeric("a"));
         Assertions.assertFalse(isNumeric(" 0"));
+        Assertions.assertFalse(isNumeric("0."));
         Assertions.assertFalse(isNumeric(" -1"));
+    }
+
+    @Test
+    public void isNotNumericValidation() {
+        Assertions.assertTrue(isNotNumeric("a"));
+        Assertions.assertTrue(isNotNumeric("."));
+        Assertions.assertTrue(isNotNumeric("-"));
+        Assertions.assertTrue(isNotNumeric(null));
+        Assertions.assertTrue(isNotNumeric(""));
+        Assertions.assertTrue(isNotNumeric(" "));
+        Assertions.assertTrue(isNotNumeric("0."));
+        Assertions.assertFalse(isNotNumeric("0"));
+        Assertions.assertFalse(isNotNumeric("0.0"));
     }
 
     @Test
@@ -232,5 +258,25 @@ public class CommonUtilsTest {
             Assertions.assertTrue(generated >= 0);
             Assertions.assertTrue(i == 0 || generated < i);
         }
+    }
+
+    @Test
+    public void getAllFieldsValidation() {
+        Map<String, Field> fields = getAllFields(Pair.class);
+
+        Assertions.assertFalse(fields.isEmpty());
+        Assertions.assertTrue(fields.containsKey("left"));
+        Assertions.assertTrue(fields.containsKey("right"));
+    }
+
+    @Test
+    public void getAllFieldsInvalidObject() {
+        Map<String, Field> nullFields = getAllFields(null);
+
+        Assertions.assertTrue(nullFields.isEmpty());
+
+        Map<String, Field> objectFields = getAllFields(Object.class);
+
+        Assertions.assertTrue(objectFields.isEmpty());
     }
 }

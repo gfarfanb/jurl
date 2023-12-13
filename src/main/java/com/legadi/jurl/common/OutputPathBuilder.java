@@ -70,9 +70,7 @@ public class OutputPathBuilder {
             pathParts.add(requestName);
         }
 
-        if(isNotBlank(folder)) {
-            pathParts.add(folder);
-        }
+        pathParts.add(folder);
 
         Path filePath = Paths.get(basePath.toString(), pathParts.toArray(new String[pathParts.size()]));
 

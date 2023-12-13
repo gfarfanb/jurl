@@ -10,6 +10,14 @@ import org.junit.jupiter.api.Test;
 public class StringExpanderTest {
 
     @Test
+    public void getSettingsValidation() {
+        Settings settings = new Settings();
+        StringExpander expander = new StringExpander(settings);
+
+        Assertions.assertEquals(settings, expander.getSettings());
+    }
+
+    @Test
     public void replaceAllInContentValidation() {
         Settings settings = new Settings();
         StringExpander expander = new StringExpander(settings);
@@ -32,6 +40,42 @@ public class StringExpanderTest {
         Assertions.assertEquals("name: Test", expander.replaceAllInContent(values, "name: {{name}}"));
         Assertions.assertEquals("name1: Test, name2: Test, name3: Test",
             expander.replaceAllInContent(values, "name1: {{name}}, name2: {{name}}, name3: {{name}}"));
+    }
+
+    @Test
+    public void replaceAllInContentNull() {
+        Settings settings = new Settings();
+        StringExpander expander = new StringExpander(settings);
+        Map<String, String> values = new HashMap<>();
+
+        Assertions.assertNull(expander.replaceAllInContent(values, null));
+    }
+
+    @Test
+    public void replaceAllInContentGenerator() {
+        Settings settings = new Settings();
+        StringExpander expander = new StringExpander(settings);
+        Map<String, String> values = new HashMap<>();
+
+        Assertions.assertFalse(expander.replaceAllInContent(values, "{{INTEGER:}}").isEmpty());
+    }
+
+    @Test
+    public void replaceAllInContentModifier() {
+        Settings settings = new Settings();
+        StringExpander expander = new StringExpander(settings);
+        Map<String, String> values = new HashMap<>();
+
+        Assertions.assertEquals("0", expander.replaceAllInContent(values, "{{~default~0~number}}"));
+    }
+
+    @Test
+    public void replaceAllInContentModifierNotFound() {
+        Settings settings = new Settings();
+        StringExpander expander = new StringExpander(settings);
+        Map<String, String> values = new HashMap<>();
+
+        Assertions.assertTrue(expander.replaceAllInContent(values, "{{~not-found~number}}").isEmpty());
     }
 
     @Test

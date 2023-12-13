@@ -14,7 +14,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.generators.Generator;
 import com.legadi.jurl.modifiers.ValueModifier;
 
@@ -51,10 +50,7 @@ public class StringExpander {
             if(!paramTags.contains(paramTag)) {
                 Matcher paramTagMatcher = paramTagPattern.matcher(paramTag);
 
-                if(!paramTagMatcher.find()) {
-                    throw new CommandException("Parameter is wrong defined: " + paramTag
-                        + " - expected \"<generator>:?~<modifier-definition>~?<property-name>\"");
-                }
+                paramTagMatcher.find();
 
                 Optional<Generator> generator = findByName(Generator.class, stripEnd(paramTagMatcher.group(1), ":"));
                 String modifierDefinition = paramTagMatcher.group(3);
@@ -77,12 +73,10 @@ public class StringExpander {
                     }
                 }
 
-                if(value != null) {
-                    String paramRegex = settings.getSettingsParamRegexBegin()
-                        + paramTag + settings.getSettingsParamRegexEnd();
+                String paramRegex = settings.getSettingsParamRegexBegin()
+                    + paramTag + settings.getSettingsParamRegexEnd();
 
-                    content = content.replaceAll(paramRegex, value);
-                }
+                content = content.replaceAll(paramRegex, value);
 
                 paramTags.add(paramTag);
             }

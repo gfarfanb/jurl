@@ -23,6 +23,19 @@ public class EnvironmentResourceTest {
     }
 
     @Test
+    public void loadAndGetInCommon() {
+        EnvironmentResource<String> environmentResource = new EnvironmentResource<>();
+        Map<String, String> resources = new HashMap<>();
+        resources.put("1", "1");
+        resources.put("2", "2");
+        resources.put("3", "3");
+
+        environmentResource.putAllInCommon(resources);
+
+        Assertions.assertEquals("1", environmentResource.get("non-existent", "1"));
+    }
+
+    @Test
     public void loadAndGetNull() {
         EnvironmentResource<String> environmentResource = new EnvironmentResource<>();
         Map<String, String> resources = new HashMap<>();
@@ -41,5 +54,12 @@ public class EnvironmentResourceTest {
         EnvironmentResource<String> environmentResource = new EnvironmentResource<>();
 
         Assertions.assertDoesNotThrow(() -> environmentResource.putAll("test", null));
+    }
+
+    @Test
+    public void putAllInCommonNull() {
+        EnvironmentResource<String> environmentResource = new EnvironmentResource<>();
+
+        Assertions.assertDoesNotThrow(() -> environmentResource.putAllInCommon(null));
     }
 }

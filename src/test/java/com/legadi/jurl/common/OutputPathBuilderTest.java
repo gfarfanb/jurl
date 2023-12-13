@@ -35,6 +35,17 @@ public class OutputPathBuilderTest {
     }
 
     @Test
+    public void buildCommandPathNoExtension() {
+        Settings settings = new Settings();
+        OutputPathBuilder pathBuilder = new OutputPathBuilder(settings);
+        Path expected = Paths.get("./executions/"
+            + settings.getTimestamp().toLocalDate() + "/"
+            + settings.getExecutionTag());
+
+        Assertions.assertEquals(expected, pathBuilder.buildCommandPath());
+    }
+
+    @Test
     public void buildHistoryPathValidation() {
         Settings settings = new Settings();
         OutputPathBuilder pathBuilder = new OutputPathBuilder(settings)
