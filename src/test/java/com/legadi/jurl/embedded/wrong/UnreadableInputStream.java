@@ -7,6 +7,6 @@ public class UnreadableInputStream extends InputStream {
 
     @Override
     public int read() throws IOException {
-        throw new IOException();
+        throw new IOException("Trying read()");
     }
 }

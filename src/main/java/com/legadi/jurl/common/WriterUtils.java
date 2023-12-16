@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDate;
+import java.nio.file.SimpleFileVisitor;
 import java.util.function.Consumer;
 
 public class WriterUtils {
@@ -127,7 +127,7 @@ public class WriterUtils {
         }
     }
 
-    public static void cleanDirectory(Path directoryPath, LocalDate untilDateInclusive) {
+    public static void cleanDirectory(Path directoryPath, SimpleFileVisitor<Path> visitor) {
         if(directoryPath == null) {
             return;
         }
@@ -137,9 +137,9 @@ public class WriterUtils {
         }
 
         try {
-            Files.walkFileTree(directoryPath, new DeleteFileVisitor(untilDateInclusive));
+            Files.walkFileTree(directoryPath, visitor);
         } catch(IOException ex) {
-            throw new IllegalStateException("Unable to clean directory [" + untilDateInclusive + "]: " + directoryPath, ex);
+            throw new IllegalStateException("Unable to clean directory [" + visitor + "]: " + directoryPath, ex);
         }
     }
 

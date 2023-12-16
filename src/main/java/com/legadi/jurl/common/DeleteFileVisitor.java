@@ -1,7 +1,5 @@
 package com.legadi.jurl.common;
 
-import static java.util.logging.Level.FINE;
-
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitResult;
@@ -36,13 +34,13 @@ public class DeleteFileVisitor extends SimpleFileVisitor<Path> {
             attrs.lastModifiedTime().toInstant(), ZoneOffset.UTC);
 
         if(untilDateInclusive == null) {
-            return silentDelete(file, lastModifiedTime(lastModifiedTime));
+            return delete(file, lastModifiedTime(lastModifiedTime));
         }
 
         LocalDate fileDate = lastModifiedTime.toLocalDate();
 
-        if(fileDate.isBefore(untilDateInclusive) || fileDate.isEqual(untilDateInclusive)) {
-            return silentDelete(file, lastModifiedTime(lastModifiedTime));
+        if(untilDateInclusive.isBefore(fileDate) || untilDateInclusive.isEqual(fileDate)) {
+            return delete(file, lastModifiedTime(lastModifiedTime));
         } else {
             return FileVisitResult.CONTINUE;
         }
@@ -54,15 +52,12 @@ public class DeleteFileVisitor extends SimpleFileVisitor<Path> {
             return FileVisitResult.CONTINUE;
         }
 
-        return silentDelete(directory, "empty-directory");
+        return delete(directory, "empty-directory");
     }
 
-    private boolean isDirectoryEmpty(Path directoryPath) {
+    private boolean isDirectoryEmpty(Path directoryPath) throws IOException {
         try (DirectoryStream<Path> directory = Files.newDirectoryStream(directoryPath)) {
             return !directory.iterator().hasNext();
-        } catch(Exception ex) {
-            LOGGER.log(FINE, "Unable to validate directory: " + directoryPath + " - " + ex.getMessage(), ex);
-            return false;
         }
     }
 
@@ -70,15 +65,14 @@ public class DeleteFileVisitor extends SimpleFileVisitor<Path> {
         return "lastModifiedTime: " + formatter.format(lastModifiedTime);
     }
 
-    private FileVisitResult silentDelete(Path path, String tag) {
-        try {
-            Files.delete(path);
-            LOGGER.info("Deleted"
-                + (tag != null ? " [" + tag + "]" : "")
-                + ": " + path);
-        } catch(Exception ex) {
-            LOGGER.log(FINE, "Unable to delete file: " + path + " - " + ex.getMessage(), ex);
-        }
+    private FileVisitResult delete(Path path, String tag) throws IOException {
+        Files.deleteIfExists(path);
+        LOGGER.info("Deleted [" + tag + "]: " + path);
         return FileVisitResult.CONTINUE;
+    }
+
+    @Override
+    public String toString() {
+        return "DeleteFileVisitor [untilDateInclusive=" + untilDateInclusive + "]";
     }
 }

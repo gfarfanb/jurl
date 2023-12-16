@@ -5,6 +5,7 @@ import static com.legadi.jurl.common.WriterUtils.cleanDirectory;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+import com.legadi.jurl.common.DeleteFileVisitor;
 import com.legadi.jurl.common.Settings;
 
 public class CleanOutputOption extends Option {
@@ -38,8 +39,8 @@ public class CleanOutputOption extends Option {
             DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE;
             untilDateInclusive = LocalDate.from(formatter.parse(args[0]));
         }
-        cleanDirectory(settings.getExecutionPath(), untilDateInclusive);
-        cleanDirectory(settings.getHistoryPath(), untilDateInclusive);
+        cleanDirectory(settings.getExecutionPath(), new DeleteFileVisitor(untilDateInclusive));
+        cleanDirectory(settings.getHistoryPath(), new DeleteFileVisitor(untilDateInclusive));
         return false;
     }
 }

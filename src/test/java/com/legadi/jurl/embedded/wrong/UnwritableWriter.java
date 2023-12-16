@@ -12,6 +12,6 @@ public class UnwritableWriter extends BufferedWriter {
 
     @Override
     public void write(String str) throws IOException {
-        throw new IOException();
+        throw new IOException("Trying write(" + str + ")");
     }
 }

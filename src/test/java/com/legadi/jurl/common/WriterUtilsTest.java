@@ -3,7 +3,9 @@ package com.legadi.jurl.common;
 import static com.legadi.jurl.common.JsonUtils.jsonToObject;
 import static com.legadi.jurl.common.JsonUtils.loadJsonFile;
 import static com.legadi.jurl.common.WriterUtils.appendToFile;
+import static com.legadi.jurl.common.WriterUtils.cleanDirectory;
 import static com.legadi.jurl.common.WriterUtils.createDirectories;
+import static com.legadi.jurl.common.WriterUtils.deleteFileFromPath;
 import static com.legadi.jurl.common.WriterUtils.expandFile;
 import static com.legadi.jurl.common.WriterUtils.printFile;
 import static com.legadi.jurl.common.WriterUtils.writeFile;
@@ -19,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -28,6 +31,7 @@ import org.junit.jupiter.api.Test;
 
 import com.google.gson.reflect.TypeToken;
 import com.legadi.jurl.embedded.model.BasicFunctionsEntity;
+import com.legadi.jurl.embedded.wrong.FailedDeleteFileVisitor;
 import com.legadi.jurl.embedded.wrong.FailedFileSystemPath;
 import com.legadi.jurl.embedded.wrong.UnwritableOutputStream;
 import com.legadi.jurl.embedded.wrong.UnwritableWriter;
@@ -255,5 +259,180 @@ public class WriterUtilsTest {
 
         Assertions.assertDoesNotThrow(() -> printFile(filePath));
         Assertions.assertDoesNotThrow(() -> printFile(file));
+    }
+
+    @Test
+    public void cleanDirectoryWalkFilesAll() {
+        Settings settings = new Settings();
+        Path cleanPath = settings.getExecutionPath()
+            .resolve("src/test/resources/writer-utils/clean")
+            .resolve(UUID.randomUUID().toString());
+        Path emptyPath = cleanPath.resolve("empty");
+        Pair<Path, Path[]> folderPaths = createFiles(cleanPath);
+
+        createDirectories(emptyPath);
+        Assertions.assertTrue(emptyPath.toFile().exists());
+        Assertions.assertTrue(emptyPath.toFile().isDirectory());
+
+        Assertions.assertDoesNotThrow(() -> cleanDirectory(cleanPath, new DeleteFileVisitor(null)));
+
+        Assertions.assertFalse(emptyPath.toFile().exists());
+        Assertions.assertFalse(folderPaths.getLeft().toFile().exists());
+
+        for(int i = 0; i < folderPaths.getRight().length; i++) {
+            Assertions.assertFalse(folderPaths.getRight()[i].toFile().exists());
+        }
+    }
+
+    @Test
+    public void cleanDirectoryWalkFilesUntilDateFuture() {
+        Settings settings = new Settings();
+        Path cleanPath = settings.getExecutionPath()
+            .resolve("src/test/resources/writer-utils/clean")
+            .resolve(UUID.randomUUID().toString());
+        Pair<Path, Path[]> folderPaths = createFiles(cleanPath);
+
+        LocalDate futureUntilDate = LocalDate.now().plusDays(2);
+        Assertions.assertDoesNotThrow(() -> cleanDirectory(cleanPath, new DeleteFileVisitor(futureUntilDate)));
+
+        Assertions.assertTrue(folderPaths.getLeft().toFile().exists());
+
+        Assertions.assertDoesNotThrow(() -> cleanDirectory(cleanPath, new DeleteFileVisitor(null)));
+
+        Assertions.assertFalse(folderPaths.getLeft().toFile().exists());
+
+        for(int i = 0; i < folderPaths.getRight().length; i++) {
+            Assertions.assertFalse(folderPaths.getRight()[i].toFile().exists());
+        }
+    }
+
+    @Test
+    public void cleanDirectoryWalkFilesUntilDateBefore() {
+        Settings settings = new Settings();
+        Path cleanPath = settings.getExecutionPath()
+            .resolve("src/test/resources/writer-utils/clean")
+            .resolve(UUID.randomUUID().toString());
+        Pair<Path, Path[]> folderPaths = createFiles(cleanPath);
+
+        LocalDate futureUntilDate = LocalDate.now().minusDays(2);
+        Assertions.assertDoesNotThrow(() -> cleanDirectory(cleanPath, new DeleteFileVisitor(futureUntilDate)));
+
+        Assertions.assertFalse(folderPaths.getLeft().toFile().exists());
+
+        for(int i = 0; i < folderPaths.getRight().length; i++) {
+            Assertions.assertFalse(folderPaths.getRight()[i].toFile().exists());
+        }
+    }
+
+    @Test
+    public void cleanDirectoryWalkFilesUntilDateNow() {
+        Settings settings = new Settings();
+        Path cleanPath = settings.getExecutionPath()
+            .resolve("src/test/resources/writer-utils/clean")
+            .resolve(UUID.randomUUID().toString());
+        Pair<Path, Path[]> folderPaths = createFiles(cleanPath);
+
+        LocalDate futureUntilDate = LocalDate.now();
+        Assertions.assertDoesNotThrow(() -> cleanDirectory(cleanPath, new DeleteFileVisitor(futureUntilDate)));
+
+        Assertions.assertFalse(folderPaths.getLeft().toFile().exists());
+
+        for(int i = 0; i < folderPaths.getRight().length; i++) {
+            Assertions.assertFalse(folderPaths.getRight()[i].toFile().exists());
+        }
+    }
+
+    @Test
+    public void cleanDirectoryNullDirectory() {
+        Assertions.assertDoesNotThrow(() -> cleanDirectory(null, null));
+    }
+
+    @Test
+    public void cleanDirectoryNotFound() {
+        Settings settings = new Settings();
+        Path cleanPath = settings.getExecutionPath()
+            .resolve("src/test/resources/writer-utils/clean")
+            .resolve(UUID.randomUUID().toString());
+
+        Assertions.assertDoesNotThrow(() -> cleanDirectory(cleanPath, null));
+    }
+
+    @Test
+    public void cleanDirectoryFailed() {
+        Settings settings = new Settings();
+        Path cleanPath = settings.getExecutionPath()
+            .resolve("src/test/resources/writer-utils/clean")
+            .resolve(UUID.randomUUID().toString());
+
+        createDirectories(cleanPath);
+
+        Assertions.assertThrows(IllegalStateException.class,
+            () -> cleanDirectory(cleanPath, new FailedDeleteFileVisitor(null)));
+    }
+
+    @Test
+    public void cleanDirectoryDiscardSymbolicLink() throws IOException {
+        Settings settings = new Settings();
+        Path deletePath = settings.getExecutionPath()
+            .resolve("src/test/resources/writer-utils/clean")
+            .resolve(UUID.randomUUID().toString());
+
+        createDirectories(deletePath);
+
+        Path targetPath = deletePath.resolve("file.txt");
+        Path linkPath = deletePath.resolve("symbolic_link.txt");
+
+        Files.createSymbolicLink(linkPath, targetPath);
+
+        Assertions.assertDoesNotThrow(() -> cleanDirectory(deletePath, new DeleteFileVisitor(null)));
+
+        Assertions.assertTrue(deletePath.toFile().exists());
+        Assertions.assertFalse(targetPath.toFile().exists());
+        Assertions.assertTrue(linkPath.toFile().delete());
+
+        Assertions.assertDoesNotThrow(() -> cleanDirectory(deletePath, new DeleteFileVisitor(null)));
+
+        Assertions.assertFalse(deletePath.toFile().exists());
+    }
+
+    @Test
+    public void deleteFileFromPathValidation() {
+        Settings settings = new Settings();
+        Path deletePath = settings.getExecutionPath()
+            .resolve("src/test/resources/writer-utils/clean")
+            .resolve(UUID.randomUUID().toString());
+
+        createDirectories(deletePath);
+
+        boolean result = deleteFileFromPath(deletePath);
+
+        Assertions.assertTrue(result);
+    }
+
+    @Test
+    public void deleteFileFromPathNull() {
+        boolean result = deleteFileFromPath(null);
+
+        Assertions.assertFalse(result);
+    }
+
+    private Pair<Path, Path[]> createFiles(Path basePath) {
+        Path folderPath = basePath.resolve("folder");
+        Path[] filePaths = new Path[5];
+
+        createDirectories(folderPath);
+        Assertions.assertTrue(folderPath.toFile().exists());
+        Assertions.assertTrue(folderPath.toFile().isDirectory());
+
+        for(int i = 0; i < filePaths.length; i++) {
+            String name = UUID.randomUUID().toString() + ".txt";
+            filePaths[i] = folderPath.resolve(name);
+            writeFile(filePaths[i], name);
+
+            Assertions.assertTrue(filePaths[i].toFile().exists());
+            Assertions.assertTrue(filePaths[i].toFile().isFile());
+        }
+
+        return new Pair<>(folderPath, filePaths);
     }
 }

@@ -22,7 +22,7 @@ public class FailedFileSystemPath implements Path {
 
     @Override
     public FileSystem getFileSystem() {
-        throw new IllegalStateException("Trying getFileSystem(): " + path.getFileSystem());
+        throw new IllegalStateException("Trying getFileSystem()");
     }
 
     @Override

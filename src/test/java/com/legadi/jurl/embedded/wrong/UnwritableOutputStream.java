@@ -7,6 +7,6 @@ public class UnwritableOutputStream extends OutputStream {
 
     @Override
     public void write(int b) throws IOException {
-        throw new IOException();
+        throw new IOException("Trying write(" + b + ")");
     }
 }
