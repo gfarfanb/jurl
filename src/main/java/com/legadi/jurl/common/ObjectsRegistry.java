@@ -194,8 +194,9 @@ public class ObjectsRegistry {
             Spec entry = CLASS_NAMES.get(typeClass);
             return instantiate(entry.getTypeClass(), entry.getArgs());
         } else {
-            T instance = register(groupClass, typeOf(typeClass), args);
-            CLASS_NAMES.put(typeClass, new Spec(typeOf(typeClass), args));
+            Class<?> type = typeOf(typeClass);
+            T instance = register(groupClass, type, args);
+            CLASS_NAMES.put(typeClass, new Spec(type, args));
             return instance;
         }
     }

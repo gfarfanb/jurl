@@ -35,6 +35,7 @@ public class SettingsTest {
         Assertions.assertEquals(1, settings.getAddOnOptionClasses().length);
         Assertions.assertTrue(settings.getOpenEditorCommand().isEmpty());
         Assertions.assertEquals(RequestBehaviour.REQUEST, settings.getRequestBehaviour());
+        Assertions.assertEquals("http", settings.getRequestType());
         Assertions.assertFalse(settings.isMockRequest());
         Assertions.assertFalse(settings.isOpenOutputInEditor());
         Assertions.assertEquals(1, settings.getTimes());
@@ -42,6 +43,8 @@ public class SettingsTest {
         Assertions.assertEquals("(?:\\{\\{([\\w.,\\-:\\'@~|\\[\\]/\\\\]+)\\}\\})", settings.getSettingsParamRegex());
         Assertions.assertEquals("\\{\\{", settings.getSettingsParamRegexBegin());
         Assertions.assertEquals("\\}\\}", settings.getSettingsParamRegexEnd());
+        Assertions.assertFalse(settings.isSkipAuthentication());
+        Assertions.assertFalse(settings.isSkipConditions());
         Assertions.assertFalse(settings.isSkipAssertions());
         Assertions.assertTrue(settings.getMergeBodyUsingType().isEmpty());
         Assertions.assertTrue(settings.getOverrideRequestFilePath().isEmpty());
@@ -147,6 +150,17 @@ public class SettingsTest {
     }
 
     @Test
+    public void containsAndPutUserInputValidation() {
+        Settings settings = new Settings();
+
+        Assertions.assertFalse(settings.containsUserInput("property.not.found"));
+
+        settings.putUserInput("property.not.found", "test");
+
+        Assertions.assertTrue(settings.containsUserInput("property.not.found"));
+    }
+
+    @Test
     public void containsAndPutOverrideValidation() {
         Settings settings = new Settings();
 
@@ -170,6 +184,22 @@ public class SettingsTest {
         Assertions.assertFalse(settings.equals(nextSettings));
         Assertions.assertEquals("overrided", settings.get("override.property"));
         Assertions.assertEquals("test", nextSettings.get("override.property"));
+    }
+
+    @Test
+    public void createForStepValidation() {
+        Settings settings = new Settings();
+
+        settings.putOverride("override.property", "test");
+
+        Settings stepSettings = settings.createForStep();
+
+        settings.putOverride("override.property", "overrided");
+
+        Assertions.assertFalse(settings.equals(stepSettings));
+        Assertions.assertEquals("overrided", settings.get("override.property"));
+        Assertions.assertThrows(CommandException.class, 
+            () -> stepSettings.get("override.property"));
     }
 
     @Test

@@ -1,6 +1,8 @@
 package com.legadi.jurl.common;
 
+import static com.legadi.jurl.common.LoaderUtils.instantiate;
 import static com.legadi.jurl.common.LoaderUtils.loadAndCacheInternalLines;
+import static com.legadi.jurl.common.LoaderUtils.typeOf;
 
 import java.util.List;
 
@@ -26,6 +28,33 @@ public class LoaderUtilsTest {
     public void loadAndCacheInternalLinesFileNotFound() {
         Assertions.assertThrows(IllegalStateException.class,
             () -> loadAndCacheInternalLines("lines-file-not-found.txt"));
+    }
+
+    @Test
+    public void typeOfValidation() {
+        Class<?> type = Assertions.assertDoesNotThrow(() -> typeOf("com.legadi.jurl.common.LoaderUtilsTest$TestLoader"));
+
+        Assertions.assertEquals(TestLoader.class, type);
+    }
+
+    @Test
+    public void typeOfNotFound() {
+        Assertions.assertThrows(IllegalStateException.class,
+            () -> typeOf("com.legadi.jurl.common.ClassNotFound"));
+    }
+
+    @Test
+    public void instantiateValidation() {
+        Assertions.assertDoesNotThrow(() -> instantiate(TestLoader.class));
+
+        Object[] args = null;
+        Assertions.assertDoesNotThrow(() -> instantiate(TestLoader.class, args));
+    }
+
+    @Test
+    public void instantiateFailed() {
+        Assertions.assertThrows(IllegalStateException.class,
+            () -> instantiate(TestLoader.class, "A"));
     }
 
     public static class TestLoader {

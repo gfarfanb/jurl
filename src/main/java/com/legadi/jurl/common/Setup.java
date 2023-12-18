@@ -5,8 +5,6 @@ import static java.util.logging.Level.INFO;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.security.GeneralSecurityException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -19,7 +17,6 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 public class Setup {
 
@@ -30,7 +27,6 @@ public class Setup {
         Level logLevel = INFO;
 
         if(jurlLogLevel != null) {
-            
             switch(jurlLogLevel.toUpperCase()) {
                 case "OFF": logLevel = Level.OFF; break;
                 case "SEVERE": logLevel = Level.SEVERE; break;
@@ -75,38 +71,21 @@ public class Setup {
 
     public static void setupConnectionstoAcceptAllHosts() throws GeneralSecurityException {
         TrustManager[] trustAllCerts = new TrustManager[] {
-            new X509TrustManager() {
-
-                @Override
-                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                    return null;
-                }
-
-                @Override
-                public void checkClientTrusted(X509Certificate[] arg0, String arg1)
-                    throws CertificateException {
-                }
-
-                @Override
-                public void checkServerTrusted(X509Certificate[] arg0, String arg1)
-                    throws CertificateException {
-                }
-
-            }
+            new TrustedManager()
         };
 
-        SSLContext sc = SSLContext.getInstance("SSL");
-        sc.init(null, trustAllCerts, new java.security.SecureRandom());
-        HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+        SSLContext context = SSLContext.getInstance("SSL");
+        context.init(null, trustAllCerts, new java.security.SecureRandom());
+        HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
 
-        HostnameVerifier validHosts = new HostnameVerifier() {
+        HostnameVerifier hostnameVerifier = new HostnameVerifier() {
 
             @Override
-            public boolean verify(String arg0, SSLSession arg1) {
+            public boolean verify(String hostname, SSLSession session) {
                 return true;
             }
         };
 
-        HttpsURLConnection.setDefaultHostnameVerifier(validHosts);
+        HttpsURLConnection.setDefaultHostnameVerifier(hostnameVerifier);
     }
 }
