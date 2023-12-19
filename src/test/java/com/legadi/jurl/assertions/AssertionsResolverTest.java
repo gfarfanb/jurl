@@ -16,6 +16,7 @@ import com.legadi.jurl.exception.AssertionException;
 import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.model.AssertionEntry;
 import com.legadi.jurl.model.AssertionResult;
+import com.legadi.jurl.model.AssertionType;
 
 public class AssertionsResolverTest {
 
@@ -54,6 +55,22 @@ public class AssertionsResolverTest {
         Assertions.assertEquals(entries.size(), result.get().getAssertions());
         Assertions.assertEquals(0, result.get().getFailures());
         Assertions.assertTrue(result.get().getFailedMessages().isEmpty());
+    }
+
+    @Test
+    public void evaluateFailed() {
+        Settings settings = new Settings();
+        List<AssertionEntry> entries = new LinkedList<>();
+        entries.add(instance("EQUALS_TO", "test", "test1"));
+
+        Optional<AssertionResult> result = Assertions.assertDoesNotThrow(
+            () -> evaluate(settings, entries));
+
+        Assertions.assertTrue(result.isPresent());
+        Assertions.assertFalse(result.get().isPassed());
+        Assertions.assertEquals(entries.size(), result.get().getAssertions());
+        Assertions.assertEquals(1, result.get().getFailures());
+        Assertions.assertFalse(result.get().getFailedMessages().isEmpty());
     }
 
     @Test
@@ -106,10 +123,21 @@ public class AssertionsResolverTest {
         Assertions.assertTrue(result.get().getFailedMessages().isEmpty());
     }
 
+    @Test
+    public void evaluateEmpty() {
+        Settings settings = new Settings();
+
+         Optional<AssertionResult> result = Assertions.assertDoesNotThrow(
+            () -> evaluate(settings, null));
+
+        Assertions.assertFalse(result.isPresent());
+    }
+
     private AssertionEntry instance(String name, String... args) {
         AssertionEntry instance = new AssertionEntry();
         instance.setName(name);
         instance.setArgs(args);
+        instance.setType(AssertionType.ASSERTION);
         return instance;
     }
 

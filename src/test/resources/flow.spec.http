@@ -5,12 +5,12 @@ Content-Type: application/x-www-form-urlencoded
 
 grant_type=client_credentials&client_id={{UUID:}}&client_secret={{UUID:}}
 
-condition LESS_THAN {{~default~0~auth.expiration.millis}} {{DATE_TIME:~datetime~epoch~ISO_LOCAL_DATE_TIME~MILLIS~0~}}
+condition LESS_THAN {{~default~0~auth.expiration.millis}} {{DATE_TIME:~date-epoch~ISO_LOCAL_DATE_TIME~MILLIS~}}
 
 output auth.access.token = {{OUT/access_token}}
 output auth.expires-in.secs = {{OUT/expires_in}}
-output auth.expiration.date = {{DATE_TIME:~datetime~plus~yyyy-MM-dd'T'HH:mm:ss.n~SECONDS~auth.expires-in.secs~}}
-output auth.expiration.millis = {{~datetime~epoch~ISO_LOCAL_DATE_TIME~MILLIS~0~auth.expiration.date}}
+output auth.expiration.date = {{DATE_TIME:~date-plus~yyyy-MM-dd'T'HH:mm:ss.n~SECONDS~auth.expires-in.secs~}}
+output auth.expiration.millis = {{~date-epoch~ISO_LOCAL_DATE_TIME~MILLIS~auth.expiration.date}}
 
 assert EQUALS_TO 200 {{HTTP/status}}
 

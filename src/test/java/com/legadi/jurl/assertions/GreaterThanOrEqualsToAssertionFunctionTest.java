@@ -27,6 +27,12 @@ public class GreaterThanOrEqualsToAssertionFunctionTest extends AssertionFunctio
 
         Assertions.assertDoesNotThrow(
             () -> evaluate("10", "10"));
+
+        Assertions.assertDoesNotThrow(
+            () -> evaluate("b", "a"));
+
+            Assertions.assertDoesNotThrow(
+            () -> evaluate("a", "a"));
     }
 
     @Test
@@ -39,5 +45,8 @@ public class GreaterThanOrEqualsToAssertionFunctionTest extends AssertionFunctio
 
         Assertions.assertThrows(AssertionException.class,
             () -> evaluate("10", "15"));
+
+        Assertions.assertThrows(AssertionException.class,
+            () -> evaluate("a", "b"));
     }
 }

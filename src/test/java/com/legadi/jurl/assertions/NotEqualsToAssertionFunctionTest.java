@@ -27,6 +27,9 @@ public class NotEqualsToAssertionFunctionTest extends AssertionFunctionTest<NotE
 
         Assertions.assertDoesNotThrow(
             () -> evaluate("Equals to", "Equals To"));
+
+        Assertions.assertDoesNotThrow(
+            () -> evaluate("5", "10"));
     }
 
     @Test
@@ -36,5 +39,8 @@ public class NotEqualsToAssertionFunctionTest extends AssertionFunctionTest<NotE
 
         Assertions.assertThrows(AssertionException.class,
             () -> evaluate("Equals to", "Equals to"));
+
+        Assertions.assertThrows(AssertionException.class,
+            () -> evaluate("10", "10"));
     }
 }

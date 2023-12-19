@@ -10,38 +10,27 @@ import java.time.temporal.ChronoUnit;
 import java.util.function.Function;
 
 import com.legadi.jurl.exception.CommandException;
-import com.legadi.jurl.exception.InvalidModifierOperationException;
 
-public class DateTimeValueModifier implements ValueModifier {
+public class DateEpochValueModifier implements ValueModifier {
 
     @Override
     public String name() {
-        return "datetime";
+        return "date-epoch";
     }
 
     @Override
     public String[] getArgs() {
-        return new String[] { "(plus|minus|epoch)", "pattern", "time-unit", "input?" };
+        return new String[] { "pattern", "time-unit" };
     }
 
     @Override
     public String apply(Function<String, String> getter, String[] args, String value) throws Exception {
-        DateTimeFormatter formatter = getFormatter(args[1]);
+        DateTimeFormatter formatter = getFormatter(args[0]);
         LocalDateTime date = LocalDateTime.from(formatter.parse(value));
-        ChronoUnit timeUnit = ChronoUnit.valueOf(args[2]);
-        long input = Long.parseLong(getter.apply(args[3]));
+        ChronoUnit timeUnit = ChronoUnit.valueOf(args[1]);
+        Duration secondsDuration = Duration.ofSeconds(date.toEpochSecond(ZoneOffset.UTC));
 
-        switch(args[0].toLowerCase()) {
-            case "plus":
-                return formatter.format(date.plus(input, timeUnit));
-            case "minus":
-                return formatter.format(date.minus(input, timeUnit));
-            case "epoch":
-                Duration secondsDuration = Duration.ofSeconds(date.toEpochSecond(ZoneOffset.UTC));
-                return Long.toString(durationToTimeUnit(secondsDuration, timeUnit));
-            default:
-                throw new InvalidModifierOperationException(args[0]);
-        }
+        return Long.toString(durationToTimeUnit(secondsDuration, timeUnit));
     }
 
     private long durationToTimeUnit(Duration secondsDuration, ChronoUnit timeUnit) {

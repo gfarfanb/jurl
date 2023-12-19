@@ -6,18 +6,21 @@ import java.util.Map;
 import java.util.function.Function;
 
 import com.legadi.jurl.common.Evaluable;
+import com.legadi.jurl.common.Named;
 import com.legadi.jurl.common.Settings;
-import com.legadi.jurl.exception.InvalidModifierOperationException;
 import com.legadi.jurl.exception.ModifierException;
 
-public interface ValueModifier extends Evaluable {
+public interface ValueModifier extends Evaluable, Named {
 
     @Override
     default boolean accepts(String definition) {
-        return definition.startsWith(name());
+        return definition.toLowerCase().startsWith(name().toLowerCase());
     }
 
-    String name();
+    @Override
+    default boolean allowOverride() {
+        return false;
+    }
 
     String[] getArgs();
 
@@ -39,8 +42,6 @@ public interface ValueModifier extends Evaluable {
                 settings.getOrDefault(property, property));
 
             return apply(getter, args, value);
-        } catch(InvalidModifierOperationException ex) {
-            throw new ModifierException(name(), getArgs(), args, value, "Invalid modifier operation: " + ex.getOperation());
         } catch(Exception ex) {
             throw new ModifierException(name(), getArgs(), args, value, ex.getMessage());
         }
