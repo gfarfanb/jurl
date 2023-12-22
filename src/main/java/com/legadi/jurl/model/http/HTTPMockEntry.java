@@ -10,7 +10,8 @@ public class HTTPMockEntry extends MockEntry {
     private Map<String, String> responseHeaders = new HashMap<>();
     private String responseContent;
     private String responseFilePath;
-    private String exceptionClassOnConnect;
+    private String exceptionClassOnOutputStream;
+    private String exceptionClassOnResponseCode;
 
     public Map<String, String> getResponseHeaders() {
         return responseHeaders;
@@ -36,11 +37,19 @@ public class HTTPMockEntry extends MockEntry {
         this.responseFilePath = responseFilePath;
     }
 
-    public String getExceptionClassOnConnect() {
-        return exceptionClassOnConnect;
+    public String getExceptionClassOnOutputStream() {
+        return exceptionClassOnOutputStream;
     }
 
-    public void setExceptionClassOnConnect(String exceptionClassOnConnect) {
-        this.exceptionClassOnConnect = exceptionClassOnConnect;
+    public void setExceptionClassOnOutputStream(String exceptionClassOnOutputStream) {
+        this.exceptionClassOnOutputStream = exceptionClassOnOutputStream;
+    }
+
+    public String getExceptionClassOnResponseCode() {
+        return exceptionClassOnResponseCode;
+    }
+
+    public void setExceptionClassOnResponseCode(String exceptionClassOnResponseCode) {
+        this.exceptionClassOnResponseCode = exceptionClassOnResponseCode;
     }
 }

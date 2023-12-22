@@ -30,6 +30,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -481,6 +482,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         StringBuilder printableResponse = new StringBuilder();
 
         try {
+            String headerResultKey = "http.header.result." + UUID.randomUUID();
             response.setRequestUrl(connection.getURL().toString());
             response.setCurlCommand(curlBuilder.build());
             response.setStatusCode(connection.getResponseCode());
@@ -488,13 +490,11 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
                 .entrySet()
                 .stream()
                 .collect(Collectors.toMap(
-                    e -> getOrDefault(e.getKey(), "HTTP:HEADER:RESULT"),
-                    e -> String.join(",", e.getValue()),
-                    (v1, v2) -> v2,
-                    HashMap::new
+                    e -> getOrDefault(e.getKey(), headerResultKey),
+                    e -> String.join(",", e.getValue())
                 ))
             );
-            response.setResult(response.getResponseHeaders().remove("HTTP:HEADER:RESULT"));
+            response.setResult(response.getResponseHeaders().remove(headerResultKey));
 
             String filename = getOutputFilename(response);
             Path responsePath = readOutput(connection, settings, requestPath, request, filename);

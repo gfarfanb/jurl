@@ -68,4 +68,9 @@ public class BasicFunctionsController {
         requestCatcher.remove(correlationId, "basic-body");
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/body/empty")
+    public ResponseEntity<String> empty() {
+        return ResponseEntity.ok("");
+    }
 }

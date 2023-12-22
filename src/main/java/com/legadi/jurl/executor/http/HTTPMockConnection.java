@@ -1,11 +1,11 @@
 package com.legadi.jurl.executor.http;
 
+import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
-import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.CommonUtils.isNotNumeric;
-import static com.legadi.jurl.common.LoaderUtils.typeOf;
-import static com.legadi.jurl.common.LoaderUtils.instantiate;
 import static com.legadi.jurl.common.JsonUtils.toJsonString;
+import static com.legadi.jurl.common.LoaderUtils.instantiate;
+import static com.legadi.jurl.common.LoaderUtils.typeOf;
 import static java.util.logging.Level.FINE;
 
 import java.io.ByteArrayInputStream;
@@ -35,46 +35,53 @@ public class HTTPMockConnection extends HttpURLConnection {
 
     private URL url;
     private int responseCode;
-    private long secondsDelay;
+    private Long secondsDelay;
     private String responseContent;
     private String responseFilePath;
     private Map<String, List<String>> responseHeaders = new HashMap<>();
-    private Class<? extends IOException> exceptionClassOnConnect;
+    private Class<? extends IOException> exceptionClassOnOutputStream;
+    private Class<? extends IOException> exceptionClassOnResponseCode;
     private boolean doOutput;
 
-    @SuppressWarnings("unchecked")
+    
     public HTTPMockConnection(URL url, HTTPMockEntry mockEntry) {
         super(null);
 
         this.url = url;
 
-        if(mockEntry != null) {
-            if(isNotBlank(mockEntry.getStatusCode()) && isNotNumeric(mockEntry.getStatusCode())) {
-                throw new CommandException("Mock 'statusCode' must be numeric: " + mockEntry.getStatusCode());
-            }
-            if(isNotBlank(mockEntry.getSecondsDelay()) && isNotNumeric(mockEntry.getSecondsDelay())) {
-                throw new CommandException("Mock 'secondsDelay' must be numeric: " + mockEntry.getSecondsDelay());
-            }
-            this.responseCode = isNotBlank(mockEntry.getStatusCode())
-                ? Integer.parseInt(mockEntry.getStatusCode()) : 0;
-            this.secondsDelay = isNotBlank(mockEntry.getSecondsDelay())
-                ? Long.parseLong(mockEntry.getSecondsDelay()) : 0;
-            this.responseContent = mockEntry.getResponseContent();
-            this.responseFilePath = mockEntry.getResponseFilePath();
+        initMock(mockEntry);
+    }
 
-            this.responseHeaders.putAll(mockEntry.getResponseHeaders()
-                .entrySet()
-                .stream()
-                .collect(Collectors.toMap(
-                    e -> e.getKey(),
-                    e -> Arrays.asList(e.getValue()))
-                ));
-            this.responseHeaders.put(null, Arrays.asList("HTTP/1.1 " + responseCode));
-
-            if(isNotBlank(mockEntry.getExceptionClassOnConnect())) {
-                this.exceptionClassOnConnect = (Class<? extends IOException>) typeOf(mockEntry.getExceptionClassOnConnect());
-            }
+    private void initMock(HTTPMockEntry mockEntry) {
+        if(mockEntry == null) {
+            return;
         }
+
+        if(isNotBlank(mockEntry.getStatusCode()) && isNotNumeric(mockEntry.getStatusCode())) {
+            throw new CommandException("Mock 'statusCode' must be numeric: " + mockEntry.getStatusCode());
+        }
+        if(isNotBlank(mockEntry.getSecondsDelay()) && isNotNumeric(mockEntry.getSecondsDelay())) {
+            throw new CommandException("Mock 'secondsDelay' must be numeric: " + mockEntry.getSecondsDelay());
+        }
+
+        this.responseCode = isNotBlank(mockEntry.getStatusCode())
+            ? Integer.parseInt(mockEntry.getStatusCode()) : 0;
+        this.secondsDelay = isNotBlank(mockEntry.getSecondsDelay())
+            ? Long.parseLong(mockEntry.getSecondsDelay()) : null;
+        this.responseContent = mockEntry.getResponseContent();
+        this.responseFilePath = mockEntry.getResponseFilePath();
+
+        this.responseHeaders.putAll(mockEntry.getResponseHeaders()
+            .entrySet()
+            .stream()
+            .collect(Collectors.toMap(
+                e -> e.getKey(),
+                e -> Arrays.asList(e.getValue()))
+            ));
+        this.responseHeaders.put(null, Arrays.asList("HTTP/1.1 " + responseCode));
+
+        this.exceptionClassOnOutputStream = toIOExceptionClass(mockEntry.getExceptionClassOnOutputStream());
+        this.exceptionClassOnResponseCode = toIOExceptionClass(mockEntry.getExceptionClassOnResponseCode());
     }
 
     @Override
@@ -122,9 +129,9 @@ public class HTTPMockConnection extends HttpURLConnection {
 
     @Override
     public OutputStream getOutputStream() throws IOException {
-        if(exceptionClassOnConnect != null) {
-            LOGGER.fine("[mock-connection] Calling getOutputStream():ByteArrayOutputStream - throwing " + exceptionClassOnConnect);
-            IOException exception = instantiate(exceptionClassOnConnect);
+        if(exceptionClassOnOutputStream != null) {
+            LOGGER.fine("[mock-connection] Calling getOutputStream():ByteArrayOutputStream - throwing " + exceptionClassOnOutputStream);
+            IOException exception = instantiate(exceptionClassOnOutputStream);
             throw exception;
         } else {
             LOGGER.fine("[mock-connection] Calling getOutputStream():ByteArrayOutputStream");
@@ -141,8 +148,8 @@ public class HTTPMockConnection extends HttpURLConnection {
     public InputStream getInputStream() throws IOException {
         try {
             TimeUnit.SECONDS.sleep(secondsDelay);
-        } catch(InterruptedException ex) {
-            LOGGER.log(FINE, "Error on sleeping mock", ex);
+        } catch(Exception ex) {
+            LOGGER.log(FINE, "Error on sleeping mock - secondsDelay=" + secondsDelay, ex);
         }
 
         if(isNotBlank(responseContent)) {
@@ -160,24 +167,40 @@ public class HTTPMockConnection extends HttpURLConnection {
 
     @Override
     public int getResponseCode() throws IOException {
-        LOGGER.fine("[mock-connection] Calling getResponseCode():" + responseCode);
-        return responseCode;
+        if(exceptionClassOnResponseCode != null) {
+            LOGGER.fine("[mock-connection] Calling getResponseCode():int - throwing " + exceptionClassOnResponseCode);
+            IOException exception = instantiate(exceptionClassOnResponseCode);
+            throw exception;
+        } else {
+            LOGGER.fine("[mock-connection] Calling getResponseCode():" + responseCode);
+            return responseCode;
+        }
     }
 
     @Override
     public Map<String, List<String>> getHeaderFields() {
-        if(isNotEmpty(responseHeaders)) {
-            LOGGER.fine("[mock-connection] Calling getHeaderFields():" + responseHeaders.getClass().getSimpleName()
-                + "-" + toJsonString(responseHeaders));
-            return responseHeaders;
-        }
-
-        LOGGER.fine("[mock-connection] Calling getHeaderFields():HashMap");
-        return new HashMap<>();
+        LOGGER.fine("[mock-connection] Calling getHeaderFields():" + responseHeaders.getClass().getSimpleName()
+            + "-" + toJsonString(responseHeaders));
+        return responseHeaders;
     }
 
     @Override
-    public void setUseCaches(boolean usecaches) {
-        LOGGER.fine("[mock-connection] Calling setUseCaches(" + usecaches + ")");
+    public void setUseCaches(boolean useCaches) {
+        LOGGER.fine("[mock-connection] Calling setUseCaches(" + useCaches + ")");
+    }
+
+    @SuppressWarnings("unchecked")
+    private Class<? extends IOException> toIOExceptionClass(String exceptionClass) {
+        if(isBlank(exceptionClass)) {
+            return null;
+        }
+
+        Class<?> type = typeOf(exceptionClass);
+
+        if(IOException.class.isAssignableFrom(type)) {
+            return (Class<? extends IOException>) type;
+        } else {
+            return null;
+        }
     }
 }
