@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -135,10 +134,8 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             log(settings, identifyMethod(request) + " " + url, null);
 
             return createConnection(settings, request, url);
-        } catch(MalformedURLException ex) {
-            throw new RequestException(request, "Malformed HTTP resource: " + generatedUrl);
         } catch(IOException ex) {
-            throw new RequestException(request, "Unable to create HTTP connection: " + generatedUrl);
+            throw new RequestException(request, "Unable to create HTTP connection [" + generatedUrl + "] - " + ex.getMessage());
         }
     }
 
@@ -531,11 +528,11 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     }
 
     private String identifyMethod(HTTPRequestEntry request) {
-        if(request.getRequestFile() != null) {
-            return "POST";
-        }
         if(isNotBlank(request.getMethod())) {
             return request.getMethod();
+        }
+        if(request.getRequestFile() != null) {
+            return "POST";
         }
         throw new RequestException(request, "HTTP method not defined");
     }

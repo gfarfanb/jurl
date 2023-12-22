@@ -3,6 +3,8 @@ package com.legadi.jurl.executor.http;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.CommonUtils.isNotNumeric;
+import static com.legadi.jurl.common.LoaderUtils.typeOf;
+import static com.legadi.jurl.common.LoaderUtils.instantiate;
 import static com.legadi.jurl.common.JsonUtils.toJsonString;
 import static java.util.logging.Level.FINE;
 
@@ -37,8 +39,10 @@ public class HTTPMockConnection extends HttpURLConnection {
     private String responseContent;
     private String responseFilePath;
     private Map<String, List<String>> responseHeaders = new HashMap<>();
+    private Class<? extends IOException> exceptionClassOnConnect;
     private boolean doOutput;
 
+    @SuppressWarnings("unchecked")
     public HTTPMockConnection(URL url, HTTPMockEntry mockEntry) {
         super(null);
 
@@ -66,6 +70,10 @@ public class HTTPMockConnection extends HttpURLConnection {
                     e -> Arrays.asList(e.getValue()))
                 ));
             this.responseHeaders.put(null, Arrays.asList("HTTP/1.1 " + responseCode));
+
+            if(isNotBlank(mockEntry.getExceptionClassOnConnect())) {
+                this.exceptionClassOnConnect = (Class<? extends IOException>) typeOf(mockEntry.getExceptionClassOnConnect());
+            }
         }
     }
 
@@ -114,8 +122,14 @@ public class HTTPMockConnection extends HttpURLConnection {
 
     @Override
     public OutputStream getOutputStream() throws IOException {
-        LOGGER.fine("[mock-connection] Calling getOutputStream():ByteArrayOutputStream");
-        return new ByteArrayOutputStream();
+        if(exceptionClassOnConnect != null) {
+            LOGGER.fine("[mock-connection] Calling getOutputStream():ByteArrayOutputStream - throwing " + exceptionClassOnConnect);
+            IOException exception = instantiate(exceptionClassOnConnect);
+            throw exception;
+        } else {
+            LOGGER.fine("[mock-connection] Calling getOutputStream():ByteArrayOutputStream");
+            return new ByteArrayOutputStream();
+        }
     }
 
     @Override
