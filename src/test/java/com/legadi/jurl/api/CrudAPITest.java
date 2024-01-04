@@ -4,7 +4,6 @@ import static com.legadi.jurl.common.JsonUtils.loadJsonFile;
 import static com.legadi.jurl.executor.http.HTTPRequestModifier.BODY_TEMPORAL_PATH;
 
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Optional;
@@ -47,7 +46,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("POST", createRequest.getMethod());
         Assertions.assertTrue(createRequest.getQueryParams().isEmpty());
         Assertions.assertEquals(1, createRequest.getHeaders().size());
-        Assertions.assertEquals(StandardCharsets.UTF_8.name(), createRequest.getBodyCharset());
+        Assertions.assertNull(createRequest.getBodyCharset());
         Assertions.assertFalse(createRequest.getBodyContent().isEmpty());
         Assertions.assertNull(createRequest.getBodyFilePath());
         Assertions.assertNull(createRequest.getRequestFile());
@@ -100,7 +99,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("GET", obtainRequest.getMethod());
         Assertions.assertTrue(obtainRequest.getQueryParams().isEmpty());
         Assertions.assertEquals(1, obtainRequest.getHeaders().size());
-        Assertions.assertEquals(StandardCharsets.UTF_8.name(), obtainRequest.getBodyCharset());
+        Assertions.assertNull(obtainRequest.getBodyCharset());
         Assertions.assertNull(obtainRequest.getBodyContent());
         Assertions.assertNull(obtainRequest.getBodyFilePath());
         Assertions.assertNull(obtainRequest.getRequestFile());
@@ -162,7 +161,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("PUT", updateRequest.getMethod());
         Assertions.assertTrue(updateRequest.getQueryParams().isEmpty());
         Assertions.assertEquals(1, updateRequest.getHeaders().size());
-        Assertions.assertEquals(StandardCharsets.UTF_8.name(), updateRequest.getBodyCharset());
+        Assertions.assertNull(updateRequest.getBodyCharset());
         Assertions.assertNull(updateRequest.getBodyContent());
         Assertions.assertNull(updateRequest.getBodyFilePath());
         Assertions.assertDoesNotThrow(() -> updateSettings.get(BODY_TEMPORAL_PATH));
@@ -223,7 +222,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("DELETE", removeRequest.getMethod());
         Assertions.assertTrue(removeRequest.getQueryParams().isEmpty());
         Assertions.assertEquals(1, removeRequest.getHeaders().size());
-        Assertions.assertEquals(StandardCharsets.UTF_8.name(), removeRequest.getBodyCharset());
+        Assertions.assertNull(removeRequest.getBodyCharset());
         Assertions.assertNull(removeRequest.getBodyContent());
         Assertions.assertNull(removeRequest.getBodyFilePath());
         Assertions.assertNull(removeRequest.getRequestFile());

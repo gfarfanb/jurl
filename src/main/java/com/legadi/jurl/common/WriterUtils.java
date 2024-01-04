@@ -1,5 +1,7 @@
 package com.legadi.jurl.common;
 
+import static com.legadi.jurl.common.CommonUtils.isBlank;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
@@ -7,6 +9,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
@@ -18,6 +21,9 @@ public class WriterUtils {
 
     public static void writeLine(DataOutputStream dataOutputStream, String line, String charset) {
         try {
+            if(isBlank(charset)) {
+                charset = StandardCharsets.UTF_8.name();
+            }
             byte[] input = line.getBytes(charset);
             dataOutputStream.write(input, 0, input.length);
         } catch(IOException ex) {

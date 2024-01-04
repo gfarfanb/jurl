@@ -5,7 +5,6 @@ import static com.legadi.jurl.executor.http.HTTPRequestExecutor.REQUEST_FILE_BOU
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
@@ -43,7 +42,7 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("POST", uploadRequest.getMethod());
         Assertions.assertTrue(uploadRequest.getQueryParams().isEmpty());
         Assertions.assertEquals(2, uploadRequest.getHeaders().size());
-        Assertions.assertEquals(StandardCharsets.UTF_8.name(), uploadRequest.getBodyCharset());
+        Assertions.assertNull(uploadRequest.getBodyCharset());
         Assertions.assertNull(uploadRequest.getBodyContent());
         Assertions.assertNull(uploadRequest.getBodyFilePath());
         Assertions.assertNotNull(uploadRequest.getRequestFile());
@@ -112,7 +111,7 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("POST", uploadRequest.getMethod());
         Assertions.assertTrue(uploadRequest.getQueryParams().isEmpty());
         Assertions.assertEquals(2, uploadRequest.getHeaders().size());
-        Assertions.assertEquals(StandardCharsets.UTF_8.name(), uploadRequest.getBodyCharset());
+        Assertions.assertNull(uploadRequest.getBodyCharset());
         Assertions.assertNull(uploadRequest.getBodyContent());
         Assertions.assertNull(uploadRequest.getBodyFilePath());
         Assertions.assertNotNull(uploadRequest.getRequestFile());
@@ -180,7 +179,7 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("GET", downloadRequest.getMethod());
         Assertions.assertEquals(2, downloadRequest.getQueryParams().size());
         Assertions.assertTrue(downloadRequest.getHeaders().isEmpty());
-        Assertions.assertEquals(StandardCharsets.UTF_8.name(), downloadRequest.getBodyCharset());
+        Assertions.assertNull(downloadRequest.getBodyCharset());
         Assertions.assertNull(downloadRequest.getBodyContent());
         Assertions.assertNull(downloadRequest.getBodyFilePath());
         Assertions.assertNull(downloadRequest.getRequestFile());
@@ -234,7 +233,7 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("GET", downloadRequest.getMethod());
         Assertions.assertEquals(1, downloadRequest.getQueryParams().size());
         Assertions.assertTrue(downloadRequest.getHeaders().isEmpty());
-        Assertions.assertEquals(StandardCharsets.UTF_8.name(), downloadRequest.getBodyCharset());
+        Assertions.assertNull(downloadRequest.getBodyCharset());
         Assertions.assertNull(downloadRequest.getBodyContent());
         Assertions.assertNull(downloadRequest.getBodyFilePath());
         Assertions.assertNull(downloadRequest.getRequestFile());

@@ -50,6 +50,17 @@ public class WriterUtilsTest {
     }
 
     @Test
+    public void writeLineDataOutputStreamDefault() throws IOException {
+        try(ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                DataOutputStream dataOutputStream = new DataOutputStream(outputStream)) {
+
+            writeLine(dataOutputStream, "Test line...", null);
+
+            Assertions.assertEquals("Test line...", outputStream.toString());
+        }
+    }
+
+    @Test
     public void writeLineDataOutputStreamUnwritable() throws IOException {
         try(UnwritableOutputStream outputStream = new UnwritableOutputStream();
                 DataOutputStream dataOutputStream = new DataOutputStream(outputStream)) {

@@ -27,6 +27,7 @@ import com.legadi.jurl.model.AssertionEntry;
 import com.legadi.jurl.model.AuthorizationType;
 import com.legadi.jurl.model.RequestInput;
 import com.legadi.jurl.model.StepEntry;
+import com.legadi.jurl.model.http.HTTPMockEntry;
 import com.legadi.jurl.model.http.HTTPRequestAuthEntry;
 import com.legadi.jurl.model.http.HTTPRequestEntry;
 import com.legadi.jurl.model.http.HTTPRequestFileEntry;
@@ -125,6 +126,28 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
     public void mergeAPIDefinition(Settings settings, HTTPRequestEntry api, HTTPRequestEntry request) {
         mergeRequestHeader(api, request);
 
+        if(request.getMockDefinition() == null) {
+            request.setMockDefinition(api.getMockDefinition());
+        } else if(api.getMockDefinition() != null) {
+            mergeMockDefinition(api.getMockDefinition(), request.getMockDefinition());
+        }
+
+        List<AssertionEntry> conditions = new LinkedList<>(api.getConditions());
+        conditions.addAll(request.getConditions());
+        request.setConditions(conditions);
+
+        Map<String, String> outputMappings = new LinkedHashMap<>(api.getOutputMappings());
+        outputMappings.putAll(request.getOutputMappings());
+        request.setOutputMappings(outputMappings);
+
+        List<AssertionEntry> assertions = new LinkedList<>(api.getAssertions());
+        assertions.addAll(request.getAssertions());
+        request.setAssertions(assertions);
+
+        List<OptionEntry> options = new LinkedList<>(api.getOptions());
+        options.addAll(request.getOptions());
+        request.setOptions(options);
+
         if(isBlank(request.getMethod())) {
             request.setMethod(api.getMethod());
         }
@@ -152,14 +175,6 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         } else if(api.getRequestFile() != null) {
             mergeRequestFile(api.getRequestFile(), request.getRequestFile());
         }
-
-        Map<String, String> outputMappings = new LinkedHashMap<>(api.getOutputMappings());
-        outputMappings.putAll(request.getOutputMappings());
-        request.setOutputMappings(outputMappings);
-
-        List<AssertionEntry> assertions = new LinkedList<>(api.getAssertions());
-        assertions.addAll(request.getAssertions());
-        request.setAssertions(assertions);
     }
 
     @Override
@@ -244,6 +259,32 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         steps.add(requestStep);
 
         return steps;
+    }
+
+    private void mergeMockDefinition(HTTPMockEntry api, HTTPMockEntry request) {
+        if(isBlank(request.getStatusCode())) {
+            request.setStatusCode(api.getStatusCode());
+        }
+        if(isBlank(request.getSecondsDelay())) {
+            request.setSecondsDelay(api.getSecondsDelay());
+        }
+
+        Map<String, String> responseHeaders = new HashMap<>(api.getResponseHeaders());
+        responseHeaders.putAll(request.getResponseHeaders());
+        request.setResponseHeaders(responseHeaders);
+
+        if(isBlank(request.getResponseContent())) {
+            request.setResponseContent(api.getResponseContent());
+        }
+        if(isBlank(request.getResponseFilePath())) {
+            request.setResponseFilePath(api.getResponseFilePath());
+        }
+        if(isBlank(request.getExceptionClassOnOutputStream())) {
+            request.setExceptionClassOnOutputStream(api.getExceptionClassOnOutputStream());
+        }
+        if(isBlank(request.getExceptionClassOnResponseCode())) {
+            request.setExceptionClassOnResponseCode(api.getExceptionClassOnResponseCode());
+        }
     }
 
     private void mergeRequestFile(HTTPRequestFileEntry api, HTTPRequestFileEntry request) {

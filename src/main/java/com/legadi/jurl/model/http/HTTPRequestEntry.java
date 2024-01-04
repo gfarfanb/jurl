@@ -1,6 +1,5 @@
 package com.legadi.jurl.model.http;
 
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,7 +10,7 @@ public class HTTPRequestEntry extends RequestEntry<HTTPMockEntry> {
     private String method;
     private Map<String, String> queryParams = new HashMap<>();
     private Map<String, String> headers = new HashMap<>();
-    private String bodyCharset = StandardCharsets.UTF_8.name();
+    private String bodyCharset;
     private String bodyContent;
     private String bodyFilePath;
     private HTTPRequestFileEntry requestFile;
