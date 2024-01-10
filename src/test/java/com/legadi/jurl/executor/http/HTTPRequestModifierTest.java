@@ -2,7 +2,9 @@ package com.legadi.jurl.executor.http;
 
 import static com.legadi.jurl.common.JsonUtils.loadJsonFile;
 import static com.legadi.jurl.common.ObjectsRegistry.findByNameOrFail;
+import static com.legadi.jurl.common.SettingsConstants.PROP_INPUT_NAME;
 import static com.legadi.jurl.common.SettingsConstants.PROP_MERGE_BODY_USING_TYPE;
+import static com.legadi.jurl.common.SettingsConstants.PROP_SKIP_AUTHENTICATION;
 import static com.legadi.jurl.common.WriterUtils.writeFile;
 import static com.legadi.jurl.executor.http.HTTPRequestModifier.BODY_TEMPORAL_PATH;
 
@@ -11,7 +13,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -26,34 +27,355 @@ import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.executor.RequestModifier;
 import com.legadi.jurl.model.AssertionEntry;
 import com.legadi.jurl.model.RequestInput;
+import com.legadi.jurl.model.StepEntry;
 import com.legadi.jurl.model.http.HTTPMockEntry;
+import com.legadi.jurl.model.http.HTTPRequestAuthEntry;
 import com.legadi.jurl.model.http.HTTPRequestEntry;
 import com.legadi.jurl.model.http.HTTPRequestFileEntry;
 import com.legadi.jurl.options.Option;
 import com.legadi.jurl.options.OptionsReader.OptionEntry;
+import com.legadi.jurl.options.SetInputNameOption;
 
 public class HTTPRequestModifierTest {
 
     @Test
     public void appendAuthenticationDefinitionValidation() {
         Settings settings = new Settings();
-        RequestInput<HTTPRequestEntry> requestInput = new RequestInput<>();
-        HTTPRequestEntry request = new HTTPRequestEntry();
-        List<OptionEntry> options = new LinkedList<>();
         String inputName = UUID.randomUUID().toString();
         String requestName = UUID.randomUUID().toString();
+
+        RequestInput<HTTPRequestEntry> requestInput = new RequestInput<>();
+        HTTPRequestEntry request = new HTTPRequestEntry();
 
         request.setName(requestName);
         requestInput.setApi(new HTTPRequestEntry());
         requestInput.getRequests().put(inputName, request);
 
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
-        Pair<String, RequestInput<?>> input = modifier.appendAuthenticationIfExists(settings, requestInput, options);
+        Pair<String, RequestInput<?>> input = modifier.appendAuthenticationIfExists(settings, requestInput, new LinkedList<>());
 
         Assertions.assertEquals(inputName, input.getLeft());
         Assertions.assertFalse(input.getRight().getRequests().isEmpty());
         Assertions.assertNotNull(input.getRight().getRequests().get(inputName));
         Assertions.assertEquals(requestName, input.getRight().getRequests().get(inputName).getName());
+    }
+
+    @Test
+    public void appendAuthenticationDefinitionRequestAuth() {
+        Settings settings = new Settings();
+        String inputName = UUID.randomUUID().toString();
+        String requestName = UUID.randomUUID().toString();
+
+        RequestInput<HTTPRequestEntry> requestInput = new RequestInput<>();
+        HTTPRequestEntry request = new HTTPRequestEntry();
+        HTTPRequestAuthEntry requestAuth = new HTTPRequestAuthEntry();
+
+        requestAuth.setRequestInputPath("src/test/resources/flow.spec.http");
+        requestAuth.setInputName("authorization");
+        requestAuth.setAuthType("TOKEN");
+        requestAuth.setTokenParam("auth.access.token");
+
+        request.setName(requestName);
+        request.setRequestAuth(requestAuth);
+
+        requestInput.setApi(new HTTPRequestEntry());
+        requestInput.getRequests().put(inputName, request);
+
+        RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
+        Pair<String, RequestInput<?>> input = modifier.appendAuthenticationIfExists(settings, requestInput, new LinkedList<>());
+
+        Assertions.assertEquals("flow:auth/TOKEN+" + inputName, input.getLeft());
+        Assertions.assertFalse(input.getRight().getFlows().isEmpty());
+        Assertions.assertNotNull(input.getRight().getFlows().get(input.getLeft()));
+        Assertions.assertEquals(2, input.getRight().getFlows().get(input.getLeft()).size());
+
+        StepEntry authStep = input.getRight().getFlows().get(input.getLeft()).get(0);
+
+        Assertions.assertEquals("src/test/resources/flow.spec.http", authStep.getRequestInputPath());
+        Assertions.assertEquals(1, authStep.getOptions().size());
+        Assertions.assertEquals(SetInputNameOption.class, authStep.getOptions().get(0).getLeft().getClass());
+
+        Assertions.assertFalse(input.getRight().getRequests().isEmpty());
+        Assertions.assertNotNull(input.getRight().getRequests().get(inputName));
+        Assertions.assertEquals(requestName, input.getRight().getRequests().get(inputName).getName());
+    }
+
+    @Test
+    public void appendAuthenticationDefinitionAuthExecuted() {
+        Settings settings = new Settings();
+        String inputName = UUID.randomUUID().toString();
+        String requestName = UUID.randomUUID().toString();
+
+        HTTPRequestEntry request = new HTTPRequestEntry();
+        HTTPRequestAuthEntry requestAuth = new HTTPRequestAuthEntry();
+
+        requestAuth.setRequestInputPath("src/test/resources/flow.spec.http");
+        requestAuth.setInputName("authorization");
+        requestAuth.setAuthType("TOKEN");
+        requestAuth.setTokenParam("auth.access.token");
+
+        request.setName(requestName);
+        request.setRequestAuth(requestAuth);
+
+        RequestInput<HTTPRequestEntry> requestInput = new RequestInput<>();
+
+        requestInput.setApi(new HTTPRequestEntry());
+        requestInput.getRequests().put(inputName, request);
+
+        RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
+
+        modifier.appendAuthenticationIfExists(settings, requestInput, new LinkedList<>());
+
+        RequestInput<HTTPRequestEntry> nextRequestInput = new RequestInput<>();
+
+        nextRequestInput.setApi(new HTTPRequestEntry());
+        nextRequestInput.getRequests().put(inputName, request);
+
+        Pair<String, RequestInput<?>> input = modifier.appendAuthenticationIfExists(settings, nextRequestInput, new LinkedList<>());
+
+        Assertions.assertEquals(inputName, input.getLeft());
+        Assertions.assertTrue(input.getRight().getFlows().isEmpty());
+
+        Assertions.assertFalse(input.getRight().getRequests().isEmpty());
+        Assertions.assertNotNull(input.getRight().getRequests().get(inputName));
+        Assertions.assertEquals(requestName, input.getRight().getRequests().get(inputName).getName());
+    }
+
+    @Test
+    public void appendAuthenticationDefinitionRequestAuthNoPathAndName() {
+        Settings settings = new Settings();
+        String inputName = UUID.randomUUID().toString();
+        String requestName = UUID.randomUUID().toString();
+
+        RequestInput<HTTPRequestEntry> requestInput = new RequestInput<>();
+        HTTPRequestEntry request = new HTTPRequestEntry();
+        HTTPRequestAuthEntry requestAuth = new HTTPRequestAuthEntry();
+
+        requestAuth.setAuthType("TOKEN");
+        requestAuth.setTokenParam("auth.access.token");
+
+        request.setName(requestName);
+        request.setRequestAuth(requestAuth);
+
+        requestInput.setApi(new HTTPRequestEntry());
+        requestInput.getRequests().put(inputName, request);
+
+        RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
+        Pair<String, RequestInput<?>> input = modifier.appendAuthenticationIfExists(settings, requestInput, new LinkedList<>());
+
+        Assertions.assertEquals(inputName, input.getLeft());
+        Assertions.assertTrue(input.getRight().getFlows().isEmpty());
+
+        Assertions.assertFalse(input.getRight().getRequests().isEmpty());
+        Assertions.assertNotNull(input.getRight().getRequests().get(inputName));
+        Assertions.assertEquals(requestName, input.getRight().getRequests().get(inputName).getName());
+    }
+
+    @Test
+    public void appendAuthenticationDefinitionRequestAuthNoPath() {
+        Settings settings = new Settings();
+        String inputName = UUID.randomUUID().toString();
+        String requestName = UUID.randomUUID().toString();
+
+        RequestInput<HTTPRequestEntry> requestInput = new RequestInput<>();
+        HTTPRequestEntry request = new HTTPRequestEntry();
+        HTTPRequestAuthEntry requestAuth = new HTTPRequestAuthEntry();
+
+        requestAuth.setInputName("authorization");
+        requestAuth.setAuthType("TOKEN");
+        requestAuth.setTokenParam("auth.access.token");
+
+        request.setName(requestName);
+        request.setRequestAuth(requestAuth);
+
+        requestInput.setApi(new HTTPRequestEntry());
+        requestInput.getRequests().put(inputName, request);
+
+        RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
+        Pair<String, RequestInput<?>> input = modifier.appendAuthenticationIfExists(settings, requestInput, new LinkedList<>());
+
+        Assertions.assertEquals("flow:auth/TOKEN+" + inputName, input.getLeft());
+        Assertions.assertFalse(input.getRight().getFlows().isEmpty());
+        Assertions.assertNotNull(input.getRight().getFlows().get(input.getLeft()));
+        Assertions.assertEquals(2, input.getRight().getFlows().get(input.getLeft()).size());
+
+        StepEntry authStep = input.getRight().getFlows().get(input.getLeft()).get(0);
+
+        Assertions.assertNull(authStep.getRequestInputPath());
+        Assertions.assertEquals(1, authStep.getOptions().size());
+        Assertions.assertEquals(SetInputNameOption.class, authStep.getOptions().get(0).getLeft().getClass());
+
+        Assertions.assertFalse(input.getRight().getRequests().isEmpty());
+        Assertions.assertNotNull(input.getRight().getRequests().get(inputName));
+        Assertions.assertEquals(requestName, input.getRight().getRequests().get(inputName).getName());
+    }
+
+    @Test
+    public void appendAuthenticationDefinitionRequestAuthNoName() {
+        Settings settings = new Settings();
+        String inputName = UUID.randomUUID().toString();
+        String requestName = UUID.randomUUID().toString();
+
+        RequestInput<HTTPRequestEntry> requestInput = new RequestInput<>();
+        HTTPRequestEntry request = new HTTPRequestEntry();
+        HTTPRequestAuthEntry requestAuth = new HTTPRequestAuthEntry();
+
+        requestAuth.setRequestInputPath("src/test/resources/flow.spec.http");
+        requestAuth.setAuthType("TOKEN");
+        requestAuth.setTokenParam("auth.access.token");
+
+        request.setName(requestName);
+        request.setRequestAuth(requestAuth);
+
+        requestInput.setApi(new HTTPRequestEntry());
+        requestInput.getRequests().put(inputName, request);
+
+        RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
+        Pair<String, RequestInput<?>> input = modifier.appendAuthenticationIfExists(settings, requestInput, new LinkedList<>());
+
+        Assertions.assertEquals("flow:auth/TOKEN+" + inputName, input.getLeft());
+        Assertions.assertFalse(input.getRight().getFlows().isEmpty());
+        Assertions.assertNotNull(input.getRight().getFlows().get(input.getLeft()));
+        Assertions.assertEquals(2, input.getRight().getFlows().get(input.getLeft()).size());
+
+        StepEntry authStep = input.getRight().getFlows().get(input.getLeft()).get(0);
+
+        Assertions.assertEquals("src/test/resources/flow.spec.http", authStep.getRequestInputPath());
+        Assertions.assertNull(authStep.getOptions());
+
+        Assertions.assertFalse(input.getRight().getRequests().isEmpty());
+        Assertions.assertNotNull(input.getRight().getRequests().get(inputName));
+        Assertions.assertEquals(requestName, input.getRight().getRequests().get(inputName).getName());
+    }
+
+    @Test
+    public void appendAuthenticationDefinitionMergeAuth() {
+        Settings settings = new Settings();
+        String inputName = UUID.randomUUID().toString();
+        String requestName = UUID.randomUUID().toString();
+
+        RequestInput<HTTPRequestEntry> requestInput = new RequestInput<>();
+        HTTPRequestEntry request = new HTTPRequestEntry();
+        HTTPRequestAuthEntry requestAuth = new HTTPRequestAuthEntry();
+
+        requestAuth.setRequestInputPath("src/test/resources/flow.spec.http");
+        requestAuth.setInputName("authorization");
+        requestAuth.setAuthType("TOKEN");
+        requestAuth.setTokenParam("auth.access.token");
+        requestAuth.setUsernameParam("auth.access.username");
+        requestAuth.setPasswordParam("auth.access.password");
+
+        request.setName(requestName);
+        request.setRequestAuth(new HTTPRequestAuthEntry());
+
+        requestInput.setApi(new HTTPRequestEntry());
+        requestInput.getApi().setRequestAuth(requestAuth);
+        requestInput.getRequests().put(inputName, request);
+
+        RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
+        Pair<String, RequestInput<?>> input = modifier.appendAuthenticationIfExists(settings, requestInput, new LinkedList<>());
+
+        Assertions.assertEquals("flow:auth/TOKEN+" + inputName, input.getLeft());
+        Assertions.assertFalse(input.getRight().getFlows().isEmpty());
+        Assertions.assertNotNull(input.getRight().getFlows().get(input.getLeft()));
+        Assertions.assertEquals(2, input.getRight().getFlows().get(input.getLeft()).size());
+
+        Assertions.assertFalse(input.getRight().getRequests().isEmpty());
+        Assertions.assertNotNull(input.getRight().getRequests().get(inputName));
+        Assertions.assertEquals(requestName, input.getRight().getRequests().get(inputName).getName());
+
+        Assertions.assertEquals("src/test/resources/flow.spec.http", request.getRequestAuth().getRequestInputPath());
+        Assertions.assertEquals("authorization", request.getRequestAuth().getInputName());
+        Assertions.assertEquals("TOKEN", request.getRequestAuth().getAuthType());
+        Assertions.assertEquals("auth.access.token", request.getRequestAuth().getTokenParam());
+        Assertions.assertEquals("auth.access.username", request.getRequestAuth().getUsernameParam());
+        Assertions.assertEquals("auth.access.password", request.getRequestAuth().getPasswordParam());
+    }
+
+    @Test
+    public void appendAuthenticationDefinitionMergeAuthRequestPriority() {
+        Settings settings = new Settings();
+        String inputName = UUID.randomUUID().toString();
+        String requestName = UUID.randomUUID().toString();
+
+        RequestInput<HTTPRequestEntry> requestInput = new RequestInput<>();
+        HTTPRequestEntry request = new HTTPRequestEntry();
+        HTTPRequestAuthEntry requestAuth = new HTTPRequestAuthEntry();
+
+        requestAuth.setRequestInputPath("src/test/resources/flow.spec.http");
+        requestAuth.setInputName("authorization");
+        requestAuth.setAuthType("TOKEN");
+        requestAuth.setTokenParam("auth.access.token");
+        requestAuth.setUsernameParam("auth.access.username");
+        requestAuth.setPasswordParam("auth.access.password");
+
+        request.setName(requestName);
+        request.setRequestAuth(requestAuth);
+
+        HTTPRequestAuthEntry apiAuth = new HTTPRequestAuthEntry();
+
+        apiAuth.setRequestInputPath("paht/");
+        apiAuth.setInputName("auth");
+        apiAuth.setAuthType("BASIC");
+        apiAuth.setTokenParam("token");
+        apiAuth.setUsernameParam("username");
+        apiAuth.setPasswordParam("password");
+
+        requestInput.setApi(new HTTPRequestEntry());
+        requestInput.getApi().setRequestAuth(apiAuth);
+        requestInput.getRequests().put(inputName, request);
+
+        RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
+        Pair<String, RequestInput<?>> input = modifier.appendAuthenticationIfExists(settings, requestInput, new LinkedList<>());
+
+        Assertions.assertEquals("flow:auth/TOKEN+" + inputName, input.getLeft());
+        Assertions.assertFalse(input.getRight().getFlows().isEmpty());
+        Assertions.assertNotNull(input.getRight().getFlows().get(input.getLeft()));
+        Assertions.assertEquals(2, input.getRight().getFlows().get(input.getLeft()).size());
+
+        Assertions.assertFalse(input.getRight().getRequests().isEmpty());
+        Assertions.assertNotNull(input.getRight().getRequests().get(inputName));
+        Assertions.assertEquals(requestName, input.getRight().getRequests().get(inputName).getName());
+
+        Assertions.assertEquals("src/test/resources/flow.spec.http", request.getRequestAuth().getRequestInputPath());
+        Assertions.assertEquals("authorization", request.getRequestAuth().getInputName());
+        Assertions.assertEquals("TOKEN", request.getRequestAuth().getAuthType());
+        Assertions.assertEquals("auth.access.token", request.getRequestAuth().getTokenParam());
+        Assertions.assertEquals("auth.access.username", request.getRequestAuth().getUsernameParam());
+        Assertions.assertEquals("auth.access.password", request.getRequestAuth().getPasswordParam());
+    }
+
+    @Test
+    public void appendAuthenticationDefinitionSkipAuth() {
+        Settings settings = new Settings();
+        String inputName = UUID.randomUUID().toString();
+        
+        settings.putOverride(PROP_INPUT_NAME, inputName);
+        settings.putOverride(PROP_SKIP_AUTHENTICATION, Boolean.TRUE.toString());
+
+        RequestInput<HTTPRequestEntry> requestInput = new RequestInput<>();
+
+        RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
+        Pair<String, RequestInput<?>> input = modifier.appendAuthenticationIfExists(settings, requestInput, new LinkedList<>());
+
+        Assertions.assertEquals(inputName, input.getLeft());
+        Assertions.assertEquals(requestInput, input.getRight());
+    }
+
+    @Test
+    public void appendAuthenticationDefinitionRequestEmpty() {
+        Settings settings = new Settings();
+        String inputName = UUID.randomUUID().toString();
+
+        settings.putOverride(PROP_INPUT_NAME, inputName);
+
+        RequestInput<HTTPRequestEntry> requestInput = new RequestInput<>();
+
+        RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
+        Pair<String, RequestInput<?>> input = modifier.appendAuthenticationIfExists(settings, requestInput, new LinkedList<>());
+
+        Assertions.assertEquals(inputName, input.getLeft());
+        Assertions.assertEquals(requestInput, input.getRight());
     }
 
     @Test
