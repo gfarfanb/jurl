@@ -1,0 +1,10 @@
+
+@bodyFilePath = overrided/request/path
+
+&param={{UUID:}}
+
+Content-Type: application/xml
+
+{
+    "name": "request"
+}

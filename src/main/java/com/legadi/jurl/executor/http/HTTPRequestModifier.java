@@ -3,7 +3,6 @@ package com.legadi.jurl.executor.http;
 import static com.legadi.jurl.common.CommonUtils.getOrDefault;
 import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
-import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.ObjectsRegistry.findByType;
 import static com.legadi.jurl.common.ObjectsRegistry.findOrFail;
 
@@ -204,21 +203,8 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         HTTPRequestParser parser = findOrFail(RequestParser.class, name());
         HTTPRequestEntry overrideRequest = parser.parseRequest(settings, Paths.get(filename));
 
-        if(isNotEmpty(overrideRequest.getHeaders())) {
-            request.setHeaders(overrideRequest.getHeaders());
-        }
-
-        if(isNotEmpty(overrideRequest.getQueryParams())) {
-            request.setQueryParams(overrideRequest.getQueryParams());
-        }
-
-        if(isNotEmpty(overrideRequest.getAssertions())) {
-            request.setAssertions(overrideRequest.getAssertions());
-        }
-
-        if(isNotEmpty(overrideRequest.getOutputMappings())) {
-            request.setOutputMappings(overrideRequest.getOutputMappings());
-        }
+        request.getHeaders().putAll(overrideRequest.getHeaders());
+        request.getQueryParams().putAll(overrideRequest.getQueryParams());
 
         if(isNotBlank(overrideRequest.getBodyContent())) {
             request.setBodyContent(overrideRequest.getBodyContent());

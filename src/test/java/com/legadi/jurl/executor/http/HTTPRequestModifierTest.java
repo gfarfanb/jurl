@@ -1,20 +1,28 @@
 package com.legadi.jurl.executor.http;
 
-
-
+import static com.legadi.jurl.common.JsonUtils.loadJsonFile;
 import static com.legadi.jurl.common.ObjectsRegistry.findByNameOrFail;
+import static com.legadi.jurl.common.SettingsConstants.PROP_MERGE_BODY_USING_TYPE;
+import static com.legadi.jurl.common.WriterUtils.writeFile;
+import static com.legadi.jurl.executor.http.HTTPRequestModifier.BODY_TEMPORAL_PATH;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.google.gson.reflect.TypeToken;
+import com.legadi.jurl.common.OutputPathBuilder;
 import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.common.Settings;
+import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.executor.RequestModifier;
 import com.legadi.jurl.model.AssertionEntry;
 import com.legadi.jurl.model.RequestInput;
@@ -293,5 +301,98 @@ public class HTTPRequestModifierTest {
         Assertions.assertEquals("application/xml", request.getRequestFile().getMineType());
         Assertions.assertFalse(request.getRequestFile().getFormData().isEmpty());
         Assertions.assertEquals("field-value", request.getRequestFile().getFormData().get("field"));
+    }
+
+    @Test
+    public void mergeBodyFileWithBodyContentValidation() {
+        Settings settings = new Settings();
+
+        settings.putOverride(PROP_MERGE_BODY_USING_TYPE, "json");
+
+        OutputPathBuilder pathBuilder = new OutputPathBuilder(settings)
+                .setRequestPath("src/test/resources/http-request-modifier.http")
+                .setRequestName("merge-body")
+                .setExtension("content");
+        Path bodyPath = pathBuilder.buildCommandPath();
+
+        writeFile(bodyPath, "{\"name\": \"file-content\"}");
+
+        HTTPRequestEntry request = new HTTPRequestEntry();
+        request.setName("merge-body");
+        request.setBodyContent("{\"name\": \"body-content\"}");
+        request.setBodyFilePath(bodyPath.toString());
+
+        RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
+        modifier.mergeBody(settings, "src/test/resources/http-request-modifier.http", request);
+
+        Assertions.assertNull(request.getBodyContent());
+        Assertions.assertNull(request.getBodyFilePath());
+
+        String bodyTemporalPath = settings.get(BODY_TEMPORAL_PATH);
+
+        Assertions.assertDoesNotThrow(() -> Paths.get(bodyTemporalPath));
+
+        Map<String, Object> merged = loadJsonFile(bodyTemporalPath, new TypeToken<Map<String, Object>>() {});
+
+        Assertions.assertTrue(merged.containsKey("name"));
+        Assertions.assertEquals("body-content", merged.get("name"));
+    }
+
+    @Test
+    public void mergeBodyFileWithBodyContentMissingData() {
+        Settings settings = new Settings();
+
+        RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
+        HTTPRequestEntry request = new HTTPRequestEntry();
+
+        Assertions.assertThrows(RequestException.class,
+            () -> modifier.mergeBody(settings, "src/test/resources/http-request-modifier.http", request));
+
+        request.setBodyFilePath("body/file/path");
+
+        Assertions.assertThrows(RequestException.class,
+            () -> modifier.mergeBody(settings, "src/test/resources/http-request-modifier.http", request));
+    }
+
+    @Test
+    public void overrideRequestWithFileValidation() {
+        Settings settings = new Settings();
+        HTTPRequestEntry request = new HTTPRequestEntry();
+
+        request.getHeaders().put("Content-Type", "application/json");
+        request.getQueryParams().put("param", "param-value");
+        request.setBodyContent("{}");
+        request.setBodyFilePath("path/");
+
+        RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
+        modifier.overrideRequest(settings, request, "src/test/resources/http-request-modifier.request.txt");
+
+        Assertions.assertEquals(1, request.getHeaders().size());
+        Assertions.assertEquals("application/xml", request.getHeaders().get("Content-Type"));
+        Assertions.assertEquals(1, request.getQueryParams().size());
+        Assertions.assertDoesNotThrow(() -> UUID.fromString(request.getQueryParams().get("param")));
+        Assertions.assertTrue(request.getBodyContent().contains("\"name\": \"request\""));
+        Assertions.assertEquals("overrided/request/path", request.getBodyFilePath());
+    }
+
+    @Test
+    public void overrideRequestWithFileEmpty() {
+        Settings settings = new Settings();
+        HTTPRequestEntry request = new HTTPRequestEntry();
+
+        request.getHeaders().put("Content-Type", "application/json");
+        request.getQueryParams().put("param", "param-value");
+        request.setBodyContent("{}");
+        request.setBodyFilePath("path/");
+
+        RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
+        modifier.overrideRequest(settings, request, "src/test/resources/http-request-modifier.empty.txt");
+
+        Assertions.assertEquals(1, request.getHeaders().size());
+        Assertions.assertEquals("application/json", request.getHeaders().get("Content-Type"));
+        Assertions.assertEquals(1, request.getQueryParams().size());
+        Assertions.assertEquals("param-value", request.getQueryParams().get("param"));
+        Assertions.assertEquals("{}", request.getBodyContent());
+        Assertions.assertEquals("path/", request.getBodyFilePath());
     }
 }
