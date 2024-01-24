@@ -15,6 +15,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.common.Settings;
@@ -226,7 +227,12 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         }
 
         if(isNotBlank(auth.getInputName())) {
-            List<OptionEntry> authOptions = new LinkedList<>();
+            List<OptionEntry> authOptions = new LinkedList<>(
+                options
+                    .stream()
+                    .filter(opt -> opt.getLeft().allowedForRequestAuth())
+                    .collect(Collectors.toList())
+            );
 
             authOptions.add(new OptionEntry(findByType(SetInputNameOption.class),
                 new String[] { auth.getInputName() }));

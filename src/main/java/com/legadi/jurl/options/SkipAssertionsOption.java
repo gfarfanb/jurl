@@ -27,6 +27,11 @@ public class SkipAssertionsOption extends Option {
     }
 
     @Override
+    public boolean allowedForRequestAuth() {
+        return true;
+    }
+
+    @Override
     public boolean execute(Settings settings, String[] args) {
         settings.putOverride(PROP_SKIP_ASSERTIONS, Boolean.TRUE.toString());
         return true;

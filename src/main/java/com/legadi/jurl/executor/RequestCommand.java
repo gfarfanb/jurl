@@ -8,6 +8,8 @@ import static com.legadi.jurl.common.ObjectsRegistry.findByNameOrFail;
 import static com.legadi.jurl.common.ObjectsRegistry.findOrFail;
 import static com.legadi.jurl.common.WriterUtils.appendToFile;
 import static com.legadi.jurl.common.WriterUtils.writeFile;
+import static com.legadi.jurl.model.RequestBehaviour.CURL_ONLY;
+import static com.legadi.jurl.model.RequestBehaviour.PRINT_ONLY;
 import static java.util.logging.Level.FINE;
 
 import java.io.File;
@@ -212,7 +214,9 @@ public class RequestCommand {
         ResponseProcessor<?, ?> processor = findByNameOrFail(ResponseProcessor.class, settings.getRequestType());
         Optional<AssertionResult> conditionsResult = executor.accepts(settings, request);
 
-        if(conditionsResult.isPresent() && !conditionsResult.get().isPassed()) {
+        if(!isPrintOnly(settings)
+                && conditionsResult.isPresent()
+                && !conditionsResult.get().isPassed()) {
             LOGGER.info("Request skipped - inputFile=\"" + requestInputPath + "\""
                     + " request=\"" + request.getName() + "\""
                     + " environment=\"" + settings.getEnvironment() + "\""
@@ -272,7 +276,7 @@ public class RequestCommand {
                     + " executionTag=\"" + settings.getExecutionTag() + "\""
                     + " time(nano)=" + historyEntry.getNanoTime());
             }
-        } else {
+        } else if(!isPrintOnly(settings)) {
             LOGGER.info("Request successful -"
                     + " inputFile=\"" + requestInputPath + "\""
                     + " request=\"" + request.getName() + "\""
@@ -328,5 +332,10 @@ public class RequestCommand {
             LOGGER.log(FINE, "Error on opening editor command - " + ex.getMessage(), ex);
             ex.printStackTrace();
         }
+    }
+
+    private boolean isPrintOnly(Settings settings) {
+        return settings.getRequestBehaviour() == CURL_ONLY
+            || settings.getRequestBehaviour() == PRINT_ONLY;
     }
 }

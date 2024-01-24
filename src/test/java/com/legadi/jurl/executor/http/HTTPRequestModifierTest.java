@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -33,8 +34,10 @@ import com.legadi.jurl.model.http.HTTPRequestAuthEntry;
 import com.legadi.jurl.model.http.HTTPRequestEntry;
 import com.legadi.jurl.model.http.HTTPRequestFileEntry;
 import com.legadi.jurl.options.Option;
+import com.legadi.jurl.options.OptionsReader;
 import com.legadi.jurl.options.OptionsReader.OptionEntry;
 import com.legadi.jurl.options.SetInputNameOption;
+import com.legadi.jurl.options.SetValueOption;
 
 public class HTTPRequestModifierTest {
 
@@ -81,8 +84,10 @@ public class HTTPRequestModifierTest {
         requestInput.setApi(new HTTPRequestEntry());
         requestInput.getRequests().put(inputName, request);
 
+        List<OptionEntry> options = new OptionsReader(new String[] { "-s", "a", "a" }).getOptionEntries();
+        
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
-        Pair<String, RequestInput<?>> input = modifier.appendAuthenticationIfExists(settings, requestInput, new LinkedList<>());
+        Pair<String, RequestInput<?>> input = modifier.appendAuthenticationIfExists(settings, requestInput, options);
 
         Assertions.assertEquals("flow:auth/TOKEN+" + inputName, input.getLeft());
         Assertions.assertFalse(input.getRight().getFlows().isEmpty());
@@ -92,8 +97,9 @@ public class HTTPRequestModifierTest {
         StepEntry authStep = input.getRight().getFlows().get(input.getLeft()).get(0);
 
         Assertions.assertEquals("src/test/resources/flow.spec.http", authStep.getRequestInputPath());
-        Assertions.assertEquals(1, authStep.getOptions().size());
-        Assertions.assertEquals(SetInputNameOption.class, authStep.getOptions().get(0).getLeft().getClass());
+        Assertions.assertEquals(2, authStep.getOptions().size());
+        Assertions.assertEquals(SetValueOption.class, authStep.getOptions().get(0).getLeft().getClass());
+        Assertions.assertEquals(SetInputNameOption.class, authStep.getOptions().get(1).getLeft().getClass());
 
         Assertions.assertFalse(input.getRight().getRequests().isEmpty());
         Assertions.assertNotNull(input.getRight().getRequests().get(inputName));
@@ -131,7 +137,8 @@ public class HTTPRequestModifierTest {
         nextRequestInput.setApi(new HTTPRequestEntry());
         nextRequestInput.getRequests().put(inputName, request);
 
-        Pair<String, RequestInput<?>> input = modifier.appendAuthenticationIfExists(settings, nextRequestInput, new LinkedList<>());
+        List<OptionEntry> options = new OptionsReader(new String[] { "-t", "5" }).getOptionEntries();
+        Pair<String, RequestInput<?>> input = modifier.appendAuthenticationIfExists(settings, nextRequestInput, options);
 
         Assertions.assertEquals(inputName, input.getLeft());
         Assertions.assertTrue(input.getRight().getFlows().isEmpty());

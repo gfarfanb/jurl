@@ -501,7 +501,10 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
 
             response.setResponsePath(responsePath);
 
-            printableResponse.append(response.getResult()).append("\n");
+            if(isNotBlank(response.getResult())) {
+                printableResponse.append(response.getResult()).append("\n");
+            }
+
             response.getResponseHeaders()
                 .forEach((header, value) ->
                     printableResponse.append(header).append(": ").append(value).append("\n"));
