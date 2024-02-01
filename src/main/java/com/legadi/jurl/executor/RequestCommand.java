@@ -18,6 +18,7 @@ import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
@@ -32,6 +33,7 @@ import com.legadi.jurl.exception.RecursiveCommandException;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.exception.SkipExecutionException;
 import com.legadi.jurl.model.AssertionResult;
+import com.legadi.jurl.model.ExecutionIndex;
 import com.legadi.jurl.model.HistoryEntry;
 import com.legadi.jurl.model.MockEntry;
 import com.legadi.jurl.model.RequestEntry;
@@ -92,32 +94,45 @@ public class RequestCommand {
         int times = settings.getTimes() > 0 ? settings.getTimes() : FIRST_EXECUTION;
         String inputName = requestInput.getLeft();
         boolean isExecutionAsFlow = requestInput.getRight().getFlows().containsKey(inputName);
+        AtomicInteger count = new AtomicInteger();
 
-        IntStream.range(0, times)
-            .parallel()
-            .forEach(index -> {
-                if(isExecutionAsFlow) {
-                    if(index == FIRST_EXECUTION) {
-                        executionLevels.nextLevel();
+        try {
+            IntStream.range(0, times)
+                .parallel()
+                .mapToObj(index -> new ExecutionIndex(index, index + 1, times))
+                .forEach(index -> {
+                    if(isExecutionAsFlow) {
+                        if(index.getIndex() == FIRST_EXECUTION) {
+                            executionLevels.nextLevel();
+                        }
+                        LOGGER.fine("Executing flow -"
+                            + " index=" + index
+                            + " inputName=\"" + inputName + "\""
+                            + " requestInputPath=\"" + requestInputPath + "\"");
+                        processFlow(index, inputName, requestInputPath, requestInput.getRight(),
+                            new StringExpander(settings.createForNextExecution()));
+                    } else {
+                        LOGGER.fine("Executing request -"
+                            + " index=" + index
+                            + " inputName=\"" + inputName + "\""
+                            + " requestInputPath=\"" + requestInputPath + "\"");
+                        processRequest(index, inputName, requestInputPath, requestInput.getRight(),
+                            new StringExpander(settings.createForNextExecution()));
                     }
-                    LOGGER.fine("Executing flow -"
-                        + " index=" + index
-                        + " inputName=\"" + inputName + "\""
-                        + " requestInputPath=\"" + requestInputPath + "\"");
-                    processFlow(index, inputName, requestInputPath, requestInput.getRight(),
-                        new StringExpander(settings.createForNextExecution()));
-                } else {
-                    LOGGER.fine("Executing request -"
-                        + " index=" + index
-                        + " inputName=\"" + inputName + "\""
-                        + " requestInputPath=\"" + requestInputPath + "\"");
-                    processRequest(index, inputName, requestInputPath, requestInput.getRight(),
-                        new StringExpander(settings.createForNextExecution()));
-                }
-            });
+                    count.incrementAndGet();
+                });
+        } finally {
+            if(times > 1) {
+                LOGGER.info("Requests completed -"
+                    + " inputFile=\"" + requestInputPath + "\""
+                    + " request=\"" + inputName + "\""
+                    + " environment=\"" + settings.getEnvironment() + "\""
+                    + " executed=" + count.get() + "/" + times);
+            }
+        }
     }
 
-    private void processFlow(int index, String flowName, String requestInputPath,
+    private void processFlow(ExecutionIndex index, String flowName, String requestInputPath,
             RequestInput<?> requestInput, StringExpander stringExpander) {
         if(isEmpty(requestInput.getFlows())) {
             throw new CommandException("No flows are defined in the request file: " + requestInputPath);
@@ -143,9 +158,9 @@ public class RequestCommand {
             } catch(CommandException | RequestException ex) {
                 throw new CommandException(
                     "[" + requestInputPath + "/" + flowName + "]"
-                    + (settings.getTimes() > 1 ? " index=" + index + " ": "")
+                    + " index=" + index
                     + " step("+ stepIndex + "/" + steps.size() + ") "
-                    + ex.getMessage());
+                    + " - " + ex.getMessage());
             }
 
             stepIndex++;
@@ -173,7 +188,7 @@ public class RequestCommand {
         }
     }
 
-    private void processRequest(int index, String requestName, String requestInputPath,
+    private void processRequest(ExecutionIndex index, String requestName, String requestInputPath,
             RequestInput<?> requestInput, StringExpander stringExpander) {
         if(isEmpty(requestInput.getRequests())) {
             throw new CommandException("No requests are defined in the request file: " + requestInputPath);
@@ -186,7 +201,7 @@ public class RequestCommand {
             throw new CommandException("No request defined for name: "
                 + requestName + " - " + requestInputPath);
         }
-        if(index == FIRST_EXECUTION && executionLevels.wasExecuted(requestInputPath, requestName)) {
+        if(index.getIndex() == FIRST_EXECUTION && executionLevels.wasExecuted(requestInputPath, requestName)) {
             throw new RecursiveCommandException("Request input was already processed: "
                 + requestInputPath + "/" + requestName + " - " + executionLevels.getTrace());
         }
@@ -197,16 +212,16 @@ public class RequestCommand {
         modifier.mergeHeader(requestInput.getApi(), request);
 
         try {
-            executeRequest(stringExpander, requestInputPath, requestInput.getApi(), request);
+            executeRequest(index, stringExpander, requestInputPath, requestInput.getApi(), request);
         } catch(CommandException | RequestException ex) {
             throw new CommandException(
                 "[" + requestInputPath + "/" + requestName + "] "
-                + (settings.getTimes() > 1 ? " index=" + index + " ": "")
-                + ex.getMessage());
+                + " index=" + index
+                + " - " + ex.getMessage());
         }
     }
 
-    private void executeRequest(StringExpander stringExpander, String requestInputPath,
+    private void executeRequest(ExecutionIndex index, StringExpander stringExpander, String requestInputPath,
             RequestEntry<? extends MockEntry> api, RequestEntry<? extends MockEntry> request) {
         Settings settings = stringExpander.getSettings();
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, settings.getRequestType());
@@ -220,6 +235,7 @@ public class RequestCommand {
             LOGGER.info("Request skipped - inputFile=\"" + requestInputPath + "\""
                     + " request=\"" + request.getName() + "\""
                     + " environment=\"" + settings.getEnvironment() + "\""
+                    + " index=" + index
                     + " executionTag=\"" + settings.getExecutionTag() + "\"");
             conditionsResult.get().getFailedMessages().forEach(LOGGER::info);
             LOGGER.info("");
@@ -250,6 +266,7 @@ public class RequestCommand {
         historyEntry.setTimestamp(settings.getTimestamp().toEpochSecond(OffsetDateTime.now().getOffset()));
         historyEntry.setExecutionTag(settings.getExecutionTag());
         historyEntry.setNanoTime(endTime - beginTime);
+        historyEntry.setIndex(index.toString());
         historyEntry.setDetails(processor.getDetails(response));
 
         Optional<AssertionResult> assertionResult = processor.process(settings, request, response);
@@ -264,6 +281,7 @@ public class RequestCommand {
                     + " request=\"" + request.getName() + "\""
                     + " result=\"" + response.getResult() + "\""
                     + " environment=\"" + settings.getEnvironment() + "\""
+                    + " index=" + index
                     + " executionTag=\"" + settings.getExecutionTag() + "\""
                     + " time(nano)=" + historyEntry.getNanoTime());
                 assertionResult.get().getFailedMessages().forEach(LOGGER::warning);
@@ -273,6 +291,7 @@ public class RequestCommand {
                     + " request=\"" + request.getName() + "\""
                     + " result=\"" + response.getResult() + "\""
                     + " environment=\"" + settings.getEnvironment() + "\""
+                    + " index=" + index
                     + " executionTag=\"" + settings.getExecutionTag() + "\""
                     + " time(nano)=" + historyEntry.getNanoTime());
             }
@@ -282,6 +301,7 @@ public class RequestCommand {
                     + " request=\"" + request.getName() + "\""
                     + " result=\"" + response.getResult() + "\""
                     + " environment=\"" + settings.getEnvironment() + "\""
+                    + " index=" + index
                     + " executionTag=\"" + settings.getExecutionTag() + "\""
                     + " time(nano)=" + historyEntry.getNanoTime());
         }

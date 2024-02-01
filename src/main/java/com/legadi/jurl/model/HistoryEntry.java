@@ -15,6 +15,7 @@ public class HistoryEntry {
     private long nanoTime;
     private int assertions;
     private int failures;
+    private String index;
     private Map<String, Object> details;
 
     public String getCurl() {
@@ -103,6 +104,14 @@ public class HistoryEntry {
 
     public void setFailures(int failures) {
         this.failures = failures;
+    }
+
+    public String getIndex() {
+        return index;
+    }
+
+    public void setIndex(String index) {
+        this.index = index;
     }
 
     public Map<String, Object> getDetails() {
