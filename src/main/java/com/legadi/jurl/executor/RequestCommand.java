@@ -9,6 +9,7 @@ import static com.legadi.jurl.common.ObjectsRegistry.findOrFail;
 import static com.legadi.jurl.common.WriterUtils.appendToFile;
 import static com.legadi.jurl.common.WriterUtils.writeFile;
 import static com.legadi.jurl.model.ExecutionStatus.FAILED;
+import static com.legadi.jurl.model.ExecutionStatus.SKIPPED;
 import static com.legadi.jurl.model.ExecutionStatus.SUCCESSFUL;
 import static com.legadi.jurl.model.RequestBehaviour.CURL_ONLY;
 import static com.legadi.jurl.model.RequestBehaviour.PRINT_ONLY;
@@ -129,7 +130,7 @@ public class RequestCommand {
             return stats.computeStatus();
         } finally {
             if(times > 1) {
-                LOGGER.info("Requests completed -"
+                LOGGER.info("Execution completed -"
                     + " inputFile=\"" + requestInputPath + "\""
                     + " request=\"" + inputName + "\""
                     + " environment=\"" + settings.getEnvironment() + "\""
@@ -174,6 +175,13 @@ public class RequestCommand {
 
             stepIndex++;
         }
+
+        LOGGER.info("Steps completed -"
+            + " inputFile=\"" + requestInputPath + "\""
+            + " flow=\"" + flowName + "\""
+            + " environment=\"" + settings.getEnvironment() + "\""
+            + " steps=" + stats.getExecutions()
+            + " stats=" + stats);
 
         return stats;
     }
@@ -243,11 +251,8 @@ public class RequestCommand {
         if(!isPrintOnly(settings)
                 && conditionsResult.isPresent()
                 && !conditionsResult.get().isPassed()) {
-            LOGGER.info("Request SKIPPED - inputFile=\"" + requestInputPath + "\""
-                    + " request=\"" + request.getName() + "\""
-                    + " environment=\"" + settings.getEnvironment() + "\""
-                    + " index=" + index
-                    + " executionTag=\"" + settings.getExecutionTag() + "\"");
+            LOGGER.info(executionCompletedMessage(settings, index, requestInputPath,
+                request, null, SKIPPED, null));
             conditionsResult.get().getFailedMessages().forEach(LOGGER::info);
             LOGGER.info("");
             return FAILED;
@@ -289,34 +294,16 @@ public class RequestCommand {
 
             if(!assertionResult.get().isPassed()) {
                 status = FAILED;
-                LOGGER.warning("Request FAILED -"
-                    + " inputFile=\"" + requestInputPath + "\""
-                    + " request=\"" + request.getName() + "\""
-                    + " result=\"" + response.getResult() + "\""
-                    + " environment=\"" + settings.getEnvironment() + "\""
-                    + " index=" + index
-                    + " executionTag=\"" + settings.getExecutionTag() + "\""
-                    + " time(nano)=" + historyEntry.getNanoTime());
+                LOGGER.warning(executionCompletedMessage(settings, index, requestInputPath,
+                    request, response, status, historyEntry));
                 assertionResult.get().getFailedMessages().forEach(LOGGER::warning);
             } else {
-                LOGGER.info("Request SUCCESSFUL -"
-                    + " inputFile=\"" + requestInputPath + "\""
-                    + " request=\"" + request.getName() + "\""
-                    + " result=\"" + response.getResult() + "\""
-                    + " environment=\"" + settings.getEnvironment() + "\""
-                    + " index=" + index
-                    + " executionTag=\"" + settings.getExecutionTag() + "\""
-                    + " time(nano)=" + historyEntry.getNanoTime());
+                LOGGER.info(executionCompletedMessage(settings, index, requestInputPath,
+                    request, response, status, historyEntry));
             }
         } else if(!isPrintOnly(settings)) {
-            LOGGER.info("Request SUCCESSFUL -"
-                    + " inputFile=\"" + requestInputPath + "\""
-                    + " request=\"" + request.getName() + "\""
-                    + " result=\"" + response.getResult() + "\""
-                    + " environment=\"" + settings.getEnvironment() + "\""
-                    + " index=" + index
-                    + " executionTag=\"" + settings.getExecutionTag() + "\""
-                    + " time(nano)=" + historyEntry.getNanoTime());
+            LOGGER.info(executionCompletedMessage(settings, index, requestInputPath,
+                request, response, status, historyEntry));
         }
 
         LOGGER.info("");
@@ -372,5 +359,19 @@ public class RequestCommand {
     private boolean isPrintOnly(Settings settings) {
         return settings.getRequestBehaviour() == CURL_ONLY
             || settings.getRequestBehaviour() == PRINT_ONLY;
+    }
+
+    private String executionCompletedMessage(Settings settings, ExecutionIndex index,
+            String inputPath, RequestEntry<?> request, ResponseEntry response,
+            ExecutionStatus status, HistoryEntry historyEntry) {
+        return "Request completed -"
+            + " status=" + status
+            + " inputFile=\"" + inputPath + "\""
+            + " request=\"" + request.getName() + "\""
+            + (response != null ? " result=\"" + response.getResult() + "\"" : "")
+            + " environment=\"" + settings.getEnvironment() + "\""
+            + " index=" + index
+            + " executionTag=\"" + settings.getExecutionTag() + "\""
+            + (historyEntry != null  ? " time(nano)=" + historyEntry.getNanoTime() : "");
     }
 }
