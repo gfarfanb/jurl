@@ -1,5 +1,4 @@
-# https://hub.docker.com/r/adoptopenjdk/maven-openjdk8
-FROM adoptopenjdk/maven-openjdk8:latest
+FROM maven:3-eclipse-temurin-8
 
 WORKDIR /app
 
