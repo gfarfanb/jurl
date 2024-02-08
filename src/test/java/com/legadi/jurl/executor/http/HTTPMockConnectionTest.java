@@ -24,6 +24,7 @@ import com.legadi.jurl.model.http.HTTPMockEntry;
 public class HTTPMockConnectionTest {
 
     @Test
+    @SuppressWarnings("resource")
     public void mockConnection() throws MalformedURLException {
         URL local = new URL("http://localhost:0/base");
         HTTPMockConnection connection = new HTTPMockConnection(local, null);
@@ -104,6 +105,7 @@ public class HTTPMockConnectionTest {
     }
 
     @Test
+    @SuppressWarnings("resource")
     public void mockConnectionWithDelay() throws MalformedURLException {
         HTTPMockEntry mock = new HTTPMockEntry();
 
@@ -165,6 +167,7 @@ public class HTTPMockConnectionTest {
     }
 
     @Test
+    @SuppressWarnings("resource")
     public void mockConnectionWrongExceptionClass() {
         HTTPMockEntry mock = new HTTPMockEntry();
 

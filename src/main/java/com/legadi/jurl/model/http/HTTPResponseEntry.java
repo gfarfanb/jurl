@@ -1,6 +1,7 @@
 package com.legadi.jurl.model.http;
 
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.legadi.jurl.model.ResponseEntry;
@@ -11,7 +12,7 @@ public class HTTPResponseEntry extends ResponseEntry {
     private Path sentFilePath;
     private Path responsePath;
     private int statusCode;
-    private Map<String, String> responseHeaders;
+    private Map<String, String> responseHeaders = new HashMap<>();
 
     public Path getBodyPath() {
         return bodyPath;
