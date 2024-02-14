@@ -351,8 +351,8 @@ public class RequestCommand {
             Process process = Runtime.getRuntime().exec(cmd);
             LOGGER.info("Command status [" + process.waitFor() + "]: " + cmd);
         } catch(Exception ex) {
-            LOGGER.log(FINE, "Error on opening editor command - " + ex.getMessage(), ex);
-            ex.printStackTrace();
+            LOGGER.severe("Error on opening editor command - " + ex.getMessage());
+            LOGGER.log(FINE, "Unable to run editor command", ex);
         }
     }
 

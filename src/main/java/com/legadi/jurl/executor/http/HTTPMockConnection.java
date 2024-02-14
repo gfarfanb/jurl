@@ -1,5 +1,6 @@
 package com.legadi.jurl.executor.http;
 
+import static com.legadi.jurl.common.WriterUtils.expandFile;
 import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.jurl.common.CommonUtils.isNotNumeric;
@@ -17,6 +18,7 @@ import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,6 +28,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import com.legadi.jurl.common.OutputPathBuilder;
+import com.legadi.jurl.common.Settings;
+import com.legadi.jurl.common.StringExpander;
 import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.model.http.HTTPMockEntry;
 
@@ -34,6 +39,9 @@ public class HTTPMockConnection extends HttpURLConnection {
     private static final Logger LOGGER = Logger.getLogger(HTTPMockConnection.class.getName());
 
     private URL url;
+    private Settings settings;
+    private String requestFilePath;
+    private String inputName;
     private int responseCode;
     private Long secondsDelay;
     private String responseContent;
@@ -43,11 +51,14 @@ public class HTTPMockConnection extends HttpURLConnection {
     private Class<? extends IOException> exceptionClassOnResponseCode;
     private boolean doOutput;
 
-    
-    public HTTPMockConnection(URL url, HTTPMockEntry mockEntry) {
+    public HTTPMockConnection(URL url, Settings settings,
+            String requestFilePath, String inputName, HTTPMockEntry mockEntry) {
         super(null);
 
         this.url = url;
+        this.settings = settings;
+        this.requestFilePath = requestFilePath;
+        this.inputName = inputName;
 
         initMock(mockEntry);
     }
@@ -153,12 +164,24 @@ public class HTTPMockConnection extends HttpURLConnection {
         }
 
         if(isNotBlank(responseContent)) {
+            StringExpander stringExpander = new StringExpander(settings);
+            responseContent = stringExpander.replaceAllInContent(responseContent);
+
             LOGGER.fine("[mock-connection] Calling getInputStream():ByteArrayInputStream - " + responseContent);
             return new ByteArrayInputStream(responseContent.getBytes());
         }
         if(isNotBlank(responseFilePath)) {
-            LOGGER.fine("[mock-connection] Calling getInputStream():ByteArrayInputStream - " + responseFilePath);
-            return Files.newInputStream(Paths.get(responseFilePath));
+            OutputPathBuilder pathBuilder = new OutputPathBuilder(settings)
+                .setRequestPath(requestFilePath)
+                .setRequestName(inputName)
+                .setExtension("mock");
+            Path temporalBodyPath = pathBuilder.buildCommandPath();
+            Path responseBodyPath = Paths.get(responseFilePath);
+
+            expandFile(settings, responseBodyPath, temporalBodyPath);
+
+            LOGGER.fine("[mock-connection] Calling getInputStream():ByteArrayInputStream - " + temporalBodyPath);
+            return Files.newInputStream(temporalBodyPath);
         }
 
         LOGGER.fine("[mock-connection] Calling getInputStream():ByteArrayInputStream");

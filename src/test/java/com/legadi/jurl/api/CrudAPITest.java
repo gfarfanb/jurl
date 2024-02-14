@@ -45,7 +45,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("/body", createRequest.getEndpoint());
         Assertions.assertEquals("POST", createRequest.getMethod());
         Assertions.assertTrue(createRequest.getQueryParams().isEmpty());
-        Assertions.assertEquals(1, createRequest.getHeaders().size());
+        Assertions.assertEquals(2, createRequest.getHeaders().size());
         Assertions.assertNull(createRequest.getBodyCharset());
         Assertions.assertFalse(createRequest.getBodyContent().isEmpty());
         Assertions.assertNull(createRequest.getBodyFilePath());
@@ -98,7 +98,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("/body/" + id, obtainRequest.getEndpoint());
         Assertions.assertEquals("GET", obtainRequest.getMethod());
         Assertions.assertTrue(obtainRequest.getQueryParams().isEmpty());
-        Assertions.assertEquals(1, obtainRequest.getHeaders().size());
+        Assertions.assertEquals(2, obtainRequest.getHeaders().size());
         Assertions.assertNull(obtainRequest.getBodyCharset());
         Assertions.assertNull(obtainRequest.getBodyContent());
         Assertions.assertNull(obtainRequest.getBodyFilePath());
@@ -160,7 +160,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("/body/" + id, updateRequest.getEndpoint());
         Assertions.assertEquals("PUT", updateRequest.getMethod());
         Assertions.assertTrue(updateRequest.getQueryParams().isEmpty());
-        Assertions.assertEquals(1, updateRequest.getHeaders().size());
+        Assertions.assertEquals(2, updateRequest.getHeaders().size());
         Assertions.assertNull(updateRequest.getBodyCharset());
         Assertions.assertNull(updateRequest.getBodyContent());
         Assertions.assertNull(updateRequest.getBodyFilePath());
@@ -221,7 +221,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertEquals("/body/" + id, removeRequest.getEndpoint());
         Assertions.assertEquals("DELETE", removeRequest.getMethod());
         Assertions.assertTrue(removeRequest.getQueryParams().isEmpty());
-        Assertions.assertEquals(1, removeRequest.getHeaders().size());
+        Assertions.assertEquals(2, removeRequest.getHeaders().size());
         Assertions.assertNull(removeRequest.getBodyCharset());
         Assertions.assertNull(removeRequest.getBodyContent());
         Assertions.assertNull(removeRequest.getBodyFilePath());

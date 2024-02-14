@@ -5,6 +5,11 @@
 @port = {{local.server.port}}
 @basePath = basic
 
+auth @requestInputPath = src/test/resources/auth.spec.http
+auth @inputName = authorization
+auth @authType = TOKEN
+auth @tokenParam = auth.bearer.token
+
 Content-Type: application/json
 Request-Catcher: {{request.catcher.identifier}}
 
@@ -29,31 +34,3 @@ Request-Catcher: {{request.catcher.identifier}}
 output basic.functions.id = {{HTTP/header.Resource-ID}}
 
 assert EQUALS_TO 201 {{HTTP/status}}
-
-
-### [request] obtain
-@method = GET
-@endpoint = /body/{{basic.functions.id}}
-
-output basic.functions.entity = {{HTTP/response.path}}
-
-assert EQUALS_TO 200 {{HTTP/status}}
-
-
-### [request] update
-@method = PUT
-@endpoint = /body/{{basic.functions.id}}
-@bodyFilePath = {{basic.functions.entity}}
-
-{
-    "email": "jurl@test.com"
-}
-
-assert EQUALS_TO 204 {{HTTP/status}}
-
-
-### [request] remove
-@method = DELETE
-@endpoint = /body/{{basic.functions.id}}
-
-assert EQUALS_TO 204 {{HTTP/status}}

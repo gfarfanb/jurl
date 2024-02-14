@@ -26,8 +26,10 @@ public class HTTPMockConnectionTest {
     @Test
     @SuppressWarnings("resource")
     public void mockConnection() throws MalformedURLException {
+        Settings settings = new Settings();
         URL local = new URL("http://localhost:0/base");
-        HTTPMockConnection connection = new HTTPMockConnection(local, null);
+        HTTPMockConnection connection = new HTTPMockConnection(local, settings,
+            "src/test/resources/http-mock-connection-test", "test", null);
 
         Assertions.assertEquals("http://localhost:0/base", connection.getURL().toString());
         Assertions.assertDoesNotThrow(() -> connection.disconnect());
@@ -52,6 +54,7 @@ public class HTTPMockConnectionTest {
 
     @Test
     public void mockConnectionWithDefinition() throws IOException {
+        Settings settings = new Settings();
         HTTPMockEntry mock = new HTTPMockEntry();
 
         mock.setStatusCode("201");
@@ -63,7 +66,8 @@ public class HTTPMockConnectionTest {
         mock.getResponseHeaders().put("Date", DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now()));
         mock.getResponseHeaders().put("Content-Type", "text/html;charset=UTF-8");
 
-        HTTPMockConnection connection = new HTTPMockConnection(null, mock);
+        HTTPMockConnection connection = new HTTPMockConnection(null, settings,
+            "src/test/resources/http-mock-connection-test", "test", mock);
         String responseContent = null;
 
         try(InputStreamReader inputStreamReader = new InputStreamReader(connection.getInputStream());
@@ -92,7 +96,8 @@ public class HTTPMockConnectionTest {
 
         mock.setResponseFilePath(responsePath.toString());
 
-        HTTPMockConnection connection = new HTTPMockConnection(local, mock);
+        HTTPMockConnection connection = new HTTPMockConnection(local, settings,
+            "src/test/resources/http-mock-connection-test", "test", mock);
         String responseContent = null;
 
         try(InputStreamReader inputStreamReader = new InputStreamReader(connection.getInputStream());
@@ -107,12 +112,14 @@ public class HTTPMockConnectionTest {
     @Test
     @SuppressWarnings("resource")
     public void mockConnectionWithDelay() throws MalformedURLException {
+        Settings settings = new Settings();
         HTTPMockEntry mock = new HTTPMockEntry();
 
         mock.setStatusCode("201");
         mock.setSecondsDelay("1");
 
-        HTTPMockConnection connection = new HTTPMockConnection(null, mock);
+        HTTPMockConnection connection = new HTTPMockConnection(null, settings,
+            "src/test/resources/http-mock-connection-test", "test", mock);
 
         long beginTime = System.nanoTime();
         Assertions.assertDoesNotThrow(() -> connection.getInputStream());
@@ -123,32 +130,38 @@ public class HTTPMockConnectionTest {
 
     @Test
     public void mockConnectionWrongStatusCode() throws MalformedURLException {
+        Settings settings = new Settings();
         HTTPMockEntry mock = new HTTPMockEntry();
 
         mock.setStatusCode("CREATED");
 
         Assertions.assertThrows(CommandException.class,
-            () -> new HTTPMockConnection(null, mock));
+            () -> new HTTPMockConnection(null, settings,
+                "src/test/resources/http-mock-connection-test", "test", mock));
     }
 
     @Test
     public void mockConnectionWrongSecondsDelay() throws MalformedURLException {
+        Settings settings = new Settings();
         HTTPMockEntry mock = new HTTPMockEntry();
 
         mock.setStatusCode("201");
         mock.setSecondsDelay("LATE");
 
         Assertions.assertThrows(CommandException.class,
-            () -> new HTTPMockConnection(null, mock));
+            () -> new HTTPMockConnection(null, settings,
+                "src/test/resources/http-mock-connection-test", "test", mock));
     }
 
     @Test
     public void mockConnectionExceptionOnOutputStream() {
+        Settings settings = new Settings();
         HTTPMockEntry mock = new HTTPMockEntry();
 
         mock.setExceptionClassOnOutputStream(IOException.class.getName());
 
-        HTTPMockConnection connection = new HTTPMockConnection(null, mock);
+        HTTPMockConnection connection = new HTTPMockConnection(null, settings,
+            "src/test/resources/http-mock-connection-test", "test", mock);
 
         Assertions.assertThrows(IOException.class,
             () -> connection.getOutputStream());
@@ -156,11 +169,13 @@ public class HTTPMockConnectionTest {
 
     @Test
     public void mockConnectionExceptionOnResponseCode() {
+        Settings settings = new Settings();
         HTTPMockEntry mock = new HTTPMockEntry();
 
         mock.setExceptionClassOnResponseCode(IOException.class.getName());
 
-        HTTPMockConnection connection = new HTTPMockConnection(null, mock);
+        HTTPMockConnection connection = new HTTPMockConnection(null, settings,
+            "src/test/resources/http-mock-connection-test", "test", mock);
 
         Assertions.assertThrows(IOException.class,
             () -> connection.getResponseCode());
@@ -169,12 +184,14 @@ public class HTTPMockConnectionTest {
     @Test
     @SuppressWarnings("resource")
     public void mockConnectionWrongExceptionClass() {
+        Settings settings = new Settings();
         HTTPMockEntry mock = new HTTPMockEntry();
 
         mock.setExceptionClassOnOutputStream(Object.class.getName());
         mock.setExceptionClassOnResponseCode(Object.class.getName());
 
-        HTTPMockConnection connection = new HTTPMockConnection(null, mock);
+        HTTPMockConnection connection = new HTTPMockConnection(null, settings,
+            "src/test/resources/http-mock-connection-test", "test", mock);
 
         Assertions.assertDoesNotThrow(() -> connection.getOutputStream());
         Assertions.assertDoesNotThrow(() -> connection.getResponseCode());

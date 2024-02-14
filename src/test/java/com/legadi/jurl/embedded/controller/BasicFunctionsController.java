@@ -1,8 +1,10 @@
 package com.legadi.jurl.embedded.controller;
 
+import static com.legadi.jurl.embedded.util.RequestCatcherManager.getCatcher;
+
+import java.util.Map;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,11 +25,10 @@ import com.legadi.jurl.embedded.util.RequestCatcher;
 @RequestMapping("/basic")
 public class BasicFunctionsController {
 
-    @Autowired
-    private RequestCatcher requestCatcher;
-
     @PostMapping("/body")
-    public ResponseEntity<String> post(@RequestBody BasicFunctionsEntity entity) {
+    public ResponseEntity<String> post(@RequestBody BasicFunctionsEntity entity,
+            @RequestHeader Map<String, String> requestHeaders) {
+        RequestCatcher requestCatcher = getCatcher(requestHeaders.get("request-catcher"));
         UUID correlationId = UUID.randomUUID();
 
         requestCatcher.add(correlationId, "basic-body", entity);
@@ -40,7 +42,10 @@ public class BasicFunctionsController {
     }
 
     @GetMapping("/body/{correlationId}")
-    public ResponseEntity<Object> get(@PathVariable UUID correlationId) {
+    public ResponseEntity<Object> get(@PathVariable UUID correlationId,
+            @RequestHeader Map<String, String> requestHeaders) {
+        RequestCatcher requestCatcher = getCatcher(requestHeaders.get("request-catcher"));
+
         if(!requestCatcher.contains(correlationId, "basic-body")) {
             return ResponseEntity.notFound().build();
         }
@@ -50,7 +55,10 @@ public class BasicFunctionsController {
 
     @PutMapping("/body/{correlationId}")
     public ResponseEntity<String> put(@PathVariable UUID correlationId,
-            @RequestBody BasicFunctionsEntity entity) {
+            @RequestBody BasicFunctionsEntity entity,
+            @RequestHeader Map<String, String> requestHeaders) {
+        RequestCatcher requestCatcher = getCatcher(requestHeaders.get("request-catcher"));
+
         if(!requestCatcher.contains(correlationId, "basic-body")) {
             return ResponseEntity.notFound().build();
         }
@@ -60,7 +68,10 @@ public class BasicFunctionsController {
     }
 
     @DeleteMapping("/body/{correlationId}")
-    public ResponseEntity<String> delete(@PathVariable UUID correlationId) {
+    public ResponseEntity<String> delete(@PathVariable UUID correlationId,
+            @RequestHeader Map<String, String> requestHeaders) {
+        RequestCatcher requestCatcher = getCatcher(requestHeaders.get("request-catcher"));
+
         if(!requestCatcher.contains(correlationId, "basic-body")) {
             return ResponseEntity.notFound().build();
         }

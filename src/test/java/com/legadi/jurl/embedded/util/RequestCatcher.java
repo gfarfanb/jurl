@@ -6,24 +6,28 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import com.legadi.jurl.common.Pair;
 
 public class RequestCatcher {
 
-    private final Map<UUID, Map<String, Object>> data = Collections.synchronizedMap(new HashMap<>());
+    private final Map<UUID, Map<String, List<Object>>> data = Collections.synchronizedMap(new HashMap<>());
     private final Map<String, List<Pair<UUID, Object>>> history = Collections.synchronizedMap(new HashMap<>());
-    private final AtomicReference<UUID> lastCorrelationId = new AtomicReference<UUID>();
 
-    @SuppressWarnings("unchecked")
     public <T> T get(UUID correlationId, String name) {
-        T value = (T) data.getOrDefault(correlationId, new HashMap<>()).get(name);
-        if(value == null) {
+        List<T> values = getAll(correlationId, name);
+        if(values.isEmpty()) {
             throw new IllegalStateException("Caught name not found: " + name);
         }
-        return value;
+        return values.get(0);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> List<T> getAll(UUID correlationId, String name) {
+        return (List<T>) data
+            .getOrDefault(correlationId, new HashMap<>())
+            .getOrDefault(name, new LinkedList<>());
     }
 
     public <T> T add(UUID correlationId, String name, T value) {
@@ -33,7 +37,10 @@ public class RequestCatcher {
         if(!data.containsKey(correlationId)) {
             data.put(correlationId, Collections.synchronizedMap(new HashMap<>()));
         }
-        data.get(correlationId).put(name, value);
+        if(!data.get(correlationId).containsKey(name)) {
+            data.get(correlationId).put(name, new LinkedList<>());
+        }
+        data.get(correlationId).get(name).add(value);
 
         List<Pair<UUID, Object>> records = history.get(name);
         if(records == null) {
@@ -41,25 +48,20 @@ public class RequestCatcher {
         }
         records.add(new Pair<>(correlationId, value));
         history.put(name, records);
-        lastCorrelationId.set(correlationId);
 
         return value;
     }
 
-    public <T> boolean contains(UUID correlationId, String name) {
+    public boolean contains(UUID correlationId, String name) {
         return data.getOrDefault(correlationId, new HashMap<>()).containsKey(name);
     }
 
     @SuppressWarnings("unchecked")
     public <T> T remove(UUID correlationId, String name) {
-        Map<String, Object> dataByType = data.getOrDefault(correlationId, new HashMap<>());
-        T value = (T) dataByType.get(name);
+        Map<String, List<Object>> dataByType = data.getOrDefault(correlationId, new HashMap<>());
+        List<T> values = (List<T>) dataByType.getOrDefault(name, new LinkedList<>());
         dataByType.remove(name);
-        return value;
-    }
-
-    public UUID getLastCorrelationId() {
-        return lastCorrelationId.get();
+        return !values.isEmpty() ? values.get(0) : null;
     }
 
     @SuppressWarnings("unchecked")

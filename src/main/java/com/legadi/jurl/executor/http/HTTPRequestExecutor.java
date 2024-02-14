@@ -90,10 +90,10 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     }
 
     @Override
-    public HTTPResponseEntry executeRequest(Settings settings, String requestPath, HTTPRequestEntry request)
+    public HTTPResponseEntry executeRequest(Settings settings, String requestInputPath, HTTPRequestEntry request)
             throws RequestException {
         CurlBuilder curlBuilder = new CurlBuilder();
-        HttpURLConnection connection = createConnection(settings, request, curlBuilder);
+        HttpURLConnection connection = createConnection(settings, requestInputPath, request, curlBuilder);
         Path bodyPath = null;
         Path sentFilePath = null;
 
@@ -104,10 +104,10 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         } else {
             addHeaders(connection, settings, request, curlBuilder);
             addMethod(connection, request, curlBuilder);
-            bodyPath = sendBody(connection, settings, requestPath, request, curlBuilder);
+            bodyPath = sendBody(connection, settings, requestInputPath, request, curlBuilder);
         }
 
-        HTTPResponseEntry response = buildResponse(connection, settings, requestPath, request, curlBuilder);
+        HTTPResponseEntry response = buildResponse(connection, settings, requestInputPath, request, curlBuilder);
         response.setBodyPath(bodyPath);
         response.setSentFilePath(sentFilePath);
 
@@ -115,7 +115,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     }
 
     private HttpURLConnection createConnection(Settings settings,
-            HTTPRequestEntry request, CurlBuilder curlBuilder) {
+            String requestInputPath, HTTPRequestEntry request, CurlBuilder curlBuilder) {
         URLBuilder urlBuilder = new URLBuilder()
             .setUrl(request.getUrl())
             .setProtocol(request.getProtocol())
@@ -134,15 +134,16 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
 
             log(settings, identifyMethod(request) + " " + url, null);
 
-            return createConnection(settings, request, url);
+            return createConnection(settings, requestInputPath, request, url);
         } catch(IOException ex) {
             throw new RequestException(request, "Unable to create HTTP connection [" + generatedUrl + "] - " + ex.getMessage());
         }
     }
 
-    private HttpURLConnection createConnection(Settings settings, HTTPRequestEntry request, URL url) throws IOException {
+    private HttpURLConnection createConnection(Settings settings, String requestInputPath, HTTPRequestEntry request, URL url)
+            throws IOException {
         if(settings.isMockRequest()) {
-            return new HTTPMockConnection(url, request.getMockDefinition());
+            return new HTTPMockConnection(url, settings, requestInputPath, request.getName(), request.getMockDefinition());
         }
 
         RequestBehaviour behaviour = settings.getRequestBehaviour();
@@ -150,7 +151,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         switch(behaviour) {
             case CURL_ONLY:
             case PRINT_ONLY:
-                return new HTTPMockConnection(url, request.getMockDefinition());
+                return new HTTPMockConnection(url, settings, requestInputPath, request.getName(), request.getMockDefinition());
             default:
                 return (HttpURLConnection) url.openConnection();
         }
@@ -255,7 +256,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     }
 
     private Path sendBody(HttpURLConnection connection, Settings settings, 
-            String requestPath, HTTPRequestEntry request, CurlBuilder culrBuilder) {
+            String requestInputPath, HTTPRequestEntry request, CurlBuilder culrBuilder) {
         if(!connection.getDoOutput()) {
             return null;
         }
@@ -263,11 +264,11 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         try(DataOutputStream dataOutputStream = new DataOutputStream(connection.getOutputStream())) {
 
             if(isNotBlank(request.getBodyContent())) {
-                return sendBodyContent(dataOutputStream, settings, requestPath, request, culrBuilder);
+                return sendBodyContent(dataOutputStream, settings, requestInputPath, request, culrBuilder);
             }
 
             if(isNotBlank(request.getBodyFilePath())) {
-                return sendBodyFile(dataOutputStream, settings, requestPath, request, culrBuilder);
+                return sendBodyFile(dataOutputStream, settings, requestInputPath, request, culrBuilder);
             }
 
             if(settings.containsOverride(BODY_TEMPORAL_PATH)) {
@@ -281,9 +282,9 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     }
 
     private Path sendBodyContent(DataOutputStream dataOutputStream, Settings settings, 
-            String requestPath, HTTPRequestEntry request, CurlBuilder culrBuilder) {
+            String requestInputPath, HTTPRequestEntry request, CurlBuilder culrBuilder) {
         OutputPathBuilder pathBuilder = new OutputPathBuilder(settings)
-            .setRequestPath(requestPath)
+            .setRequestPath(requestInputPath)
             .setRequestName(request.getName())
             .setExtension("body");
         Path temporalBodyPath = pathBuilder.buildCommandPath();
@@ -299,9 +300,9 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     }
 
     private Path sendBodyFile(DataOutputStream dataOutputStream, Settings settings, 
-            String requestPath, HTTPRequestEntry request, CurlBuilder culrBuilder) throws IOException {
+            String requestInputPath, HTTPRequestEntry request, CurlBuilder culrBuilder) throws IOException {
         OutputPathBuilder pathBuilder = new OutputPathBuilder(settings)
-            .setRequestPath(requestPath)
+            .setRequestPath(requestInputPath)
             .setRequestName(request.getName())
             .setExtension("body");
         Path temporalBodyPath = pathBuilder.buildCommandPath();
@@ -425,9 +426,9 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     }
 
     private Path readOutput(HttpURLConnection connection, Settings settings,
-            String requestPath, HTTPRequestEntry request, String filename) {
+            String requestInputPath, HTTPRequestEntry request, String filename) {
         OutputPathBuilder pathBuilder = new OutputPathBuilder(settings)
-                .setRequestPath(requestPath)
+                .setRequestPath(requestInputPath)
                 .setRequestName(request.getName())
                 .setFilename(filename)
                 .setExtension(isBlank(filename) ? "response" : null);
@@ -476,7 +477,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     }
 
     private HTTPResponseEntry buildResponse(HttpURLConnection connection,
-            Settings settings, String requestPath, HTTPRequestEntry request,
+            Settings settings, String requestInputPath, HTTPRequestEntry request,
             CurlBuilder curlBuilder) {
         HTTPResponseEntry response = new HTTPResponseEntry();
         StringBuilder printableResponse = new StringBuilder();
@@ -497,7 +498,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             response.setResult(response.getResponseHeaders().remove(headerResultKey));
 
             String filename = getOutputFilename(response);
-            Path responsePath = readOutput(connection, settings, requestPath, request, filename);
+            Path responsePath = readOutput(connection, settings, requestInputPath, request, filename);
 
             response.setResponsePath(responsePath);
 

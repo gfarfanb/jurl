@@ -1,7 +1,5 @@
 package com.legadi.jurl.options;
 
-import static com.legadi.jurl.common.CommonUtils.isNotBlank;
-
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -50,8 +48,7 @@ public abstract class Option implements Named {
 
     @Override
     public String toString() {
-        return name()
-            + (isNotBlank(alias()) ? ", " + alias() : "")
+        return name() + ", " + alias()
             + (getArgs().length < 1 ? "" : " " + Arrays.stream(getArgs())
                 .map(arg -> "<" + arg + ">")
                 .collect(Collectors.joining(" ")));

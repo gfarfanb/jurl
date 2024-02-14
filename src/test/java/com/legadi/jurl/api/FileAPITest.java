@@ -41,7 +41,7 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertNull(uploadRequest.getEndpoint());
         Assertions.assertEquals("POST", uploadRequest.getMethod());
         Assertions.assertTrue(uploadRequest.getQueryParams().isEmpty());
-        Assertions.assertEquals(2, uploadRequest.getHeaders().size());
+        Assertions.assertEquals(3, uploadRequest.getHeaders().size());
         Assertions.assertNull(uploadRequest.getBodyCharset());
         Assertions.assertNull(uploadRequest.getBodyContent());
         Assertions.assertNull(uploadRequest.getBodyFilePath());
@@ -110,7 +110,7 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertNull(uploadRequest.getEndpoint());
         Assertions.assertEquals("POST", uploadRequest.getMethod());
         Assertions.assertTrue(uploadRequest.getQueryParams().isEmpty());
-        Assertions.assertEquals(2, uploadRequest.getHeaders().size());
+        Assertions.assertEquals(3, uploadRequest.getHeaders().size());
         Assertions.assertNull(uploadRequest.getBodyCharset());
         Assertions.assertNull(uploadRequest.getBodyContent());
         Assertions.assertNull(uploadRequest.getBodyFilePath());
@@ -178,7 +178,7 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertNull(downloadRequest.getEndpoint());
         Assertions.assertEquals("GET", downloadRequest.getMethod());
         Assertions.assertEquals(2, downloadRequest.getQueryParams().size());
-        Assertions.assertTrue(downloadRequest.getHeaders().isEmpty());
+        Assertions.assertEquals(1, downloadRequest.getHeaders().size());
         Assertions.assertNull(downloadRequest.getBodyCharset());
         Assertions.assertNull(downloadRequest.getBodyContent());
         Assertions.assertNull(downloadRequest.getBodyFilePath());
@@ -232,7 +232,7 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertNull(downloadRequest.getEndpoint());
         Assertions.assertEquals("GET", downloadRequest.getMethod());
         Assertions.assertEquals(1, downloadRequest.getQueryParams().size());
-        Assertions.assertTrue(downloadRequest.getHeaders().isEmpty());
+        Assertions.assertEquals(1, downloadRequest.getHeaders().size());
         Assertions.assertNull(downloadRequest.getBodyCharset());
         Assertions.assertNull(downloadRequest.getBodyContent());
         Assertions.assertNull(downloadRequest.getBodyFilePath());

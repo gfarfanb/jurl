@@ -1,4 +1,9 @@
 
+### [api]
+
+Request-Catcher: {{request.catcher.identifier}}
+
+
 ### [request] authorization
 POST http://localhost:{{local.server.port}}/oauth/token
 Content-Type: application/x-www-form-urlencoded

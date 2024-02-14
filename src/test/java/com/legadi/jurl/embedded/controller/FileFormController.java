@@ -1,5 +1,6 @@
 package com.legadi.jurl.embedded.controller;
 
+import static com.legadi.jurl.embedded.util.RequestCatcherManager.getCatcher;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
 
 import java.io.IOException;
@@ -15,13 +16,13 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -37,13 +38,13 @@ import com.legadi.jurl.embedded.util.RequestCatcher;
 @RequestMapping("/file")
 public class FileFormController {
 
-    @Autowired
-    private RequestCatcher requestCatcher;
-
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> upload(
             @RequestParam Map<String,String> requestParams,
-            @RequestPart MultipartFile file) throws IOException {
+            @RequestPart MultipartFile file,
+            @RequestHeader Map<String, String> requestHeaders) throws IOException {
+        RequestCatcher requestCatcher = getCatcher(requestHeaders.get("request-catcher"));
+
         Settings settings = new Settings();
         Path temporalFile = settings.getExecutionPath().resolve(file.getOriginalFilename());
         UUID correlationId = UUID.randomUUID();

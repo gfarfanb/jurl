@@ -121,6 +121,7 @@ public class HTTPRequestExecutorTest extends EmbeddedAPITest {
         request.setUrl("http://localhost:" + port + "/basic/body");
         request.setMethod("POST");
         request.getHeaders().put("Content-Type", "application/json");
+        request.getHeaders().put("Request-Catcher", requestCatcherId);
         request.setBodyContent("{}");
 
         HTTPResponseEntry response = Assertions.assertDoesNotThrow(
@@ -139,6 +140,7 @@ public class HTTPRequestExecutorTest extends EmbeddedAPITest {
         request.setUrl("http://localhost:" + port + "/basic/body");
         request.setMethod("POST");
         request.getHeaders().put("Content-Type", "application/json");
+        request.getHeaders().put("Request-Catcher", requestCatcherId);
         request.setBodyFilePath("src/test/resources/basic-functions.body.json");
 
         HTTPResponseEntry response = Assertions.assertDoesNotThrow(
@@ -157,6 +159,7 @@ public class HTTPRequestExecutorTest extends EmbeddedAPITest {
         request.setUrl("http://localhost:" + port + "/basic/body");
         request.setMethod("POST");
         request.getHeaders().put("Content-Type", "application/json");
+        request.getHeaders().put("Request-Catcher", requestCatcherId);
 
         settings.putOverride(BODY_TEMPORAL_PATH, "src/test/resources/basic-functions.body.json");
 
@@ -192,6 +195,7 @@ public class HTTPRequestExecutorTest extends EmbeddedAPITest {
         request.setName("basic-get");
         request.setUrl("http://localhost:" + port + "/basic/body/" + UUID.randomUUID());
         request.setMethod("GET");
+        request.getHeaders().put("Request-Catcher", requestCatcherId);
 
         HTTPResponseEntry response = Assertions.assertDoesNotThrow(
             () -> executor.executeRequest(settings, "src/test/resources/http-request-executor.http", request));
@@ -225,6 +229,7 @@ public class HTTPRequestExecutorTest extends EmbeddedAPITest {
         request.setUrl("http://localhost:" + port + "/basic/body");
         request.setMethod("POST");
         request.getHeaders().put("Content-Type", "application/json");
+        request.getHeaders().put("Request-Catcher", requestCatcherId);
         request.setBodyContent("{}");
 
         settings.putOverride("username", "test");
@@ -255,6 +260,7 @@ public class HTTPRequestExecutorTest extends EmbeddedAPITest {
         request.setUrl("http://localhost:" + port + "/basic/body");
         request.setMethod("POST");
         request.getHeaders().put("Content-Type", "application/json");
+        request.getHeaders().put("Request-Catcher", requestCatcherId);
         request.setBodyContent("{}");
 
         String token = UUID.randomUUID().toString();
@@ -284,12 +290,12 @@ public class HTTPRequestExecutorTest extends EmbeddedAPITest {
         request.setUrl("http://localhost:" + port + "/basic/body");
         request.setMethod("POST");
         request.getHeaders().put("Content-Type", "application/json");
+        request.getHeaders().put("Request-Catcher", requestCatcherId);
         request.setBodyContent("{}");
 
         String token = UUID.randomUUID().toString();
 
         settings.putOverride("token", token);
-        
 
         HTTPRequestAuthEntry auth = new HTTPRequestAuthEntry();
         auth.setAuthType(EMPTY.name());
@@ -312,6 +318,7 @@ public class HTTPRequestExecutorTest extends EmbeddedAPITest {
         request.setUrl("http://localhost:" + port + "/basic/body");
         request.setMethod("POST");
         request.getHeaders().put("Content-Type", "application/json");
+        request.getHeaders().put("Request-Catcher", requestCatcherId);
         request.setBodyContent("{}");
 
         settings.putOverride(PROP_REQUEST_BEHAVIOUR, CURL_ONLY.name());
@@ -322,6 +329,7 @@ public class HTTPRequestExecutorTest extends EmbeddedAPITest {
         Assertions.assertEquals(0, response.getStatusCode());
         Assertions.assertTrue(response.getResponseHeaders().isEmpty());
         Assertions.assertEquals("curl -X POST "
+            + "-H \"Request-Catcher: " + requestCatcherId + "\" "
             + "-H \"Content-Type: application/json\" "
             + "--data-binary \"@./executions/src/test/resources/http-request-executor_http/basic-post/" + settings.getTimestamp().toLocalDate() + "/" + settings.getExecutionTag() + ".body\" "
             + "\"http://localhost:" + port + "/basic/body\"", response.getCurlCommand());
@@ -441,6 +449,7 @@ public class HTTPRequestExecutorTest extends EmbeddedAPITest {
 
         request.setName("upload");
         request.setUrl("http://localhost:" + port + "/file");
+        request.getHeaders().put("Request-Catcher", requestCatcherId);
 
         HTTPRequestFileEntry file = new HTTPRequestFileEntry();
         file.setName("uploaded.csv");
@@ -464,6 +473,7 @@ public class HTTPRequestExecutorTest extends EmbeddedAPITest {
 
         request.setName("upload");
         request.setUrl("http://localhost:" + port + "/file");
+        request.getHeaders().put("Request-Catcher", requestCatcherId);
 
         HTTPRequestFileEntry file = new HTTPRequestFileEntry();
         file.setField("file");
