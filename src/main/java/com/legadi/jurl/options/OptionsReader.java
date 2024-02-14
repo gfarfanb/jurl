@@ -3,10 +3,10 @@ package com.legadi.jurl.options;
 import static com.legadi.jurl.common.CommonUtils.isBlank;
 import static com.legadi.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
-import static com.legadi.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.jurl.common.CommonUtils.trim;
 import static com.legadi.jurl.common.ObjectsRegistry.findByName;
 import static com.legadi.jurl.common.ObjectsRegistry.register;
+import static java.util.logging.Level.FINE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,7 +27,24 @@ public class OptionsReader {
     private final String requestInputPath;
 
     public OptionsReader(String[] args) {
+        registerAddOnOptions();
         this.requestInputPath = extractOptionsAndRequestInputPath(args);
+    }
+
+    private void registerAddOnOptions() {
+        Settings settings = new Settings();
+        String[] addOnOptions = settings.getAddOnOptionClasses();
+
+        for(String addOnOption : addOnOptions) {
+            if(isBlank(addOnOption)) {
+                continue;
+            }
+
+            Option option = register(Option.class, trim(addOnOption));
+            LOGGER.info("Add-on registered: class=" + addOnOption
+                + " opt=" + option.name()
+                + " alias=" + option.alias());
+        }
     }
 
     private String extractOptionsAndRequestInputPath(String[] args) {
@@ -64,11 +81,8 @@ public class OptionsReader {
 
                 index += arguments.length + 1;
             } catch(Exception ex) {
-                if(option != null) {
-                    throw new CommandException("Invalid option definition: " + Arrays.toString(args) + " - " + option);
-                } else {
-                    throw new CommandException("Invalid options: " + Arrays.toString(args));
-                }
+                LOGGER.log(FINE, "Invalid option - " + ex.getMessage(), ex);
+                throw new CommandException("Invalid option definition: " + Arrays.toString(args) + " - " + option);
             }
         }
 
@@ -78,24 +92,6 @@ public class OptionsReader {
             return lastArg;
         } else {
             return null;
-        }
-    }
-
-    public void registerAddOnOptions() {
-        Settings settings = new Settings();
-        String[] addOnOptions = settings.getAddOnOptionClasses();
-
-        if(isNotEmpty(addOnOptions)) {
-            for(String addOnOption : addOnOptions) {
-                if(isBlank(addOnOption)) {
-                    continue;
-                }
-
-                Option option = register(Option.class, trim(addOnOption));
-                LOGGER.info("Add-on registered: class=" + addOnOption
-                    + " opt=" + option.name()
-                    + " alias=" + option.alias());
-            }
         }
     }
 

@@ -60,8 +60,6 @@ public class RequestCommand {
     public RequestCommand(String[] args) {
         this.optionsReader = new OptionsReader(args);
         this.executionLevels = new ExecutionLevels();
-
-        optionsReader.registerAddOnOptions();
     }
 
     public void execute() {

@@ -48,8 +48,9 @@ public abstract class Option implements Named {
 
     @Override
     public String toString() {
+        String[] args = getArgs();
         return name() + ", " + alias()
-            + (getArgs().length < 1 ? "" : " " + Arrays.stream(getArgs())
+            + (args == null ? "" : " " + Arrays.stream(args)
                 .map(arg -> "<" + arg + ">")
                 .collect(Collectors.joining(" ")));
     }
