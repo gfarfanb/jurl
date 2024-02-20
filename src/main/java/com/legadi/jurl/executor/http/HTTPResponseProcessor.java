@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -41,6 +43,8 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
 
     private static final String HTTP_PREFIX = "HTTP/";
     private static final String OUTPUT_PREFIX = "OUT/";
+
+    private final Lock lock = new ReentrantLock();
 
     @Override
     public String name() {
@@ -173,33 +177,39 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
             return;
         }
 
-        Map<String, String> outputProperties = new HashMap<>();
-        StringBuilder printableOutput = new StringBuilder();
+        lock.lock();
 
-        request.getOutputMappings().forEach((key, value) -> {
-            value = stringExpander.replaceAllInContent(values, value);
+        try {
+            Map<String, String> outputProperties = new HashMap<>();
+            StringBuilder printableOutput = new StringBuilder();
 
-            values.put(key, value);
-            outputProperties.put(key, value);
-            printableOutput
-                .append("\n")
-                .append(key)
-                .append(" <- ")
-                .append(value);
-        });
+            request.getOutputMappings().forEach((key, value) -> {
+                value = stringExpander.replaceAllInContent(values, value);
 
-        Settings.mergeProperties(stringExpander.getSettings().getEnvironment(), outputProperties);
+                values.put(key, value);
+                outputProperties.put(key, value);
+                printableOutput
+                    .append("\n")
+                    .append(key)
+                    .append(" <- ")
+                    .append(value);
+            });
 
-        Path overridePath = stringExpander.getSettings().getOverrideFilePath();
-        Map<String, String> overrideProperties = loadJsonProperties(overridePath);
+            Settings.mergeProperties(stringExpander.getSettings().getEnvironment(), outputProperties);
 
-        overrideProperties.putAll(outputProperties);
+            Path overridePath = stringExpander.getSettings().getOverrideFilePath();
+            Map<String, String> overrideProperties = loadJsonProperties(overridePath);
 
-        writeJsonFile(overridePath, overrideProperties);
+            overrideProperties.putAll(outputProperties);
 
-        LOGGER.fine("");
-        LOGGER.fine("Output saved [" + stringExpander.getSettings().getEnvironment() + "]: " + overridePath);
-        LOGGER.fine(printableOutput.toString());
+            writeJsonFile(overridePath, overrideProperties);
+
+            LOGGER.fine("");
+            LOGGER.fine("Output saved [" + stringExpander.getSettings().getEnvironment() + "]: " + overridePath);
+            LOGGER.fine(printableOutput.toString());
+        } finally {
+            lock.unlock();
+        }
     }
 
     private Path unzipResponse(HTTPResponseEntry response) {

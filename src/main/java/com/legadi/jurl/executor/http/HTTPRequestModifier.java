@@ -1,39 +1,35 @@
 package com.legadi.jurl.executor.http;
 
-import static com.legadi.jurl.common.CommonUtils.getOrDefault;
 import static com.legadi.jurl.common.CommonUtils.isBlank;
+import static com.legadi.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.jurl.common.CommonUtils.isNotBlank;
-import static com.legadi.jurl.common.ObjectsRegistry.findByType;
 import static com.legadi.jurl.common.ObjectsRegistry.findOrFail;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.executor.RequestModifier;
 import com.legadi.jurl.executor.mixer.BodyMixer;
 import com.legadi.jurl.executor.mixer.BodyMixer.MixerEntry;
 import com.legadi.jurl.model.AssertionEntry;
+import com.legadi.jurl.model.AuthenticationRequest;
 import com.legadi.jurl.model.AuthorizationType;
 import com.legadi.jurl.model.RequestInput;
-import com.legadi.jurl.model.StepEntry;
 import com.legadi.jurl.model.http.HTTPMockEntry;
 import com.legadi.jurl.model.http.HTTPRequestAuthEntry;
 import com.legadi.jurl.model.http.HTTPRequestEntry;
 import com.legadi.jurl.model.http.HTTPRequestFileEntry;
 import com.legadi.jurl.model.http.HTTPResponseEntry;
 import com.legadi.jurl.options.OptionsReader.OptionEntry;
-import com.legadi.jurl.options.SetInputNameOption;
 import com.legadi.jurl.parser.HTTPRequestParser;
 import com.legadi.jurl.parser.RequestParser;
 
@@ -41,34 +37,16 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
 
     public static final String BODY_TEMPORAL_PATH = "http.request.executor/body.temporal.path";
 
-    private static final Set<String> EXECUTED_AUTH_FLOWS = new HashSet<>();
-
     @Override
     public String name() {
         return "http";
     }
 
     @Override
-    public Pair<String, RequestInput<?>> appendAuthenticationDefinition(
-            Settings settings, RequestInput<HTTPRequestEntry> requestInput,
-            List<OptionEntry> options) {
-        String inputName = isNotBlank(settings.getInputName())
-            ? settings.getInputName()
-            : requestInput.getDefaultRequest();
-
-        inputName = getOrDefault(inputName,
-            requestInput.getRequests().keySet().stream().findFirst().orElse(null));
-
-        if(settings.isSkipAuthentication()) {
-            return new Pair<>(inputName, requestInput);
-        }
-
-        HTTPRequestEntry request = requestInput.getRequests().get(inputName);
-
-        if(request == null) {
-            return new Pair<>(inputName, requestInput);
-        }
-
+    public Optional<AuthenticationRequest<HTTPRequestEntry>> getAuthenticationDefinition(
+            String requestName, String requestInputPath, RequestInput<HTTPRequestEntry> requestInput,
+            Settings settings, List<OptionEntry> options) {
+        HTTPRequestEntry request = requestInput.getRequests().get(requestName);
         HTTPRequestEntry api = requestInput.getApi();
 
         if(request.getRequestAuth() == null) {
@@ -78,26 +56,49 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         }
 
         if(request.getRequestAuth() == null) {
-            return new Pair<>(inputName, requestInput);
+            return Optional.empty();
         }
 
         HTTPRequestAuthEntry auth = request.getRequestAuth();
+        requestInputPath = isNotBlank(auth.getRequestInputPath())
+            ? auth.getRequestInputPath() : requestInputPath;
+
+        RequestParser<HTTPRequestEntry> requestParser = findOrFail(RequestParser.class, settings.getRequestType());
+        RequestInput<HTTPRequestEntry> authRequestInput = requestParser.parseInput(settings, Paths.get(requestInputPath));
+
+        if(isEmpty(authRequestInput.getRequests())) {
+            return Optional.empty();
+        }
+
+        String authRequestName = isNotBlank(auth.getInputName())
+            ? auth.getInputName()
+            : authRequestInput.getDefaultRequest();
+        HTTPRequestEntry authRequestEntry;
+
+        if(isBlank(authRequestName)) {
+            authRequestEntry = authRequestInput.getRequests().values().stream().findFirst().get();
+        } else {
+            authRequestEntry = authRequestInput.getRequests().get(authRequestName);
+        }
+
+        if(authRequestEntry == null) {
+            return Optional.empty();
+        }
+
         AuthorizationType authType = AuthorizationType.valueOfOrDefault(auth.getAuthType());
+        AuthenticationRequest<HTTPRequestEntry> authRequest = new AuthenticationRequest<>();
 
-        if(isBlank(auth.getRequestInputPath()) && isBlank(auth.getInputName())) {
-            return new Pair<>(inputName, requestInput);
-        }
+        authRequest.setAuthRequestInputPath(requestInputPath);
+        authRequest.setAuthRequestName(authRequestName);
+        authRequest.setAuthType(authType);
+        authRequest.setAuthOptions(options
+                .stream()
+                .filter(opt -> opt.getLeft().allowedForRequestAuth())
+                .collect(Collectors.toList()));
+        authRequest.setAuthApi(authRequestInput.getApi());
+        authRequest.setAuthRequest(authRequestEntry);
 
-        String authFlowName = "flow:auth/" + authType + "+" + inputName;
-
-        if(EXECUTED_AUTH_FLOWS.contains(authFlowName)) {
-            return new Pair<>(inputName, requestInput);
-        }
-
-        EXECUTED_AUTH_FLOWS.add(authFlowName);
-        requestInput.getFlows().put(authFlowName, createAuthAndRequestFlow(inputName, auth, options));
-
-        return new Pair<>(authFlowName, requestInput);
+        return Optional.of(authRequest);
     }
 
     @Override
@@ -214,43 +215,6 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         if(isNotBlank(overrideRequest.getBodyFilePath())) {
             request.setBodyFilePath(overrideRequest.getBodyFilePath());
         }
-    }
-
-    private List<StepEntry> createAuthAndRequestFlow(String inputName, HTTPRequestAuthEntry auth,
-            List<OptionEntry> options) {
-        List<StepEntry> steps = new LinkedList<>();
-
-        StepEntry authStep = new StepEntry();
-        
-        if(isNotBlank(auth.getRequestInputPath())) {
-            authStep.setRequestInputPath(auth.getRequestInputPath());
-        }
-
-        if(isNotBlank(auth.getInputName())) {
-            List<OptionEntry> authOptions = new LinkedList<>(
-                options
-                    .stream()
-                    .filter(opt -> opt.getLeft().allowedForRequestAuth())
-                    .collect(Collectors.toList())
-            );
-
-            authOptions.add(new OptionEntry(findByType(SetInputNameOption.class),
-                new String[] { auth.getInputName() }));
-            authStep.setOptions(authOptions);
-        }
-
-        steps.add(authStep);
-
-        StepEntry requestStep = new StepEntry();
-        List<OptionEntry> requestOptions = new LinkedList<>(options);
-
-        requestOptions.add(new OptionEntry(findByType(SetInputNameOption.class),
-            new String[] { inputName }));
-        requestStep.setOptions(requestOptions);
-
-        steps.add(requestStep);
-
-        return steps;
     }
 
     private void mergeMockDefinition(HTTPMockEntry api, HTTPMockEntry request) {

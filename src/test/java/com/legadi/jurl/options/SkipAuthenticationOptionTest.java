@@ -22,7 +22,7 @@ public class SkipAuthenticationOptionTest extends OptionTest<SkipAuthenticationO
         UUID authCorrelationId = Assertions.assertDoesNotThrow(
             () -> jurl(
                 "-n", "create",
-                "src/test/resources/auth-request.spec.http"
+                "src/test/resources/skip-auth-request.spec.http"
             ));
 
         Settings authSettings = requestCatcher.get(authCorrelationId, "settings");
@@ -37,7 +37,7 @@ public class SkipAuthenticationOptionTest extends OptionTest<SkipAuthenticationO
             () -> jurl(
                 "-na",
                 "-n", "create",
-                "src/test/resources/auth-request.spec.http"
+                "src/test/resources/skip-auth-request.spec.http"
             ));
 
         Settings skipSettings = requestCatcher.get(skipCorrelationId, "settings");
