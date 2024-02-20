@@ -76,7 +76,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         HTTPRequestEntry authRequestEntry;
 
         if(isBlank(authRequestName)) {
-            authRequestEntry = authRequestInput.getRequests().values().stream().findFirst().get();
+            return Optional.empty();
         } else {
             authRequestEntry = authRequestInput.getRequests().get(authRequestName);
         }

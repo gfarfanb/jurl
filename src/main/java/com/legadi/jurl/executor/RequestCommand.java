@@ -290,36 +290,38 @@ public class RequestCommand {
             }
 
             RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, settings.getRequestType());
-            Optional<?> authRequest = modifier.getAuthenticationIfExists(requestName,
+            Optional<?> authRequestCarrier = modifier.getAuthenticationIfExists(requestName,
                 requestInputPath, requestInput, settings, optionsReader.getOptionEntries());
 
-            if(!authRequest.isPresent()) {
+            if(!authRequestCarrier.isPresent()) {
                 return Optional.empty();
             }
 
-            AuthenticationRequest<? extends RequestEntry<? extends MockEntry>> request = (AuthenticationRequest<? extends RequestEntry<? extends MockEntry>>) authRequest.get();
+            AuthenticationRequest<? extends RequestEntry<? extends MockEntry>> authRequest =
+                (AuthenticationRequest<? extends RequestEntry<? extends MockEntry>>) authRequestCarrier.get();
 
-            if(EXECUTED_AUTH_REQUESTS.contains(request)) {
+            if(EXECUTED_AUTH_REQUESTS.contains(authRequest)) {
                 return Optional.empty();
+            } else {
+                EXECUTED_AUTH_REQUESTS.add(authRequest);
             }
 
             ExecutionIndex index = new ExecutionIndex(0, 1, 1);
 
             LOGGER.fine("Executing authentication request -"
                 + " index=" + index
-                + " inputName=\"" + request.getAuthRequestName() + "\""
-                + " requestInputPath=\"" + request.getAuthRequestInputPath() + "\"");
-            EXECUTED_AUTH_REQUESTS.add(request);
+                + " inputName=\"" + authRequest.getAuthRequestName() + "\""
+                + " requestInputPath=\"" + authRequest.getAuthRequestInputPath() + "\"");
 
-            executeOptions(settings, request.getAuthOptions());
-            modifier.mergeHeader(request.getAuthApi(), request.getAuthRequest());
+            executeOptions(settings, authRequest.getAuthOptions());
+            modifier.mergeHeader(authRequest.getAuthApi(), authRequest.getAuthRequest());
 
             try {
                 return Optional.of(executeRequest(index, new StringExpander(settings),
-                    request.getAuthRequestInputPath(), request.getAuthApi(), request.getAuthRequest()));
+                    authRequest.getAuthRequestInputPath(), authRequest.getAuthApi(), authRequest.getAuthRequest()));
             } catch(CommandException | RequestException ex) {
                 throw new CommandException(
-                    "[" + request.getAuthRequestInputPath() + "/" + request.getAuthRequestName() + "] "
+                    "[" + authRequest.getAuthRequestInputPath() + "/" + authRequest.getAuthRequestName() + "] "
                     + " index=" + index
                     + " - " + ex.getMessage());
             }
