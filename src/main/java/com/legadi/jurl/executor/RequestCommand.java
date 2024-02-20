@@ -137,7 +137,7 @@ public class RequestCommand {
             if(times > 1) {
                 LOGGER.info("Execution completed -"
                     + " inputFile=\"" + requestInputPath + "\""
-                    + " request=\"" + inputNameCarrier.get() + "\""
+                    + " inputName=\"" + inputNameCarrier.get() + "\""
                     + " environment=\"" + settings.getEnvironment() + "\""
                     + " executions=" + stats.getExecutions()
                     + " stats=" + stats);
@@ -162,7 +162,7 @@ public class RequestCommand {
 
         LOGGER.fine("Executing flow -"
             + " index=" + index
-            + " inputName=\"" + flowName + "\""
+            + " flowName=\"" + flowName + "\""
             + " requestInputPath=\"" + requestInputPath + "\"");
 
         ExecutionStats stats = new ExecutionStats(steps.size());
@@ -190,7 +190,7 @@ public class RequestCommand {
         LOGGER.info("Steps completed -"
             + " index=" + index
             + " inputFile=\"" + requestInputPath + "\""
-            + " flow=\"" + flowName + "\""
+            + " flowName=\"" + flowName + "\""
             + " environment=\"" + settings.getEnvironment() + "\""
             + " steps=" + stats.getExecutions()
             + " stats=" + stats);
@@ -252,7 +252,7 @@ public class RequestCommand {
 
         LOGGER.fine("Executing request -"
             + " index=" + index
-            + " inputName=\"" + requestName + "\""
+            + " requestName=\"" + requestName + "\""
             + " requestInputPath=\"" + requestInputPath + "\"");
 
         executeOptions(settings, request.getOptions());
@@ -315,7 +315,7 @@ public class RequestCommand {
 
             LOGGER.fine("Executing authentication request -"
                 + " index=" + index
-                + " inputName=\"" + authRequest.getAuthRequestName() + "\""
+                + " authName=\"" + authRequest.getAuthRequestName() + "\""
                 + " requestInputPath=\"" + authRequest.getAuthRequestInputPath() + "\"");
 
             executeOptions(settings, authRequest.getAuthOptions());
@@ -468,7 +468,7 @@ public class RequestCommand {
         return "Request completed -"
             + " status=" + status
             + " inputFile=\"" + inputPath + "\""
-            + " request=\"" + request.getName() + "\""
+            + " requestName=\"" + request.getName() + "\""
             + (response != null ? " result=\"" + response.getResult() + "\"" : "")
             + " environment=\"" + settings.getEnvironment() + "\""
             + " index=" + index
