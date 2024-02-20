@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
@@ -105,6 +106,7 @@ public class RequestCommand {
             : requestInput.getDefaultRequest();
         boolean isExecutionAsFlow = requestInput.getFlows().containsKey(inputName);
         ExecutionStats stats = new ExecutionStats(times);
+        AtomicReference<String> inputNameCarrier = new AtomicReference<>();
 
         try {
             IntStream.range(0, times)
@@ -116,15 +118,17 @@ public class RequestCommand {
                             executionLevels.nextLevel();
                         }
 
-                        ExecutionStats flowStats = processFlow(index, inputName, requestInputPath, requestInput,
+                        Pair<String, ExecutionStats> flowStats = processFlow(index, inputName, requestInputPath, requestInput,
                             settings.createForNextExecution());
 
-                        stats.count(flowStats.computeStatus());
+                        inputNameCarrier.set(flowStats.getLeft());
+                        stats.count(flowStats.getRight().computeStatus());
                     } else {
-                        ExecutionStats requestStats = processRequest(index, inputName, requestInputPath, requestInput,
+                        Pair<String, ExecutionStats> requestStats = processRequest(index, inputName, requestInputPath, requestInput,
                             settings.createForNextExecution());
 
-                        stats.count(requestStats.computeStatus());
+                        inputNameCarrier.set(requestStats.getLeft());
+                        stats.count(requestStats.getRight().computeStatus());
                     }
                 });
 
@@ -133,7 +137,7 @@ public class RequestCommand {
             if(times > 1) {
                 LOGGER.info("Execution completed -"
                     + " inputFile=\"" + requestInputPath + "\""
-                    + " request=\"" + inputName + "\""
+                    + " request=\"" + inputNameCarrier.get() + "\""
                     + " environment=\"" + settings.getEnvironment() + "\""
                     + " executions=" + stats.getExecutions()
                     + " stats=" + stats);
@@ -141,7 +145,7 @@ public class RequestCommand {
         }
     }
 
-    private ExecutionStats processFlow(ExecutionIndex index, String flowName, String requestInputPath,
+    private Pair<String, ExecutionStats> processFlow(ExecutionIndex index, String flowName, String requestInputPath,
             RequestInput<?> requestInput, Settings settings) {
         if(isEmpty(requestInput.getFlows())) {
             throw new CommandException("No flows are defined in the request file: " + requestInputPath);
@@ -191,7 +195,7 @@ public class RequestCommand {
             + " steps=" + stats.getExecutions()
             + " stats=" + stats);
 
-        return stats;
+        return new Pair<>(flowName, stats);
     }
 
     private Pair<String, List<StepEntry>> pickFlow(String flowName, RequestInput<?> requestInput,
@@ -214,7 +218,7 @@ public class RequestCommand {
         }
     }
 
-    private ExecutionStats processRequest(ExecutionIndex index, String requestName, String requestInputPath,
+    private Pair<String, ExecutionStats> processRequest(ExecutionIndex index, String requestName, String requestInputPath,
             RequestInput<?> requestInput, Settings settings) {
         if(isEmpty(requestInput.getRequests())) {
             throw new CommandException("No requests are defined in the request file: " + requestInputPath);
@@ -261,7 +265,8 @@ public class RequestCommand {
                 requestInputPath, requestInput.getApi(), request);
 
             stats.count(status);
-            return stats;
+
+            return new Pair<>(requestName, stats);
         } catch(CommandException | RequestException ex) {
             throw new CommandException(
                 "[" + requestInputPath + "/" + requestName + "] "
