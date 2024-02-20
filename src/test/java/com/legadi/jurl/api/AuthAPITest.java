@@ -23,5 +23,17 @@ public class AuthAPITest extends EmbeddedAPITest {
         List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, "request");
 
         Assertions.assertEquals(6, requests.size());
+
+        HTTPRequestEntry authRequest = requests.get(0);
+
+        Assertions.assertEquals("authorization", authRequest.getName());
+
+        List<HTTPRequestEntry> createRequests = requests.subList(1, requests.size());
+
+        Assertions.assertEquals(5, createRequests.size());
+
+        for(HTTPRequestEntry request : createRequests) {
+            Assertions.assertEquals("create", request.getName());
+        }
     }
 }
