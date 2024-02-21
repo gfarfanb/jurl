@@ -5,6 +5,7 @@ import static java.util.logging.Level.INFO;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.security.GeneralSecurityException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -19,6 +20,8 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 
 public class Setup {
+
+    private static final AtomicReference<Level> LOG_LEVEL = new AtomicReference<>(INFO);
 
     private Setup() {}
 
@@ -42,11 +45,17 @@ public class Setup {
             }
         }
 
-        Logger rootLogger = LogManager.getLogManager().getLogger("");
-        rootLogger.setLevel(logLevel);
+        LOG_LEVEL.set(logLevel);
 
-        for (Handler handler : rootLogger.getHandlers()) {
-            handler.setLevel(logLevel);
+        Logger rootLogger = LogManager.getLogManager().getLogger("");
+        decorateLogger(rootLogger);
+    }
+
+    private static Logger decorateLogger(Logger logger) {
+        logger.setLevel(LOG_LEVEL.get());
+
+        for (Handler handler : logger.getHandlers()) {
+            handler.setLevel(LOG_LEVEL.get());
             handler.setFormatter(new Formatter() {
 
                 private static final String FORMAT = "%1$s%2$s%n";
@@ -67,6 +76,8 @@ public class Setup {
                 }
             });
         }
+
+        return logger;
     }
 
     public static void setupConnectionstoAcceptAllHosts() throws GeneralSecurityException {

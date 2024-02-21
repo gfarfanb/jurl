@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import javax.net.ssl.HostnameVerifier;
@@ -42,6 +41,16 @@ public class SetupTest {
     }
 
     @Test
+    public void logMessage() {
+        setupLogLevel();
+
+        Logger logger = Logger.getLogger(SetupTest.class.getName());
+
+        logger.log(INFO, "Log message");
+        logger.log(INFO, "Log Message", new RuntimeException());
+    }
+
+    @Test
     public void setupLogLevelValidation() {
         setupLogLevel();
         MODIFIABLE_ENVIRONMENT.put("JURL_LOG_LEVEL", "OFF");
@@ -69,15 +78,6 @@ public class SetupTest {
         MODIFIABLE_ENVIRONMENT.put("JURL_LOG_LEVEL", "INVALID");
         Assertions.assertThrows(IllegalStateException.class,
             () -> setupLogLevel());
-    }
-
-    @Test
-    public void logMessage() {
-        setupLogLevel();
-        Logger rootLogger = LogManager.getLogManager().getLogger("");
-
-        rootLogger.log(INFO, "log-message");
-        rootLogger.log(INFO, "log-message", new RuntimeException());
     }
 
     @Test
