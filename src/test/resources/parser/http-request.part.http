@@ -1,0 +1,6 @@
+
+### [api]
+@protocol = http
+@host = localhost
+@port = {{local.server.port}}
+@basePath = basic

@@ -46,4 +46,14 @@ public class HTTPRequestParserTest {
         Assertions.assertThrows(CommandException.class,
             () -> parser.parseInput(settings, requestPath));
     }
+
+    @Test
+    public void parseRequest() {
+        Settings settings = new Settings();
+        Path requestPath = Paths.get("src/test/resources/parser/http-request.spec.http");
+        HTTPRequestParser parser = new HTTPRequestParser();
+
+        RequestInput<HTTPRequestEntry> requestInput = Assertions.assertDoesNotThrow(
+            () -> parser.parseInput(settings, requestPath));
+    }
 }
