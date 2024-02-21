@@ -117,6 +117,8 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             }
 
             return requestInput;
+        } catch(CommandException ex) {
+            throw ex;
         } catch(IllegalArgumentException | IOException ex) {
             throw new IllegalStateException("Unable to parse input request file: " + requestPath, ex);
         }
@@ -139,6 +141,8 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             }
 
             return requestCarrier.get();
+        } catch(CommandException ex) {
+            throw ex;
         } catch(IllegalArgumentException | IOException ex) {
             throw new IllegalStateException("Unable to process override request file: " + requestPath, ex);
         }
@@ -207,10 +211,6 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     private void decorateRequest(StringExpander stringExpander,
             AtomicReference<HTTPRequestEntry> requestCarrier,
             Map<String, String> config, String line) {
-        if(requestCarrier.get() == null) {
-            throw new CommandException("Request file must define a request section:\n### <request-name>");
-        }
-
         HTTPRequestEntry request = requestCarrier.get();
         Supplier<HTTPRequestFileEntry> fileSupplier = () -> {
             if(request.getRequestFile() == null) {
@@ -253,10 +253,6 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     private void decorateFlow(StringExpander stringExpander,
             AtomicReference<Pair<String, List<StepEntry>>> flowCarrier,
             Map<String, String> config, String line) {
-        if(flowCarrier.get() == null) {
-            throw new CommandException("Request file must define a flow section:\n### [flow] <flow-name>");
-        }
-
         List<StepEntry> steps = flowCarrier.get().getRight();
 
         addStep(stringExpander, steps, config, line);
@@ -309,9 +305,6 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                 String name = null;
 
                 switch(type) {
-                    case "api":
-                        section = Section.API;
-                        break;
                     case "request":
                         HTTPRequestEntry request = new HTTPRequestEntry();
                         name = trim(matcher.group(2));
@@ -336,6 +329,10 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                         flowCarrier.set(flow);
                         requestInput.getFlows().put(name, flowCarrier.get().getRight());
                         section = Section.FLOW;
+                        break;
+                    default:
+                        // type = "api"
+                        section = Section.API;
                         break;
                 }
 
@@ -383,10 +380,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                     config, trim(matcher.group(2))
                 );
 
-                if(isNotBlank(method)) {
-                    request.setMethod(method);
-                }
-
+                request.setMethod(method);
                 request.setUrl(url);
 
                 return null;
@@ -620,6 +614,8 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                 } else if(result instanceof Path) {
                     sourcePath = (Path) result;
                 }
+            } catch(CommandException ex) {
+                throw ex;
             } catch(Exception ex) {
                 throw new IllegalArgumentException(ex);
             }

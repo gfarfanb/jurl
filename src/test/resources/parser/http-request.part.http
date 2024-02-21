@@ -2,5 +2,5 @@
 ### [api]
 @protocol = http
 @host = localhost
-@port = {{local.server.port}}
+@port = 5555
 @basePath = basic
