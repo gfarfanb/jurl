@@ -10,12 +10,12 @@ import com.legadi.jurl.model.AssertionResult;
 import com.legadi.jurl.model.http.HTTPRequestEntry;
 import com.legadi.jurl.model.http.HTTPResponseEntry;
 
-public class HTTPResponseTestProcessor extends HTTPResponseProcessor {
+public class HTTPResponseDummyProcessor extends HTTPResponseProcessor {
 
     private final UUID identifier;
     private final RequestCatcher requestCatcher;
 
-    public HTTPResponseTestProcessor(UUID identifier, RequestCatcher requestCatcher) {
+    public HTTPResponseDummyProcessor(UUID identifier, RequestCatcher requestCatcher) {
         this.identifier = identifier;
         this.requestCatcher = requestCatcher;
     }
@@ -23,7 +23,8 @@ public class HTTPResponseTestProcessor extends HTTPResponseProcessor {
     @Override
     public Optional<AssertionResult> processResponse(Settings settings,
             HTTPRequestEntry request, HTTPResponseEntry response) {
-        return requestCatcher.add(identifier, "assertions-result",
-            super.processResponse(settings, request, response));
+        requestCatcher.add(identifier, "processor-executed", true);
+
+        return requestCatcher.getLast(identifier, "assertions-result");
     }
 }

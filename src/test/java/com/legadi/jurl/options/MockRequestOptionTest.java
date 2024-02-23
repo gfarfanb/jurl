@@ -28,8 +28,8 @@ public class MockRequestOptionTest extends OptionTest<MockRequestOption> {
                 "src/test/resources/mock-request.spec.http"
             ));
 
-        Settings settings = requestCatcher.get(correlationId, "settings");
-        HTTPResponseEntry response = requestCatcher.get(correlationId, "response");
+        Settings settings = requestCatcher.getLast(correlationId, "settings");
+        HTTPResponseEntry response = requestCatcher.getLast(correlationId, "response");
         Map<String, String> responseContent = loadJsonFile(response.getResponsePath().toString(), new TypeToken<Map<String, String>>() {});
 
         Assertions.assertEquals(Boolean.TRUE.toString(), settings.get(PROP_MOCK_REQUEST));

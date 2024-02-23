@@ -30,7 +30,7 @@ public class FlowAPITest extends EmbeddedAPITest {
         String previousExpirationMillis = settings.get("auth.expiration.millis");
 
         UUID authCorrelationId = jurl("-n", "authorization", "src/test/resources/flow.spec.http");
-        Settings authSettings = requestCatcher.get(authCorrelationId, "settings");
+        Settings authSettings = requestCatcher.getLast(authCorrelationId, "settings");
 
         String currentToken = Assertions.assertDoesNotThrow(
             () -> authSettings.get("auth.access.token"));
@@ -43,7 +43,7 @@ public class FlowAPITest extends EmbeddedAPITest {
         jurl("-n", "authorization", "src/test/resources/flow.spec.http");
 
         Optional<AssertionResult> skipped = requestCatcher
-            .<Optional<AssertionResult>>getLastSaved("condition-result")
+            .<Optional<AssertionResult>>getLastSaved("conditions-result")
             .getRight();;
 
         Assertions.assertTrue(skipped.isPresent());
@@ -68,7 +68,7 @@ public class FlowAPITest extends EmbeddedAPITest {
         }
 
         List<Pair<UUID, Optional<AssertionResult>>> assertionRecords = requestCatcher
-            .getLastSaved("assertion-result", 5);
+            .getLastSaved("assertions-result", 5);
 
         for(Pair<UUID, Optional<AssertionResult>> assertionRecord : assertionRecords) {
             Assertions.assertEquals(commonCorrelationId, assertionRecord.getLeft());

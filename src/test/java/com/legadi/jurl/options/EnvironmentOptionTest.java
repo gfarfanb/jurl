@@ -40,8 +40,8 @@ public class EnvironmentOptionTest extends OptionTest<EnvironmentOption> {
                 "src/test/resources/basic-functions.spec.http"
             ));
 
-        Settings envSettings = requestCatcher.get(correlationId, "settings");
-        HTTPResponseEntry response = requestCatcher.get(correlationId, "response");
+        Settings envSettings = requestCatcher.getLast(correlationId, "settings");
+        HTTPResponseEntry response = requestCatcher.getLast(correlationId, "response");
 
         Assertions.assertEquals(env, envSettings.getEnvironment());
         Assertions.assertEquals(env, envSettings.get("env"));

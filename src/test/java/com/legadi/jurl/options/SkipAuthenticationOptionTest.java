@@ -25,7 +25,7 @@ public class SkipAuthenticationOptionTest extends OptionTest<SkipAuthenticationO
                 "src/test/resources/skip-auth-request.spec.http"
             ));
 
-        Settings authSettings = requestCatcher.get(authCorrelationId, "settings");
+        Settings authSettings = requestCatcher.getLast(authCorrelationId, "settings");
         List<HTTPResponseEntry> authResponses = requestCatcher.getAll(authCorrelationId, "response");
 
         Assertions.assertEquals(Boolean.FALSE.toString(), authSettings.get(PROP_SKIP_AUTHENTICATION));
@@ -40,7 +40,7 @@ public class SkipAuthenticationOptionTest extends OptionTest<SkipAuthenticationO
                 "src/test/resources/skip-auth-request.spec.http"
             ));
 
-        Settings skipSettings = requestCatcher.get(skipCorrelationId, "settings");
+        Settings skipSettings = requestCatcher.getLast(skipCorrelationId, "settings");
         List<HTTPResponseEntry> skipResponses = requestCatcher.getAll(skipCorrelationId, "response");
 
         Assertions.assertEquals(Boolean.TRUE.toString(), skipSettings.get(PROP_SKIP_AUTHENTICATION));

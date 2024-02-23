@@ -42,8 +42,8 @@ public class RequestTypeOptionTest extends OptionTest<RequestTypeOption> {
                 "src/test/resources/basic-functions.spec.http"
             ));
 
-        Settings settings = requestCatcher.get(correlationId, "settings");
-        HTTPResponseEntry response = requestCatcher.get(correlationId, "response");
+        Settings settings = requestCatcher.getLast(correlationId, "settings");
+        HTTPResponseEntry response = requestCatcher.getLast(correlationId, "response");
 
         Assertions.assertEquals("https", settings.getRequestType());
         Assertions.assertEquals(201, response.getStatusCode());

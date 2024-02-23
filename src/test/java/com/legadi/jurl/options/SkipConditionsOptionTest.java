@@ -27,9 +27,9 @@ public class SkipConditionsOptionTest extends OptionTest<SkipConditionsOption> {
                 "src/test/resources/basic-functions.spec.http"
             ));
 
-        Settings settings = requestCatcher.get(correlationId, "settings");
-        Optional<AssertionResult> conditionResult = requestCatcher.get(correlationId, "condition-result");
-        HTTPResponseEntry response = requestCatcher.get(correlationId, "response");
+        Settings settings = requestCatcher.getLast(correlationId, "settings");
+        Optional<AssertionResult> conditionResult = requestCatcher.getLast(correlationId, "conditions-result");
+        HTTPResponseEntry response = requestCatcher.getLast(correlationId, "response");
 
         Assertions.assertEquals(Boolean.TRUE.toString(), settings.get(PROP_SKIP_CONDITIONS));
         Assertions.assertFalse(conditionResult.isPresent());

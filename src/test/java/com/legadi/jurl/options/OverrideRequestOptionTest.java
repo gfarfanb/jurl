@@ -30,13 +30,13 @@ public class OverrideRequestOptionTest extends OptionTest<OverrideRequestOption>
                 "src/test/resources/basic-functions.spec.http"
             ));
 
-        Settings settings = requestCatcher.get(correlationId, "settings");
-        HTTPResponseEntry response = requestCatcher.get(correlationId, "response");
+        Settings settings = requestCatcher.getLast(correlationId, "settings");
+        HTTPResponseEntry response = requestCatcher.getLast(correlationId, "response");
 
         Assertions.assertEquals("src/test/resources/basic-functions.body.json", settings.get(PROP_OVERRIDE_REQUEST_FILE_PATH));
         Assertions.assertEquals(201, response.getStatusCode());
 
-        HTTPRequestEntry request = requestCatcher.get(correlationId, "request");
+        HTTPRequestEntry request = requestCatcher.getLast(correlationId, "request");
         Map<String, Object> body = jsonToObject(request.getBodyContent(), new TypeToken<Map<String, Object>>() {});
 
         Assertions.assertEquals("187b03f1-55d5-4d6b-954d-51cf5f20c952", body.get("access"));

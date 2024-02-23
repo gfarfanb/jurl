@@ -29,7 +29,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
-import com.legadi.jurl.common.ExecutionLevels;
+import com.legadi.jurl.common.ExecutionTrace;
 import com.legadi.jurl.common.OutputPathBuilder;
 import com.legadi.jurl.common.Pair;
 import com.legadi.jurl.common.Settings;
@@ -58,18 +58,16 @@ public class RequestCommand {
 
     private static final Logger LOGGER = Logger.getLogger(RequestCommand.class.getName());
 
-    private static final Set<AuthenticationRequest<?>> EXECUTED_AUTH_REQUESTS = new HashSet<>();
-    private static final int FIRST_EXECUTION = 0;
+    private static final int EXECUTE_ONCE = 1;
     private static final int AUTH_AND_REQUEST_EXECUTIONS = 2;
     private static final int ONLY_REQUEST_EXECUTIONS = 1;
 
+    private final Set<AuthenticationRequest<?>> executedAuthRequests = new HashSet<>();
     private final OptionsReader optionsReader;
-    private final ExecutionLevels executionLevels;
     private final Lock lock;
 
     public RequestCommand(String[] args) {
         this.optionsReader = new OptionsReader(args);
-        this.executionLevels = new ExecutionLevels();
         this.lock = new ReentrantLock();
     }
 
@@ -77,7 +75,7 @@ public class RequestCommand {
         Settings settings = new Settings();
 
         executeOptions(settings, optionsReader.getOptionEntries());
-        executeInputPath(settings, optionsReader.getRequestInputPath());
+        executeInputPath(new ExecutionTrace(), settings, optionsReader.getRequestInputPath());
     }
 
     private void executeOptions(Settings settings, List<OptionEntry> optionEntries) {
@@ -92,7 +90,7 @@ public class RequestCommand {
         }
     }
 
-    private ExecutionStatus executeInputPath(Settings settings, String requestInputPath) {
+    private ExecutionStatus executeInputPath(ExecutionTrace trace, Settings settings, String requestInputPath) {
         if(isBlank(requestInputPath)) {
             throw new CommandException("Request input path is null or empty");
         }
@@ -100,7 +98,7 @@ public class RequestCommand {
         RequestParser<?> requestParser = findOrFail(RequestParser.class, settings.getRequestType());
         RequestInput<?> requestInput = requestParser.parseInput(settings, Paths.get(requestInputPath));
 
-        int times = settings.getTimes() > 0 ? settings.getTimes() : FIRST_EXECUTION;
+        int times = settings.getTimes() > 0 ? settings.getTimes() : EXECUTE_ONCE;
         String inputName = isNotBlank(settings.getInputName())
             ? settings.getInputName()
             : requestInput.getDefaultRequest();
@@ -108,23 +106,25 @@ public class RequestCommand {
         ExecutionStats stats = new ExecutionStats(times);
         AtomicReference<String> inputNameCarrier = new AtomicReference<>();
 
+        if(isExecutionAsFlow) {
+            trace.validateExecution(requestInputPath, inputName);
+        }
+
         try {
             IntStream.range(0, times)
                 .parallel()
                 .mapToObj(index -> new ExecutionIndex(index, index + 1, times))
                 .forEach(index -> {
                     if(isExecutionAsFlow) {
-                        if(index.getIndex() == FIRST_EXECUTION) {
-                            executionLevels.nextLevel();
-                        }
-
-                        Pair<String, ExecutionStats> flowStats = processFlow(index, inputName, requestInputPath, requestInput,
+                        Pair<String, ExecutionStats> flowStats = processFlow(index, trace.nextIteration(),
+                            inputName, requestInputPath, requestInput,
                             settings.createForNextExecution());
 
                         inputNameCarrier.set(flowStats.getLeft());
                         stats.count(flowStats.getRight().computeStatus());
                     } else {
-                        Pair<String, ExecutionStats> requestStats = processRequest(index, inputName, requestInputPath, requestInput,
+                        Pair<String, ExecutionStats> requestStats = processRequest(index,
+                            inputName, requestInputPath, requestInput,
                             settings.createForNextExecution());
 
                         inputNameCarrier.set(requestStats.getLeft());
@@ -145,15 +145,10 @@ public class RequestCommand {
         }
     }
 
-    private Pair<String, ExecutionStats> processFlow(ExecutionIndex index, String flowName, String requestInputPath,
+    private Pair<String, ExecutionStats> processFlow(ExecutionIndex index, ExecutionTrace trace,
+            String flowName, String requestInputPath,
             RequestInput<?> requestInput, Settings settings) {
-        if(isEmpty(requestInput.getFlows())) {
-            throw new CommandException("No flows are defined in the request file: " + requestInputPath);
-        }
-
-        Pair<String, List<StepEntry>> flowDefinition = pickFlow(flowName, requestInput, settings);
-        List<StepEntry> steps = flowDefinition.getRight();
-        flowName = flowDefinition.getLeft();
+        List<StepEntry> steps = requestInput.getFlows().get(flowName);
 
         if(isEmpty(steps)) {
             throw new CommandException("No steps defined for the flow: "
@@ -172,7 +167,7 @@ public class RequestCommand {
             Settings stepSettings = settings.createForStep();
 
             try {
-                ExecutionStatus status = executeStep(stepSettings, step, requestInputPath, requestInput);
+                ExecutionStatus status = executeStep(stepSettings, trace, step, requestInputPath, requestInput);
                 stats.count(status);
             } catch(RecursiveCommandException ex) {
                 throw ex;
@@ -198,27 +193,19 @@ public class RequestCommand {
         return new Pair<>(flowName, stats);
     }
 
-    private Pair<String, List<StepEntry>> pickFlow(String flowName, RequestInput<?> requestInput,
-            Settings settings) {
-        if(isBlank(flowName)) {
-            flowName = requestInput.getFlows().keySet().stream().findFirst().get();
-        }
-
-        return new Pair<>(flowName, requestInput.getFlows().get(flowName));
-    }
-
-    private ExecutionStatus executeStep(Settings settings, StepEntry step, String requestInputPath,
-            RequestInput<?> requestInput) {
+    private ExecutionStatus executeStep(Settings settings, ExecutionTrace trace, StepEntry step,
+            String requestInputPath, RequestInput<?> requestInput) {
         executeOptions(settings, step.getOptions());
 
         if(isNotBlank(step.getRequestInputPath())) {
-            return executeInputPath(settings, step.getRequestInputPath());
+            return executeInputPath(trace, settings, step.getRequestInputPath());
         } else {
-            return executeInputPath(settings, requestInputPath);
+            return executeInputPath(trace, settings, requestInputPath);
         }
     }
 
-    private Pair<String, ExecutionStats> processRequest(ExecutionIndex index, String requestName, String requestInputPath,
+    private Pair<String, ExecutionStats> processRequest(ExecutionIndex index,
+            String requestName, String requestInputPath,
             RequestInput<?> requestInput, Settings settings) {
         if(isEmpty(requestInput.getRequests())) {
             throw new CommandException("No requests are defined in the request file: " + requestInputPath);
@@ -232,11 +219,6 @@ public class RequestCommand {
         if(request == null) {
             throw new CommandException("No request defined for name: "
                 + requestName + " - " + requestInputPath);
-        }
-
-        if(index.getIndex() == FIRST_EXECUTION && executionLevels.wasExecuted(requestInputPath, requestName)) {
-            throw new RecursiveCommandException("Request input was already processed: "
-                + requestInputPath + "/" + requestName + " - " + executionLevels.getTrace());
         }
 
         Optional<ExecutionStatus> authStatus = processAuthentication(requestName,
@@ -305,10 +287,10 @@ public class RequestCommand {
             AuthenticationRequest<? extends RequestEntry<? extends MockEntry>> authRequest =
                 (AuthenticationRequest<? extends RequestEntry<? extends MockEntry>>) authRequestCarrier.get();
 
-            if(EXECUTED_AUTH_REQUESTS.contains(authRequest)) {
+            if(executedAuthRequests.contains(authRequest)) {
                 return Optional.empty();
             } else {
-                EXECUTED_AUTH_REQUESTS.add(authRequest);
+                executedAuthRequests.add(authRequest);
             }
 
             ExecutionIndex index = new ExecutionIndex(0, 1, 1);

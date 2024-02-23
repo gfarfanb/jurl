@@ -33,8 +33,8 @@ public class MergeBodyOptionTest extends OptionTest<MergeBodyOption> {
                 "src/test/resources/basic-functions.spec.http"
             ));
 
-        Settings settings = requestCatcher.get(correlationId, "settings");
-        HTTPResponseEntry response = requestCatcher.get(correlationId, "response");
+        Settings settings = requestCatcher.getLast(correlationId, "settings");
+        HTTPResponseEntry response = requestCatcher.getLast(correlationId, "response");
 
         Assertions.assertEquals("json", settings.get(PROP_MERGE_BODY_USING_TYPE));
         Assertions.assertEquals(404, response.getStatusCode());

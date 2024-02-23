@@ -50,7 +50,7 @@ public class BasicFunctionsController {
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.ok(requestCatcher.get(correlationId, "basic-body"));
+        return ResponseEntity.ok(requestCatcher.getLast(correlationId, "basic-body"));
     }
 
     @PutMapping("/body/{correlationId}")

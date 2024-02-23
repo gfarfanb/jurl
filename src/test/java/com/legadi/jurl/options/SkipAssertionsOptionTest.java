@@ -27,9 +27,9 @@ public class SkipAssertionsOptionTest extends OptionTest<SkipAssertionsOption> {
                 "src/test/resources/basic-functions.spec.http"
             ));
 
-        Settings settings = requestCatcher.get(correlationId, "settings");
-        Optional<AssertionResult> assertionResult = requestCatcher.get(correlationId, "assertion-result");
-        HTTPResponseEntry response = requestCatcher.get(correlationId, "response");
+        Settings settings = requestCatcher.getLast(correlationId, "settings");
+        Optional<AssertionResult> assertionResult = requestCatcher.getLast(correlationId, "assertions-result");
+        HTTPResponseEntry response = requestCatcher.getLast(correlationId, "response");
 
         Assertions.assertEquals(Boolean.TRUE.toString(), settings.get(PROP_SKIP_ASSERTIONS));
         Assertions.assertFalse(assertionResult.isPresent());

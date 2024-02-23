@@ -25,8 +25,8 @@ public class OpenEditorOptionTest extends OptionTest<OpenEditorOption> {
                 "src/test/resources/basic-functions.spec.http"
             ));
 
-        Settings settings = requestCatcher.get(correlationId, "settings");
-        HTTPResponseEntry response = requestCatcher.get(correlationId, "response");
+        Settings settings = requestCatcher.getLast(correlationId, "settings");
+        HTTPResponseEntry response = requestCatcher.getLast(correlationId, "response");
 
         Assertions.assertEquals(Boolean.TRUE.toString(), settings.get(PROP_OPEN_OUTPUT_IN_EDITOR));
         Assertions.assertTrue(settings.getOpenEditorCommand().isEmpty());

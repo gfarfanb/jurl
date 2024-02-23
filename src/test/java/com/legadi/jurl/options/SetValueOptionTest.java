@@ -23,8 +23,8 @@ public class SetValueOptionTest extends OptionTest<SetValueOption> {
                 "src/test/resources/basic-functions.spec.http"
             ));
 
-        Settings settings = requestCatcher.get(correlationId, "settings");
-        HTTPResponseEntry response = requestCatcher.get(correlationId, "response");
+        Settings settings = requestCatcher.getLast(correlationId, "settings");
+        HTTPResponseEntry response = requestCatcher.getLast(correlationId, "response");
 
         Assertions.assertTrue(settings.containsUserInput("number"));
         Assertions.assertEquals("5", settings.get("number"));

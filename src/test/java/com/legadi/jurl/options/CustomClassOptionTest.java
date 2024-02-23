@@ -31,7 +31,7 @@ public class CustomClassOptionTest extends OptionTest<CustomClassOption> {
 
         Assertions.assertTrue(assertionFunction instanceof CustomAssertionFunction);
 
-        HTTPResponseEntry response = requestCatcher.get(correlationId, "response");
+        HTTPResponseEntry response = requestCatcher.getLast(correlationId, "response");
 
         Assertions.assertEquals(201, response.getStatusCode());
     }

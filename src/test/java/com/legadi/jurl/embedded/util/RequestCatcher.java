@@ -17,7 +17,7 @@ public class RequestCatcher {
     private final Map<String, List<Pair<UUID, Object>>> history = new HashMap<>();
     private final Lock lock = new ReentrantLock();
 
-    public <T> T get(UUID correlationId, String name) {
+    public <T> T getLast(UUID correlationId, String name) {
         lock.lock();
 
         try {
@@ -25,7 +25,7 @@ public class RequestCatcher {
             if(values.isEmpty()) {
                 throw new IllegalStateException("Caught name not found: " + name);
             }
-            return values.get(0);
+            return values.get(values.size() - 1);
         } finally {
             lock.unlock();
         }

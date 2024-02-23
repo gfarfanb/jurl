@@ -28,9 +28,9 @@ public class CurlPrintOptionTest extends OptionTest<CurlPrintOption> {
                 "src/test/resources/basic-functions.spec.http"
             ));
 
-        Settings settings = requestCatcher.get(correlationId, "settings");
-        Optional<AssertionResult> assertionResult = requestCatcher.get(correlationId, "assertion-result");
-        HTTPResponseEntry response = requestCatcher.get(correlationId, "response");
+        Settings settings = requestCatcher.getLast(correlationId, "settings");
+        Optional<AssertionResult> assertionResult = requestCatcher.getLast(correlationId, "assertions-result");
+        HTTPResponseEntry response = requestCatcher.getLast(correlationId, "response");
 
         Assertions.assertEquals(CURL_ONLY.name(), settings.get(PROP_REQUEST_BEHAVIOUR));
         Assertions.assertFalse(assertionResult.isPresent());
