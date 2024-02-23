@@ -79,7 +79,7 @@ public class HTTPRequestModifierTest {
         requestInput.setApi(new HTTPRequestEntry());
         requestInput.getRequests().put(requestName, request);
 
-        List<OptionEntry> options = new OptionsReader(new String[] { "-s", "a", "a" }).getOptionEntries();
+        List<OptionEntry> options = new OptionsReader(new String[] { "-s", "field", "value" }).getOptionEntries();
         
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
         Optional<?> authRequestCarrier = modifier.getAuthenticationIfExists(requestName, null,

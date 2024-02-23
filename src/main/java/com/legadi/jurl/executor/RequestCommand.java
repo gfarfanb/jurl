@@ -29,6 +29,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
+import com.legadi.jurl.common.ExecutionStats;
 import com.legadi.jurl.common.ExecutionTrace;
 import com.legadi.jurl.common.OutputPathBuilder;
 import com.legadi.jurl.common.Pair;
@@ -42,7 +43,6 @@ import com.legadi.jurl.exception.SkipExecutionException;
 import com.legadi.jurl.model.AssertionResult;
 import com.legadi.jurl.model.AuthenticationRequest;
 import com.legadi.jurl.model.ExecutionIndex;
-import com.legadi.jurl.model.ExecutionStats;
 import com.legadi.jurl.model.ExecutionStatus;
 import com.legadi.jurl.model.HistoryEntry;
 import com.legadi.jurl.model.MockEntry;

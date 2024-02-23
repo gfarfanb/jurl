@@ -118,17 +118,4 @@ public class RequestEntry<T extends MockEntry> {
     public void setOptions(List<OptionEntry> options) {
         this.options = options;
     }
-
-    @Override
-    public String toString() {
-        return "RequestEntry ["
-            + "name=" + name
-            + ", url=" + url
-            + ", protocol=" + protocol
-            + ", host=" + host
-            + ", port=" + port
-            + ", basePath=" + basePath
-            + ", endpoint=" + endpoint
-            + "]";
-    }
 }

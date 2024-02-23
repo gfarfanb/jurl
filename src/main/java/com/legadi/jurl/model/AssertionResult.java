@@ -11,7 +11,6 @@ public class AssertionResult {
     private int failures;
     private boolean passed = true;
 
-
     public AssertionResult(int assertions) {
         this.assertions = assertions;
     }

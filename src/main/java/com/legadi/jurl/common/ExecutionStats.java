@@ -1,14 +1,19 @@
-package com.legadi.jurl.model;
+package com.legadi.jurl.common;
 
 import static com.legadi.jurl.model.ExecutionStatus.PARTIALLY;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
+
+import com.legadi.jurl.model.ExecutionStatus;
 
 public class ExecutionStats {
 
     private final Map<ExecutionStatus, Integer> stats = new HashMap<>();
+    private final Lock lock = new ReentrantLock();
     private final int executions;
 
     public ExecutionStats(int executions) {
@@ -19,9 +24,15 @@ public class ExecutionStats {
         return executions;
     }
 
-    public synchronized void count(ExecutionStatus status) {
-        int count = stats.getOrDefault(status, 0) + 1;
-        stats.put(status, count);
+    public void count(ExecutionStatus status) {
+        lock.lock();
+
+        try {
+            int count = stats.getOrDefault(status, 0) + 1;
+            stats.put(status, count);
+        } finally {
+            lock.unlock();
+        }
     }
 
     public int getCount(ExecutionStatus status) {
@@ -42,7 +53,6 @@ public class ExecutionStats {
     public String toString() {
         String summary = stats.entrySet()
             .stream()
-            .filter(e -> e.getValue().compareTo(0) > 0)
             .map(e -> e.getKey() + "=" + e.getValue())
             .collect(Collectors.joining(" "));
         return "[" + summary + "]";
