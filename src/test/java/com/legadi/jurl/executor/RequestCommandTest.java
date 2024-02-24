@@ -326,13 +326,13 @@ public class RequestCommandTest extends DummyAPITest {
 
     @Test
     public void executeFlow() {
-        String[] args = { "-n", "basicWithAuthorization", "src/test/resources/flow.spec.http" };
+        String[] args = { "-n", "basicCrud", "src/test/resources/flow.spec.http" };
 
         Assertions.assertDoesNotThrow(() -> new RequestCommand(args).execute());
 
         List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, "request");
 
-        Assertions.assertEquals(5, requests.size());
+        Assertions.assertEquals(3, requests.size());
     }
 
     @Test

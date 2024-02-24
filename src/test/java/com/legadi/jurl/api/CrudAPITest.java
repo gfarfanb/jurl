@@ -48,7 +48,7 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertEquals(2, createRequest.getHeaders().size());
         Assertions.assertNull(createRequest.getBodyCharset());
         Assertions.assertFalse(createRequest.getBodyContent().isEmpty());
-        Assertions.assertNull(createRequest.getBodyFilePath());
+        Assertions.assertEquals("src/test/resources/basic-functions.body.json", createRequest.getBodyFilePath());
         Assertions.assertNull(createRequest.getRequestFile());
         Assertions.assertEquals(1, createRequest.getOutputMappings().size());
         Assertions.assertEquals(1, createRequest.getAssertions().size());

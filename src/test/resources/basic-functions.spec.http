@@ -12,6 +12,7 @@ Request-Catcher: {{request.catcher.identifier}}
 ### [request] create
 @method = POST
 @endpoint = /body
+@bodyFilePath = src/test/resources/basic-functions.body.json
 
 {
     "access": "{{UUID:}}",

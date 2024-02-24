@@ -33,7 +33,7 @@ step -s flow.tag {{basic.with.authorization.tag}} -n remove {{spec.path}}/basic-
 
 ### [flow] basicCrud
 
-step -n create src/test/resources/basic-functions.spec.http
+step -n create -mb json src/test/resources/basic-functions.spec.http
 step -n obtain src/test/resources/basic-functions.spec.http
 step -n remove src/test/resources/basic-functions.spec.http
 
