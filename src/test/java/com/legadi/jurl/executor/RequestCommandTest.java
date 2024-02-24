@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -30,6 +31,13 @@ import com.legadi.jurl.model.AssertionResult;
 import com.legadi.jurl.model.http.HTTPRequestEntry;
 
 public class RequestCommandTest extends DummyAPITest {
+
+    @AfterEach
+    public void cleanup() {
+        Map<String, String> properties = new HashMap<>();
+        properties.put("openEditorCommand", "");
+        Settings.mergeProperties("default", properties);
+    }
 
     @Test
     public void executeValidation() {
@@ -249,10 +257,9 @@ public class RequestCommandTest extends DummyAPITest {
     @Test
     public void executeAndOpenEditor() {
         String[] args = { "-oe", "-n", "create", "src/test/resources/basic-functions.spec.http" };
+
         Map<String, String> properties = new HashMap<>();
-
         properties.put("openEditorCommand", "echo test");
-
         Settings.mergeProperties("default", properties);
 
         Assertions.assertDoesNotThrow(() -> new RequestCommand(args).execute());
@@ -266,10 +273,9 @@ public class RequestCommandTest extends DummyAPITest {
     @Test
     public void executeAndOpenEditorEmptyCommand() {
         String[] args = { "-oe", "-n", "create", "src/test/resources/basic-functions.spec.http" };
+
         Map<String, String> properties = new HashMap<>();
-
         properties.put("openEditorCommand", "");
-
         Settings.mergeProperties("default", properties);
 
         Assertions.assertDoesNotThrow(() -> new RequestCommand(args).execute());
@@ -283,10 +289,9 @@ public class RequestCommandTest extends DummyAPITest {
     @Test
     public void executeAndOpenEditorErrorCommand() {
         String[] args = { "-oe", "-n", "create", "src/test/resources/basic-functions.spec.http" };
+
         Map<String, String> properties = new HashMap<>();
-
         properties.put("openEditorCommand", "cmd-not-found arg1");
-
         Settings.mergeProperties("default", properties);
 
         Assertions.assertDoesNotThrow(() -> new RequestCommand(args).execute());

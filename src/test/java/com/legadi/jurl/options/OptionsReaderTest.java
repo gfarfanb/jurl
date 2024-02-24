@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +14,14 @@ import com.legadi.jurl.exception.CommandException;
 
 public class OptionsReaderTest {
 
-    @Test
+    @AfterEach
+    public void cleanup() {
+        Map<String, String> properties = new HashMap<>();
+        properties.put("addOnOptionClasses", "");
+        Settings.mergeProperties("default", properties);
+    }
+    
+@Test
     public void extractOptionsAndRequestInputPathValidation() {
         OptionsReader reader = Assertions.assertDoesNotThrow(
             () -> new OptionsReader(
@@ -56,7 +64,6 @@ public class OptionsReaderTest {
     @Test
     public void registerAddOnOptionsValidation() {
         Map<String, String> properties = new HashMap<>();
-
         properties.put("addOnOptionClasses", SetDateOption.class.getName());
         Settings.mergeProperties("default", properties);
 
@@ -64,24 +71,17 @@ public class OptionsReaderTest {
 
         Assertions.assertEquals(1, readerAddOns.getOptionEntries().size());
         Assertions.assertDoesNotThrow(() -> (SetDateOption) readerAddOns.getOptionEntries().get(0).getLeft());
-
-        properties.put("addOnOptionClasses", "");
-        Settings.mergeProperties("default", properties);
     }
 
     @Test
     public void registerAddOnOptionsEmptyOptions() {
         Map<String, String> properties = new HashMap<>();
-
         properties.put("addOnOptionClasses", " , , , ");
         Settings.mergeProperties("default", properties);
 
         OptionsReader reader = new OptionsReader(new String[] { "++not+found" });
 
         Assertions.assertTrue(reader.getOptionEntries().isEmpty());
-
-        properties.put("addOnOptionClasses", "");
-        Settings.mergeProperties("default", properties);
     }
 
     public static class SetDateOption extends Option {
