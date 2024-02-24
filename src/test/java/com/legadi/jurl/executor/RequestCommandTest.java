@@ -17,43 +17,19 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.google.gson.reflect.TypeToken;
-import com.legadi.jurl.common.ObjectsRegistry;
 import com.legadi.jurl.common.Settings;
-import com.legadi.jurl.embedded.executor.HTTPRequestDummyExecutor;
-import com.legadi.jurl.embedded.executor.HTTPResponseDummyProcessor;
-import com.legadi.jurl.embedded.util.RequestCatcher;
-import com.legadi.jurl.embedded.util.RequestCatcherManager;
+import com.legadi.jurl.embedded.DummyAPITest;
 import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.exception.InvalidAssertionsFoundException;
 import com.legadi.jurl.exception.RecursiveCommandException;
 import com.legadi.jurl.exception.SkipExecutionException;
 import com.legadi.jurl.model.AssertionResult;
 import com.legadi.jurl.model.http.HTTPRequestEntry;
-import com.legadi.jurl.model.http.HTTPResponseEntry;
 
-public class RequestCommandTest {
-
-    private final UUID correlationId = UUID.randomUUID();
-    private final RequestCatcher requestCatcher = RequestCatcherManager.getCatcher(correlationId.toString());
-
-    @BeforeEach
-    public void setup() {
-        ObjectsRegistry.register(RequestExecutor.class, 
-            HTTPRequestDummyExecutor.class, correlationId, requestCatcher);
-        ObjectsRegistry.register(ResponseProcessor.class,
-            HTTPResponseDummyProcessor.class, correlationId, requestCatcher);
-
-        requestCatcher.add(correlationId, "conditions-result", Optional.empty());
-        requestCatcher.add(correlationId, "response", new HTTPResponseEntry());
-        requestCatcher.add(correlationId, "assertions-result", Optional.empty());
-        requestCatcher.add(correlationId, "request-with-exception", "");
-        requestCatcher.add(correlationId, "executor-executed", false);
-        requestCatcher.add(correlationId, "processor-executed", false);
-    }
+public class RequestCommandTest extends DummyAPITest {
 
     @Test
     public void executeValidation() {
@@ -132,6 +108,7 @@ public class RequestCommandTest {
         String[] args = { "-n", "create", "src/test/resources/basic-functions.spec.http" };
 
         requestCatcher.add(correlationId, "request-with-exception", "create");
+        requestCatcher.add(correlationId, "request-with-exception-throw", new CommandException("create"));
 
         Assertions.assertThrows(CommandException.class,
             () -> new RequestCommand(args).execute());
@@ -173,6 +150,7 @@ public class RequestCommandTest {
         String[] args = { "src/test/resources/auth-request.spec.http" };
 
         requestCatcher.add(correlationId, "request-with-exception", "authorization");
+        requestCatcher.add(correlationId, "request-with-exception-throw", new CommandException("authorization"));
 
         Assertions.assertThrows(CommandException.class,
             () -> new RequestCommand(args).execute());

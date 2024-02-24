@@ -10,11 +10,16 @@ import static com.legadi.jurl.model.RequestBehaviour.PRINT_ONLY;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.legadi.jurl.common.ObjectsRegistry;
 import com.legadi.jurl.common.Settings;
+import com.legadi.jurl.embedded.executor.HTTPResponseTestProcessor;
+import com.legadi.jurl.embedded.util.RequestCatcherManager;
 import com.legadi.jurl.executor.ResponseProcessor;
 import com.legadi.jurl.model.AssertionEntry;
 import com.legadi.jurl.model.AssertionResult;
@@ -22,6 +27,13 @@ import com.legadi.jurl.model.http.HTTPRequestEntry;
 import com.legadi.jurl.model.http.HTTPResponseEntry;
 
 public class HTTPResponseProcessorTest {
+
+    @BeforeEach
+    public void setup() {
+        ObjectsRegistry.register(ResponseProcessor.class,
+            HTTPResponseTestProcessor.class, UUID.randomUUID(),
+            RequestCatcherManager.getCatcher(UUID.randomUUID().toString()));
+    }
 
     @Test
     public void processResponseValidation() {

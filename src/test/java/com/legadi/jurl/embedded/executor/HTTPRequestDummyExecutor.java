@@ -5,7 +5,6 @@ import java.util.UUID;
 
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.embedded.util.RequestCatcher;
-import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.executor.http.HTTPRequestExecutor;
 import com.legadi.jurl.model.AssertionResult;
@@ -37,7 +36,7 @@ public class HTTPRequestDummyExecutor extends HTTPRequestExecutor {
         requestCatcher.add(identifier, "request", request);
 
         if(request.getName().equals(requestCatcher.getLast(identifier, "request-with-exception"))) {
-            throw new CommandException("Error on executing: " + request.getName());
+            throw requestCatcher.<RuntimeException>getLast(identifier, "request-with-exception-throw");
         }
 
         return requestCatcher.getLast(identifier, "response");

@@ -1,6 +1,7 @@
 package com.legadi.jurl.executor.reader;
 
 import static com.legadi.jurl.common.JsonUtils.loadJsonFile;
+import static com.legadi.jurl.common.ObjectsRegistry.findOrFail;
 
 import java.math.BigDecimal;
 import java.nio.file.Path;
@@ -21,6 +22,13 @@ import com.legadi.jurl.exception.CommandException;
 public class JsonOutputReaderTest {
 
     @Test
+    public void isPrintableValidation() {
+        OutputReader outputReader = findOrFail(OutputReader.class, "application/json");
+
+        Assertions.assertTrue(outputReader.isPrintable());
+    }
+
+    @Test
     public void mapOutputParams() {
         Path sourcePath = Paths.get("src/test/resources/json-object.output.json");
         Set<String> outputParams = new HashSet<>(Arrays.asList(
@@ -39,7 +47,9 @@ public class JsonOutputReaderTest {
             "OUT/tags[10]",
             "OUT/empty[3]"
         ));
-        Map<String, String> output = new JsonOutputReader().apply(sourcePath, null, outputParams, "OUT/");
+
+        OutputReader outputReader = findOrFail(OutputReader.class, "application/json");
+        Map<String, String> output = outputReader.apply(sourcePath, null, outputParams, "OUT/");
 
         Assertions.assertEquals("8ae5e442-28a6-jk3a-9412-e3kw20b3ea33", output.get("OUT/id"));
         Assertions.assertEquals("Json Output", output.get("OUT/name"));
@@ -74,7 +84,9 @@ public class JsonOutputReaderTest {
             "OUT/elements[1].history[3]",
             "OUT/elements[2].history"
         ));
-        Map<String, String> output = new JsonOutputReader().apply(sourcePath, outputPath, outputParams, "OUT/");
+
+        OutputReader outputReader = findOrFail(OutputReader.class, "application/json");
+        Map<String, String> output = outputReader.apply(sourcePath, outputPath, outputParams, "OUT/");
 
         Map<String, Object> element0 = loadJsonFile(output.get("OUT/elements[0]"), new TypeToken<Map<String, Object>>() {});
         Assertions.assertEquals("Alpha", element0.get("record"));
@@ -102,7 +114,9 @@ public class JsonOutputReaderTest {
             "OUT/[last]",
             "OUT/[4]"
         ));
-        Map<String, String> output = new JsonOutputReader().apply(sourcePath, outputPath, outputParams, "OUT/");
+
+        OutputReader outputReader = findOrFail(OutputReader.class, "application/json");
+        Map<String, String> output = outputReader.apply(sourcePath, outputPath, outputParams, "OUT/");
 
         Map<String, Object> first = loadJsonFile(output.get("OUT/[first]").toString(), new TypeToken<Map<String, Object>>() {});
         Assertions.assertEquals("2023-09-27T07:49:30.02", first.get("timestamp"));
@@ -148,7 +162,9 @@ public class JsonOutputReaderTest {
             "OUT/[last]",
             "OUT/[4]"
         ));
-        Map<String, String> output = new JsonOutputReader().apply(sourcePath, null, outputParams, "OUT/");
+
+        OutputReader outputReader = findOrFail(OutputReader.class, "application/json");
+        Map<String, String> output = outputReader.apply(sourcePath, null, outputParams, "OUT/");
 
         Assertions.assertEquals("123.23", output.get("OUT/[first]"));
         Assertions.assertEquals("123.23", output.get("OUT/[0]"));
@@ -170,7 +186,8 @@ public class JsonOutputReaderTest {
             "OUT/missing"
         ));
 
-        Map<String, String> output = new JsonOutputReader().apply(sourcePath, null, outputParams, "OUT/");
+        OutputReader outputReader = findOrFail(OutputReader.class, "application/json");
+        Map<String, String> output = outputReader.apply(sourcePath, null, outputParams, "OUT/");
 
         Assertions.assertNull(output.get("OUT/missing"));
     }
@@ -182,9 +199,10 @@ public class JsonOutputReaderTest {
             "OUT/missing.element"
         ));
 
-        Assertions.assertThrows(CommandException.class, () ->
-            new JsonOutputReader().apply(sourcePath, null, outputParams, "OUT/")
-        );
+        OutputReader outputReader = findOrFail(OutputReader.class, "application/json");
+
+        Assertions.assertThrows(CommandException.class,
+            () -> outputReader.apply(sourcePath, null, outputParams, "OUT/"));
     }
 
     @Test
@@ -194,7 +212,8 @@ public class JsonOutputReaderTest {
             "OUT/__size__"
         ));
 
-        Map<String, String> output = new JsonOutputReader().apply(sourcePath, null, outputParams, "OUT/");
+        OutputReader outputReader = findOrFail(OutputReader.class, "application/json");
+        Map<String, String> output = outputReader.apply(sourcePath, null, outputParams, "OUT/");
 
         Assertions.assertEquals("5", output.get("OUT/__size__"));
     }
@@ -207,7 +226,8 @@ public class JsonOutputReaderTest {
             "OUT/elements[first].history/__size__"
         ));
 
-        Map<String, String> output = new JsonOutputReader().apply(sourcePath, null, outputParams, "OUT/");
+        OutputReader outputReader = findOrFail(OutputReader.class, "application/json");
+        Map<String, String> output = outputReader.apply(sourcePath, null, outputParams, "OUT/");
 
         Assertions.assertEquals("3", output.get("OUT/elements/__size__"));
         Assertions.assertEquals("2", output.get("OUT/elements[first].history/__size__"));
@@ -220,9 +240,10 @@ public class JsonOutputReaderTest {
             "OUT//__size__"
         ));
 
-        Assertions.assertThrows(CommandException.class, () ->
-            new JsonOutputReader().apply(sourcePath, null, outputParams, "OUT/")
-        );
+        OutputReader outputReader = findOrFail(OutputReader.class, "application/json");
+
+        Assertions.assertThrows(CommandException.class,
+            () -> outputReader.apply(sourcePath, null, outputParams, "OUT/"));
     }
 
     @Test
@@ -232,9 +253,10 @@ public class JsonOutputReaderTest {
             "OUT/elements__size__"
         ));
 
-        Assertions.assertThrows(CommandException.class, () ->
-            new JsonOutputReader().apply(sourcePath, null, outputParams, "OUT/")
-        );
+        OutputReader outputReader = findOrFail(OutputReader.class, "application/json");
+
+        Assertions.assertThrows(CommandException.class,
+            () -> outputReader.apply(sourcePath, null, outputParams, "OUT/"));
     }
 
     @Test
@@ -244,9 +266,10 @@ public class JsonOutputReaderTest {
             "OUT/object/__size__"
         ));
 
-        Assertions.assertThrows(CommandException.class, () ->
-            new JsonOutputReader().apply(sourcePath, null, outputParams, "OUT/")
-        );
+        OutputReader outputReader = findOrFail(OutputReader.class, "application/json");
+
+        Assertions.assertThrows(CommandException.class,
+            () -> outputReader.apply(sourcePath, null, outputParams, "OUT/"));
     }
 
     @Test
@@ -256,9 +279,10 @@ public class JsonOutputReaderTest {
             "OUT/missing.element/__size__"
         ));
 
-        Assertions.assertThrows(CommandException.class, () ->
-            new JsonOutputReader().apply(sourcePath, null, outputParams, "OUT/")
-        );
+        OutputReader outputReader = findOrFail(OutputReader.class, "application/json");
+
+        Assertions.assertThrows(CommandException.class,
+            () -> outputReader.apply(sourcePath, null, outputParams, "OUT/"));
     }
 
     @Test
@@ -268,26 +292,29 @@ public class JsonOutputReaderTest {
             "OUT/[begin]"
         ));
 
-        Assertions.assertThrows(CommandException.class, () ->
-            new JsonOutputReader().apply(sourcePath, null, outputParams, "OUT/")
-        );
+        OutputReader outputReader = findOrFail(OutputReader.class, "application/json");
+
+        Assertions.assertThrows(CommandException.class,
+            () -> outputReader.apply(sourcePath, null, outputParams, "OUT/"));
     }
 
     @Test
     public void malformedJson() {
         Path sourcePath = Paths.get("src/test/resources/json-malformed.output.json");
 
-        Assertions.assertThrows(IllegalStateException.class, () ->
-            new JsonOutputReader().apply(sourcePath, null, null, "OUT/")
-        );
+        OutputReader outputReader = findOrFail(OutputReader.class, "application/json");
+
+        Assertions.assertThrows(IllegalStateException.class,
+            () -> outputReader.apply(sourcePath, null, null, "OUT/"));
     }
 
     @Test
     public void notExistsJson() {
         Path sourcePath = Paths.get("src/test/resources/json-not-exists.output.json");
 
-        Assertions.assertThrows(IllegalStateException.class, () ->
-            new JsonOutputReader().apply(sourcePath, null, null, "OUT/")
-        );
+        OutputReader outputReader = findOrFail(OutputReader.class, "application/json");
+
+        Assertions.assertThrows(IllegalStateException.class,
+            () -> outputReader.apply(sourcePath, null, null, "OUT/"));
     }
 }

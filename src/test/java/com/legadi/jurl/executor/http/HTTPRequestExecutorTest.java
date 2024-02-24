@@ -23,11 +23,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.legadi.jurl.common.ObjectsRegistry;
 import com.legadi.jurl.common.OutputPathBuilder;
 import com.legadi.jurl.common.Settings;
 import com.legadi.jurl.embedded.EmbeddedAPITest;
+import com.legadi.jurl.embedded.executor.HTTPRequestTestExecutor;
 import com.legadi.jurl.exception.CommandException;
 import com.legadi.jurl.exception.RequestException;
 import com.legadi.jurl.executor.RequestExecutor;
@@ -40,6 +43,12 @@ import com.legadi.jurl.model.http.HTTPRequestFileEntry;
 import com.legadi.jurl.model.http.HTTPResponseEntry;
 
 public class HTTPRequestExecutorTest extends EmbeddedAPITest {
+
+    @BeforeEach
+    public void setup() {
+        ObjectsRegistry.register(RequestExecutor.class, 
+            HTTPRequestTestExecutor.class, UUID.randomUUID(), requestCatcher);
+    }
 
     @Test
     public void requestTypeValidation() {

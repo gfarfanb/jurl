@@ -3,6 +3,7 @@ package com.legadi.jurl;
 import static com.legadi.jurl.common.Setup.setupConnectionstoAcceptAllHosts;
 import static com.legadi.jurl.common.Setup.setupLogLevel;
 import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.FINE;
 
 import java.util.logging.Logger;
 
@@ -22,16 +23,12 @@ public class JurlApplication {
             setupConnectionstoAcceptAllHosts();
 
             new RequestCommand(args).execute();
-        } catch(SkipExecutionException ex) {
-            System.exit(0);
-        } catch(InvalidAssertionsFoundException ex) {
-            System.exit(1);
+        } catch(SkipExecutionException | InvalidAssertionsFoundException ex) {
+            LOGGER.log(FINE, ex.getMessage(), ex);
         } catch(CommandException | RequestException ex) {
             LOGGER.log(SEVERE, ex.getMessage());
-            System.exit(1);
         } catch(Exception ex) {
             LOGGER.log(SEVERE, ex.getMessage(), ex);
-            System.exit(1);
         }
     }
 }
