@@ -33,12 +33,10 @@ step -s flow.tag {{basic.with.authorization.tag}} -n remove {{spec.path}}/basic-
 
 ### [flow] basicCrud
 
-@set-spec.path = {{workspacePath}}/src/test/resources
-
-step -s flow.tag {{basic.with.authorization.tag}} -n create {{spec.path}}/basic-functions.spec.http
-step -s flow.tag {{basic.with.authorization.tag}} -n obtain {{spec.path}}/basic-functions.spec.http
-step -s flow.tag {{basic.with.authorization.tag}} -n update -mb json {{spec.path}}/basic-functions.spec.http
-step -s flow.tag {{basic.with.authorization.tag}} -n remove {{spec.path}}/basic-functions.spec.http
+step -n create src/test/resources/basic-functions.spec.http
+step -n obtain src/test/resources/basic-functions.spec.http
+step -n update -mb json src/test/resources/basic-functions.spec.http
+step -n remove src/test/resources/basic-functions.spec.http
 
 
 ### [flow] invalidRecursiveFlow
