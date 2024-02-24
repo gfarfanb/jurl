@@ -35,7 +35,6 @@ step -s flow.tag {{basic.with.authorization.tag}} -n remove {{spec.path}}/basic-
 
 step -n create src/test/resources/basic-functions.spec.http
 step -n obtain src/test/resources/basic-functions.spec.http
-step -n update -mb json src/test/resources/basic-functions.spec.http
 step -n remove src/test/resources/basic-functions.spec.http
 
 

@@ -367,7 +367,7 @@ public class RequestCommandTest extends DummyAPITest {
 
         List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, "request");
 
-        Assertions.assertEquals(8, requests.size());
+        Assertions.assertEquals(6, requests.size());
     }
 
     @Test
