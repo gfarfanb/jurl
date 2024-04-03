@@ -3,7 +3,7 @@ package com.legadi.jurl.options;
 import static com.legadi.jurl.common.ObjectsRegistry.getAllRegisteredByClassOf;
 import static com.legadi.jurl.common.ObjectsRegistry.getAllRegisteredByNameOf;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
@@ -67,7 +67,7 @@ public class HelpOption extends Option {
     }
 
     private void appendOptions(List<Option> options, StringBuilder helpMessage) {
-        List<Option> opts = new LinkedList<>(options);
+        List<Option> opts = new ArrayList<>(options);
         int maxLength = options.stream()
             .map(Option::toString)
             .mapToInt(String::length)

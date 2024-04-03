@@ -8,7 +8,6 @@ import static com.legadi.jurl.common.LoaderUtils.typeOf;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -108,7 +107,7 @@ public class ObjectsRegistry {
     private static final Map<Class<?>, List<Pair<Evaluable, Spec>>> EVALUABLES = new HashMap<>();
     private static final Map<Class<?>, Map<String, Spec>> NAMED = new HashMap<>();
 
-    private static final List<Pair<Evaluable, Spec>> EMTPY_EVALUABLES = new LinkedList<>();
+    private static final List<Pair<Evaluable, Spec>> EMTPY_EVALUABLES = new ArrayList<>();
     private static final Map<String, Spec> EMTPY_NAMED = new HashMap<>();
 
     private static final Set<Class<?>> GROUP_CLASSES = new HashSet<>();
@@ -308,7 +307,7 @@ public class ObjectsRegistry {
         List<Pair<Evaluable, Spec>> entries = EVALUABLES.get(groupClass);
 
         if(entries == null) {
-            entries = new LinkedList<>();
+            entries = new ArrayList<>();
             EVALUABLES.put(groupClass, entries);
         }
 

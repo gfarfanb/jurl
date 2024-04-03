@@ -1,7 +1,7 @@
 package com.legadi.jurl.model;
 
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +28,7 @@ public class RequestInputTest {
         model.setRequests(requests);
 
         Map<String, List<StepEntry>> flows = new HashMap<>();
-        List<StepEntry> steps = new LinkedList<>();
+        List<StepEntry> steps = new ArrayList<>();
         steps.add(new StepEntry());
         flows.put("createWithAuth", steps);
         model.setFlows(flows);

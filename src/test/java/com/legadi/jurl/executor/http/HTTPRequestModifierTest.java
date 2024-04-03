@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -53,7 +53,7 @@ public class HTTPRequestModifierTest {
 
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
         Optional<?> authRequestCarrier = modifier.getAuthenticationIfExists(requestName, null,
-            requestInput, settings, new LinkedList<>());
+            requestInput, settings, new ArrayList<>());
 
         Assertions.assertFalse(authRequestCarrier.isPresent());
     }
@@ -119,7 +119,7 @@ public class HTTPRequestModifierTest {
 
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
         Optional<?> authRequestCarrier = modifier.getAuthenticationIfExists(requestName, "src/test/resources/flow.spec.http",
-            requestInput, settings, new LinkedList<>());
+            requestInput, settings, new ArrayList<>());
 
         Assertions.assertFalse(authRequestCarrier.isPresent());
     }
@@ -150,7 +150,7 @@ public class HTTPRequestModifierTest {
 
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
         Optional<?> authRequestCarrier = modifier.getAuthenticationIfExists(requestName, "src/test/resources/flow.spec.http",
-            requestInput, settings, new LinkedList<>());
+            requestInput, settings, new ArrayList<>());
 
         Assertions.assertTrue(authRequestCarrier.isPresent());
 
@@ -207,7 +207,7 @@ public class HTTPRequestModifierTest {
 
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
         Optional<?> authRequestCarrier = modifier.getAuthenticationIfExists(requestName, "src/test/resources/flow.spec.http",
-            requestInput, settings, new LinkedList<>());
+            requestInput, settings, new ArrayList<>());
 
         Assertions.assertTrue(authRequestCarrier.isPresent());
 
@@ -248,7 +248,7 @@ public class HTTPRequestModifierTest {
 
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
         Optional<?> authRequestCarrier = modifier.getAuthenticationIfExists(requestName, null,
-            requestInput, settings, new LinkedList<>());
+            requestInput, settings, new ArrayList<>());
 
         Assertions.assertFalse(authRequestCarrier.isPresent());
     }
@@ -273,7 +273,7 @@ public class HTTPRequestModifierTest {
 
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
         Optional<?> authRequestCarrier = modifier.getAuthenticationIfExists(requestName, null,
-            requestInput, settings, new LinkedList<>());
+            requestInput, settings, new ArrayList<>());
 
         Assertions.assertFalse(authRequestCarrier.isPresent());
     }

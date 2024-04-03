@@ -12,10 +12,10 @@ import static com.legadi.jurl.common.WriterUtils.printFile;
 import static java.util.logging.Level.FINE;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -153,7 +153,7 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
                 request.getAssertions()
                     .parallelStream()
                     .map(assertion -> {
-                        List<String> elements = new LinkedList<>();
+                        List<String> elements = new ArrayList<>();
                         elements.add(assertion.getAssertionClass());
                         elements.add(assertion.getMessage());
                         elements.addAll(Arrays.asList(assertion.getArgs()));

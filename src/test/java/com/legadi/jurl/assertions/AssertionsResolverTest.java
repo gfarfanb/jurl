@@ -3,7 +3,7 @@ package com.legadi.jurl.assertions;
 import static com.legadi.jurl.assertions.AssertionsResolver.evaluate;
 
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -23,7 +23,7 @@ public class AssertionsResolverTest {
     @Test
     public void evaluateValidation() {
         Settings settings = new Settings();
-        List<AssertionEntry> entries = new LinkedList<>();
+        List<AssertionEntry> entries = new ArrayList<>();
         entries.add(instance("EQUALS_TO", "test", "test"));
         entries.add(instance("==", "test", "test"));
 
@@ -40,7 +40,7 @@ public class AssertionsResolverTest {
     @Test
     public void evaluateWithValues() {
         Settings settings = new Settings();
-        List<AssertionEntry> entries = new LinkedList<>();
+        List<AssertionEntry> entries = new ArrayList<>();
         entries.add(instance("EQUALS_TO", "{{param}}", "test"));
         entries.add(instance("==", "test", "{{param}}"));
 
@@ -60,7 +60,7 @@ public class AssertionsResolverTest {
     @Test
     public void evaluateFailed() {
         Settings settings = new Settings();
-        List<AssertionEntry> entries = new LinkedList<>();
+        List<AssertionEntry> entries = new ArrayList<>();
         entries.add(instance("EQUALS_TO", "test", "test1"));
 
         Optional<AssertionResult> result = Assertions.assertDoesNotThrow(
@@ -76,7 +76,7 @@ public class AssertionsResolverTest {
     @Test
     public void evaluateNotFound() {
         Settings settings = new Settings();
-        List<AssertionEntry> entries = new LinkedList<>();
+        List<AssertionEntry> entries = new ArrayList<>();
         entries.add(instance("NOT_FOUND", "test", "test"));
 
         Assertions.assertThrows(CommandException.class,
@@ -86,7 +86,7 @@ public class AssertionsResolverTest {
     @Test
     public void evaluateWithMessage() {
         Settings settings = new Settings();
-        List<AssertionEntry> entries = new LinkedList<>();
+        List<AssertionEntry> entries = new ArrayList<>();
         AssertionEntry entry = instance("EQUALS_TO", "test", "test");
 
         entry.setMessage("Test");
@@ -106,7 +106,7 @@ public class AssertionsResolverTest {
     @Test
     public void evaluateWithAssertionClass() {
         Settings settings = new Settings();
-        List<AssertionEntry> entries = new LinkedList<>();
+        List<AssertionEntry> entries = new ArrayList<>();
         AssertionEntry entry = instance(null);
 
         entry.setAssertionClass(ResolverAssertionFunction.class.getName());

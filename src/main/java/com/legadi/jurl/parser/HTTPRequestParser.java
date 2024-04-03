@@ -17,7 +17,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -325,7 +324,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                             throw new CommandException("Flow name is null or empty");
                         }
 
-                        Pair<String, List<StepEntry>> flow = new Pair<>(name, new LinkedList<>());
+                        Pair<String, List<StepEntry>> flow = new Pair<>(name, new ArrayList<>());
                         flowCarrier.set(flow);
                         requestInput.getFlows().put(name, flowCarrier.get().getRight());
                         section = Section.FLOW;

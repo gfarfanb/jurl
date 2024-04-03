@@ -1,12 +1,12 @@
 package com.legadi.jurl.model;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 public class AssertionResult {
 
     private final int assertions;
-    private final List<String> failedMessages = new LinkedList<>();
+    private final List<String> failedMessages = new ArrayList<>();
 
     private int failures;
     private boolean passed = true;

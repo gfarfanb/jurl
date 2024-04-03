@@ -1,7 +1,7 @@
 package com.legadi.jurl.embedded.util;
 
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -38,7 +38,7 @@ public class RequestCatcher {
         try {
             return (List<T>) data
                 .getOrDefault(correlationId, new HashMap<>())
-                .getOrDefault(name, new LinkedList<>());
+                .getOrDefault(name, new ArrayList<>());
         } finally {
             lock.unlock();
         }
@@ -55,13 +55,13 @@ public class RequestCatcher {
                 data.put(correlationId, new HashMap<>());
             }
             if(!data.get(correlationId).containsKey(name)) {
-                data.get(correlationId).put(name, new LinkedList<>());
+                data.get(correlationId).put(name, new ArrayList<>());
             }
             data.get(correlationId).get(name).add(value);
 
             List<Pair<UUID, Object>> records = history.get(name);
             if(records == null) {
-                records = new LinkedList<>();
+                records = new ArrayList<>();
             }
             records.add(new Pair<>(correlationId, value));
             history.put(name, records);
@@ -88,7 +88,7 @@ public class RequestCatcher {
 
         try {
             Map<String, List<Object>> dataByType = data.getOrDefault(correlationId, new HashMap<>());
-            List<T> values = (List<T>) dataByType.getOrDefault(name, new LinkedList<>());
+            List<T> values = (List<T>) dataByType.getOrDefault(name, new ArrayList<>());
             dataByType.remove(name);
             return !values.isEmpty() ? values.get(0) : null;
         } finally {

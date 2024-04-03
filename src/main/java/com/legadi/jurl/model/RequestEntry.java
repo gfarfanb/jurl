@@ -1,7 +1,7 @@
 package com.legadi.jurl.model;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -18,10 +18,10 @@ public class RequestEntry<T extends MockEntry> {
     protected String endpoint;
     protected T mockDefinition;
 
-    protected List<AssertionEntry> conditions = new LinkedList<>();
+    protected List<AssertionEntry> conditions = new ArrayList<>();
     protected Map<String, String> outputMappings = new LinkedHashMap<>();
-    protected List<AssertionEntry> assertions = new LinkedList<>();
-    protected List<OptionEntry> options = new LinkedList<>();
+    protected List<AssertionEntry> assertions = new ArrayList<>();
+    protected List<OptionEntry> options = new ArrayList<>();
 
     public String getName() {
         return name;

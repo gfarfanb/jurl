@@ -1,6 +1,6 @@
 package com.legadi.jurl.common;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -11,7 +11,7 @@ public class ExecutionTrace {
 
     private static final String TAB = "    ";
 
-    private final List<String> trace = new LinkedList<>();
+    private final List<String> trace = new ArrayList<>();
     private final Lock lock = new ReentrantLock();
 
     public ExecutionTrace nextIteration() {

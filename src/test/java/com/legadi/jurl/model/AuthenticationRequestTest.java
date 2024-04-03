@@ -4,7 +4,7 @@ import static com.legadi.jurl.model.AuthorizationType.BASIC;
 import static com.legadi.jurl.model.AuthorizationType.TOKEN;
 
 import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -27,7 +27,7 @@ public class AuthenticationRequestTest {
         model.setAuthApi(new HTTPRequestEntry());
         model.setAuthRequest(new HTTPRequestEntry());
 
-        List<OptionEntry> options = new LinkedList<>();
+        List<OptionEntry> options = new ArrayList<>();
         options.add(new OptionEntry(new SetValueOption(), new String[] { "field", "value" }));
         model.setAuthOptions(options);
 

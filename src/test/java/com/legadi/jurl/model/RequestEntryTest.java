@@ -1,7 +1,7 @@
 package com.legadi.jurl.model;
 
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -27,7 +27,7 @@ public class RequestEntryTest {
         model.setEndpoint("body");
         model.setMockDefinition(new HTTPMockEntry());
 
-        List<AssertionEntry> conditions = new LinkedList<>();
+        List<AssertionEntry> conditions = new ArrayList<>();
         conditions.add(new AssertionEntry());
         model.setConditions(conditions);
 
@@ -35,11 +35,11 @@ public class RequestEntryTest {
         outputMappings.put("property.name", "{{OUT/name}}");
         model.setOutputMappings(outputMappings);
 
-        List<AssertionEntry> assertions = new LinkedList<>();
+        List<AssertionEntry> assertions = new ArrayList<>();
         assertions.add(new AssertionEntry());
         model.setAssertions(assertions);
 
-        List<OptionEntry> options = new LinkedList<>();
+        List<OptionEntry> options = new ArrayList<>();
         options.add(new OptionEntry(new SetValueOption(), new String[] { "field", "value" }));
         model.setOptions(options);
 

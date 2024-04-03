@@ -1,6 +1,6 @@
 package com.legadi.jurl.model;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -13,7 +13,7 @@ public class AuthenticationRequest<T extends RequestEntry<? extends MockEntry>> 
     private AuthorizationType authType;
     private T authApi;
     private T authRequest;
-    private List<OptionEntry> authOptions = new LinkedList<>();
+    private List<OptionEntry> authOptions = new ArrayList<>();
 
     public String getAuthRequestInputPath() {
         return authRequestInputPath;

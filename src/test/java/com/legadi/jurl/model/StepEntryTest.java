@@ -1,6 +1,6 @@
 package com.legadi.jurl.model;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
@@ -17,7 +17,7 @@ public class StepEntryTest {
 
         model.setRequestInputPath("src/test/resources/basic-functions.spec.http");
         
-        List<OptionEntry> options = new LinkedList<>();
+        List<OptionEntry> options = new ArrayList<>();
         options.add(new OptionEntry(new SetValueOption(), new String[] { "field", "value" }));
         model.setOptions(options);
 

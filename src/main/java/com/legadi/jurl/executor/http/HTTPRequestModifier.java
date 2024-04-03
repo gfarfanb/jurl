@@ -7,9 +7,9 @@ import static com.legadi.jurl.common.ObjectsRegistry.findOrFail;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -133,7 +133,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
             mergeMockDefinition(api.getMockDefinition(), request.getMockDefinition());
         }
 
-        List<AssertionEntry> conditions = new LinkedList<>(api.getConditions());
+        List<AssertionEntry> conditions = new ArrayList<>(api.getConditions());
         conditions.addAll(request.getConditions());
         request.setConditions(conditions);
 
@@ -141,11 +141,11 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         outputMappings.putAll(request.getOutputMappings());
         request.setOutputMappings(outputMappings);
 
-        List<AssertionEntry> assertions = new LinkedList<>(api.getAssertions());
+        List<AssertionEntry> assertions = new ArrayList<>(api.getAssertions());
         assertions.addAll(request.getAssertions());
         request.setAssertions(assertions);
 
-        List<OptionEntry> options = new LinkedList<>(api.getOptions());
+        List<OptionEntry> options = new ArrayList<>(api.getOptions());
         options.addAll(request.getOptions());
         request.setOptions(options);
 
