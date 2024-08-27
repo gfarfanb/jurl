@@ -1,0 +1,26 @@
+# How to contribute
+
+I'm really glad you're reading this, thanks.
+
+The following is a set of guidelines for contributing to *jurl*. 
+Use your best judgment, and feel free to propose changes to this document or 
+any other community document in a pull request.
+
+## Getting started
+
+To start using this repository right away, 
+[fork this repository on GitHub](https://github.com/gfarfanb/jurl/fork).
+
+### How to install it
+
+> Description is not available yet
+
+## Copyright
+
+*jurl* core is licensed under [MIT License][mit_license], with a few exceptions
+in bundled classes. We consider all contributions as [MIT][mit_license] unless
+it's explicitly stated otherwise. [MIT][mit_license]-incompatible code contributions
+will be rejected. Contributions under [MIT][mit_license]-compatible licenses
+may be also rejected if they are not ultimately necessary.
+
+[mit_license]: https://opensource.org/licenses/MIT
