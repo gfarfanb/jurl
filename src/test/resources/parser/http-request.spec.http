@@ -35,4 +35,4 @@ Content-Type: application/json
 output basic.functions.id = {{HTTP/header.Resource-ID}}
 
 assert EQUALS_TO 201 {{HTTP/status}}
-assert com.legadi.jurl.assertions.EqualsToAssertionFunction 201 {{HTTP/status}}
+assert com.legadi.cli.jurl.assertions.EqualsToAssertionFunction 201 {{HTTP/status}}

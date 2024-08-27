@@ -3,9 +3,9 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.legadi</groupId>
+    <groupId>com.legadi.cli</groupId>
     <artifactId>jurl</artifactId>
-    <version>1.0.0-beta</version>
+    <version>1.0.0-BETA</version>
     <name>jurl</name>
     <description>CLI Java application to provide an API test/client tool.</description>
 
@@ -101,7 +101,7 @@
                     <target>${java.version}</target>
                     <archive>
                         <manifest>
-                            <mainClass>com.legadi.jurl.JurlApplication</mainClass>
+                            <mainClass>com.legadi.cli.jurl.JurlApplication</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
