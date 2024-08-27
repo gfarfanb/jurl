@@ -8,7 +8,8 @@ fi
 
 if [ -z "$JURL_CMD" ] ; then
     echo "'jurl-<version>.jar' artifact not found." >&2
-    echo "Download the latest artifact from https://github.com/gfarfanb/jurl/packages" >&2
+    echo "Download the latest artifact from https://github.com/gfarfanb/jurl/releases" >&2
+    echo "'JURL_HOME' environment variable can be specified to set the JAR location" >&2
     exit 1
 fi
 

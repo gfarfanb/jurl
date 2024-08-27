@@ -13,7 +13,8 @@ for /F "delims=" %%G in ('dir /b /s "%JURL_PATTERN%"') do (
     goto validateJava
 )
 echo 'jurl-<version>.jar' artifact not found. >&2
-echo Download the latest artifact from https://github.com/gfarfanb/jurl/packages >&2
+echo Download the latest artifact from https://github.com/gfarfanb/jurl/releases >&2
+echo 'JURL_HOME' environment variable can be specified to set the JAR location >&2
 exit /b 1
 
 :validateJava
