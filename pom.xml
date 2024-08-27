@@ -5,9 +5,9 @@
 
     <groupId>com.legadi</groupId>
     <artifactId>jurl</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0-beta</version>
     <name>jurl</name>
-    <description>CLI Java application to provides an API test/client tool.</description>
+    <description>CLI Java application to provide an API test/client tool.</description>
 
     <properties>
         <java.version>1.8</java.version>
