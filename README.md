@@ -12,7 +12,7 @@ CLI Java application to provide an API test/client tool.
 
 ## Contribution
 
-Follow the [Contribution guidelines](.github/CONTRIBUTING) for this project.
+Follow the [Contribution guidelines](.github/CONTRIBUTING.md) for this project.
 
 ## License
 
