@@ -24,17 +24,41 @@ jurl -h
 ./jurl -h
 ```
 
-- (Optional) Set *JURL_HOME* environment variable. In the case you want to put the *jurl-X.X.X.jar*
-in a different location
+### As executable by system
+
+- Set *JURL_HOME* environment variable based on the location of the *jurl-X.X.X.jar*
+- Add *JURL_HOME* to *PATH* enrivonment variable
+
+**Windows**
+
+Edit the environment variables
+
+| Variable | Value |
+| --- | --- |
+| JURL_HOME | *jurl JAR location* |
+| Path | %Path%;%JURL_HOME% |
 
 ```bat
-rem Windows
-set "JURL_HOME=..."
+rem Restart command prompt
+jurl -h
 ```
 
+**Linux**
+
+Add/modify the environment variables in *~/.bashrc* file
+
 ```sh
-# Linux
-export JURL_HOME="..."
+vim ~/.bashrc
+# vim>
+# export JURL_HOME="<jurl-jar-location>"
+# export PATH=$PATH:$JURL_HOME
+
+source ~/.bashrc
+
+# Set execution permissions to *jurl* bash file
+chmod +x $JURL_HOME/jurl
+
+jurl -h
 ```
 
 
@@ -63,13 +87,13 @@ output pokemonId = {{OUT/id}}
 
 Execute request
 ```sh
-./jurl -s name "gengar" pokemon-api
+jurl -s name "gengar" pokemon-api
 ```
 > According to the spec, after the request the variable `pokemonId` will have the ID of the requested Pokémon
 
 Execute a request by name
 ```sh
-./jurl -n encounters pokemon-api
+jurl -n encounters pokemon-api
 ```
 
 
@@ -84,7 +108,7 @@ Execute a request by name
 
 ## Contribution
 
-Follow the [Contribution guidelines](.github/CONTRIBUTING.md) for this project.
+Follow this project's [Contribution guidelines](.github/CONTRIBUTING.md).
 
 
 ## License
