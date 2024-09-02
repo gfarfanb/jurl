@@ -3,6 +3,7 @@ package com.legadi.cli.jurl.common;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_ADD_ON_OPTION_CLASSES;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_OUTPUT_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_DOWNLOADS_LOCATION;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTION_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTION_TIMES;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_HISTORY_PATH;
@@ -15,6 +16,7 @@ import static com.legadi.cli.jurl.common.SettingsConstants.PROP_OVERRIDE_REQUEST
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_PRINTABLE_MIME_TYPES;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_REQUEST_BEHAVIOUR;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_REQUEST_TYPE;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SAVE_OUTPUT_IN_LOCATION;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX_BEGIN;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX_END;
@@ -71,6 +73,10 @@ public interface SettingsDefaults {
         return get(PROP_OPEN_EDITOR_COMMAND);
     }
 
+    default String getDownloadsLocation() {
+        return get(PROP_DOWNLOADS_LOCATION);
+    }
+
     default RequestBehaviour getRequestBehaviour() {
         return get(PROP_REQUEST_BEHAVIOUR, RequestBehaviour::valueOf);
     }
@@ -85,6 +91,10 @@ public interface SettingsDefaults {
 
     default boolean isOpenOutputInEditor() {
         return get(PROP_OPEN_OUTPUT_IN_EDITOR, Boolean::valueOf);
+    }
+
+    default boolean isSaveOutputInLocation() {
+        return get(PROP_SAVE_OUTPUT_IN_LOCATION, Boolean::valueOf);
     }
 
     default int getTimes() {

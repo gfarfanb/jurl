@@ -81,6 +81,7 @@ import com.legadi.cli.jurl.modifiers.WindowsSeparatorValueModifier;
 import com.legadi.cli.jurl.options.CleanOutputOption;
 import com.legadi.cli.jurl.options.CurlPrintOption;
 import com.legadi.cli.jurl.options.CustomClassOption;
+import com.legadi.cli.jurl.options.DownloadInOption;
 import com.legadi.cli.jurl.options.EnvironmentCopyOption;
 import com.legadi.cli.jurl.options.EnvironmentOption;
 import com.legadi.cli.jurl.options.EnvironmentRemoveValueOption;
@@ -119,6 +120,7 @@ public class ObjectsRegistry {
         register(Option.class, CleanOutputOption.class);
         register(Option.class, CurlPrintOption.class);
         register(Option.class, CustomClassOption.class);
+        register(Option.class, DownloadInOption.class);
         register(Option.class, EnvironmentCopyOption.class);
         register(Option.class, EnvironmentOption.class);
         register(Option.class, EnvironmentRemoveValueOption.class);

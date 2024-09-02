@@ -40,3 +40,11 @@ GET http://localhost:{{local.server.port}}/file?
 &file=src/test/resources/file.csv
 
 assert EQUALS_TO 200 {{HTTP/status}}
+
+
+### [request] downloadInLocation
+GET http://localhost:{{local.server.port}}/file?
+&file=src/test/resources/file.csv
+&name=saved.csv
+
+assert EQUALS_TO 200 {{HTTP/status}}

@@ -59,7 +59,7 @@ public class OutputPathBuilder {
         return buildFilePath(settings.getHistoryPath(), settings.getTimestamp().toLocalDate().toString());
     }
 
-    private Path buildFilePath(Path basePath, String folder) {
+    public Path buildFilePath(Path basePath, String folder) {
         List<String> pathParts = new ArrayList<>();
 
         if(isNotEmpty(requestPath)) {
@@ -70,9 +70,17 @@ public class OutputPathBuilder {
             pathParts.add(requestName);
         }
 
-        pathParts.add(folder);
+        if(isNotBlank(folder)) {
+            pathParts.add(folder);
+        }
 
-        Path filePath = Paths.get(basePath.toString(), pathParts.toArray(new String[pathParts.size()]));
+        Path filePath;
+
+        if(basePath != null) {
+            filePath = Paths.get(basePath.toString(), pathParts.toArray(new String[pathParts.size()]));
+        } else {
+            filePath = Paths.get(pathParts.remove(0), pathParts.toArray(new String[pathParts.size()]));
+        }
 
         return createDirectories(filePath).resolve(getFilename());
     }

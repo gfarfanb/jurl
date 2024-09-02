@@ -5,10 +5,13 @@ import static com.legadi.cli.jurl.executor.http.HTTPRequestExecutor.REQUEST_FILE
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -268,5 +271,70 @@ public class FileAPITest extends EmbeddedAPITest {
 
         Assertions.assertTrue(downloadedFile.exists());
         Assertions.assertTrue(downloadedFile.length() > 0);
+    }
+
+    @Test
+    public void downloadInLocation() throws IOException {
+        Map<String, String> properties = new HashMap<>();
+        String downloadsLocation = "./executions/Downloads";
+
+        properties.put("downloadsLocation", downloadsLocation);
+
+        Settings.mergeProperties("default", properties);
+
+        UUID downloadCorrelationId = jurl("-di", "-n", "downloadInLocation", "src/test/resources/file.spec.http");
+        String requestInputPath = requestCatcher.getLast(downloadCorrelationId, "request-input-path");
+        HTTPRequestEntry downloadRequest = requestCatcher.getLast(downloadCorrelationId, "request");
+
+        Assertions.assertEquals("src/test/resources/file.spec.http", requestInputPath);
+        Assertions.assertEquals("downloadInLocation", downloadRequest.getName());
+        Assertions.assertEquals("http://localhost:" + port + "/file?", downloadRequest.getUrl());
+        Assertions.assertNull(downloadRequest.getProtocol());
+        Assertions.assertNull(downloadRequest.getHost());
+        Assertions.assertNull(downloadRequest.getPort());
+        Assertions.assertNull(downloadRequest.getBasePath());
+        Assertions.assertNull(downloadRequest.getEndpoint());
+        Assertions.assertEquals("GET", downloadRequest.getMethod());
+        Assertions.assertEquals(2, downloadRequest.getQueryParams().size());
+        Assertions.assertEquals(1, downloadRequest.getHeaders().size());
+        Assertions.assertNull(downloadRequest.getBodyCharset());
+        Assertions.assertNull(downloadRequest.getBodyContent());
+        Assertions.assertNull(downloadRequest.getBodyFilePath());
+        Assertions.assertNull(downloadRequest.getRequestFile());
+        Assertions.assertTrue(downloadRequest.getOutputMappings().isEmpty());
+        Assertions.assertEquals(1, downloadRequest.getAssertions().size());
+
+        HTTPResponseEntry downloadResponse = requestCatcher.getLast(downloadCorrelationId, "response");
+
+        Assertions.assertTrue(downloadResponse.getRequestUrl().startsWith("http://localhost:" + port + "/file"));
+        Assertions.assertTrue(downloadResponse.getRequestUrl().contains("file=src/test/resources/file.csv"));
+        Assertions.assertTrue(downloadResponse.getCurlCommand().contains("-X GET"));
+        Assertions.assertEquals("HTTP/1.1 200", downloadResponse.getResult());
+        Assertions.assertEquals(downloadsLocation + "/saved.csv", downloadResponse.getResponsePath().toString());
+        Assertions.assertEquals(200, downloadResponse.getStatusCode());
+        Assertions.assertFalse(downloadResponse.getResponseHeaders().isEmpty());
+        Assertions.assertTrue(downloadResponse.getResponseHeaders().containsKey("Content-Disposition"));
+        Assertions.assertEquals("attachment; filename=saved.csv",
+            downloadResponse.getResponseHeaders().get("Content-Disposition"));
+
+        Optional<AssertionResult> downloadAssertionResult = requestCatcher.getLast(downloadCorrelationId, "assertions-result");
+
+        Assertions.assertTrue(downloadAssertionResult.isPresent());
+        Assertions.assertEquals(1, downloadAssertionResult.get().getAssertions());
+        Assertions.assertEquals(0, downloadAssertionResult.get().getFailures());
+        Assertions.assertTrue(downloadAssertionResult.get().isPassed());
+
+        File downloadedFile = downloadResponse.getResponsePath().toFile();
+
+        Assertions.assertTrue(downloadedFile.exists());
+        Assertions.assertTrue(downloadedFile.length() > 0);
+        Assertions.assertTrue(downloadedFile.delete());
+        Assertions.assertFalse(downloadedFile.exists());
+
+        Files.delete(Paths.get(downloadsLocation));
+
+        properties.put("downloadsLocation", "");
+
+        Settings.mergeProperties("default", properties);
     }
 }

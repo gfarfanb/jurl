@@ -10,10 +10,12 @@ public class SettingsConstants {
     public static final String PROP_HISTORY_PATH = "historyPath";
     public static final String PROP_ADD_ON_OPTION_CLASSES = "addOnOptionClasses";
     public static final String PROP_OPEN_EDITOR_COMMAND = "openEditorCommand";
+    public static final String PROP_DOWNLOADS_LOCATION = "downloadsLocation";
     public static final String PROP_REQUEST_BEHAVIOUR = "requestBehaviour";
     public static final String PROP_REQUEST_TYPE = "requestType";
     public static final String PROP_MOCK_REQUEST = "mockRequest";
     public static final String PROP_OPEN_OUTPUT_IN_EDITOR = "openOutputInEditor";
+    public static final String PROP_SAVE_OUTPUT_IN_LOCATION = "saveOutputInLocation";
     public static final String PROP_EXECUTION_TIMES = "executionTimes";
     public static final String PROP_INPUT_NAME = "inputName";
     public static final String PROP_SETTINGS_PARAM_REGEX = "settingsParamRegex";

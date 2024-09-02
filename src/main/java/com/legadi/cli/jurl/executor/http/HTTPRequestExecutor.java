@@ -412,27 +412,43 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             .findFirst()
             .orElse(null);
 
-            if(isBlank(contentDisposition)) {
-                return null;
-            }
+        if(isBlank(contentDisposition)) {
+            return null;
+        }
 
-            Matcher matcher = FILENAME_PATTERN.matcher(contentDisposition);
+        Matcher matcher = FILENAME_PATTERN.matcher(contentDisposition);
 
-            if(matcher.find()) {
-                return strip(matcher.group(1), "\"");
-            } else {
-                return null;
-            }
+        if(matcher.find()) {
+            return strip(matcher.group(1), "\"");
+        } else {
+            return null;
+        }
     }
 
     private Path readOutput(HttpURLConnection connection, Settings settings,
             String requestInputPath, HTTPRequestEntry request, String filename) {
-        OutputPathBuilder pathBuilder = new OutputPathBuilder(settings)
+        String extension = isBlank(filename) ? "response" : null;
+        Path responsePath = null;
+
+        if(settings.isSaveOutputInLocation()) {
+            if(isBlank(settings.getDownloadsLocation())) {
+                LOGGER.fine("'downloadsLocation' is null or empty");
+            } else {
+                responsePath = new OutputPathBuilder(settings)
+                    .setFilename(filename)
+                    .setExtension(extension)
+                    .buildFilePath(Paths.get(settings.getDownloadsLocation()), null);
+            }
+        }
+
+        if(responsePath == null) {
+            responsePath = new OutputPathBuilder(settings)
                 .setRequestPath(requestInputPath)
                 .setRequestName(request.getName())
                 .setFilename(filename)
-                .setExtension(isBlank(filename) ? "response" : null);
-        Path responsePath = pathBuilder.buildCommandPath();
+                .setExtension(extension)
+                .buildCommandPath();
+        }
 
         if(readOutput(true, connection, responsePath)) {
             return responsePath;

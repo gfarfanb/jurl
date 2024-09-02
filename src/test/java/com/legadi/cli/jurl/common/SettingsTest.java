@@ -34,10 +34,12 @@ public class SettingsTest {
         Assertions.assertEquals(Paths.get("./history/"), settings.getHistoryPath());
         Assertions.assertEquals(1, settings.getAddOnOptionClasses().length);
         Assertions.assertTrue(settings.getOpenEditorCommand().isEmpty());
+        Assertions.assertTrue(settings.getDownloadsLocation().isEmpty());
         Assertions.assertEquals(RequestBehaviour.REQUEST, settings.getRequestBehaviour());
         Assertions.assertEquals("http", settings.getRequestType());
         Assertions.assertFalse(settings.isMockRequest());
         Assertions.assertFalse(settings.isOpenOutputInEditor());
+        Assertions.assertFalse(settings.isSaveOutputInLocation());
         Assertions.assertEquals(1, settings.getTimes());
         Assertions.assertTrue(settings.getInputName().isEmpty());
         Assertions.assertEquals("(?:\\{\\{([\\w.,\\-:\\'@~|\\[\\]/\\\\]+)\\}\\})", settings.getSettingsParamRegex());
