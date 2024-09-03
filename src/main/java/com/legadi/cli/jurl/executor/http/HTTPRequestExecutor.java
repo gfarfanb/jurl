@@ -1,6 +1,7 @@
 package com.legadi.cli.jurl.executor.http;
 
 import static com.legadi.cli.jurl.assertions.AssertionsResolver.evaluate;
+import static com.legadi.cli.jurl.common.Command.exec;
 import static com.legadi.cli.jurl.common.CommonUtils.getOrDefault;
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
@@ -31,6 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -428,18 +430,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     private Path readOutput(HttpURLConnection connection, Settings settings,
             String requestInputPath, HTTPRequestEntry request, String filename) {
         String extension = isBlank(filename) ? "response" : null;
-        Path responsePath = null;
-
-        if(settings.isSaveOutputInLocation()) {
-            if(isBlank(settings.getDownloadsLocation())) {
-                LOGGER.fine("'downloadsLocation' is null or empty");
-            } else {
-                responsePath = new OutputPathBuilder(settings)
-                    .setFilename(filename)
-                    .setExtension(extension)
-                    .buildFilePath(Paths.get(settings.getDownloadsLocation()), null);
-            }
-        }
+        Path responsePath = getOutputLocation(settings, filename, extension);
 
         if(responsePath == null) {
             responsePath = new OutputPathBuilder(settings)
@@ -456,6 +447,26 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             return responsePath;
         } else {
             return null;
+        }
+    }
+
+    private Path getOutputLocation(Settings settings, String filename, String extension) {
+        if(!settings.isSaveOutputInLocation()) {
+            return null;
+        }
+
+        AtomicReference<String> location = new AtomicReference<>();
+        exec(settings, location::set, true, FINE, "echo " + settings.getDownloadsLocation());
+
+        if(isBlank(location.get())) {
+            LOGGER.fine("'downloadsLocation' is null or empty");
+            return null;
+        } else {
+            Path downloadsLocation = Paths.get(strip(location.get(), "\""));
+            return new OutputPathBuilder(settings)
+                .setFilename(filename)
+                .setExtension(extension)
+                .buildFilePath(downloadsLocation, null);
         }
     }
 

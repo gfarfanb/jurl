@@ -99,12 +99,20 @@ jurl -n encounters pokemon-api
 
 ### Config tricks
 
-**config.json**
-```json
-{
-    "openEditorCommand": "\"C:\\Program Files\\Sublime Text\\subl.exe\" \"{{~win-separator~HTTP/response.path}}\""
-}
-```
+Create or edit the `<WORKING_DIR>/config/config.json` file to specify default values:
+
+| Field | Value |
+| --- | --- |
+| **openEditorCommand** | <ul><li>`/usr/bin/subl \"{{HTTP/response.path}}\"`</li><li>`\"%PROGRAMFILES%\\Sublime Text\\subl.exe\" \"{{~win-separator~HTTP/response.path}}\"`</li></ul> |
+| **downloadsLocation** | <ul><li>`$HOME/Downloads`</li><li>`%USERPROFILE%\\Downloads`</li></ul> |
+
+> Example:
+> ```json
+> {
+>     "openEditorCommand": "/usr/bin/subl \"{{HTTP/response.path}}\"",
+>     "downloadsLocation": "$HOME/Downloads"
+> }
+> ```
 
 ## Contribution
 

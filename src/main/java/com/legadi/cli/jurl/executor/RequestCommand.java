@@ -1,5 +1,6 @@
 package com.legadi.cli.jurl.executor;
 
+import static com.legadi.cli.jurl.common.Command.exec;
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
@@ -13,7 +14,7 @@ import static com.legadi.cli.jurl.model.ExecutionStatus.SKIPPED;
 import static com.legadi.cli.jurl.model.ExecutionStatus.SUCCESSFUL;
 import static com.legadi.cli.jurl.model.RequestBehaviour.CURL_ONLY;
 import static com.legadi.cli.jurl.model.RequestBehaviour.PRINT_ONLY;
-import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.INFO;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -428,15 +429,7 @@ public class RequestCommand {
             return;
         }
 
-        try {
-            String cmd = stringExpander.replaceAllInContent(settings.getOpenEditorCommand());
-            LOGGER.fine("Executing command: " + cmd);
-            Process process = Runtime.getRuntime().exec(cmd);
-            LOGGER.info("Command status [" + process.waitFor() + "]: " + cmd);
-        } catch(Exception ex) {
-            LOGGER.severe("Error on opening editor command - " + ex.getMessage());
-            LOGGER.log(FINE, "Unable to run editor command", ex);
-        }
+        exec(settings, false, INFO, settings.getOpenEditorCommand());
     }
 
     private boolean isPrintOnly(Settings settings) {
