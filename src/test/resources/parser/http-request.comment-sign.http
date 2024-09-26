@@ -1,0 +1,12 @@
+
+### [request] request
+
+POST http://localhost:5555/spec
+&param=value
+
+Content-Type: application/txt
+
+\# This is a normal line
+# This is a comment
+\# Another line
+\\# With required escaped character \

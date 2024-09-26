@@ -331,4 +331,27 @@ public class HTTPRequestParserTest {
         Assertions.assertThrows(IllegalStateException.class,
             () -> parser.parseRequest(settings, requestPath));
     }
+
+    @Test
+    public void parseRequestByEscapedCommentSign() {
+        Settings settings = new Settings();
+        Path requestPath = Paths.get("src/test/resources/parser/http-request.comment-sign.http");
+        HTTPRequestParser parser = new HTTPRequestParser();
+
+        RequestInput<HTTPRequestEntry> requestInput = Assertions.assertDoesNotThrow(
+            () -> parser.parseInput(settings, requestPath));
+        HTTPRequestEntry request = requestInput.getRequests().get("request");
+        String expectedBody = "# This is a normal line"
+            + "\n# Another line"
+            + "\n\\# With required escaped character \\";
+
+        Assertions.assertNotNull(request);
+        Assertions.assertEquals("POST", request.getMethod());
+        Assertions.assertEquals("http://localhost:5555/spec", request.getUrl());
+        Assertions.assertEquals(1, request.getQueryParams().size());
+        Assertions.assertEquals("value", request.getQueryParams().get("param"));
+        Assertions.assertEquals(1, request.getHeaders().size());
+        Assertions.assertEquals("application/txt", request.getHeaders().get("Content-Type"));
+        Assertions.assertEquals(expectedBody, request.getBodyContent());
+    }
 }

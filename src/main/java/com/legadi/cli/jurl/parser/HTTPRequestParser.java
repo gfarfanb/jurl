@@ -51,6 +51,11 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     private static final Map<String, Field> REQUEST_FILE_FIELDS = getAllFields(HTTPRequestFileEntry.class);
     private static final Map<String, Field> REQUEST_AUTH_FIELDS = getAllFields(HTTPRequestAuthEntry.class);
     private static final Map<String, Field> MOCK_FIELDS = getAllFields(HTTPMockEntry.class);
+    private static final Map<String, String> ESCAPED_CHARS = new HashMap<>();
+
+    static {
+        ESCAPED_CHARS.put("\\\\#", "#");
+    }
 
     public enum LinePattern {
 
@@ -159,6 +164,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                 readSection(sectionNames, requestCarrier, flowCarrier, requestInput, line);
                 readSource(line);
                 readComment(line);
+                line = removeEscapedChars(line);
 
                 addDefaultType(stringExpander, requestInput, config, line);
                 addConfig(stringExpander, config, line);
@@ -199,6 +205,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             try {
                 readEmptyLine(line);
                 readComment(line);
+                line = removeEscapedChars(line);
 
                 addConfig(stringExpander, config, line);
 
@@ -255,6 +262,13 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         List<StepEntry> steps = flowCarrier.get().getRight();
 
         addStep(stringExpander, steps, config, line);
+    }
+
+    private String removeEscapedChars(String line) {
+        for(Map.Entry<String, String> escapedEntry : ESCAPED_CHARS.entrySet()) {
+            line = line.replaceAll(escapedEntry.getKey(), escapedEntry.getValue());
+        }
+        return line;
     }
 
     private void readEmptyLine(String line) {
