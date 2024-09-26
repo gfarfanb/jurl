@@ -136,12 +136,12 @@ public class RequestCommand {
             return stats.computeStatus();
         } finally {
             if(times > 1) {
-                LOGGER.info("Execution completed -"
-                    + " inputFile=\"" + requestInputPath + "\""
-                    + " inputName=\"" + inputNameCarrier.get() + "\""
-                    + " environment=\"" + settings.getEnvironment() + "\""
-                    + " executions=" + stats.getExecutions()
-                    + " stats=" + stats);
+                LOGGER.info("Execution completed:"
+                    + "\n  inputFile=\"" + requestInputPath + "\""
+                    + "\n  inputName=\"" + inputNameCarrier.get() + "\""
+                    + "\n  environment=\"" + settings.getEnvironment() + "\""
+                    + "\n  executions=" + stats.getExecutions()
+                    + "\n  stats=" + stats);
             }
         }
     }
@@ -156,10 +156,10 @@ public class RequestCommand {
                 + flowName + " - " + requestInputPath);
         }
 
-        LOGGER.fine("Executing flow -"
-            + " index=" + index
-            + " flowName=\"" + flowName + "\""
-            + " requestInputPath=\"" + requestInputPath + "\"");
+        LOGGER.fine("Executing flow:"
+            + "\n  index=" + index
+            + "\n  flowName=\"" + flowName + "\""
+            + "\n  requestInputPath=\"" + requestInputPath + "\"");
 
         ExecutionStats stats = new ExecutionStats(steps.size());
         int stepIndex = 1;
@@ -183,13 +183,13 @@ public class RequestCommand {
             stepIndex++;
         }
 
-        LOGGER.info("Steps completed -"
-            + " index=" + index
-            + " inputFile=\"" + requestInputPath + "\""
-            + " flowName=\"" + flowName + "\""
-            + " environment=\"" + settings.getEnvironment() + "\""
-            + " steps=" + stats.getExecutions()
-            + " stats=" + stats);
+        LOGGER.info("Steps completed:"
+            + "\n  index=" + index
+            + "\n  inputFile=\"" + requestInputPath + "\""
+            + "\n  flowName=\"" + flowName + "\""
+            + "\n  environment=\"" + settings.getEnvironment() + "\""
+            + "\n  steps=" + stats.getExecutions()
+            + "\n  stats=" + stats);
 
         return new Pair<>(flowName, stats);
     }
@@ -233,10 +233,10 @@ public class RequestCommand {
             stats = new ExecutionStats(ONLY_REQUEST_EXECUTIONS);
         }
 
-        LOGGER.fine("Executing request -"
-            + " index=" + index
-            + " requestName=\"" + requestName + "\""
-            + " requestInputPath=\"" + requestInputPath + "\"");
+        LOGGER.fine("Executing request:"
+            + "\n  index=" + index
+            + "\n  requestName=\"" + requestName + "\""
+            + "\n  requestInputPath=\"" + requestInputPath + "\"");
 
         executeOptions(settings, request.getOptions());
 
@@ -296,10 +296,10 @@ public class RequestCommand {
 
             ExecutionIndex index = new ExecutionIndex(0, 1, 1);
 
-            LOGGER.fine("Executing authentication request -"
-                + " index=" + index
-                + " authName=\"" + authRequest.getAuthRequestName() + "\""
-                + " requestInputPath=\"" + authRequest.getAuthRequestInputPath() + "\"");
+            LOGGER.fine("Executing authentication request"
+                + "\n  index=" + index
+                + "\n  authName=\"" + authRequest.getAuthRequestName() + "\""
+                + "\n  requestInputPath=\"" + authRequest.getAuthRequestInputPath() + "\"");
 
             executeOptions(settings, authRequest.getAuthOptions());
             modifier.mergeHeader(authRequest.getAuthApi(), authRequest.getAuthRequest());
@@ -440,14 +440,15 @@ public class RequestCommand {
     private String executionCompletedMessage(Settings settings, ExecutionIndex index,
             String inputPath, RequestEntry<?> request, ResponseEntry response,
             ExecutionStatus status, HistoryEntry historyEntry) {
-        return "Request completed -"
-            + " status=" + status
-            + " inputFile=\"" + inputPath + "\""
-            + " requestName=\"" + request.getName() + "\""
-            + (response != null ? " result=\"" + response.getResult() + "\"" : "")
-            + " environment=\"" + settings.getEnvironment() + "\""
-            + " index=" + index
-            + " executionTag=\"" + settings.getExecutionTag() + "\""
-            + (historyEntry != null  ? " time(nano)=" + historyEntry.getNanoTime() : "");
+        return "Request completed:"
+            + "\n  status=" + status
+            + "\n  inputFile=\"" + inputPath + "\""
+            + "\n  requestName=\"" + request.getName() + "\""
+            + (response != null && response.getResult() != null
+                ? "\n  result=\"" + response.getResult() + "\"" : "")
+            + "\n  environment=\"" + settings.getEnvironment() + "\""
+            + "\n  index=" + index
+            + "\n  executionTag=\"" + settings.getExecutionTag() + "\""
+            + (historyEntry != null  ? "\n  time(nano)=" + historyEntry.getNanoTime() : "");
     }
 }

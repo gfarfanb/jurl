@@ -39,11 +39,11 @@ public class URLBuilderTest {
             .setProtocol("http:://")
             .setHost("/localhost:")
             .setPort("1234")
-            .setBasePath("/api/")
+            .setBasePath("/api")
             .setEndpoint("v1/")
             .addAllQueryParams(queryParams);
 
-        Assertions.assertEquals("http://localhost:1234/api/v1", builder.build());
+        Assertions.assertEquals("http://localhost:1234/api/v1/", builder.build());
         Assertions.assertDoesNotThrow(() -> new URL(builder.build()));
     }
 
@@ -91,10 +91,10 @@ public class URLBuilderTest {
             .setProtocol("http:://")
             .setHost("/localhost:1234")
             .setPort("1234")
-            .setBasePath("/api/")
+            .setBasePath("/api")
             .setEndpoint("v1/");
 
-        Assertions.assertEquals("http://localhost:1234:1234/api/v1", builder.build());
+        Assertions.assertEquals("http://localhost:1234:1234/api/v1/", builder.build());
         Assertions.assertThrows(MalformedURLException.class,
             () -> new URL(builder.build()));
     }
