@@ -2,6 +2,7 @@ package com.legadi.cli.jurl.executor.http;
 
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isEmpty;
+import static com.legadi.cli.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findOrFail;
 
@@ -171,11 +172,15 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
             request.setBodyFilePath(api.getBodyFilePath());
         }
 
-        if(request.getRequestFile() == null) {
-            request.setRequestFile(api.getRequestFile());
-        } else if(api.getRequestFile() != null) {
-            mergeRequestFile(api.getRequestFile(), request.getRequestFile());
+        if(isEmpty(request.getRequestFiles())) {
+            request.setRequestFiles(api.getRequestFiles());
+        } else if(isNotEmpty(api.getRequestFiles())) {
+            mergeRequestFiles(api.getRequestFiles(), request.getRequestFiles());
         }
+
+        Map<String, String> formData = new HashMap<>(api.getFormData());
+        formData.putAll(request.getFormData());
+        request.setFormData(formData);
     }
 
     @Override
@@ -243,23 +248,28 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         }
     }
 
-    private void mergeRequestFile(HTTPRequestFileEntry api, HTTPRequestFileEntry request) {
-        if(isBlank(request.getName())) {
-            request.setName(api.getName());
-        }
-        if(isBlank(request.getPath())) {
-            request.setPath(api.getPath());
-        }
-        if(isBlank(request.getField())) {
-            request.setField(api.getField());
-        }
-        if(isBlank(request.getMineType())) {
-            request.setMineType(api.getMineType());
-        }
+    private void mergeRequestFiles(List<HTTPRequestFileEntry> apiFiles, List<HTTPRequestFileEntry> requestFiles) {
+        Map<String, HTTPRequestFileEntry> filesByPath = requestFiles
+            .stream()
+            .collect(Collectors.toMap(HTTPRequestFileEntry::getPath, v -> v));
 
-        Map<String, String> formData = new HashMap<>(api.getFormData());
-        formData.putAll(request.getFormData());
-        request.setFormData(formData);
+        for(HTTPRequestFileEntry apiFile : apiFiles) {
+            if(!filesByPath.containsKey(apiFile.getPath())) {
+                requestFiles.add(apiFile);
+                continue;
+            }
+
+            HTTPRequestFileEntry requestFile = filesByPath.get(apiFile.getPath());
+            if(isBlank(requestFile.getName())) {
+                requestFile.setName(apiFile.getName());
+            }
+            if(isBlank(requestFile.getField())) {
+                requestFile.setField(apiFile.getField());
+            }
+            if(isBlank(requestFile.getMineType())) {
+                requestFile.setMineType(apiFile.getMineType());
+            }
+        }
     }
 
     private void mergeRequestAuth(HTTPRequestAuthEntry api, HTTPRequestAuthEntry request) {

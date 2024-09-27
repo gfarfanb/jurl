@@ -27,8 +27,10 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -96,13 +98,13 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             throws RequestException {
         CurlBuilder curlBuilder = new CurlBuilder();
         HttpURLConnection connection = createConnection(settings, requestInputPath, request, curlBuilder);
+        List<Path> sentFilePaths = null;
         Path bodyPath = null;
-        Path sentFilePath = null;
 
-        if(request.getRequestFile() != null) {
+        if(isNotEmpty(request.getRequestFiles())) {
             addFileHeaders(connection, settings, request, curlBuilder);
             addFileMethod(connection, request, curlBuilder);
-            sentFilePath = sendFile(connection, settings, request, curlBuilder);
+            sentFilePaths = sendFiles(connection, settings, request, curlBuilder);
         } else {
             addHeaders(connection, settings, request, curlBuilder);
             addMethod(connection, request, curlBuilder);
@@ -111,7 +113,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
 
         HTTPResponseEntry response = buildResponse(connection, settings, requestInputPath, request, curlBuilder);
         response.setBodyPath(bodyPath);
-        response.setSentFilePath(sentFilePath);
+        response.setSentFilePaths(sentFilePaths);
 
         return response;
     }
@@ -337,19 +339,67 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         return bodyPath;
     }
 
-    private Path sendFile(HttpURLConnection connection, Settings settings,
+    private List<Path> sendFiles(HttpURLConnection connection, Settings settings,
             HTTPRequestEntry request, CurlBuilder curlBuilder) {
-        HTTPRequestFileEntry requestFile = validateAndGetRequestFile(request);
-        String[] pathParts = requestFile.getPath().split("/");
-        String filename = isNotBlank(requestFile.getName()) ? requestFile.getName() : pathParts[pathParts.length - 1];
-        Map<String, String> formData = isNotEmpty(requestFile.getFormData()) ? requestFile.getFormData() : new HashMap<>();
+        Map<String, String> formData = isNotEmpty(request.getFormData()) ? request.getFormData() : new HashMap<>();
         String boundary = settings.get(REQUEST_FILE_BOUNDARY);
         StringBuilder printableFile = new StringBuilder();
+        List<Path> sentFiles = new ArrayList<>();
 
-        try(DataOutputStream dataOutputStream = new DataOutputStream(connection.getOutputStream());
-                FileInputStream fileInputStream = new FileInputStream(requestFile.getPath())) {
+        try(DataOutputStream dataOutputStream = new DataOutputStream(connection.getOutputStream())) {
+
+            for(HTTPRequestFileEntry requestFile : request.getRequestFiles()) {
+                String[] pathParts = requestFile.getPath().split("/");
+                String filename = isNotBlank(requestFile.getName())
+                    ? requestFile.getName()
+                    : pathParts[pathParts.length - 1];
+                Path sentFile = appendFileToRequest(requestFile, dataOutputStream, filename, boundary);
+
+                curlBuilder.addFile(requestFile.getField(), requestFile.getPath(), filename, requestFile.getMineType());
+
+                printableFile.append(requestFile.getField()).append("=").append(requestFile.getPath()).append("\n");
+                printableFile.append("filename=").append(requestFile.getPath()).append("\n");
+
+                if(isNotBlank(requestFile.getMineType())) {
+                    printableFile.append("type=").append(requestFile.getMineType()).append("\n");
+                }
+
+                sentFiles.add(sentFile);
+            }
+
+            for(Map.Entry<String, String> formEntry : formData.entrySet()) {
+                dataOutputStream.writeBytes(MULTIPART_TWO_HYPHENS + boundary + MULTIPART_LINE_END);
+                dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"" + formEntry.getKey() + "\"" + MULTIPART_LINE_END);
+                dataOutputStream.writeBytes("Content-Type: text/plain" + MULTIPART_LINE_END);
+                dataOutputStream.writeBytes(MULTIPART_LINE_END);
+                dataOutputStream.writeBytes(formEntry.getValue());
+                dataOutputStream.writeBytes(MULTIPART_LINE_END);
+
+                curlBuilder.addForm(formEntry.getKey(), formEntry.getValue());
+                printableFile
+                    .append(formEntry.getKey())
+                    .append("=")
+                    .append(formEntry.getValue())
+                    .append("\n");
+            };
+
+            dataOutputStream.writeBytes(MULTIPART_TWO_HYPHENS + boundary + MULTIPART_TWO_HYPHENS + MULTIPART_LINE_END);
+
+            log(settings, printableFile.toString(), null);
+
+            return sentFiles;
+        } catch(IOException ex) {
+            throw new IllegalStateException("Unable to create output stream for request files", ex);
+        }
+    }
+
+    private Path appendFileToRequest(HTTPRequestFileEntry requestFile, DataOutputStream dataOutputStream,
+            String filename, String boundary) {
+        try(FileInputStream fileInputStream = new FileInputStream(requestFile.getPath())) {
+
             dataOutputStream.writeBytes(MULTIPART_TWO_HYPHENS + boundary + MULTIPART_LINE_END);
-            dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"" + requestFile.getField() + "\"; filename=\"" + filename + "\"" + MULTIPART_LINE_END);
+            dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"" + requestFile.getField()
+                + "\"; filename=\"" + filename + "\"" + MULTIPART_LINE_END);
             dataOutputStream.writeBytes("Content-Transfer-Encoding: binary" + MULTIPART_LINE_END);
 
             if(isNotBlank(requestFile.getMineType())) {
@@ -371,33 +421,6 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             }
 
             dataOutputStream.writeBytes(MULTIPART_LINE_END);
-
-            for(Map.Entry<String, String> formEntry : formData.entrySet()) {
-                dataOutputStream.writeBytes(MULTIPART_TWO_HYPHENS + boundary + MULTIPART_LINE_END);
-                dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"" + formEntry.getKey() + "\"" + MULTIPART_LINE_END);
-                dataOutputStream.writeBytes("Content-Type: text/plain" + MULTIPART_LINE_END);
-                dataOutputStream.writeBytes(MULTIPART_LINE_END);
-                dataOutputStream.writeBytes(formEntry.getValue());
-                dataOutputStream.writeBytes(MULTIPART_LINE_END);
-            };
-
-            dataOutputStream.writeBytes(MULTIPART_TWO_HYPHENS + boundary + MULTIPART_TWO_HYPHENS + MULTIPART_LINE_END);
-
-            curlBuilder.setFile(requestFile.getField(), requestFile.getPath(), filename, requestFile.getMineType());
-
-            printableFile.append(requestFile.getField()).append("=").append(requestFile.getPath()).append("\n");
-            printableFile.append("filename=").append(requestFile.getPath()).append("\n");
-
-            if(isNotBlank(requestFile.getMineType())) {
-                printableFile.append("type=").append(requestFile.getMineType()).append("\n");
-            }
-
-            formData.forEach((field, value) -> {
-                curlBuilder.addForm(field, value);
-                printableFile.append(field).append("=").append(value).append("\n");
-            });
-
-            log(settings, printableFile.toString(), null);
 
             return Paths.get(requestFile.getPath());
         } catch(IOException ex) {
@@ -545,24 +568,11 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         }
     }
 
-    private HTTPRequestFileEntry validateAndGetRequestFile(HTTPRequestEntry request) {
-        HTTPRequestFileEntry requestFile = request.getRequestFile();
-
-        if(isBlank(requestFile.getPath())) {
-            throw new RequestException(request, "request.requestFile.path (file path) is null or empty");
-        }
-        if(isBlank(requestFile.getField())) {
-            throw new RequestException(request, "request.requestFile.field (form file field) is null or empty");
-        }
-        
-        return requestFile;
-    }
-
     private String identifyMethod(HTTPRequestEntry request) {
         if(isNotBlank(request.getMethod())) {
             return request.getMethod();
         }
-        if(request.getRequestFile() != null) {
+        if(isNotEmpty(request.getRequestFiles())) {
             return "POST";
         }
         throw new RequestException(request, "HTTP method not defined");

@@ -39,7 +39,7 @@ public class RequestPrintOptionTest extends OptionTest<RequestPrintOption> {
         Assertions.assertTrue(response.getResponseHeaders().isEmpty());
         Assertions.assertNull(response.getResponsePath());
         Assertions.assertNull(response.getResult());
-        Assertions.assertNull(response.getSentFilePath());
+        Assertions.assertNull(response.getSentFilePaths());
         Assertions.assertEquals(0, response.getStatusCode());
     }
 }

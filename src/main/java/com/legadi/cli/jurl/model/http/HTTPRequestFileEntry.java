@@ -1,15 +1,11 @@
 package com.legadi.cli.jurl.model.http;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class HTTPRequestFileEntry {
 
     private String name;
     private String path;
     private String field;
     private String mineType;
-    private Map<String, String> formData = new HashMap<>();
 
     public String getName() {
         return name;
@@ -41,13 +37,5 @@ public class HTTPRequestFileEntry {
 
     public void setMineType(String mineType) {
         this.mineType = mineType;
-    }
-
-    public Map<String, String> getFormData() {
-        return formData;
-    }
-
-    public void setFormData(Map<String, String> formData) {
-        this.formData = formData;
     }
 }

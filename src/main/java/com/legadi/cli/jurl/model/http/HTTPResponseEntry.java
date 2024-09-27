@@ -2,6 +2,7 @@ package com.legadi.cli.jurl.model.http;
 
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.legadi.cli.jurl.model.ResponseEntry;
@@ -9,9 +10,9 @@ import com.legadi.cli.jurl.model.ResponseEntry;
 public class HTTPResponseEntry extends ResponseEntry {
 
     private Path bodyPath;
-    private Path sentFilePath;
     private Path responsePath;
     private int statusCode;
+    private List<Path> sentFilePaths;
     private Map<String, String> responseHeaders = new HashMap<>();
 
     public Path getBodyPath() {
@@ -20,14 +21,6 @@ public class HTTPResponseEntry extends ResponseEntry {
 
     public void setBodyPath(Path bodyPath) {
         this.bodyPath = bodyPath;
-    }
-
-    public Path getSentFilePath() {
-        return sentFilePath;
-    }
-
-    public void setSentFilePath(Path sentFilePath) {
-        this.sentFilePath = sentFilePath;
     }
 
     public Path getResponsePath() {
@@ -44,6 +37,14 @@ public class HTTPResponseEntry extends ResponseEntry {
 
     public void setStatusCode(int statusCode) {
         this.statusCode = statusCode;
+    }
+
+    public List<Path> getSentFilePaths() {
+        return sentFilePaths;
+    }
+
+    public void setSentFilePaths(List<Path> sentFilePaths) {
+        this.sentFilePaths = sentFilePaths;
     }
 
     public Map<String, String> getResponseHeaders() {

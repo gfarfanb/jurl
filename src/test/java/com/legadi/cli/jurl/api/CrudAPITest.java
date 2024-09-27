@@ -49,7 +49,8 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertNull(createRequest.getBodyCharset());
         Assertions.assertFalse(createRequest.getBodyContent().isEmpty());
         Assertions.assertEquals("src/test/resources/basic-functions.body.json", createRequest.getBodyFilePath());
-        Assertions.assertNull(createRequest.getRequestFile());
+        Assertions.assertTrue(createRequest.getRequestFiles().isEmpty());
+        Assertions.assertTrue(createRequest.getFormData().isEmpty());
         Assertions.assertEquals(1, createRequest.getOutputMappings().size());
         Assertions.assertEquals(1, createRequest.getAssertions().size());
 
@@ -102,7 +103,8 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertNull(obtainRequest.getBodyCharset());
         Assertions.assertNull(obtainRequest.getBodyContent());
         Assertions.assertNull(obtainRequest.getBodyFilePath());
-        Assertions.assertNull(obtainRequest.getRequestFile());
+        Assertions.assertTrue(obtainRequest.getRequestFiles().isEmpty());
+        Assertions.assertTrue(obtainRequest.getFormData().isEmpty());
         Assertions.assertEquals(1, obtainRequest.getOutputMappings().size());
         Assertions.assertEquals(1, obtainRequest.getAssertions().size());
 
@@ -165,7 +167,8 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertNull(updateRequest.getBodyContent());
         Assertions.assertNull(updateRequest.getBodyFilePath());
         Assertions.assertDoesNotThrow(() -> updateSettings.get(BODY_TEMPORAL_PATH));
-        Assertions.assertNull(updateRequest.getRequestFile());
+        Assertions.assertTrue(updateRequest.getRequestFiles().isEmpty());
+        Assertions.assertTrue(updateRequest.getFormData().isEmpty());
         Assertions.assertTrue(updateRequest.getOutputMappings().isEmpty());
         Assertions.assertEquals(1, updateRequest.getAssertions().size());
 
@@ -225,7 +228,8 @@ public class CrudAPITest extends EmbeddedAPITest {
         Assertions.assertNull(removeRequest.getBodyCharset());
         Assertions.assertNull(removeRequest.getBodyContent());
         Assertions.assertNull(removeRequest.getBodyFilePath());
-        Assertions.assertNull(removeRequest.getRequestFile());
+        Assertions.assertTrue(removeRequest.getRequestFiles().isEmpty());
+        Assertions.assertTrue(removeRequest.getFormData().isEmpty());
         Assertions.assertTrue(removeRequest.getOutputMappings().isEmpty());
         Assertions.assertEquals(1, removeRequest.getAssertions().size());
 

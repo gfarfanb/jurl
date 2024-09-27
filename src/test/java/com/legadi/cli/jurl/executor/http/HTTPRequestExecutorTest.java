@@ -459,14 +459,14 @@ public class HTTPRequestExecutorTest extends EmbeddedAPITest {
         request.setName("upload");
         request.setUrl("http://localhost:" + port + "/file");
         request.getHeaders().put("Request-Catcher", requestCatcherId);
+        request.getFormData().put("identifier", UUID.randomUUID().toString());
 
         HTTPRequestFileEntry file = new HTTPRequestFileEntry();
         file.setName("uploaded.csv");
         file.setField("file");
         file.setPath("src/test/resources/file.csv");
         file.setMineType("text/csv");
-        file.getFormData().put("identifier", UUID.randomUUID().toString());
-        request.setRequestFile(file);
+        request.getRequestFiles().add(file);
 
         HTTPResponseEntry response = Assertions.assertDoesNotThrow(
             () -> executor.executeRequest(settings, "src/test/resources/http-request-executor.http", request));
@@ -487,45 +487,12 @@ public class HTTPRequestExecutorTest extends EmbeddedAPITest {
         HTTPRequestFileEntry file = new HTTPRequestFileEntry();
         file.setField("file");
         file.setPath("src/test/resources/file.csv");
-        request.setRequestFile(file);
+        request.getRequestFiles().add(file);
 
         HTTPResponseEntry response = Assertions.assertDoesNotThrow(
             () -> executor.executeRequest(settings, "src/test/resources/http-request-executor.http", request));
 
         Assertions.assertEquals(201, response.getStatusCode());
-    }
-
-    @Test
-    public void executeRequestUploadFileMissingPath() {
-        HTTPRequestExecutor executor = findByNameOrFail(RequestExecutor.class, "http");
-        HTTPRequestEntry request = new HTTPRequestEntry();
-        Settings settings = new Settings();
-
-        request.setName("upload");
-        request.setUrl("http://localhost:" + port + "/file");
-
-        HTTPRequestFileEntry file = new HTTPRequestFileEntry();
-        request.setRequestFile(file);
-
-        Assertions.assertThrows(RequestException.class,
-            () -> executor.executeRequest(settings, "src/test/resources/http-request-executor.http", request));
-    }
-
-    @Test
-    public void executeRequestUploadFileMissingField() {
-        HTTPRequestExecutor executor = findByNameOrFail(RequestExecutor.class, "http");
-        HTTPRequestEntry request = new HTTPRequestEntry();
-        Settings settings = new Settings();
-
-        request.setName("upload");
-        request.setUrl("http://localhost:" + port + "/file");
-
-        HTTPRequestFileEntry file = new HTTPRequestFileEntry();
-        file.setPath("src/test/resources/file.csv");
-        request.setRequestFile(file);
-
-        Assertions.assertThrows(RequestException.class,
-            () -> executor.executeRequest(settings, "src/test/resources/http-request-executor.http", request));
     }
 
     @Test
@@ -539,7 +506,7 @@ public class HTTPRequestExecutorTest extends EmbeddedAPITest {
         request.setMethod("LOCAL");
 
         HTTPRequestFileEntry file = new HTTPRequestFileEntry();
-        request.setRequestFile(file);
+        request.getRequestFiles().add(file);
 
         Assertions.assertThrows(RequestException.class,
             () -> executor.executeRequest(settings, "src/test/resources/http-request-executor.http", request));
@@ -558,7 +525,7 @@ public class HTTPRequestExecutorTest extends EmbeddedAPITest {
         HTTPRequestFileEntry file = new HTTPRequestFileEntry();
         file.setField("file");
         file.setPath("src/test/resources/file.csv");
-        request.setRequestFile(file);
+        request.getRequestFiles().add(file);
 
         HTTPMockEntry mock = new HTTPMockEntry();
         mock.setExceptionClassOnOutputStream(IOException.class.getName());

@@ -1,4 +1,4 @@
 
 ### [request] request
 
-@requestFile = file-to-send
+@requestFiles = file-to-send

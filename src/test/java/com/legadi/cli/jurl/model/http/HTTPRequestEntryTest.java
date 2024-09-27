@@ -3,6 +3,7 @@ package com.legadi.cli.jurl.model.http;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -26,8 +27,12 @@ public class HTTPRequestEntryTest {
         model.setBodyCharset(StandardCharsets.UTF_8.name());
         model.setBodyContent("{\"name\": \"test\"}");
         model.setBodyFilePath("src/test/resources/basic-functions.body.json");
-        model.setRequestFile(new HTTPRequestFileEntry());
+        model.getRequestFiles().add(new HTTPRequestFileEntry());
         model.setRequestAuth(new HTTPRequestAuthEntry());
+
+        Map<String, String> formData = new HashMap<>();
+        formData.put("identifier", UUID.randomUUID().toString());
+        model.setFormData(formData);
 
         Assertions.assertEquals("POST", model.getMethod());
         Assertions.assertEquals(1, model.getQueryParams().size());
@@ -37,7 +42,9 @@ public class HTTPRequestEntryTest {
         Assertions.assertEquals(StandardCharsets.UTF_8.name(), model.getBodyCharset());
         Assertions.assertEquals("{\"name\": \"test\"}", model.getBodyContent());
         Assertions.assertEquals("src/test/resources/basic-functions.body.json", model.getBodyFilePath());
-        Assertions.assertNotNull(model.getRequestFile());
+        Assertions.assertFalse(model.getRequestFiles().isEmpty());
         Assertions.assertNotNull(model.getRequestAuth());
+        Assertions.assertEquals(1, model.getFormData().size());
+        Assertions.assertDoesNotThrow(() -> UUID.fromString(model.getFormData().get("identifier")));
     }
 }

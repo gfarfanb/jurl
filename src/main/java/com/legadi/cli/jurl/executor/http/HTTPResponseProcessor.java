@@ -101,8 +101,11 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
         if(response.getBodyPath() != null) {
             details.put("bodyPath", response.getBodyPath().toString());
         }
-        if(response.getSentFilePath() != null) {
-            details.put("sentFilePath", response.getSentFilePath().toString());
+        if(isNotEmpty(response.getSentFilePaths())) {
+            details.put("sentFilePaths", response.getSentFilePaths()
+                .stream()
+                .map(Path::toString)
+                .collect(Collectors.toList()));
         }
         if(response.getResponsePath() != null) {
             details.put("responsePath", response.getResponsePath().toString());

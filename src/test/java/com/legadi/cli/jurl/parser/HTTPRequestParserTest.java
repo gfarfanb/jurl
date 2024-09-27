@@ -354,4 +354,24 @@ public class HTTPRequestParserTest {
         Assertions.assertEquals("application/txt", request.getHeaders().get("Content-Type"));
         Assertions.assertEquals(expectedBody, request.getBodyContent());
     }
+
+    @Test
+    public void parseRequestByFileMissingPath() {
+        Settings settings = new Settings();
+        Path requestPath = Paths.get("src/test/resources/parser/http-request.file-missing-path.http");
+        HTTPRequestParser parser = new HTTPRequestParser();
+
+        Assertions.assertThrows(IllegalStateException.class,
+            () -> parser.parseInput(settings, requestPath));
+    }
+
+    @Test
+    public void parseRequestByFileMissingField() {
+        Settings settings = new Settings();
+        Path requestPath = Paths.get("src/test/resources/parser/http-request.file-missing-field.http");
+        HTTPRequestParser parser = new HTTPRequestParser();
+
+        Assertions.assertThrows(IllegalStateException.class,
+            () -> parser.parseInput(settings, requestPath));
+    }
 }

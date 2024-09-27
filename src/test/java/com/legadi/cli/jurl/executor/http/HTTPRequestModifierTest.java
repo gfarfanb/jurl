@@ -357,7 +357,7 @@ public class HTTPRequestModifierTest {
         api.setBodyCharset(StandardCharsets.UTF_16.name());
         api.setBodyContent("{}");
         api.setBodyFilePath("path/");
-        api.setRequestFile(new HTTPRequestFileEntry());
+        api.getRequestFiles().add(new HTTPRequestFileEntry());
 
         HTTPRequestEntry request = new HTTPRequestEntry();
 
@@ -382,7 +382,7 @@ public class HTTPRequestModifierTest {
         Assertions.assertEquals(StandardCharsets.UTF_16.name(), request.getBodyCharset());
         Assertions.assertEquals("{}", request.getBodyContent());
         Assertions.assertEquals("path/", request.getBodyFilePath());
-        Assertions.assertNotNull(request.getRequestFile());
+        Assertions.assertFalse(request.getRequestFiles().isEmpty());
     }
 
     @Test
@@ -396,7 +396,7 @@ public class HTTPRequestModifierTest {
         request.setBodyCharset(StandardCharsets.UTF_16.name());
         request.setBodyContent("{}");
         request.setBodyFilePath("path/");
-        request.setRequestFile(new HTTPRequestFileEntry());
+        request.getRequestFiles().add(new HTTPRequestFileEntry());
 
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
         modifier.mergeAPI(settings, api, request);
@@ -406,7 +406,7 @@ public class HTTPRequestModifierTest {
         Assertions.assertEquals(StandardCharsets.UTF_16.name(), request.getBodyCharset());
         Assertions.assertEquals("{}", request.getBodyContent());
         Assertions.assertEquals("path/", request.getBodyFilePath());
-        Assertions.assertNotNull(request.getRequestFile());
+        Assertions.assertFalse(request.getRequestFiles().isEmpty());
     }
 
     @Test
@@ -476,26 +476,25 @@ public class HTTPRequestModifierTest {
         Settings settings = new Settings();
         HTTPRequestEntry api = new HTTPRequestEntry();
 
-        api.setRequestFile(new HTTPRequestFileEntry());
-        api.getRequestFile().setName("file");
-        api.getRequestFile().setPath("path/");
-        api.getRequestFile().setField("field");
-        api.getRequestFile().setMineType("application/xml");
-        api.getRequestFile().getFormData().put("field", "field-value");
+        api.getRequestFiles().add(new HTTPRequestFileEntry());
+        api.getRequestFiles().get(0).setName("file");
+        api.getRequestFiles().get(0).setPath("path/");
+        api.getRequestFiles().get(0).setField("field");
+        api.getRequestFiles().get(0).setMineType("application/xml");
+
+        api.getFormData().put("field", "field-value");
 
         HTTPRequestEntry request = new HTTPRequestEntry();
-
-        request.setRequestFile(new HTTPRequestFileEntry());
 
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
         modifier.mergeAPI(settings, api, request);
 
-        Assertions.assertEquals("file", request.getRequestFile().getName());
-        Assertions.assertEquals("path/", request.getRequestFile().getPath());
-        Assertions.assertEquals("field", request.getRequestFile().getField());
-        Assertions.assertEquals("application/xml", request.getRequestFile().getMineType());
-        Assertions.assertFalse(request.getRequestFile().getFormData().isEmpty());
-        Assertions.assertEquals("field-value", request.getRequestFile().getFormData().get("field"));
+        Assertions.assertEquals("file", request.getRequestFiles().get(0).getName());
+        Assertions.assertEquals("path/", request.getRequestFiles().get(0).getPath());
+        Assertions.assertEquals("field", request.getRequestFiles().get(0).getField());
+        Assertions.assertEquals("application/xml", request.getRequestFiles().get(0).getMineType());
+        Assertions.assertFalse(request.getFormData().isEmpty());
+        Assertions.assertEquals("field-value", request.getFormData().get("field"));
     }
 
     @Test
@@ -503,26 +502,28 @@ public class HTTPRequestModifierTest {
         Settings settings = new Settings();
         HTTPRequestEntry api = new HTTPRequestEntry();
 
-        api.setRequestFile(new HTTPRequestFileEntry());
+        api.getRequestFiles().add(new HTTPRequestFileEntry());
+        api.getRequestFiles().get(0).setPath("path/");
 
         HTTPRequestEntry request = new HTTPRequestEntry();
 
-        request.setRequestFile(new HTTPRequestFileEntry());
-        request.getRequestFile().setName("file");
-        request.getRequestFile().setPath("path/");
-        request.getRequestFile().setField("field");
-        request.getRequestFile().setMineType("application/xml");
-        request.getRequestFile().getFormData().put("field", "field-value");
+        request.getRequestFiles().add(new HTTPRequestFileEntry());
+        request.getRequestFiles().get(0).setName("file");
+        request.getRequestFiles().get(0).setPath("path/");
+        request.getRequestFiles().get(0).setField("field");
+        request.getRequestFiles().get(0).setMineType("application/xml");
+
+        request.getFormData().put("field", "field-value");
 
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
         modifier.mergeAPI(settings, api, request);
 
-        Assertions.assertEquals("file", request.getRequestFile().getName());
-        Assertions.assertEquals("path/", request.getRequestFile().getPath());
-        Assertions.assertEquals("field", request.getRequestFile().getField());
-        Assertions.assertEquals("application/xml", request.getRequestFile().getMineType());
-        Assertions.assertFalse(request.getRequestFile().getFormData().isEmpty());
-        Assertions.assertEquals("field-value", request.getRequestFile().getFormData().get("field"));
+        Assertions.assertEquals("file", request.getRequestFiles().get(0).getName());
+        Assertions.assertEquals("path/", request.getRequestFiles().get(0).getPath());
+        Assertions.assertEquals("field", request.getRequestFiles().get(0).getField());
+        Assertions.assertEquals("application/xml", request.getRequestFiles().get(0).getMineType());
+        Assertions.assertFalse(request.getFormData().isEmpty());
+        Assertions.assertEquals("field-value", request.getFormData().get("field"));
     }
 
     @Test

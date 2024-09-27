@@ -31,6 +31,7 @@ import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.common.StringExpander;
 import com.legadi.cli.jurl.exception.CommandException;
+import com.legadi.cli.jurl.exception.RequestException;
 import com.legadi.cli.jurl.model.AssertionEntry;
 import com.legadi.cli.jurl.model.AssertionType;
 import com.legadi.cli.jurl.model.RequestInput;
@@ -49,6 +50,8 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
     private static final Map<String, Field> REQUEST_FIELDS = getAllFields(HTTPRequestEntry.class);
     private static final Map<String, Field> REQUEST_FILE_FIELDS = getAllFields(HTTPRequestFileEntry.class);
+    private static final String REQUEST_FILE_FIELD_PATH = "path";
+    private static final String REQUEST_FILE_FIELD_FIELD = "field";
     private static final Map<String, Field> REQUEST_AUTH_FIELDS = getAllFields(HTTPRequestAuthEntry.class);
     private static final Map<String, Field> MOCK_FIELDS = getAllFields(HTTPMockEntry.class);
     private static final Map<String, String> ESCAPED_CHARS = new HashMap<>();
@@ -65,7 +68,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         SECTION("^(?i)###[ ]*\\[(api|request|flow)\\](.*)"),
         SOURCE("^(?i)source (.*)"),
         REQUEST_FIELD("^(?i)@([\\w:.\\-_@~]+)[ ]*=(.*)"),
-        FIELD_VARIABLE("^(?i)(file|auth|mock|output)[ ]*[@]?([\\w:.\\-_@~]+)[ ]*=(.*)"),
+        FIELD_VARIABLE("^(?i)(file|auth|mock|form|output)[ ]*[@]?([\\w:.\\-_@~]+)[ ]*=(.*)"),
         URL("^(?i)http.*"),
         URL_METHOD("^(?i)(get|head|post|put|delete|connect|options|trace|patch)[ ]*(.*)"),
         HEADER("^(?i)(mock)?[ ]*([\\w\\-]+): (.*)"),
@@ -97,13 +100,15 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             StringExpander stringExpander = new StringExpander(settings);
 
             RequestInput<HTTPRequestEntry> requestInput = new RequestInput<>();
-            AtomicReference<HTTPRequestEntry> apiCarrier = new AtomicReference<>(new HTTPRequestEntry());
-            AtomicReference<HTTPRequestEntry> requestCarrier = new AtomicReference<>();
+            HTTPRequestEntry apiRequest = new HTTPRequestEntry();
+            AtomicReference<Pair<HTTPRequestEntry, RequestFileSupplier>> apiCarrier =
+                new AtomicReference<>(new Pair<>(apiRequest, new RequestFileSupplier(apiRequest)));
+            AtomicReference<Pair<HTTPRequestEntry, RequestFileSupplier>> requestCarrier = new AtomicReference<>();
             AtomicReference<Pair<String, List<StepEntry>>> flowCarrier = new AtomicReference<>();
             Set<String> sectionNames = new HashSet<>();
             Map<String, String> config = new HashMap<>();
 
-            requestInput.setApi(apiCarrier.get());
+            requestInput.setApi(apiCarrier.get().getLeft());
             requestInput.setConfig(config);
 
             LOGGER.fine("Processing lines of file: " + requestPath);
@@ -134,7 +139,9 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             List<String> lines = Files.readAllLines(requestPath);
             StringExpander stringExpander = new StringExpander(settings);
 
-            AtomicReference<HTTPRequestEntry> requestCarrier = new AtomicReference<>(new HTTPRequestEntry());
+            HTTPRequestEntry request =  new HTTPRequestEntry();
+            AtomicReference<Pair<HTTPRequestEntry, RequestFileSupplier>> requestCarrier =
+                new AtomicReference<>(new Pair<>(request, new RequestFileSupplier(request)));
             Map<String, String> config = new HashMap<>();
 
             processLines(lines, stringExpander, requestCarrier, config);
@@ -144,7 +151,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                 Settings.mergeProperties(settings.getEnvironment(), config);
             }
 
-            return requestCarrier.get();
+            return requestCarrier.get().getLeft();
         } catch(CommandException ex) {
             throw ex;
         } catch(IllegalArgumentException | IOException ex) {
@@ -153,8 +160,9 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     }
 
     private Section processLines(List<String> lines, StringExpander stringExpander, Section section,
-            RequestInput<HTTPRequestEntry> requestInput, AtomicReference<HTTPRequestEntry> apiCarrier,
-            AtomicReference<HTTPRequestEntry> requestCarrier,
+            RequestInput<HTTPRequestEntry> requestInput,
+            AtomicReference<Pair<HTTPRequestEntry, RequestFileSupplier>> apiCarrier,
+            AtomicReference<Pair<HTTPRequestEntry, RequestFileSupplier>> requestCarrier,
             AtomicReference<Pair<String, List<StepEntry>>> flowCarrier,
             Set<String> sectionNames, Map<String, String> config) throws IOException {
 
@@ -199,7 +207,8 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     }
 
     private void processLines(List<String> lines, StringExpander stringExpander,
-            AtomicReference<HTTPRequestEntry> requestCarrier, Map<String, String> config) {
+            AtomicReference<Pair<HTTPRequestEntry, RequestFileSupplier>> requestCarrier,
+            Map<String, String> config) {
 
         for(String line : lines) {
             try {
@@ -215,15 +224,10 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     }
 
     private void decorateRequest(StringExpander stringExpander,
-            AtomicReference<HTTPRequestEntry> requestCarrier,
+            AtomicReference<Pair<HTTPRequestEntry, RequestFileSupplier>> requestCarrier,
             Map<String, String> config, String line) {
-        HTTPRequestEntry request = requestCarrier.get();
-        Supplier<HTTPRequestFileEntry> fileSupplier = () -> {
-            if(request.getRequestFile() == null) {
-                request.setRequestFile(new HTTPRequestFileEntry());
-            }
-            return request.getRequestFile();
-        };
+        HTTPRequestEntry request = requestCarrier.get().getLeft();
+        RequestFileSupplier fileSupplier = requestCarrier.get().getRight();
         Supplier<HTTPRequestAuthEntry> authSupplier = () -> {
             if(request.getRequestAuth() == null) {
                 request.setRequestAuth(new HTTPRequestAuthEntry());
@@ -308,7 +312,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     }
 
     private void readSection(Set<String> sectionNames,
-            AtomicReference<HTTPRequestEntry> requestCarrier,
+            AtomicReference<Pair<HTTPRequestEntry, RequestFileSupplier>> requestCarrier,
             AtomicReference<Pair<String, List<StepEntry>>> flowCarrier,
             RequestInput<HTTPRequestEntry> requestInput, String line) {
         applyLine(LinePattern.SECTION, line,
@@ -327,8 +331,8 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                         }
 
                         request.setName(name);
-                        requestCarrier.set(request);
-                        requestInput.getRequests().put(name, requestCarrier.get());
+                        requestCarrier.set(new Pair<>(request, new RequestFileSupplier(request)));
+                        requestInput.getRequests().put(name, request);
                         section = Section.REQUEST;
                         break;
                     case "flow":
@@ -459,7 +463,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
     private void addFieldOrVariable(StringExpander stringExpander,
             HTTPRequestEntry request,
-            Supplier<HTTPRequestFileEntry> fileSupplier,
+            RequestFileSupplier fileSupplier,
             Supplier<HTTPRequestAuthEntry> authSupplier,
             Supplier<HTTPMockEntry> mockSupplier,
             Map<String, String> config, String line) {
@@ -476,9 +480,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                     value = stringExpander.replaceAllInContent(config, value);
 
                     if(isFieldRequired) {
-                        addField(REQUEST_FILE_FIELDS, fileSupplier.get(), fieldName, value);
-                    } else {
-                        fileSupplier.get().getFormData().put(fieldName, value);
+                        addFileField(fileSupplier, fieldName, value);
                     }
                 } else if("auth".equalsIgnoreCase(type)) {
                     value = stringExpander.replaceAllInContent(config, value);
@@ -492,6 +494,10 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                     if(isFieldRequired) {
                         addField(MOCK_FIELDS, mockSupplier.get(), fieldName, value);
                     }
+                }  else if("form".equalsIgnoreCase(type)) {
+                    value = stringExpander.replaceAllInContent(config, value);
+
+                    request.getFormData().put(fieldName, value);
                 } else {
                     // type = "output"
                     request.getOutputMappings().put(fieldName, value);
@@ -499,6 +505,12 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
                 return null;
             });
+    }
+
+    private void addFileField(RequestFileSupplier fileSupplier, String fieldName, String value)
+            throws IllegalAccessException {
+        HTTPRequestFileEntry requestFile = fileSupplier.get(fieldName, value);
+        addField(REQUEST_FILE_FIELDS, requestFile, fieldName, value);
     }
 
     private void addField(Map<String, Field> fields, Object target, String fieldName,
@@ -646,6 +658,55 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     public static interface MatcherTransformer<T> {
 
         Object apply(T value) throws Exception;
+    }
+
+    public static class RequestFileSupplier {
+
+        private Map<String, HTTPRequestFileEntry> requestFilesByPath = new HashMap<>();
+        private final HTTPRequestEntry request;
+
+        private HTTPRequestFileEntry lastRequestFile;
+
+        public RequestFileSupplier(HTTPRequestEntry request) {
+            this.request = request;
+        }
+
+        public HTTPRequestFileEntry get(String fieldName, String value) {
+            int index;
+
+            switch(fieldName) {
+                case REQUEST_FILE_FIELD_PATH:
+                    index = request.getRequestFiles().size();
+                    if(isBlank(value)) {
+                        throw new RequestException(request,
+                            "request.requestFiles[" + index + "].path (file path) is null or empty");
+                    }
+                    if(!requestFilesByPath.containsKey(value)) {
+                        lastRequestFile = new HTTPRequestFileEntry();
+                        requestFilesByPath.put(value, lastRequestFile);
+                        request.getRequestFiles().add(lastRequestFile);
+                    } else {
+                        lastRequestFile = requestFilesByPath.get(value);
+                    }
+                    break;
+                case REQUEST_FILE_FIELD_FIELD:
+                    index = request.getRequestFiles().size() - 1;
+                    if(isBlank(value)) {
+                        throw new RequestException(request,
+                            "request.requestFiles[" + index + "].field (form file field) is null or empty");
+                    }
+                    break;
+            }
+
+            if(lastRequestFile == null) {
+                throw new RequestException(request,
+                    "request.requestFiles[0] is null, define a 'path' first");
+            }
+
+            return lastRequestFile;
+        }
+
+
     }
 
     public static class ParsedLineException extends RuntimeException {

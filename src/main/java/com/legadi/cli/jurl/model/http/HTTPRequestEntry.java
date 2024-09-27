@@ -1,6 +1,8 @@
 package com.legadi.cli.jurl.model.http;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.legadi.cli.jurl.model.RequestEntry;
@@ -13,7 +15,8 @@ public class HTTPRequestEntry extends RequestEntry<HTTPMockEntry> {
     private String bodyCharset;
     private String bodyContent;
     private String bodyFilePath;
-    private HTTPRequestFileEntry requestFile;
+    private List<HTTPRequestFileEntry> requestFiles = new ArrayList<>();
+    private Map<String, String> formData = new HashMap<>();
     private HTTPRequestAuthEntry requestAuth;
 
     public String getMethod() {
@@ -64,12 +67,20 @@ public class HTTPRequestEntry extends RequestEntry<HTTPMockEntry> {
         this.bodyFilePath = bodyFilePath;
     }
 
-    public HTTPRequestFileEntry getRequestFile() {
-        return requestFile;
+    public List<HTTPRequestFileEntry> getRequestFiles() {
+        return requestFiles;
     }
 
-    public void setRequestFile(HTTPRequestFileEntry requestFile) {
-        this.requestFile = requestFile;
+    public void setRequestFiles(List<HTTPRequestFileEntry> requestFiles) {
+        this.requestFiles = requestFiles;
+    }
+
+    public Map<String, String> getFormData() {
+        return formData;
+    }
+
+    public void setFormData(Map<String, String> formData) {
+        this.formData = formData;
     }
 
     public HTTPRequestAuthEntry getRequestAuth() {

@@ -7,13 +7,13 @@ Request-Catcher: {{request.catcher.identifier}}
 ### [request] upload
 http://localhost:{{local.server.port}}/file
 
-file @name = uploaded.csv
 file @path = src/test/resources/file.csv
 file @field = file
+file @name = uploaded.csv
 file @mineType = text/csv
 
-file identifier = {{UUID:}}
-file timestamp = {{DATE_TIME:}}
+form identifier = {{UUID:}}
+form timestamp = {{DATE_TIME:}}
 
 assert EQUALS_TO 201 {{HTTP/status}}
 

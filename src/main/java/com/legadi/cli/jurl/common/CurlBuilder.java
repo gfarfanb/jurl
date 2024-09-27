@@ -6,7 +6,9 @@ import static com.legadi.cli.jurl.common.CommonUtils.trim;
 
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -14,10 +16,10 @@ public class CurlBuilder {
 
     private final Map<String, String> headers = new HashMap<>();
     private final Map<String, String> formFields = new HashMap<>();
+    private final List<String> files = new ArrayList<>();
 
     private String url;
     private String method;
-    private String file;
     private String data;
 
     public CurlBuilder setUrl(URL url) {
@@ -30,8 +32,8 @@ public class CurlBuilder {
         return this;
     }
 
-    public CurlBuilder setFile(String field, String path, String filename, String mineType) {
-        this.file = new StringBuilder()
+    public CurlBuilder addFile(String field, String path, String filename, String mineType) {
+        this.files.add(new StringBuilder()
             .append("-F ")
             .append("\"")
             .append(trim(field))
@@ -40,7 +42,8 @@ public class CurlBuilder {
             .append(isNotBlank(filename) ? ";filename=" + trim(filename) : "")
             .append(isNotBlank(mineType) ? ";type=" + trim(mineType) : "")
             .append("\"")
-            .toString();
+            .toString()
+        );
         return this;
     }
 
@@ -64,7 +67,7 @@ public class CurlBuilder {
             .append(isNotBlank(method) ? " " + method : "")
             .append(build(headers, "-H", ": "))
             .append(build(formFields, "-F", "="))
-            .append(isNotBlank(file) ? " " + file : "")
+            .append(files.stream().map(file -> " " + file).collect(Collectors.joining("")))
             .append(isNotBlank(data) ? " " + data : "")
             .append(isNotBlank(url) ? " " + url : "")
             .toString();

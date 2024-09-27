@@ -8,8 +8,10 @@ auth @authType = TOKEN
 auth @tokenParam = auth.bearer.token
 auth field = discarded
 
+file @path = src/test/resources/file.csv
 file @mineType = text/csv
-file identifier = {{UUID:}}
+
+form identifier = {{UUID:}}
 
 opt -s var1 value
 opt -s var2 "string v a l u e"

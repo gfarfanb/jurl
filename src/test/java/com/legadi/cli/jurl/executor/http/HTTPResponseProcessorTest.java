@@ -7,7 +7,11 @@ import static com.legadi.cli.jurl.model.AssertionType.ASSERTION;
 import static com.legadi.cli.jurl.model.RequestBehaviour.CURL_ONLY;
 import static com.legadi.cli.jurl.model.RequestBehaviour.PRINT_ONLY;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -204,9 +208,12 @@ public class HTTPResponseProcessorTest {
     @SuppressWarnings("unchecked")
     public void getDetailsFromResponseValidation() {
         HTTPResponseEntry response = new HTTPResponseEntry();
+        List<Path> sendFiles = new ArrayList<>();
+
+        sendFiles.add(Paths.get("src/test/resources/file.csv"));
 
         response.setBodyPath(Paths.get("src/test/resources/json-object.input.json"));
-        response.setSentFilePath(Paths.get("src/test/resources/file.csv"));
+        response.setSentFilePaths(sendFiles);
         response.setResponsePath(Paths.get("src/test/resources/json-response.output.gz.out"));
         response.setStatusCode(200);
         response.getResponseHeaders().put("Content-Type", "application/json");
@@ -216,7 +223,7 @@ public class HTTPResponseProcessorTest {
             () -> processor.getDetails(response));
 
         Assertions.assertEquals("src/test/resources/json-object.input.json", details.get("bodyPath"));
-        Assertions.assertEquals("src/test/resources/file.csv", details.get("sentFilePath"));
+        Assertions.assertEquals(Arrays.asList("src/test/resources/file.csv"), details.get("sentFilePaths"));
         Assertions.assertEquals("src/test/resources/json-response.output.gz.out", details.get("responsePath"));
         Assertions.assertEquals(200, details.get("statusCode"));
         Assertions.assertNotNull(details.get("responseHeaders"));

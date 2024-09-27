@@ -48,8 +48,8 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertNull(uploadRequest.getBodyCharset());
         Assertions.assertNull(uploadRequest.getBodyContent());
         Assertions.assertNull(uploadRequest.getBodyFilePath());
-        Assertions.assertNotNull(uploadRequest.getRequestFile());
-        Assertions.assertFalse(uploadRequest.getRequestFile().getFormData().isEmpty());
+        Assertions.assertFalse(uploadRequest.getRequestFiles().isEmpty());
+        Assertions.assertFalse(uploadRequest.getFormData().isEmpty());
         Assertions.assertDoesNotThrow(() -> uploadSettings.get(REQUEST_FILE_BOUNDARY));
         Assertions.assertTrue(uploadRequest.getOutputMappings().isEmpty());
         Assertions.assertEquals(1, uploadRequest.getAssertions().size());
@@ -117,8 +117,8 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertNull(uploadRequest.getBodyCharset());
         Assertions.assertNull(uploadRequest.getBodyContent());
         Assertions.assertNull(uploadRequest.getBodyFilePath());
-        Assertions.assertNotNull(uploadRequest.getRequestFile());
-        Assertions.assertTrue(uploadRequest.getRequestFile().getFormData().isEmpty());
+        Assertions.assertFalse(uploadRequest.getRequestFiles().isEmpty());
+        Assertions.assertTrue(uploadRequest.getFormData().isEmpty());
         Assertions.assertDoesNotThrow(() -> uploadSettings.get(REQUEST_FILE_BOUNDARY));
         Assertions.assertTrue(uploadRequest.getOutputMappings().isEmpty());
         Assertions.assertEquals(1, uploadRequest.getAssertions().size());
@@ -185,7 +185,8 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertNull(downloadRequest.getBodyCharset());
         Assertions.assertNull(downloadRequest.getBodyContent());
         Assertions.assertNull(downloadRequest.getBodyFilePath());
-        Assertions.assertNull(downloadRequest.getRequestFile());
+        Assertions.assertTrue(downloadRequest.getRequestFiles().isEmpty());
+        Assertions.assertTrue(downloadRequest.getFormData().isEmpty());
         Assertions.assertTrue(downloadRequest.getOutputMappings().isEmpty());
         Assertions.assertEquals(1, downloadRequest.getAssertions().size());
 
@@ -239,7 +240,8 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertNull(downloadRequest.getBodyCharset());
         Assertions.assertNull(downloadRequest.getBodyContent());
         Assertions.assertNull(downloadRequest.getBodyFilePath());
-        Assertions.assertNull(downloadRequest.getRequestFile());
+        Assertions.assertTrue(downloadRequest.getRequestFiles().isEmpty());
+        Assertions.assertTrue(downloadRequest.getFormData().isEmpty());
         Assertions.assertTrue(downloadRequest.getOutputMappings().isEmpty());
         Assertions.assertEquals(1, downloadRequest.getAssertions().size());
 
@@ -300,7 +302,8 @@ public class FileAPITest extends EmbeddedAPITest {
         Assertions.assertNull(downloadRequest.getBodyCharset());
         Assertions.assertNull(downloadRequest.getBodyContent());
         Assertions.assertNull(downloadRequest.getBodyFilePath());
-        Assertions.assertNull(downloadRequest.getRequestFile());
+        Assertions.assertTrue(downloadRequest.getRequestFiles().isEmpty());
+        Assertions.assertTrue(downloadRequest.getFormData().isEmpty());
         Assertions.assertTrue(downloadRequest.getOutputMappings().isEmpty());
         Assertions.assertEquals(1, downloadRequest.getAssertions().size());
 

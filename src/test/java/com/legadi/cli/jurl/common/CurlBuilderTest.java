@@ -49,7 +49,7 @@ public class CurlBuilderTest extends EmbeddedAPITest {
             .setUrl(new URL("http://localhost:" + port + "/file"))
             .setMethod("POST")
             .addForm("timestamp", "2023-10-13T03:50:54.792")
-            .setFile("file", "src/test/resources/file.csv", "uploaded.csv", "text/csv")
+            .addFile("file", "src/test/resources/file.csv", "uploaded.csv", "text/csv")
             .addHeader("Content-Type", "multipart/form-data");
         String expected = "curl -X POST"
             + " -H \"Content-Type: multipart/form-data\""
@@ -65,7 +65,7 @@ public class CurlBuilderTest extends EmbeddedAPITest {
         CurlBuilder curlBuilder = new CurlBuilder()
             .setUrl(new URL("http://localhost:" + port + "/file"))
             .setMethod("POST")
-            .setFile("file", "src/test/resources/file.csv", null, null)
+            .addFile("file", "src/test/resources/file.csv", null, null)
             .addHeader("Content-Type", "multipart/form-data");
         String expected = "curl -X POST"
             + " -H \"Content-Type: multipart/form-data\""
