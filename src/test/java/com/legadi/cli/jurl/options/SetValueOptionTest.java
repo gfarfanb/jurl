@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 
-public class SetValueOptionTest extends OptionTest<SetValueOption> {
+public class SetValueOptionTest extends OptionAbstractTest<SetValueOption> {
 
     public SetValueOptionTest() {
         super("--set");

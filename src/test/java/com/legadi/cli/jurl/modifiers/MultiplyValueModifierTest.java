@@ -3,7 +3,7 @@ package com.legadi.cli.jurl.modifiers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class MultiplyValueModifierTest extends ValueModifierTest<MultiplyValueModifier> {
+public class MultiplyValueModifierTest extends ValueModifierAbstractTest<MultiplyValueModifier> {
 
     public MultiplyValueModifierTest() {
         super("multiply");

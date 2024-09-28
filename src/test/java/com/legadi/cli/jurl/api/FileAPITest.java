@@ -19,13 +19,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.legadi.cli.jurl.common.Settings;
-import com.legadi.cli.jurl.embedded.EmbeddedAPITest;
+import com.legadi.cli.jurl.embedded.EmbeddedAPIAbstractTest;
 import com.legadi.cli.jurl.embedded.model.FileFormEntity;
 import com.legadi.cli.jurl.model.AssertionResult;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 
-public class FileAPITest extends EmbeddedAPITest {
+public class FileAPITest extends EmbeddedAPIAbstractTest {
 
     @Test
     public void upload() throws IOException {

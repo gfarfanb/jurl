@@ -14,7 +14,7 @@ import com.legadi.cli.jurl.executor.RequestExecutor;
 import com.legadi.cli.jurl.executor.ResponseProcessor;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 
-public abstract class DummyAPITest {
+public abstract class DummyAPIAbstractTest {
 
     protected final UUID requestCatcherId = UUID.randomUUID();
     protected final RequestCatcher requestCatcher = RequestCatcherManager.getCatcher(requestCatcherId.toString());

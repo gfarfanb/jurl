@@ -8,6 +8,9 @@ Request-Catcher: {{request.catcher.identifier}}
 http://localhost:{{local.server.port}}/file
 
 file @path = src/test/resources/file.csv
+file @field = This will be overrided because of @path appears twice
+
+file @path = src/test/resources/file.csv
 file @field = file
 file @name = uploaded.csv
 file @mineType = text/csv

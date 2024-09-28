@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.exception.SkipExecutionException;
 
-public class EnvironmentCopyOptionTest extends OptionTest<EnvironmentCopyOption> {
+public class EnvironmentCopyOptionTest extends OptionAbstractTest<EnvironmentCopyOption> {
 
     public EnvironmentCopyOptionTest() {
         super("--env-copy");

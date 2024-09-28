@@ -13,7 +13,7 @@ import com.google.gson.reflect.TypeToken;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 
-public class MockRequestOptionTest extends OptionTest<MockRequestOption> {
+public class MockRequestOptionTest extends OptionAbstractTest<MockRequestOption> {
 
     public MockRequestOptionTest() {
         super("--mock");

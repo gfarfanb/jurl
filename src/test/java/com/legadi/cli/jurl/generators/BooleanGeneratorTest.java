@@ -3,7 +3,7 @@ package com.legadi.cli.jurl.generators;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class BooleanGeneratorTest extends GeneratorTest {
+public class BooleanGeneratorTest extends GeneratorAbstractTest {
 
     public BooleanGeneratorTest() {
         super("BOOLEAN");

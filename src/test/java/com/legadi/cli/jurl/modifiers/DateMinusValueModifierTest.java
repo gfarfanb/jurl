@@ -7,7 +7,7 @@ import java.time.temporal.ChronoUnit;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class DateMinusValueModifierTest extends ValueModifierTest<DateMinusValueModifier> {
+public class DateMinusValueModifierTest extends ValueModifierAbstractTest<DateMinusValueModifier> {
 
     public DateMinusValueModifierTest() {
         super("date-minus");

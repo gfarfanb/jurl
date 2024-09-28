@@ -3,5 +3,4 @@
 
 POST http://localhost:5555/spec
 
-file @path = 
 file @field = file

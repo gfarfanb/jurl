@@ -3,7 +3,7 @@ package com.legadi.cli.jurl.generators;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class UUIDGeneratorTest extends GeneratorTest {
+public class UUIDGeneratorTest extends GeneratorAbstractTest {
 
     public UUIDGeneratorTest() {
         super("UUID");

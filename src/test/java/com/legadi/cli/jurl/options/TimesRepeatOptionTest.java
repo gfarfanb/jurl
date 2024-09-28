@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 
-public class TimesRepeatOptionTest extends OptionTest<TimesRepeatOption> {
+public class TimesRepeatOptionTest extends OptionAbstractTest<TimesRepeatOption> {
 
     public TimesRepeatOptionTest() {
         super("--times");

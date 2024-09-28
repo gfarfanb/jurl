@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
 import com.legadi.cli.jurl.common.ObjectsRegistry;
 import com.legadi.cli.jurl.common.OutputPathBuilder;
 import com.legadi.cli.jurl.common.Settings;
-import com.legadi.cli.jurl.embedded.EmbeddedAPITest;
+import com.legadi.cli.jurl.embedded.EmbeddedAPIAbstractTest;
 import com.legadi.cli.jurl.embedded.executor.HTTPRequestTestExecutor;
 import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.exception.RequestException;
@@ -42,7 +42,7 @@ import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestFileEntry;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 
-public class HTTPRequestExecutorTest extends EmbeddedAPITest {
+public class HTTPRequestExecutorTest extends EmbeddedAPIAbstractTest {
 
     @BeforeEach
     public void setup() {

@@ -11,14 +11,14 @@ import com.legadi.cli.jurl.assertions.AssertionFunction;
 import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 
-public class CustomClassOptionTest extends OptionTest<CustomClassOption> {
+public class CustomClassOptionTest extends OptionAbstractTest<CustomClassOption> {
 
     public CustomClassOptionTest() {
         super("--custom-class");
     }
 
     @Test
-    public void registerClassValidation() {
+    public void registerClassValidation() throws InterruptedException {
         UUID correlationId = Assertions.assertDoesNotThrow(
             () -> jurl(
                 "-cc", CustomAssertionFunction.class.getName(),

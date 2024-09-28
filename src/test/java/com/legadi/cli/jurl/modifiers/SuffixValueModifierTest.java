@@ -3,7 +3,7 @@ package com.legadi.cli.jurl.modifiers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class SuffixValueModifierTest extends ValueModifierTest<SuffixValueModifier> {
+public class SuffixValueModifierTest extends ValueModifierAbstractTest<SuffixValueModifier> {
 
     public SuffixValueModifierTest() {
         super("suffix");

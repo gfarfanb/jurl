@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import com.legadi.cli.jurl.exception.CommandException;
 
-public class DecimalGeneratorTest extends GeneratorTest {
+public class DecimalGeneratorTest extends GeneratorAbstractTest {
 
     private static final int DOT_LENGTH = 1;
 

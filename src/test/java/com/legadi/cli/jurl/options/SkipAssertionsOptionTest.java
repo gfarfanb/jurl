@@ -12,7 +12,7 @@ import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.model.AssertionResult;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 
-public class SkipAssertionsOptionTest extends OptionTest<SkipAssertionsOption> {
+public class SkipAssertionsOptionTest extends OptionAbstractTest<SkipAssertionsOption> {
 
     public SkipAssertionsOptionTest() {
         super("--not-assert");

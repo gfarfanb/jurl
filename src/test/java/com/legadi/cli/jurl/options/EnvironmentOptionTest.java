@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 
-public class EnvironmentOptionTest extends OptionTest<EnvironmentOption> {
+public class EnvironmentOptionTest extends OptionAbstractTest<EnvironmentOption> {
 
     public EnvironmentOptionTest() {
         super("--env");

@@ -2,7 +2,6 @@ package com.legadi.cli.jurl.executor.http;
 
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isEmpty;
-import static com.legadi.cli.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findOrFail;
 
@@ -172,11 +171,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
             request.setBodyFilePath(api.getBodyFilePath());
         }
 
-        if(isEmpty(request.getRequestFiles())) {
-            request.setRequestFiles(api.getRequestFiles());
-        } else if(isNotEmpty(api.getRequestFiles())) {
-            mergeRequestFiles(api.getRequestFiles(), request.getRequestFiles());
-        }
+        mergeRequestFiles(api.getRequestFiles(), request.getRequestFiles());
 
         Map<String, String> formData = new HashMap<>(api.getFormData());
         formData.putAll(request.getFormData());

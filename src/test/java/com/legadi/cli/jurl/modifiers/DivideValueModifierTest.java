@@ -3,7 +3,7 @@ package com.legadi.cli.jurl.modifiers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class DivideValueModifierTest extends ValueModifierTest<DivideValueModifier> {
+public class DivideValueModifierTest extends ValueModifierAbstractTest<DivideValueModifier> {
 
     public DivideValueModifierTest() {
         super("divide");

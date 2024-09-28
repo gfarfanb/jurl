@@ -14,13 +14,13 @@ import org.junit.jupiter.api.Test;
 
 import com.google.gson.reflect.TypeToken;
 import com.legadi.cli.jurl.common.Settings;
-import com.legadi.cli.jurl.embedded.EmbeddedAPITest;
+import com.legadi.cli.jurl.embedded.EmbeddedAPIAbstractTest;
 import com.legadi.cli.jurl.embedded.model.BasicFunctionsEntity;
 import com.legadi.cli.jurl.model.AssertionResult;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 
-public class CrudAPITest extends EmbeddedAPITest {
+public class CrudAPITest extends EmbeddedAPIAbstractTest {
 
     @Test
     public void crud() {

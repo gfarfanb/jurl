@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import com.legadi.cli.jurl.exception.CommandException;
 
-public class IntegerGeneratorTest extends GeneratorTest {
+public class IntegerGeneratorTest extends GeneratorAbstractTest {
 
     public IntegerGeneratorTest() {
         super("INTEGER");

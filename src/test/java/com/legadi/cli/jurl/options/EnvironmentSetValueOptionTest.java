@@ -14,7 +14,7 @@ import com.google.gson.reflect.TypeToken;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.exception.SkipExecutionException;
 
-public class EnvironmentSetValueOptionTest extends OptionTest<EnvironmentSetValueOption> {
+public class EnvironmentSetValueOptionTest extends OptionAbstractTest<EnvironmentSetValueOption> {
 
     public EnvironmentSetValueOptionTest() {
         super("--env-set");

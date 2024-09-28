@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.exception.SkipExecutionException;
 
-public class CleanOutputOptionTest extends OptionTest<CleanOutputOption> {
+public class CleanOutputOptionTest extends OptionAbstractTest<CleanOutputOption> {
 
     public CleanOutputOptionTest() {
         super("--remove");

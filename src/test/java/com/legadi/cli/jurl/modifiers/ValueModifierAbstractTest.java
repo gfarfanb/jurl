@@ -12,14 +12,14 @@ import org.junit.jupiter.api.Test;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.exception.ModifierException;
 
-public abstract class ValueModifierTest<T extends ValueModifier> {
+public abstract class ValueModifierAbstractTest<T extends ValueModifier> {
 
     private final Settings settings;
     private final Map<String, String> values;
     private final String name;
     private final T modifier;
 
-    public ValueModifierTest(String name) {
+    public ValueModifierAbstractTest(String name) {
         this.settings = new Settings();
         this.values = new HashMap<>();
         this.name = name;

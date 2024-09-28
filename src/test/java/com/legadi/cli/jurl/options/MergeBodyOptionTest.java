@@ -15,7 +15,7 @@ import com.google.gson.reflect.TypeToken;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 
-public class MergeBodyOptionTest extends OptionTest<MergeBodyOption> {
+public class MergeBodyOptionTest extends OptionAbstractTest<MergeBodyOption> {
 
     public MergeBodyOptionTest() {
         super("--merge-body");

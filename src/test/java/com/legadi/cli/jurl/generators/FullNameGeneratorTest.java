@@ -8,7 +8,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class FullNameGeneratorTest extends GeneratorTest {
+public class FullNameGeneratorTest extends GeneratorAbstractTest {
 
     private static final int WHITESPACE_LENGTH = 1;
 

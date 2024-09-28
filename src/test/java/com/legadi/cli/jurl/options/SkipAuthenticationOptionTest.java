@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 
-public class SkipAuthenticationOptionTest extends OptionTest<SkipAuthenticationOption> {
+public class SkipAuthenticationOptionTest extends OptionAbstractTest<SkipAuthenticationOption> {
 
     public SkipAuthenticationOptionTest() {
         super("--not-auth");

@@ -13,7 +13,7 @@ import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.model.AssertionResult;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 
-public class CurlPrintOptionTest extends OptionTest<CurlPrintOption> {
+public class CurlPrintOptionTest extends OptionAbstractTest<CurlPrintOption> {
 
     public CurlPrintOptionTest() {
         super("--curl");

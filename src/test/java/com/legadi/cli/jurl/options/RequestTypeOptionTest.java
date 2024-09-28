@@ -20,7 +20,7 @@ import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 import com.legadi.cli.jurl.parser.HTTPRequestParser;
 import com.legadi.cli.jurl.parser.RequestParser;
 
-public class RequestTypeOptionTest extends OptionTest<RequestTypeOption> {
+public class RequestTypeOptionTest extends OptionAbstractTest<RequestTypeOption> {
 
     public RequestTypeOptionTest() {
         super("--request-type");

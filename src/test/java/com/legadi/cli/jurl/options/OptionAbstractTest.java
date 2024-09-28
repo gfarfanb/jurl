@@ -9,14 +9,14 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.legadi.cli.jurl.common.Settings;
-import com.legadi.cli.jurl.embedded.EmbeddedAPITest;
+import com.legadi.cli.jurl.embedded.EmbeddedAPIAbstractTest;
 
-public abstract class OptionTest<T extends Option> extends EmbeddedAPITest {
+public abstract class OptionAbstractTest<T extends Option> extends EmbeddedAPIAbstractTest {
 
     protected final T option;
 
     @SuppressWarnings("unchecked")
-    public OptionTest(String optionName) {
+    public OptionAbstractTest(String optionName) {
         this.option = (T) findByNameOrFail(Option.class, optionName);
     }
 

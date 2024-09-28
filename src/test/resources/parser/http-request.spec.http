@@ -16,6 +16,7 @@ auth field = discarded
 
 file @path = src/test/resources/file.csv
 file @mineType = text/csv
+file field = discarded
 
 form identifier = {{UUID:}}
 

@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import com.legadi.cli.jurl.common.DateTimeFormatterUtil;
 import com.legadi.cli.jurl.exception.CommandException;
 
-public class DateTimeGeneratorTest extends GeneratorTest {
+public class DateTimeGeneratorTest extends GeneratorAbstractTest {
 
     public DateTimeGeneratorTest() {
         super("DATE_TIME");

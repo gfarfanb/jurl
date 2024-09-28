@@ -7,9 +7,9 @@ import java.nio.file.Paths;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.legadi.cli.jurl.embedded.EmbeddedAPITest;
+import com.legadi.cli.jurl.embedded.EmbeddedAPIAbstractTest;
 
-public class CurlBuilderTest extends EmbeddedAPITest {
+public class CurlBuilderTest extends EmbeddedAPIAbstractTest {
 
     @Test
     public void buildPostBinary() throws IOException {

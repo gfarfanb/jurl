@@ -7,7 +7,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class PickAnyGeneratorTest extends GeneratorTest {
+public class PickAnyGeneratorTest extends GeneratorAbstractTest {
 
     public PickAnyGeneratorTest() {
         super("PICK_ANY");

@@ -6,12 +6,12 @@ import java.util.Optional;
 
 import com.legadi.cli.jurl.common.Settings;
 
-public abstract class GeneratorTest {
+public abstract class GeneratorAbstractTest {
 
     protected final String type;
     protected final Settings settings;
 
-    public GeneratorTest(String type) {
+    public GeneratorAbstractTest(String type) {
         this.type = type;
         this.settings = new Settings();
     }

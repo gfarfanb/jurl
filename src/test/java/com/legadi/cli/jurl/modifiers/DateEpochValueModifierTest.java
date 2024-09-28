@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import com.legadi.cli.jurl.exception.CommandException;
 
-public class DateEpochValueModifierTest extends ValueModifierTest<DateEpochValueModifier> {
+public class DateEpochValueModifierTest extends ValueModifierAbstractTest<DateEpochValueModifier> {
 
     public DateEpochValueModifierTest() {
         super("date-epoch");

@@ -11,11 +11,11 @@ import org.junit.jupiter.api.Test;
 
 import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
-import com.legadi.cli.jurl.embedded.EmbeddedAPITest;
+import com.legadi.cli.jurl.embedded.EmbeddedAPIAbstractTest;
 import com.legadi.cli.jurl.exception.RecursiveCommandException;
 import com.legadi.cli.jurl.model.AssertionResult;
 
-public class FlowAPITest extends EmbeddedAPITest {
+public class FlowAPITest extends EmbeddedAPIAbstractTest {
 
     @Test
     public void authorization() {

@@ -15,7 +15,7 @@ import com.google.gson.reflect.TypeToken;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.exception.SkipExecutionException;
 
-public class EnvironmentRemoveValueOptionTest extends OptionTest<EnvironmentRemoveValueOption> {
+public class EnvironmentRemoveValueOptionTest extends OptionAbstractTest<EnvironmentRemoveValueOption> {
 
     public EnvironmentRemoveValueOptionTest() {
         super("--env-rm");

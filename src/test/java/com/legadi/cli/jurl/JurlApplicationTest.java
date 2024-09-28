@@ -3,9 +3,9 @@ package com.legadi.cli.jurl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.legadi.cli.jurl.embedded.DummyAPITest;
+import com.legadi.cli.jurl.embedded.DummyAPIAbstractTest;
 
-public class JurlApplicationTest extends DummyAPITest {
+public class JurlApplicationTest extends DummyAPIAbstractTest {
 
     @Test
     public void mainValidation() {

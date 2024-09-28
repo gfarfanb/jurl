@@ -3,7 +3,7 @@ package com.legadi.cli.jurl.generators;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class UserInputGeneratorTest extends GeneratorTest {
+public class UserInputGeneratorTest extends GeneratorAbstractTest {
 
     public UserInputGeneratorTest() {
         super("INPUT");

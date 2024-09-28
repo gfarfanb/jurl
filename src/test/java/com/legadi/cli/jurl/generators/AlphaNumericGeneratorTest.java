@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import com.legadi.cli.jurl.exception.CommandException;
 
-public class AlphaNumericGeneratorTest extends GeneratorTest {
+public class AlphaNumericGeneratorTest extends GeneratorAbstractTest {
 
     public AlphaNumericGeneratorTest() {
         super("ALPHA_NUMERIC");

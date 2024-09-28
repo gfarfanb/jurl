@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 
-public class OpenEditorOptionTest extends OptionTest<OpenEditorOption> {
+public class OpenEditorOptionTest extends OptionAbstractTest<OpenEditorOption> {
 
     public OpenEditorOptionTest() {
         super("--open-editor");

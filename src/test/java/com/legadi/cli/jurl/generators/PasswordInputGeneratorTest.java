@@ -3,7 +3,7 @@ package com.legadi.cli.jurl.generators;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class PasswordInputGeneratorTest extends GeneratorTest {
+public class PasswordInputGeneratorTest extends GeneratorAbstractTest {
 
     public PasswordInputGeneratorTest() {
         super("PASSWORD");

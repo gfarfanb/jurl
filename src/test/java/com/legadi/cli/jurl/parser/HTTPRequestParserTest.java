@@ -374,4 +374,14 @@ public class HTTPRequestParserTest {
         Assertions.assertThrows(IllegalStateException.class,
             () -> parser.parseInput(settings, requestPath));
     }
+
+    @Test
+    public void parseRequestByFileNotFound() {
+        Settings settings = new Settings();
+        Path requestPath = Paths.get("src/test/resources/parser/http-request.file-not-found.http");
+        HTTPRequestParser parser = new HTTPRequestParser();
+
+        Assertions.assertThrows(IllegalStateException.class,
+            () -> parser.parseInput(settings, requestPath));
+    }
 }

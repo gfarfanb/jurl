@@ -13,7 +13,7 @@ import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.model.AssertionResult;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 
-public class RequestPrintOptionTest extends OptionTest<RequestPrintOption> {
+public class RequestPrintOptionTest extends OptionAbstractTest<RequestPrintOption> {
 
     public RequestPrintOptionTest() {
         super("--print");

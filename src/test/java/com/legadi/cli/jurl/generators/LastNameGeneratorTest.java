@@ -8,7 +8,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class LastNameGeneratorTest extends GeneratorTest {
+public class LastNameGeneratorTest extends GeneratorAbstractTest {
 
     public LastNameGeneratorTest() {
         super("LAST_NAME");

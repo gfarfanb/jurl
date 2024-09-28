@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import com.legadi.cli.jurl.exception.CommandException;
 
-public class EmailGeneratorTest extends GeneratorTest {
+public class EmailGeneratorTest extends GeneratorAbstractTest {
 
     private static final int AT_LENGTH = 1;
 

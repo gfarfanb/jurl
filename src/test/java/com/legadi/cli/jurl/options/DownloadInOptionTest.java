@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 
-public class DownloadInOptionTest extends OptionTest<DownloadInOption> {
+public class DownloadInOptionTest extends OptionAbstractTest<DownloadInOption> {
 
     public DownloadInOptionTest() {
         super("--download-in");

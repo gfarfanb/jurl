@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import com.legadi.cli.jurl.exception.CommandException;
 
-public class LoremIpsumGeneratorTest extends GeneratorTest {
+public class LoremIpsumGeneratorTest extends GeneratorAbstractTest {
 
     public LoremIpsumGeneratorTest() {
         super("LOREM_IPSUM");

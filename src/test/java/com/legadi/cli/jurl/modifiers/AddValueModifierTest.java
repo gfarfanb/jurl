@@ -3,7 +3,7 @@ package com.legadi.cli.jurl.modifiers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class AddValueModifierTest extends ValueModifierTest<AddValueModifier> {
+public class AddValueModifierTest extends ValueModifierAbstractTest<AddValueModifier> {
 
     public AddValueModifierTest() {
         super("add");

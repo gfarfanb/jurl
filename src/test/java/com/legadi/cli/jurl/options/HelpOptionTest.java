@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import com.legadi.cli.jurl.exception.SkipExecutionException;
 
-public class HelpOptionTest extends OptionTest<HelpOption> {
+public class HelpOptionTest extends OptionAbstractTest<HelpOption> {
 
     public HelpOptionTest() {
         super("--help");

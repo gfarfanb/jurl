@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -22,8 +23,9 @@ import com.legadi.cli.jurl.executor.RequestCommand;
 import com.legadi.cli.jurl.executor.RequestExecutor;
 import com.legadi.cli.jurl.executor.ResponseProcessor;
 
+@EnableAutoConfiguration
 @SpringBootTest(classes = EmbeddedConfig.class, webEnvironment = WebEnvironment.RANDOM_PORT)
-public abstract class EmbeddedAPITest {
+public abstract class EmbeddedAPIAbstractTest {
 
     @LocalServerPort
     protected int port;
@@ -31,7 +33,7 @@ public abstract class EmbeddedAPITest {
     protected final String requestCatcherId;
     protected final RequestCatcher requestCatcher;
 
-    public EmbeddedAPITest() {
+    public EmbeddedAPIAbstractTest() {
         this.requestCatcherId = UUID.randomUUID().toString();
         this.requestCatcher = RequestCatcherManager.getCatcher(requestCatcherId);
     }

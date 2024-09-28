@@ -477,8 +477,8 @@ public class HTTPRequestModifierTest {
         HTTPRequestEntry api = new HTTPRequestEntry();
 
         api.getRequestFiles().add(new HTTPRequestFileEntry());
-        api.getRequestFiles().get(0).setName("file");
         api.getRequestFiles().get(0).setPath("path/");
+        api.getRequestFiles().get(0).setName("file");
         api.getRequestFiles().get(0).setField("field");
         api.getRequestFiles().get(0).setMineType("application/xml");
 
@@ -489,8 +489,8 @@ public class HTTPRequestModifierTest {
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
         modifier.mergeAPI(settings, api, request);
 
-        Assertions.assertEquals("file", request.getRequestFiles().get(0).getName());
         Assertions.assertEquals("path/", request.getRequestFiles().get(0).getPath());
+        Assertions.assertEquals("file", request.getRequestFiles().get(0).getName());
         Assertions.assertEquals("field", request.getRequestFiles().get(0).getField());
         Assertions.assertEquals("application/xml", request.getRequestFiles().get(0).getMineType());
         Assertions.assertFalse(request.getFormData().isEmpty());
@@ -504,22 +504,31 @@ public class HTTPRequestModifierTest {
 
         api.getRequestFiles().add(new HTTPRequestFileEntry());
         api.getRequestFiles().get(0).setPath("path/");
+        api.getRequestFiles().get(0).setName("file");
+        api.getRequestFiles().get(0).setField("field");
+        api.getRequestFiles().get(0).setMineType("application/xml");
+
+        api.getRequestFiles().add(new HTTPRequestFileEntry());
+        api.getRequestFiles().get(1).setPath("path/1");
 
         HTTPRequestEntry request = new HTTPRequestEntry();
 
         request.getRequestFiles().add(new HTTPRequestFileEntry());
-        request.getRequestFiles().get(0).setName("file");
         request.getRequestFiles().get(0).setPath("path/");
-        request.getRequestFiles().get(0).setField("field");
-        request.getRequestFiles().get(0).setMineType("application/xml");
+
+        request.getRequestFiles().add(new HTTPRequestFileEntry());
+        request.getRequestFiles().get(1).setPath("path/1");
+        request.getRequestFiles().get(1).setName("file");
+        request.getRequestFiles().get(1).setField("field");
+        request.getRequestFiles().get(1).setMineType("application/xml");
 
         request.getFormData().put("field", "field-value");
 
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
         modifier.mergeAPI(settings, api, request);
 
-        Assertions.assertEquals("file", request.getRequestFiles().get(0).getName());
         Assertions.assertEquals("path/", request.getRequestFiles().get(0).getPath());
+        Assertions.assertEquals("file", request.getRequestFiles().get(0).getName());
         Assertions.assertEquals("field", request.getRequestFiles().get(0).getField());
         Assertions.assertEquals("application/xml", request.getRequestFiles().get(0).getMineType());
         Assertions.assertFalse(request.getFormData().isEmpty());

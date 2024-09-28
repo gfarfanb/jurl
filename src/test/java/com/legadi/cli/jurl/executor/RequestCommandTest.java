@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 
 import com.google.gson.reflect.TypeToken;
 import com.legadi.cli.jurl.common.Settings;
-import com.legadi.cli.jurl.embedded.DummyAPITest;
+import com.legadi.cli.jurl.embedded.DummyAPIAbstractTest;
 import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.exception.InvalidAssertionsFoundException;
 import com.legadi.cli.jurl.exception.RecursiveCommandException;
@@ -30,7 +30,7 @@ import com.legadi.cli.jurl.exception.SkipExecutionException;
 import com.legadi.cli.jurl.model.AssertionResult;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 
-public class RequestCommandTest extends DummyAPITest {
+public class RequestCommandTest extends DummyAPIAbstractTest {
 
     @AfterEach
     public void cleanup() {

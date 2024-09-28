@@ -3,7 +3,7 @@ package com.legadi.cli.jurl.modifiers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class DefaultValueModifierTest extends ValueModifierTest<DefaultValueModifier> {
+public class DefaultValueModifierTest extends ValueModifierAbstractTest<DefaultValueModifier> {
 
     public DefaultValueModifierTest() {
         super("default");

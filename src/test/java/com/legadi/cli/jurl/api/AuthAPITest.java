@@ -6,10 +6,10 @@ import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.legadi.cli.jurl.embedded.EmbeddedAPITest;
+import com.legadi.cli.jurl.embedded.EmbeddedAPIAbstractTest;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 
-public class AuthAPITest extends EmbeddedAPITest {
+public class AuthAPITest extends EmbeddedAPIAbstractTest {
 
     @Test
     public void requestWithAuthTimes() {
