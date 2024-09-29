@@ -1,9 +1,9 @@
 package com.legadi.cli.jurl;
 
-import static java.util.logging.Level.SEVERE;
 import static com.legadi.cli.jurl.common.Setup.setupConnectionstoAcceptAllHosts;
 import static com.legadi.cli.jurl.common.Setup.setupLogLevel;
 import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
 
 import java.util.logging.Logger;
 

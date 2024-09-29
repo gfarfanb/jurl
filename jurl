@@ -25,4 +25,4 @@ if [ ! -x "$JAVA_CMD" ] ; then
     exit 1
 fi
 
-exec "$JAVA_CMD" -jar "$JURL_CMD" $* >&2
+exec "$JAVA_CMD" -jar "$JURL_CMD" ${1+"$@"} >&2
