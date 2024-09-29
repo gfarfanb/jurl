@@ -82,6 +82,29 @@ public class FileFormController {
             .body("Created");
     }
 
+    @PostMapping(path = "/set", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> uploadFiles(
+            @RequestPart MultipartFile[] files) throws IOException {
+        Settings settings = new Settings();
+
+        for(MultipartFile file : files) {
+            Path temporalFile = settings.getExecutionPath().resolve(file.getOriginalFilename());
+
+            try(InputStream fileInputStream = file.getInputStream();
+                    OutputStream outputStream = Files.newOutputStream(temporalFile)) {
+
+                byte[] buffer = new byte[8 * 1024];
+                int bytesRead;
+                while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+            }
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body("Created");
+    }
+
     @GetMapping
     public StreamingResponseBody download(
             @RequestParam String file,

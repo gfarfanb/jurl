@@ -340,4 +340,22 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
 
         Settings.mergeProperties("default", properties);
     }
+
+    @Test
+    public void uploadFiles() throws IOException {
+        UUID uploadCorrelationId = jurl("-n", "uploadFiles", "src/test/resources/file.spec.http");
+
+        HTTPResponseEntry uploadResponse = requestCatcher.getLast(uploadCorrelationId, "response");
+        Settings uploadSettings = requestCatcher.getLast(uploadCorrelationId, "settings");
+
+        for(Path path : uploadResponse.getSentFilePaths()) {
+            File uploadedFile = uploadSettings.getExecutionPath()
+                .resolve(path.toFile().getName()).toFile();
+
+            Assertions.assertTrue(uploadedFile.exists());
+            Assertions.assertTrue(uploadedFile.length() > 0);
+            Assertions.assertTrue(uploadedFile.delete());
+            Assertions.assertFalse(uploadedFile.exists());
+        }
+    }
 }

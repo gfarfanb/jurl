@@ -51,3 +51,18 @@ GET http://localhost:{{local.server.port}}/file?
 &name=saved.csv
 
 assert EQUALS_TO 200 {{HTTP/status}}
+
+
+### [request] uploadFiles
+http://localhost:{{local.server.port}}/file/set
+
+file @path = src/test/resources/file-1.csv
+file @field = files
+
+file @path = src/test/resources/file-2.csv
+file @field = files
+
+file @path = src/test/resources/file-3.csv
+file @field = files
+
+assert EQUALS_TO 201 {{HTTP/status}}
