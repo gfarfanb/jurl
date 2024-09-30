@@ -16,6 +16,10 @@ public class CommonUtils {
     public static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvxyz0123456789";
     public static final String NUMERIC_STRING = "0123456789";
 
+    public static final String INPUT_FORMAT = "input: %s> ";
+    public static final String INPUT_DEFAULT_FORMAT = "input: %s [default: %s]> ";
+    public static final String PASSWORD_FORMAT = "pswrd: %s> ";
+
     private CommonUtils() {}
 
     public static boolean isNotBlank(String value) {

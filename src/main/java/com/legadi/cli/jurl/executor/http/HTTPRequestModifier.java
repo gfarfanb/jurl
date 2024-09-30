@@ -1,5 +1,7 @@
 package com.legadi.cli.jurl.executor.http;
 
+import static com.legadi.cli.jurl.common.CommonUtils.INPUT_DEFAULT_FORMAT;
+import static com.legadi.cli.jurl.common.CommonUtils.INPUT_FORMAT;
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
@@ -16,6 +18,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.legadi.cli.jurl.common.CommonUtils;
 import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.common.StringExpander;
@@ -415,8 +418,8 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         public String apply(String property) {
             String defaultValue = defaults.get(property);
             String message = defaultValue != null
-                ? property + "(default: " + defaultValue + ")>"
-                : property + ">";
+                ? String.format(INPUT_DEFAULT_FORMAT, property, defaultValue)
+                : String.format(INPUT_FORMAT, property);
 
             if(defaultValue == null) {
                 defaultValue = "";
@@ -424,6 +427,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
 
             return Optional.ofNullable(System.console())
                 .map(console -> console.readLine(message))
+                .filter(CommonUtils::isNotBlank)
                 .orElse(defaultValue);
         }
         

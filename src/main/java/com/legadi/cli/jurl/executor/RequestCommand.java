@@ -446,14 +446,15 @@ public class RequestCommand {
             String inputPath, RequestEntry<?> request, ResponseEntry response,
             ExecutionStatus status, HistoryEntry historyEntry) {
         return "Request completed:"
-            + "\n  status=" + status
-            + "\n  inputFile=" + inputPath
-            + "\n  requestName=" + request.getName()
             + (response != null && response.getResult() != null
                 ? "\n  result=" + response.getResult() : "")
+            + "\n  inputFile=" + inputPath
+            + "\n  requestName=" + request.getName()
             + "\n  environment=" + settings.getEnvironment()
             + "\n  index=" + index
+            + "\n  executionStatus=" + status
             + "\n  executionTag=" + settings.getExecutionTag()
-            + (historyEntry != null  ? "\n  time(nano)=" + historyEntry.getNanoTime() : "");
+            + (historyEntry != null 
+                ? "\n  executionTime(nano)=" + historyEntry.getNanoTime() : "");
     }
 }
