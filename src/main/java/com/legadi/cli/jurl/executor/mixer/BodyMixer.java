@@ -2,6 +2,7 @@ package com.legadi.cli.jurl.executor.mixer;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 
 import com.legadi.cli.jurl.common.Evaluable;
 import com.legadi.cli.jurl.common.Settings;
@@ -15,7 +16,7 @@ public interface BodyMixer extends Evaluable {
 
     String type();
 
-    Path apply(Settings settings, MixerEntry entry);
+    Path apply(Settings settings, Map<String, String> defaults, MixerEntry entry);
 
     public static class MixerEntry {
 

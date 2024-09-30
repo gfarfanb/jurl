@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class WriterUtils {
@@ -78,12 +79,13 @@ public class WriterUtils {
         }
     }
 
-    public static void expandFile(Settings settings, Path inputFilePath, Path outputFilePath) {
-        expandFile(settings, inputFilePath, outputFilePath, line -> {});
+    public static void expandFile(Settings settings, Path inputFilePath, Path outputFilePath,
+            Map<String, String> defaults) {
+        expandFile(settings, inputFilePath, outputFilePath, defaults, line -> {});
     }
 
     public static void expandFile(Settings settings, Path inputFilePath, Path outputFilePath,
-            Consumer<String> lineConsumer) {
+            Map<String, String> defaults, Consumer<String> lineConsumer) {
         StringExpander stringExpander = new StringExpander(settings);
 
         try(BufferedReader br = Files.newBufferedReader(inputFilePath);

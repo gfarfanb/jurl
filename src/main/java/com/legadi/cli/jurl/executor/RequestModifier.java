@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.model.AuthenticationRequest;
+import com.legadi.cli.jurl.model.FlowEntry;
 import com.legadi.cli.jurl.model.MockEntry;
 import com.legadi.cli.jurl.model.RequestEntry;
 import com.legadi.cli.jurl.model.RequestInput;
@@ -50,4 +51,12 @@ public interface RequestModifier<T extends RequestEntry<? extends MockEntry>, R 
     }
 
     void overrideRequestWithFile(Settings settings, T request, String filename);
+
+    void expandFlow(Settings settings, FlowEntry flow);
+
+    default void expandRequest(Settings settings, RequestEntry<? extends MockEntry> request) {
+        expandRequestDefinition(settings, cast(request));
+    }
+
+    void expandRequestDefinition(Settings settings, T request);
 }

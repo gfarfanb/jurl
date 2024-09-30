@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 
 import com.legadi.cli.jurl.common.OutputPathBuilder;
 import com.legadi.cli.jurl.common.Settings;
-import com.legadi.cli.jurl.common.StringExpander;
 import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.model.http.HTTPMockEntry;
 
@@ -38,10 +37,12 @@ public class HTTPMockConnection extends HttpURLConnection {
 
     private static final Logger LOGGER = Logger.getLogger(HTTPMockConnection.class.getName());
 
-    private URL url;
-    private Settings settings;
-    private String requestFilePath;
-    private String inputName;
+    private final URL url;
+    private final Settings settings;
+    private final String requestFilePath;
+    private final String inputName;
+    private final Map<String, String> defaults;
+
     private int responseCode;
     private Long secondsDelay;
     private String responseContent;
@@ -52,13 +53,16 @@ public class HTTPMockConnection extends HttpURLConnection {
     private boolean doOutput;
 
     public HTTPMockConnection(URL url, Settings settings,
-            String requestFilePath, String inputName, HTTPMockEntry mockEntry) {
+            String requestFilePath, String inputName,
+            Map<String, String> defaults,
+            HTTPMockEntry mockEntry) {
         super(null);
 
         this.url = url;
         this.settings = settings;
         this.requestFilePath = requestFilePath;
         this.inputName = inputName;
+        this.defaults = defaults;
 
         initMock(mockEntry);
     }
@@ -164,9 +168,6 @@ public class HTTPMockConnection extends HttpURLConnection {
         }
 
         if(isNotBlank(responseContent)) {
-            StringExpander stringExpander = new StringExpander(settings);
-            responseContent = stringExpander.replaceAllInContent(responseContent);
-
             LOGGER.fine("[mock-connection] Calling getInputStream():ByteArrayInputStream - " + responseContent);
             return new ByteArrayInputStream(responseContent.getBytes());
         }
@@ -178,7 +179,7 @@ public class HTTPMockConnection extends HttpURLConnection {
             Path temporalBodyPath = pathBuilder.buildCommandPath();
             Path responseBodyPath = Paths.get(responseFilePath);
 
-            expandFile(settings, responseBodyPath, temporalBodyPath);
+            expandFile(settings, responseBodyPath, temporalBodyPath, defaults);
 
             LOGGER.fine("[mock-connection] Calling getInputStream():ByteArrayInputStream - " + temporalBodyPath);
             return Files.newInputStream(temporalBodyPath);

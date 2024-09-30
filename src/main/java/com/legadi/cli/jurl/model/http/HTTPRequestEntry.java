@@ -17,6 +17,7 @@ public class HTTPRequestEntry extends RequestEntry<HTTPMockEntry> {
     private String bodyFilePath;
     private List<HTTPRequestFileEntry> requestFiles = new ArrayList<>();
     private Map<String, String> formData = new HashMap<>();
+    private Map<String, String> defaults = new HashMap<>();
     private HTTPRequestAuthEntry requestAuth;
 
     public String getMethod() {
@@ -81,6 +82,14 @@ public class HTTPRequestEntry extends RequestEntry<HTTPMockEntry> {
 
     public void setFormData(Map<String, String> formData) {
         this.formData = formData;
+    }
+
+    public Map<String, String> getDefaults() {
+        return defaults;
+    }
+
+    public void setDefaults(Map<String, String> defaults) {
+        this.defaults = defaults;
     }
 
     public HTTPRequestAuthEntry getRequestAuth() {

@@ -13,9 +13,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.StringExpander;
 import com.legadi.cli.jurl.exception.RequestException;
 import com.legadi.cli.jurl.executor.RequestModifier;
 import com.legadi.cli.jurl.executor.mixer.BodyMixer;
@@ -23,7 +26,9 @@ import com.legadi.cli.jurl.executor.mixer.BodyMixer.MixerEntry;
 import com.legadi.cli.jurl.model.AssertionEntry;
 import com.legadi.cli.jurl.model.AuthenticationRequest;
 import com.legadi.cli.jurl.model.AuthorizationType;
+import com.legadi.cli.jurl.model.FlowEntry;
 import com.legadi.cli.jurl.model.RequestInput;
+import com.legadi.cli.jurl.model.StepEntry;
 import com.legadi.cli.jurl.model.http.HTTPMockEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestAuthEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
@@ -60,6 +65,11 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         }
 
         HTTPRequestAuthEntry auth = request.getRequestAuth();
+        Map<String, String> defaults = new HashMap<>(api.getDefaults());
+        defaults.putAll(request.getDefaults());
+
+        expandRequestAuth(settings, auth, defaults);
+
         requestInputPath = isNotBlank(auth.getRequestInputPath())
             ? auth.getRequestInputPath() : requestInputPath;
 
@@ -176,6 +186,10 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         Map<String, String> formData = new HashMap<>(api.getFormData());
         formData.putAll(request.getFormData());
         request.setFormData(formData);
+
+        Map<String, String> defaults = new HashMap<>(api.getDefaults());
+        defaults.putAll(request.getDefaults());
+        request.setDefaults(defaults);
     }
 
     @Override
@@ -188,11 +202,12 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         }
 
         BodyMixer mixer = findOrFail(BodyMixer.class, settings.getMergeBodyUsingType());
-        Path bodyTemporalPath = mixer.apply(settings, new MixerEntry()
-            .setRequestPath(requestPath)
-            .setRequestName(request.getName())
-            .setBodyFilePath(request.getBodyFilePath())
-            .setBodyContent(request.getBodyContent()));
+        Path bodyTemporalPath = mixer.apply(settings, request.getDefaults(),
+            new MixerEntry()
+                .setRequestPath(requestPath)
+                .setRequestName(request.getName())
+                .setBodyFilePath(request.getBodyFilePath())
+                .setBodyContent(request.getBodyContent()));
 
         request.setBodyContent(null);
         request.setBodyFilePath(null);
@@ -205,6 +220,9 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         HTTPRequestParser parser = findOrFail(RequestParser.class, name());
         HTTPRequestEntry overrideRequest = parser.parseRequest(settings, Paths.get(filename));
 
+        overrideRequest.getDefaults().putAll(request.getDefaults());
+        expandRequest(settings, overrideRequest);
+
         request.getHeaders().putAll(overrideRequest.getHeaders());
         request.getQueryParams().putAll(overrideRequest.getQueryParams());
 
@@ -214,6 +232,103 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
 
         if(isNotBlank(overrideRequest.getBodyFilePath())) {
             request.setBodyFilePath(overrideRequest.getBodyFilePath());
+        }
+    }
+
+    @Override
+    public void expandFlow(Settings settings, FlowEntry flow) {
+        StringExpander stringExpander = new StringExpander(settings,
+            new PropertyDefault(flow.getDefaults()));
+
+        expandMap(stringExpander, flow.getDefaults(), true);
+
+        for(StepEntry step : flow.getSteps()) {
+            step.setRequestInputPath(stringExpander.replaceAllInContent(step.getRequestInputPath()));
+            step.getOptions().stream().map(OptionEntry::getRight).forEach(args -> expandArray(stringExpander, args));
+        }
+    }
+
+    @Override
+    public void expandRequestDefinition(Settings settings, HTTPRequestEntry request) {
+        StringExpander stringExpander = new StringExpander(settings,
+            new PropertyDefault(request.getDefaults()));
+
+        expandMap(stringExpander, request.getDefaults(), true);
+
+        request.setUrl(stringExpander.replaceAllInContent(request.getUrl()));
+        request.setProtocol(stringExpander.replaceAllInContent(request.getProtocol()));
+        request.setHost(stringExpander.replaceAllInContent(request.getHost()));
+        request.setPort(stringExpander.replaceAllInContent(request.getPort()));
+        request.setBasePath(stringExpander.replaceAllInContent(request.getBasePath()));
+        request.setEndpoint(stringExpander.replaceAllInContent(request.getEndpoint()));
+
+        if(request.getMockDefinition() != null) {
+            HTTPMockEntry mock = request.getMockDefinition();
+
+            expandMap(stringExpander, mock.getResponseHeaders(), false);
+            mock.setResponseContent(stringExpander.replaceAllInContent(mock.getResponseContent()));
+            mock.setResponseFilePath(stringExpander.replaceAllInContent(mock.getResponseFilePath()));
+            mock.setExceptionClassOnOutputStream(stringExpander.replaceAllInContent(mock.getExceptionClassOnOutputStream()));
+            mock.setExceptionClassOnResponseCode(stringExpander.replaceAllInContent(mock.getExceptionClassOnResponseCode()));
+        }
+
+        request.getConditions().forEach(condition -> expandAssertion(stringExpander, condition));
+        request.getOptions().stream().map(Pair::getRight).forEach(args -> expandArray(stringExpander, args));
+
+        request.setMethod(stringExpander.replaceAllInContent(request.getMethod()));
+        expandMap(stringExpander, request.getQueryParams(), false);
+        expandMap(stringExpander, request.getHeaders(), false);
+        request.setBodyCharset(stringExpander.replaceAllInContent(request.getBodyCharset()));
+        request.setBodyContent(stringExpander.replaceAllInContent(request.getBodyContent()));
+        request.setBodyFilePath(stringExpander.replaceAllInContent(request.getBodyFilePath()));
+        request.getRequestFiles().forEach(requestFile -> expandRequestFile(stringExpander, requestFile));
+        expandMap(stringExpander, request.getFormData(), false);
+    }
+
+    private void expandRequestAuth(Settings settings, HTTPRequestAuthEntry requestAuth,
+            Map<String, String> defaults) {
+        StringExpander stringExpander = new StringExpander(settings,
+            new PropertyDefault(defaults));
+
+        expandMap(stringExpander, defaults, true);
+
+        requestAuth.setRequestInputPath(stringExpander.replaceAllInContent(requestAuth.getRequestInputPath()));
+        requestAuth.setInputName(stringExpander.replaceAllInContent(requestAuth.getInputName()));
+        requestAuth.setAuthType(stringExpander.replaceAllInContent(requestAuth.getAuthType()));
+        requestAuth.setTokenParam(stringExpander.replaceAllInContent(requestAuth.getTokenParam()));
+        requestAuth.setUsernameParam(stringExpander.replaceAllInContent(requestAuth.getUsernameParam()));
+        requestAuth.setPasswordParam(stringExpander.replaceAllInContent(requestAuth.getPasswordParam()));
+    }
+
+    private void expandAssertion(StringExpander stringExpander, AssertionEntry assertionEntry) {
+        assertionEntry.setName(stringExpander.replaceAllInContent(assertionEntry.getName()));
+        assertionEntry.setAssertionClass(stringExpander.replaceAllInContent(assertionEntry.getAssertionClass()));
+        assertionEntry.setMessage(stringExpander.replaceAllInContent(assertionEntry.getMessage()));
+        expandArray(stringExpander, assertionEntry.getArgs());
+    }
+
+    private void expandRequestFile(StringExpander stringExpander, HTTPRequestFileEntry requestFile) {
+        requestFile.setName(stringExpander.replaceAllInContent(requestFile.getName()));
+        requestFile.setPath(stringExpander.replaceAllInContent(requestFile.getPath()));
+        requestFile.setField(stringExpander.replaceAllInContent(requestFile.getField()));
+        requestFile.setMineType(stringExpander.replaceAllInContent(requestFile.getMineType()));
+    }
+
+    private void expandMap(StringExpander stringExpander, Map<String, String> map, boolean exhaustive) {
+        if(map == null) {
+            return;
+        }
+        for(Map.Entry<String, String> entry : map.entrySet()) {
+            map.put(entry.getKey(), stringExpander.replaceAllInContent(entry.getValue()));
+        }
+    }
+
+    private void expandArray(StringExpander stringExpander, String[] array) {
+        if(array == null) {
+            return;
+        }
+        for(int i = 0; i < array.length; i++) {
+            array[i] = stringExpander.replaceAllInContent(array[i]);
         }
     }
 
@@ -286,5 +401,31 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         if(isBlank(request.getPasswordParam())) {
             request.setPasswordParam(api.getPasswordParam());
         }
+    }
+
+    public static class PropertyDefault implements Function<String, String> {
+
+        private final Map<String, String> defaults;
+
+        public PropertyDefault(Map<String, String> defaults) {
+            this.defaults = defaults;
+        }
+
+        @Override
+        public String apply(String property) {
+            String defaultValue = defaults.get(property);
+            String message = defaultValue != null
+                ? property + "(default: " + defaultValue + ")>"
+                : property + ">";
+
+            if(defaultValue == null) {
+                defaultValue = "";
+            }
+
+            return Optional.ofNullable(System.console())
+                .map(console -> console.readLine(message))
+                .orElse(defaultValue);
+        }
+        
     }
 }

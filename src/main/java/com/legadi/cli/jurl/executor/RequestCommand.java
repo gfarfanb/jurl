@@ -45,6 +45,7 @@ import com.legadi.cli.jurl.model.AssertionResult;
 import com.legadi.cli.jurl.model.AuthenticationRequest;
 import com.legadi.cli.jurl.model.ExecutionIndex;
 import com.legadi.cli.jurl.model.ExecutionStatus;
+import com.legadi.cli.jurl.model.FlowEntry;
 import com.legadi.cli.jurl.model.HistoryEntry;
 import com.legadi.cli.jurl.model.MockEntry;
 import com.legadi.cli.jurl.model.RequestEntry;
@@ -149,22 +150,25 @@ public class RequestCommand {
     private Pair<String, ExecutionStats> processFlow(ExecutionIndex index, ExecutionTrace trace,
             String flowName, String requestInputPath,
             RequestInput<?> requestInput, Settings settings) {
-        List<StepEntry> steps = requestInput.getFlows().get(flowName);
+        FlowEntry flow = requestInput.getFlows().get(flowName);
 
-        if(isEmpty(steps)) {
+        if(isEmpty(flow.getSteps())) {
             throw new CommandException("No steps defined for the flow: "
                 + flowName + " - " + requestInputPath);
         }
+
+        RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, settings.getRequestType());
+        modifier.expandFlow(settings, flow);
 
         LOGGER.fine("Executing flow:"
             + "\n  index=" + index
             + "\n  flowName=" + flowName
             + "\n  requestInputPath=" + requestInputPath);
 
-        ExecutionStats stats = new ExecutionStats(steps.size());
+        ExecutionStats stats = new ExecutionStats(flow.getSteps().size());
         int stepIndex = 1;
 
-        for(StepEntry step : steps) {
+        for(StepEntry step : flow.getSteps()) {
             Settings stepSettings = settings.createForStep();
 
             try {
@@ -176,7 +180,7 @@ public class RequestCommand {
                 throw new CommandException(
                     "[" + requestInputPath + "/" + flowName + "]"
                     + " index=" + index
-                    + " step("+ stepIndex + "/" + steps.size() + ") "
+                    + " step("+ stepIndex + "/" + flow.getSteps().size() + ") "
                     + " - " + ex.getMessage());
             }
 
@@ -337,6 +341,7 @@ public class RequestCommand {
         }
 
         modifier.mergeAPI(settings, api, request);
+        modifier.expandRequest(settings, request);
 
         if(isNotBlank(settings.getMergeBodyUsingType())) {
             modifier.mergeBody(settings, requestInputPath, request);

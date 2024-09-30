@@ -14,6 +14,7 @@ import static com.legadi.cli.jurl.common.ObjectsRegistry.register;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -266,7 +267,7 @@ public class ObjectsRegistryTest {
         }
 
         @Override
-        public Path apply(Settings settings, MixerEntry entry) {
+        public Path apply(Settings settings, Map<String, String> defaults, MixerEntry entry) {
             return null;
         }
     }

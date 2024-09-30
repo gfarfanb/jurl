@@ -147,7 +147,8 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     private HttpURLConnection createConnection(Settings settings, String requestInputPath, HTTPRequestEntry request, URL url)
             throws IOException {
         if(settings.isMockRequest()) {
-            return new HTTPMockConnection(url, settings, requestInputPath, request.getName(), request.getMockDefinition());
+            return new HTTPMockConnection(url, settings, requestInputPath,
+                request.getName(), request.getDefaults(), request.getMockDefinition());
         }
 
         RequestBehaviour behaviour = settings.getRequestBehaviour();
@@ -155,7 +156,8 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         switch(behaviour) {
             case CURL_ONLY:
             case PRINT_ONLY:
-                return new HTTPMockConnection(url, settings, requestInputPath, request.getName(), request.getMockDefinition());
+                return new HTTPMockConnection(url, settings, requestInputPath,
+                    request.getName(), request.getDefaults(), request.getMockDefinition());
             default:
                 return (HttpURLConnection) url.openConnection();
         }
@@ -312,7 +314,7 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         Path temporalBodyPath = pathBuilder.buildCommandPath();
         Path requestBodyPath = Paths.get(request.getBodyFilePath());
 
-        expandFile(settings, requestBodyPath, temporalBodyPath,
+        expandFile(settings, requestBodyPath, temporalBodyPath, request.getDefaults(),
             line -> writeLine(dataOutputStream, line, request.getBodyCharset()));
 
         culrBuilder.setDataBinary(temporalBodyPath);

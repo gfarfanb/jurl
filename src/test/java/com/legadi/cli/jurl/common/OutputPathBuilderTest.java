@@ -72,4 +72,37 @@ public class OutputPathBuilderTest {
 
         Assertions.assertEquals(expected, pathBuilder.buildHistoryPath());
     }
+
+    @Test
+    public void buildDownloadLocation() {
+        Settings settings = new Settings();
+        Path downloadLocation = new OutputPathBuilder(settings)
+            .setFilename("output")
+            .setExtension("csv")
+            .buildFilePath(Paths.get("$HOME/Downloads"), null);
+
+        Assertions.assertEquals(Paths.get("$HOME/Downloads/output.csv"), downloadLocation);
+    }
+
+    @Test
+    public void buildDefaultLocation() {
+        Settings settings = new Settings();
+        Path downloadLocation = new OutputPathBuilder(settings)
+            .setFilename("output")
+            .setExtension("csv")
+            .buildFilePath(null, null);
+
+        Assertions.assertEquals(Paths.get("./output.csv"), downloadLocation);
+    }
+
+    @Test
+    public void buildFolderLocation() {
+        Settings settings = new Settings();
+        Path downloadLocation = new OutputPathBuilder(settings)
+            .setFilename("output")
+            .setExtension("csv")
+            .buildFilePath(null, "folder");
+
+        Assertions.assertEquals(Paths.get("folder/output.csv"), downloadLocation);
+    }
 }

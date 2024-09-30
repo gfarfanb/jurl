@@ -1,5 +1,6 @@
 package com.legadi.cli.jurl.common;
 
+import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.stripEnd;
 import static com.legadi.cli.jurl.common.CommonUtils.trim;
@@ -11,6 +12,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,10 +24,16 @@ public class StringExpander {
     private final Pattern paramTagPattern = Pattern.compile("^([\\w_]+:)?(~(.*)~)?(.*)$");
     private final Pattern paramPattern;
     private final Settings settings;
+    private final Function<String, String> propertyDefault;
 
     public StringExpander(Settings settings) {
+        this(settings, null);
+    }
+
+    public StringExpander(Settings settings, Function<String, String> propertyDefault) {
         this.paramPattern = Pattern.compile(settings.getSettingsParamRegex());
         this.settings = settings;
+        this.propertyDefault = propertyDefault;
     }
 
     public Settings getSettings() {
@@ -62,7 +70,7 @@ public class StringExpander {
                 }
 
                 if(value == null) {
-                    value = settings.getOrDefaultWithValues(property, values, "");
+                    value = getValue(property, values);
                 }
 
                 if(isNotBlank(modifierDefinition)) {
@@ -97,5 +105,15 @@ public class StringExpander {
         }
 
         return paramNames;
+    }
+
+    private String getValue(String property, Map<String, String> values) {
+        String value = settings.getOrDefaultWithValues(property, values, "");
+
+        if(propertyDefault != null && isBlank(value)) {
+            return propertyDefault.apply(property);
+        } else {
+            return value;
+        }
     }
 }

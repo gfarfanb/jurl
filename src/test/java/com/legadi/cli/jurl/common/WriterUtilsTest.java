@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -163,7 +164,7 @@ public class WriterUtilsTest {
             )
             .resolve(UUID.randomUUID() + ".json");
 
-        expandFile(settings, input, output);
+        expandFile(settings, input, output, new HashMap<>());
 
         BasicFunctionsEntity entity = loadJsonFile(output.toString(), new TypeToken<BasicFunctionsEntity>() {});
 
@@ -189,7 +190,7 @@ public class WriterUtilsTest {
             .resolve(UUID.randomUUID() + ".json");
         StringBuilder json = new StringBuilder();
 
-        expandFile(settings, input, output, line -> json.append(line));
+        expandFile(settings, input, output, new HashMap<>(), line -> json.append(line));
 
         BasicFunctionsEntity jsonEntity = jsonToObject(json.toString(), new TypeToken<BasicFunctionsEntity>() {});
         BasicFunctionsEntity fileEntity = loadJsonFile(output.toString(), new TypeToken<BasicFunctionsEntity>() {});
@@ -218,7 +219,7 @@ public class WriterUtilsTest {
             .resolve(UUID.randomUUID() + ".json");
 
         Assertions.assertThrows(IllegalStateException.class,
-            () -> expandFile(settings, input, output));
+            () -> expandFile(settings, input, output, new HashMap<>()));
     }
 
     @Test

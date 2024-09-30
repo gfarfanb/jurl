@@ -2,7 +2,6 @@ package com.legadi.cli.jurl.parser;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -10,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import com.legadi.cli.jurl.assertions.EqualsToAssertionFunction;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.exception.CommandException;
+import com.legadi.cli.jurl.model.FlowEntry;
 import com.legadi.cli.jurl.model.RequestInput;
 import com.legadi.cli.jurl.model.StepEntry;
 import com.legadi.cli.jurl.model.http.HTTPMockEntry;
@@ -144,7 +144,7 @@ public class HTTPRequestParserTest {
     }
 
     @Test
-    public void parseLoadConfig() {
+    public void parseLoadDefaults() {
         Settings settings = new Settings();
         Path requestPath = Paths.get("src/test/resources/parser/http-request.config.spec.http");
         HTTPRequestParser parser = new HTTPRequestParser();
@@ -156,9 +156,9 @@ public class HTTPRequestParserTest {
 
         Assertions.assertNotNull(request);
 
-        Assertions.assertEquals("value1", settings.get("field1"));
-        Assertions.assertEquals("value2", settings.get("field2"));
-        Assertions.assertEquals("value3", settings.get("field3"));
+        Assertions.assertEquals("value1", request.getDefaults().get("field1"));
+        Assertions.assertEquals("value2", request.getDefaults().get("field2"));
+        Assertions.assertEquals("value3", request.getDefaults().get("field3"));
     }
 
     @Test
@@ -225,11 +225,11 @@ public class HTTPRequestParserTest {
         RequestInput<HTTPRequestEntry> requestInput = Assertions.assertDoesNotThrow(
             () -> parser.parseInput(settings, requestPath));
 
-        List<StepEntry> steps = requestInput.getFlows().get("flow");
+        FlowEntry flow = requestInput.getFlows().get("flow");
 
-        Assertions.assertNotNull(steps);
+        Assertions.assertNotNull(flow);
 
-        StepEntry step = steps.get(0);
+        StepEntry step = flow.getSteps().get(0);
 
         Assertions.assertEquals("spec.http", step.getRequestInputPath());
         Assertions.assertEquals(1, step.getOptions().size());
@@ -299,17 +299,17 @@ public class HTTPRequestParserTest {
     }
 
     @Test
-    public void parseRequestByPathLoadConfig() {
+    public void parseAPIByPathLoadDefaults() {
         Settings settings = new Settings();
         Path requestPath = Paths.get("src/test/resources/parser/http-request.config.txt");
         HTTPRequestParser parser = new HTTPRequestParser();
 
-        Assertions.assertDoesNotThrow(
+        HTTPRequestEntry api = Assertions.assertDoesNotThrow(
             () -> parser.parseRequest(settings, requestPath));
 
-        Assertions.assertEquals("value1", settings.get("field1"));
-        Assertions.assertEquals("value2", settings.get("field2"));
-        Assertions.assertEquals("value3", settings.get("field3"));
+        Assertions.assertEquals("value1", api.getDefaults().get("field1"));
+        Assertions.assertEquals("value2", api.getDefaults().get("field2"));
+        Assertions.assertEquals("value3", api.getDefaults().get("field3"));
     }
 
     @Test

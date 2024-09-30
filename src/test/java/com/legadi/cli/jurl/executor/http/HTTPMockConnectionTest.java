@@ -11,6 +11,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Assertions;
@@ -29,7 +30,7 @@ public class HTTPMockConnectionTest {
         Settings settings = new Settings();
         URL local = new URL("http://localhost:0/base");
         HTTPMockConnection connection = new HTTPMockConnection(local, settings,
-            "src/test/resources/http-mock-connection-test", "test", null);
+            "src/test/resources/http-mock-connection-test", "test", new HashMap<>(), null);
 
         Assertions.assertEquals("http://localhost:0/base", connection.getURL().toString());
         Assertions.assertDoesNotThrow(() -> connection.disconnect());
@@ -67,7 +68,7 @@ public class HTTPMockConnectionTest {
         mock.getResponseHeaders().put("Content-Type", "text/html;charset=UTF-8");
 
         HTTPMockConnection connection = new HTTPMockConnection(null, settings,
-            "src/test/resources/http-mock-connection-test", "test", mock);
+            "src/test/resources/http-mock-connection-test", "test", new HashMap<>(), mock);
         String responseContent = null;
 
         try(InputStreamReader inputStreamReader = new InputStreamReader(connection.getInputStream());
@@ -97,7 +98,7 @@ public class HTTPMockConnectionTest {
         mock.setResponseFilePath(responsePath.toString());
 
         HTTPMockConnection connection = new HTTPMockConnection(local, settings,
-            "src/test/resources/http-mock-connection-test", "test", mock);
+            "src/test/resources/http-mock-connection-test", "test", new HashMap<>(), mock);
         String responseContent = null;
 
         try(InputStreamReader inputStreamReader = new InputStreamReader(connection.getInputStream());
@@ -119,7 +120,7 @@ public class HTTPMockConnectionTest {
         mock.setSecondsDelay("1");
 
         HTTPMockConnection connection = new HTTPMockConnection(null, settings,
-            "src/test/resources/http-mock-connection-test", "test", mock);
+            "src/test/resources/http-mock-connection-test", "test", new HashMap<>(), mock);
 
         long beginTime = System.nanoTime();
         Assertions.assertDoesNotThrow(() -> connection.getInputStream());
@@ -137,7 +138,7 @@ public class HTTPMockConnectionTest {
 
         Assertions.assertThrows(CommandException.class,
             () -> new HTTPMockConnection(null, settings,
-                "src/test/resources/http-mock-connection-test", "test", mock));
+                "src/test/resources/http-mock-connection-test", "test", new HashMap<>(), mock));
     }
 
     @Test
@@ -150,7 +151,7 @@ public class HTTPMockConnectionTest {
 
         Assertions.assertThrows(CommandException.class,
             () -> new HTTPMockConnection(null, settings,
-                "src/test/resources/http-mock-connection-test", "test", mock));
+                "src/test/resources/http-mock-connection-test", "test", new HashMap<>(), mock));
     }
 
     @Test
@@ -161,7 +162,7 @@ public class HTTPMockConnectionTest {
         mock.setExceptionClassOnOutputStream(IOException.class.getName());
 
         HTTPMockConnection connection = new HTTPMockConnection(null, settings,
-            "src/test/resources/http-mock-connection-test", "test", mock);
+            "src/test/resources/http-mock-connection-test", "test", new HashMap<>(), mock);
 
         Assertions.assertThrows(IOException.class,
             () -> connection.getOutputStream());
@@ -175,7 +176,7 @@ public class HTTPMockConnectionTest {
         mock.setExceptionClassOnResponseCode(IOException.class.getName());
 
         HTTPMockConnection connection = new HTTPMockConnection(null, settings,
-            "src/test/resources/http-mock-connection-test", "test", mock);
+            "src/test/resources/http-mock-connection-test", "test", new HashMap<>(), mock);
 
         Assertions.assertThrows(IOException.class,
             () -> connection.getResponseCode());
@@ -191,7 +192,7 @@ public class HTTPMockConnectionTest {
         mock.setExceptionClassOnResponseCode(Object.class.getName());
 
         HTTPMockConnection connection = new HTTPMockConnection(null, settings,
-            "src/test/resources/http-mock-connection-test", "test", mock);
+            "src/test/resources/http-mock-connection-test", "test", new HashMap<>(), mock);
 
         Assertions.assertDoesNotThrow(() -> connection.getOutputStream());
         Assertions.assertDoesNotThrow(() -> connection.getResponseCode());

@@ -35,8 +35,8 @@ public class JsonBodyMixer implements BodyMixer {
     }
 
     @Override
-    public Path apply(Settings settings, MixerEntry entry) {
-        Path temporalBodyPath = expandBodyFile(settings, entry);
+    public Path apply(Settings settings, Map<String, String> defaults, MixerEntry entry) {
+        Path temporalBodyPath = expandBodyFile(settings, defaults, entry);
         Object json;
 
         if(isArrayFile(temporalBodyPath)) {
@@ -144,14 +144,14 @@ public class JsonBodyMixer implements BodyMixer {
         }
     }
 
-    private Path expandBodyFile(Settings settings, MixerEntry entry) {
+    private Path expandBodyFile(Settings settings, Map<String, String> defaults, MixerEntry entry) {
         OutputPathBuilder pathBuilder = new OutputPathBuilder(settings)
             .setRequestPath(entry.getRequestPath())
             .setRequestName(entry.getRequestName())
             .setExtension("body");
         Path temporalBodyPath = pathBuilder.buildCommandPath();
 
-        expandFile(settings, entry.getBodyFilePath(), temporalBodyPath);
+        expandFile(settings, entry.getBodyFilePath(), temporalBodyPath, defaults);
 
         return temporalBodyPath;
     }

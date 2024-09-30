@@ -78,8 +78,10 @@ public class OutputPathBuilder {
 
         if(basePath != null) {
             filePath = Paths.get(basePath.toString(), pathParts.toArray(new String[pathParts.size()]));
-        } else {
+        } else if(!pathParts.isEmpty()) {
             filePath = Paths.get(pathParts.remove(0), pathParts.toArray(new String[pathParts.size()]));
+        } else {
+            filePath = Paths.get(".");
         }
 
         return createDirectories(filePath).resolve(getFilename());

@@ -1,7 +1,9 @@
 package com.legadi.cli.jurl.model.http;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -27,12 +29,20 @@ public class HTTPRequestEntryTest {
         model.setBodyCharset(StandardCharsets.UTF_8.name());
         model.setBodyContent("{\"name\": \"test\"}");
         model.setBodyFilePath("src/test/resources/basic-functions.body.json");
-        model.getRequestFiles().add(new HTTPRequestFileEntry());
+
+        List<HTTPRequestFileEntry> requestFiles = new ArrayList<>();
+        requestFiles.add(new HTTPRequestFileEntry());
+        model.setRequestFiles(requestFiles);
+
         model.setRequestAuth(new HTTPRequestAuthEntry());
 
         Map<String, String> formData = new HashMap<>();
         formData.put("identifier", UUID.randomUUID().toString());
         model.setFormData(formData);
+
+        Map<String, String> defaults = new HashMap<>();
+        defaults.put("local.port", "2342");
+        model.setDefaults(defaults);
 
         Assertions.assertEquals("POST", model.getMethod());
         Assertions.assertEquals(1, model.getQueryParams().size());
@@ -45,6 +55,8 @@ public class HTTPRequestEntryTest {
         Assertions.assertFalse(model.getRequestFiles().isEmpty());
         Assertions.assertNotNull(model.getRequestAuth());
         Assertions.assertEquals(1, model.getFormData().size());
+        Assertions.assertEquals(1, model.getDefaults().size());
+        Assertions.assertEquals("2342", model.getDefaults().get("local.port"));
         Assertions.assertDoesNotThrow(() -> UUID.fromString(model.getFormData().get("identifier")));
     }
 }

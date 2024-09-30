@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
@@ -25,7 +26,7 @@ public class JsonBodyMixerTest {
     public void mergeObjectListReplace() {
         BodyMixer mixer = findOrFail(BodyMixer.class, "json");
         Settings settings = new Settings();
-        Path mergedPath = mixer.apply(settings, new MixerEntry()
+        Path mergedPath = mixer.apply(settings, new HashMap<>(), new MixerEntry()
             .setBodyFilePath("src/test/resources/json-object.input.json")
             .setBodyContent("{"
                 + "log: ["
@@ -55,7 +56,7 @@ public class JsonBodyMixerTest {
     public void mergeObjectListAddEnd() {
         BodyMixer mixer = findOrFail(BodyMixer.class, "json");
         Settings settings = new Settings();
-        Path mergedPath = mixer.apply(settings, new MixerEntry()
+        Path mergedPath = mixer.apply(settings, new HashMap<>(), new MixerEntry()
             .setBodyFilePath("src/test/resources/json-object.input.json")
             .setBodyContent("{"
                 + "log: ["
@@ -92,7 +93,7 @@ public class JsonBodyMixerTest {
     public void mergeListReplace() {
         BodyMixer mixer = findOrFail(BodyMixer.class, "json");
         Settings settings = new Settings();
-        Path mergedPath = mixer.apply(settings, new MixerEntry()
+        Path mergedPath = mixer.apply(settings, new HashMap<>(), new MixerEntry()
             .setBodyFilePath("src/test/resources/json-list.input.json")
             .setBodyContent("["
                 + "{"
@@ -123,7 +124,7 @@ public class JsonBodyMixerTest {
     public void mergeListReplaceExplicit() {
         BodyMixer mixer = findOrFail(BodyMixer.class, "json");
         Settings settings = new Settings();
-        Path mergedPath = mixer.apply(settings, new MixerEntry()
+        Path mergedPath = mixer.apply(settings, new HashMap<>(), new MixerEntry()
             .setBodyFilePath("src/test/resources/json-list.input.json")
             .setBodyContent("["
                 + "{"
@@ -157,7 +158,7 @@ public class JsonBodyMixerTest {
     public void mergeListReplaceEmpty() {
         BodyMixer mixer = findOrFail(BodyMixer.class, "json");
         Settings settings = new Settings();
-        Path mergedPath = mixer.apply(settings, new MixerEntry()
+        Path mergedPath = mixer.apply(settings, new HashMap<>(), new MixerEntry()
             .setBodyFilePath("src/test/resources/json-list.input.json")
             .setBodyContent("[]")
             .setRequestPath("src/test/resources/json-body-mixer.json")
@@ -172,7 +173,7 @@ public class JsonBodyMixerTest {
     public void mergeListAddBeginExplicit() {
         BodyMixer mixer = findOrFail(BodyMixer.class, "json");
         Settings settings = new Settings();
-        Path mergedPath = mixer.apply(settings, new MixerEntry()
+        Path mergedPath = mixer.apply(settings, new HashMap<>(), new MixerEntry()
             .setBodyFilePath("src/test/resources/json-list.input.json")
             .setBodyContent("["
                 + "{"
@@ -212,7 +213,7 @@ public class JsonBodyMixerTest {
     public void mergeListAddEndExplicit() {
         BodyMixer mixer = findOrFail(BodyMixer.class, "json");
         Settings settings = new Settings();
-        Path mergedPath = mixer.apply(settings, new MixerEntry()
+        Path mergedPath = mixer.apply(settings, new HashMap<>(), new MixerEntry()
             .setBodyFilePath("src/test/resources/json-list.input.json")
             .setBodyContent("["
                 + "{"
@@ -252,7 +253,7 @@ public class JsonBodyMixerTest {
     public void mergeListMergeExplicit() {
         BodyMixer mixer = findOrFail(BodyMixer.class, "json");
         Settings settings = new Settings();
-        Path mergedPath = mixer.apply(settings, new MixerEntry()
+        Path mergedPath = mixer.apply(settings, new HashMap<>(), new MixerEntry()
             .setBodyFilePath("src/test/resources/json-list.input.json")
             .setBodyContent("["
                 + "{"
@@ -285,7 +286,7 @@ public class JsonBodyMixerTest {
     public void mergeListMergeKeyNotFound() {
         BodyMixer mixer = findOrFail(BodyMixer.class, "json");
         Settings settings = new Settings();
-        Path mergedPath = mixer.apply(settings, new MixerEntry()
+        Path mergedPath = mixer.apply(settings, new HashMap<>(), new MixerEntry()
             .setBodyFilePath("src/test/resources/json-list.input.json")
             .setBodyContent("["
                 + "{"
@@ -332,7 +333,7 @@ public class JsonBodyMixerTest {
         Settings settings = new Settings();
 
         Assertions.assertThrows(InvalidInputEntryException.class,
-            () -> mixer.apply(settings, new MixerEntry()
+            () -> mixer.apply(settings, new HashMap<>(), new MixerEntry()
                 .setBodyFilePath("src/test/resources/json-list.input.json")
                 .setBodyContent("["
                     + "{"
@@ -355,7 +356,7 @@ public class JsonBodyMixerTest {
     public void mergeListEmptyFirstElement() {
         BodyMixer mixer = findOrFail(BodyMixer.class, "json");
         Settings settings = new Settings();
-        Path mergedPath = mixer.apply(settings, new MixerEntry()
+        Path mergedPath = mixer.apply(settings, new HashMap<>(), new MixerEntry()
             .setBodyFilePath("src/test/resources/json-list.input.json")
             .setBodyContent("["
                 + "{"
@@ -393,7 +394,7 @@ public class JsonBodyMixerTest {
         Settings settings = new Settings();
 
         Assertions.assertThrows(InvalidInputEntryException.class,
-            () -> mixer.apply(settings, new MixerEntry()
+            () -> mixer.apply(settings, new HashMap<>(), new MixerEntry()
                 .setBodyFilePath("src/test/resources/json-list.input.json")
                 .setBodyContent("["
                     + "{"
@@ -416,7 +417,7 @@ public class JsonBodyMixerTest {
     public void mergeListKeyFieldsNull() {
         BodyMixer mixer = findOrFail(BodyMixer.class, "json");
         Settings settings = new Settings();
-        Path mergedPath = mixer.apply(settings, new MixerEntry()
+        Path mergedPath = mixer.apply(settings, new HashMap<>(), new MixerEntry()
             .setBodyFilePath("src/test/resources/json-list.input.json")
             .setBodyContent("["
                 + "{"
@@ -449,7 +450,7 @@ public class JsonBodyMixerTest {
     public void mergeListArrayValues() {
         BodyMixer mixer = findOrFail(BodyMixer.class, "json");
         Settings settings = new Settings();
-        Path mergedPath = mixer.apply(settings, new MixerEntry()
+        Path mergedPath = mixer.apply(settings, new HashMap<>(), new MixerEntry()
             .setBodyFilePath("src/test/resources/json-array.input.json")
             .setBodyContent("["
                 + "{"

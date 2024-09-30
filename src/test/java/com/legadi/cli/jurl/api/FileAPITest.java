@@ -358,4 +358,10 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
             Assertions.assertFalse(uploadedFile.exists());
         }
     }
+
+    @Test
+    public void uploadFileNotFound() throws IOException {
+        Assertions.assertThrows(IllegalStateException.class,
+            () -> jurl("-n", "uploadFileNotFound", "src/test/resources/file.spec.http"));
+    }
 }

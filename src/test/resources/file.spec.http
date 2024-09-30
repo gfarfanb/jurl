@@ -66,3 +66,10 @@ file @path = src/test/resources/file-3.csv
 file @field = files
 
 assert EQUALS_TO 201 {{HTTP/status}}
+
+
+### [request] uploadFileNotFound
+http://localhost:{{local.server.port}}/file/set
+
+file @path = src/test/resources/not-found.csv
+file @field = files
