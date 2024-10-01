@@ -14,6 +14,7 @@
     "saveOutputInLocation": false,
     "executionTimes": 1,
     "inputName": "",
+    "startInStepIndex": 1,
     "settingsParamRegex": "(?:\\{\\{([\\w.,\\-:\\'@~|\\[\\]/\\\\]+)\\}\\})",
     "settingsParamRegexBegin": "\\{\\{",
     "settingsParamRegexEnd": "\\}\\}",

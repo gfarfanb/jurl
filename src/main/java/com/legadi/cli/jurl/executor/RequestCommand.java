@@ -169,9 +169,23 @@ public class RequestCommand {
         int stepIndex = 1;
 
         for(StepEntry step : flow.getSteps()) {
+            if(stepIndex < settings.getStartInStepIndex()) {
+                LOGGER.info("Step skipped - "
+                    + "[" + requestInputPath + "/" + flowName + "]"
+                    + " index=" + index
+                    + " step("+ stepIndex + "/" + flow.getSteps().size() + ") ");
+                stepIndex++;
+                continue;
+            }
+
             Settings stepSettings = settings.createForStep();
 
             try {
+                LOGGER.info("Executing step - "
+                    + "[" + requestInputPath + "/" + flowName + "]"
+                    + " index=" + index
+                    + " step("+ stepIndex + "/" + flow.getSteps().size() + ") ");
+
                 ExecutionStatus status = executeStep(stepSettings, trace, step, requestInputPath, requestInput);
                 stats.count(status);
             } catch(RecursiveCommandException ex) {
