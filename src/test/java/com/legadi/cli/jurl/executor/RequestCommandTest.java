@@ -104,11 +104,8 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
     public void executeNoInputName() {
         String[] args = { "src/test/resources/basic-functions.spec.http" };
 
-        Assertions.assertDoesNotThrow(() -> new RequestCommand(args).execute());
-
-        List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, "request");
-
-        Assertions.assertEquals(1, requests.size());
+        Assertions.assertThrows(CommandException.class,
+            () -> new RequestCommand(args).execute());
     }
 
     @Test
@@ -124,7 +121,7 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
 
     @Test
     public void executeWithAuth() {
-        String[] args = { "-t", "2", "src/test/resources/auth-request.spec.http" };
+        String[] args = { "-t", "2", "-n", "create", "src/test/resources/auth-request.spec.http" };
 
         Assertions.assertDoesNotThrow(() -> new RequestCommand(args).execute());
 
@@ -143,7 +140,7 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
 
     @Test
     public void executeSkipAuth() {
-        String[] args = { "-na", "src/test/resources/auth-request.spec.http" };
+        String[] args = { "-na", "-n", "create", "src/test/resources/auth-request.spec.http" };
 
         Assertions.assertDoesNotThrow(() -> new RequestCommand(args).execute());
 

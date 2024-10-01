@@ -32,6 +32,7 @@ import java.util.stream.IntStream;
 
 import com.legadi.cli.jurl.common.ExecutionStats;
 import com.legadi.cli.jurl.common.ExecutionTrace;
+import com.legadi.cli.jurl.common.InputNameResolver;
 import com.legadi.cli.jurl.common.OutputPathBuilder;
 import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
@@ -101,9 +102,8 @@ public class RequestCommand {
         RequestInput<?> requestInput = requestParser.parseInput(settings, Paths.get(requestInputPath));
 
         int times = settings.getTimes() > 0 ? settings.getTimes() : EXECUTE_ONCE;
-        String inputName = isNotBlank(settings.getInputName())
-            ? settings.getInputName()
-            : requestInput.getDefaultRequest();
+        InputNameResolver inputNameResolver = new InputNameResolver(requestInputPath, requestInput);
+        String inputName = inputNameResolver.resolve(settings.getInputName());
         boolean isExecutionAsFlow = requestInput.getFlows().containsKey(inputName);
         ExecutionStats stats = new ExecutionStats(times);
         AtomicReference<String> inputNameCarrier = new AtomicReference<>();
@@ -229,11 +229,12 @@ public class RequestCommand {
         if(isEmpty(requestInput.getRequests())) {
             throw new CommandException("No requests are defined in the request file: " + requestInputPath);
         }
+        if(isBlank(requestName)) {
+            throw new CommandException("No request name defined - " + requestInputPath);
+        }
 
         StringExpander stringExpander = new StringExpander(settings);
-        Pair<String, RequestEntry<? extends MockEntry>> requestDefinition = pickRequest(requestName, requestInput, settings);
-        RequestEntry<? extends MockEntry> request = requestDefinition.getRight();
-        requestName = requestDefinition.getLeft();
+        RequestEntry<? extends MockEntry> request = requestInput.getRequests().get(requestName);
 
         if(request == null) {
             throw new CommandException("No request defined for name: "
@@ -274,15 +275,6 @@ public class RequestCommand {
                 + " index=" + index
                 + " - " + ex.getMessage());
         }
-    }
-
-    private Pair<String, RequestEntry<? extends MockEntry>> pickRequest(String requestName, RequestInput<?> requestInput,
-            Settings settings) {
-        if(isBlank(requestName)) {
-            requestName = requestInput.getRequests().keySet().stream().findFirst().get();
-        }
-
-        return new Pair<>(requestName, requestInput.getRequests().get(requestName));
     }
 
     @SuppressWarnings("unchecked")

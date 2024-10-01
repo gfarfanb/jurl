@@ -25,6 +25,7 @@ import com.google.gson.reflect.TypeToken;
 import com.legadi.cli.jurl.assertions.EqualsToAssertionFunction;
 import com.legadi.cli.jurl.common.OutputPathBuilder;
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.exception.RequestException;
 import com.legadi.cli.jurl.executor.RequestModifier;
 import com.legadi.cli.jurl.executor.http.HTTPRequestModifier.PropertyDefault;
@@ -128,10 +129,11 @@ public class HTTPRequestModifierTest {
         requestInput.getRequests().put(requestName, request);
 
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
-        Optional<?> authRequestCarrier = modifier.getAuthenticationIfExists(requestName, "src/test/resources/flow.spec.http",
-            requestInput, settings, new ArrayList<>());
-
-        Assertions.assertFalse(authRequestCarrier.isPresent());
+        Assertions.assertThrows(CommandException.class, 
+            () -> modifier.getAuthenticationIfExists(
+                requestName, "src/test/resources/flow.spec.http",
+                requestInput, settings, new ArrayList<>()
+            ));
     }
 
     @Test

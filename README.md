@@ -82,6 +82,12 @@ output pokemonId = {{OUT/id}}
 @host = https://pokeapi.co
 @basePath = /api/v2
 @endpoint = /pokemon/{{pokemonId}}/encounters
+
+
+### [flow] pokemon-details
+
+step -n pokemon
+step -n encounters
 ```
 > [PokéAPI - The RESTful Pokémon API](https://pokeapi.co/)
 

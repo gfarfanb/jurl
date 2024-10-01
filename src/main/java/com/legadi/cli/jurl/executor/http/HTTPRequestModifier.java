@@ -19,6 +19,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.legadi.cli.jurl.common.CommonUtils;
+import com.legadi.cli.jurl.common.InputNameResolver;
 import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.common.StringExpander;
@@ -83,16 +84,9 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
             return Optional.empty();
         }
 
-        String authRequestName = isNotBlank(auth.getInputName())
-            ? auth.getInputName()
-            : authRequestInput.getDefaultRequest();
-        HTTPRequestEntry authRequestEntry;
-
-        if(isBlank(authRequestName)) {
-            return Optional.empty();
-        } else {
-            authRequestEntry = authRequestInput.getRequests().get(authRequestName);
-        }
+        InputNameResolver inputNameResolver = new InputNameResolver(requestInputPath, authRequestInput);
+        String authRequestName = inputNameResolver.resolve(auth.getInputName());
+        HTTPRequestEntry authRequestEntry = authRequestInput.getRequests().get(authRequestName);
 
         if(authRequestEntry == null) {
             return Optional.empty();
