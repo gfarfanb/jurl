@@ -91,7 +91,7 @@ step -n encounters
 ```
 > [PokéAPI - The RESTful Pokémon API](https://pokeapi.co/)
 
-Execute request
+Execute request (specified by `@default-request`)
 ```sh
 jurl -s name "gengar" pokemon-api
 ```
@@ -100,6 +100,17 @@ jurl -s name "gengar" pokemon-api
 Execute a request by name
 ```sh
 jurl -n encounters pokemon-api
+```
+
+Execute by selecting a request
+```sh
+jurl pokemon-api
+```
+```console
+1) encounters [request]
+2) pokemon [request]
+3) pokemon-details [flow]
+Select request index [default: 2]>
 ```
 
 
