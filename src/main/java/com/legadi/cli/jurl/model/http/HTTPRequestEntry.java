@@ -2,6 +2,7 @@ package com.legadi.cli.jurl.model.http;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,7 +18,7 @@ public class HTTPRequestEntry extends RequestEntry<HTTPMockEntry> {
     private String bodyFilePath;
     private List<HTTPRequestFileEntry> requestFiles = new ArrayList<>();
     private Map<String, String> formData = new HashMap<>();
-    private Map<String, String> defaults = new HashMap<>();
+    private Map<String, String> defaults = new LinkedHashMap<>();
     private HTTPRequestAuthEntry requestAuth;
 
     public String getMethod() {

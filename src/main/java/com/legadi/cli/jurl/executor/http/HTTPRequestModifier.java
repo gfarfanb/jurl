@@ -317,12 +317,16 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         requestFile.setMineType(stringExpander.replaceAllInContent(requestFile.getMineType()));
     }
 
-    private void expandMap(StringExpander stringExpander, Map<String, String> map, boolean exhaustive) {
+    private void expandMap(StringExpander stringExpander, Map<String, String> map, boolean isDefaults) {
         if(map == null) {
             return;
         }
         for(Map.Entry<String, String> entry : map.entrySet()) {
-            map.put(entry.getKey(), stringExpander.replaceAllInContent(entry.getValue()));
+            if(isDefaults) {
+                map.put(entry.getKey(), stringExpander.replaceAllInContent(map, entry.getValue()));
+            } else {
+                map.put(entry.getKey(), stringExpander.replaceAllInContent(entry.getValue()));
+            }
         }
     }
 
@@ -430,6 +434,5 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
                 .filter(CommonUtils::isNotBlank)
                 .orElse(defaultValue);
         }
-        
     }
 }
