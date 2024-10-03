@@ -157,7 +157,7 @@ public class Settings implements SettingsDefaults {
     }
 
     public boolean containsUserInput(String propertyName) {
-        return userInputProperties.containsKey(propertyName);
+        return userInputProperties.get(propertyName) != null;
     }
 
     public void putUserInput(String propertyName, String propertyValue) {
@@ -165,7 +165,7 @@ public class Settings implements SettingsDefaults {
     }
 
     public boolean containsOverride(String propertyName) {
-        return overrideProperties.containsKey(propertyName);
+        return overrideProperties.get(propertyName) != null;
     }
 
     public void putOverride(String propertyName, String propertyValue) {

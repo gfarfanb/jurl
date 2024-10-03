@@ -15,6 +15,7 @@
     "executionTimes": 1,
     "inputName": "",
     "startInStepIndex": 1,
+    "skipUserInput": false,
     "settingsParamRegex": "(?:\\{\\{([\\w.,\\-:\\'@~|\\[\\]/\\\\]+)\\}\\})",
     "settingsParamRegexBegin": "\\{\\{",
     "settingsParamRegexEnd": "\\}\\}",

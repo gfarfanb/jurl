@@ -12,7 +12,9 @@ public class InputNameResolverTest {
 
     @Test
     public void resolveWithNotBlank() {
-        InputNameResolver inputNameResolver = new InputNameResolver("input-name-resolver.http", new RequestInput<>());
+        Settings settings = new Settings();
+        InputNameResolver inputNameResolver = new InputNameResolver(settings,
+            "input-name-resolver.http", new RequestInput<>());
         String inputName = inputNameResolver.resolve("request-name");
 
         Assertions.assertEquals("request-name", inputName);
@@ -20,8 +22,10 @@ public class InputNameResolverTest {
 
     @Test
     public void resolverWithIndex() {
+        Settings settings = new Settings();
         RequestInput<HTTPRequestEntry> requestInput = new RequestInput<>();
-        InputNameResolver inputNameResolver = new InputNameResolver("input-name-resolver.http", requestInput);
+        InputNameResolver inputNameResolver = new InputNameResolver(settings,
+            "input-name-resolver.http", requestInput);
         String inputName;
 
         requestInput.getRequests().put("request", new HTTPRequestEntry());
@@ -40,8 +44,10 @@ public class InputNameResolverTest {
 
     @Test
     public void resolverInvalidIndex() {
+        Settings settings = new Settings();
         RequestInput<HTTPRequestEntry> requestInput = new RequestInput<>();
-        InputNameResolver inputNameResolver = new InputNameResolver("input-name-resolver.http", requestInput);
+        InputNameResolver inputNameResolver = new InputNameResolver(settings,
+            "input-name-resolver.http", requestInput);
 
         requestInput.getRequests().put("request", new HTTPRequestEntry());
         requestInput.getFlows().put("flow", new FlowEntry());

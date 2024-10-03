@@ -102,9 +102,10 @@ public class RequestCommand {
         RequestInput<?> requestInput = requestParser.parseInput(settings, Paths.get(requestInputPath));
 
         int times = settings.getTimes() > 0 ? settings.getTimes() : EXECUTE_ONCE;
-        InputNameResolver inputNameResolver = new InputNameResolver(requestInputPath, requestInput);
+        InputNameResolver inputNameResolver = new InputNameResolver(settings,
+            requestInputPath, requestInput);
         String inputName = inputNameResolver.resolve(settings.getInputName());
-        boolean isExecutionAsFlow = requestInput.getFlows().containsKey(inputName);
+        boolean isExecutionAsFlow = requestInput.getFlows().get(inputName) != null;
         ExecutionStats stats = new ExecutionStats(times);
         AtomicReference<String> inputNameCarrier = new AtomicReference<>();
 
@@ -228,9 +229,6 @@ public class RequestCommand {
             RequestInput<?> requestInput, Settings settings) {
         if(isEmpty(requestInput.getRequests())) {
             throw new CommandException("No requests are defined in the request file: " + requestInputPath);
-        }
-        if(isBlank(requestName)) {
-            throw new CommandException("No request name defined - " + requestInputPath);
         }
 
         StringExpander stringExpander = new StringExpander(settings);

@@ -16,9 +16,9 @@ public class CommonUtils {
     public static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvxyz0123456789";
     public static final String NUMERIC_STRING = "0123456789";
 
-    public static final String INPUT_FORMAT = "input: %s> ";
-    public static final String INPUT_DEFAULT_FORMAT = "input: %s [default: %s]> ";
-    public static final String PASSWORD_FORMAT = "pswrd: %s> ";
+    static {
+        System.setProperty("jurl.file.separator", File.separator);
+    }
 
     private CommonUtils() {}
 
@@ -59,10 +59,11 @@ public class CommonUtils {
     }
 
     public static String fileSeparatorAsDelimiter() {
-        if(File.separator.equals("\\")) {
+        String separator = System.getProperty("jurl.file.separator");
+        if(separator.equals("\\")) {
             return "\\\\";
         } else {
-            return File.separator;
+            return separator;
         }
     }
 

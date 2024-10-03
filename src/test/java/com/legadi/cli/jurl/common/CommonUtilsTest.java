@@ -20,6 +20,7 @@ import static com.legadi.cli.jurl.common.CommonUtils.stripEnd;
 import static com.legadi.cli.jurl.common.CommonUtils.stripStart;
 import static com.legadi.cli.jurl.common.CommonUtils.trim;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
@@ -123,7 +124,20 @@ public class CommonUtilsTest {
     @Test
     public void fileSeparatorAsDelimiterValidation() {
         String delimiter = fileSeparatorAsDelimiter();
-        Assertions.assertTrue(delimiter.equals("\\\\") || delimiter.equals("/"));
+
+        Assertions.assertNotNull(delimiter);
+
+        System.setProperty("jurl.file.separator", "\\");
+
+        delimiter = fileSeparatorAsDelimiter();
+        Assertions.assertEquals("\\\\", delimiter);
+
+        System.setProperty("jurl.file.separator", "/");
+
+        delimiter = fileSeparatorAsDelimiter();
+        Assertions.assertEquals("/", delimiter);
+
+        System.setProperty("jurl.file.separator", File.separator);
     }
 
     @Test

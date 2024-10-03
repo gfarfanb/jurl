@@ -2,6 +2,7 @@ package com.legadi.cli.jurl.executor.http;
 
 import static com.legadi.cli.jurl.common.JsonUtils.loadJsonFile;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findByNameOrFail;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_INPUT_NAME;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_MERGE_BODY_USING_TYPE;
 import static com.legadi.cli.jurl.common.WriterUtils.writeFile;
 import static com.legadi.cli.jurl.executor.http.HTTPRequestModifier.BODY_TEMPORAL_PATH;
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import com.google.gson.reflect.TypeToken;
 import com.legadi.cli.jurl.assertions.EqualsToAssertionFunction;
+import com.legadi.cli.jurl.common.ConsoleInput;
 import com.legadi.cli.jurl.common.OutputPathBuilder;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.exception.CommandException;
@@ -71,7 +73,7 @@ public class HTTPRequestModifierTest {
         String requestName = UUID.randomUUID().toString();
 
         settings.putUserInput("requestInputPath", "src/test/resources/flow.spec.http");
-        settings.putUserInput("inputName", "authorization");
+        settings.putUserInput(PROP_INPUT_NAME, "authorization");
         settings.putUserInput("authType", "TOKEN");
         settings.putUserInput("tokenParam", "auth.access.token");
 
@@ -813,8 +815,10 @@ public class HTTPRequestModifierTest {
 
     @Test
     public void propertyDefaultNotFound() {
+        Settings settings = new Settings();
+        ConsoleInput consoleInput = new ConsoleInput(settings);
         Map<String, String> defaults = new HashMap<>();
-        PropertyDefault propertyDefault = new PropertyDefault(defaults);
+        PropertyDefault propertyDefault = new PropertyDefault(consoleInput, defaults);
 
         String value = propertyDefault.apply("property.not.found");
 
@@ -823,11 +827,13 @@ public class HTTPRequestModifierTest {
 
     @Test
     public void propertyDefaultWithDefault() {
+        Settings settings = new Settings();
+        ConsoleInput consoleInput = new ConsoleInput(settings);
         Map<String, String> defaults = new HashMap<>();
 
         defaults.put("default.int", "5");
 
-        PropertyDefault propertyDefault = new PropertyDefault(defaults);
+        PropertyDefault propertyDefault = new PropertyDefault(consoleInput, defaults);
 
         String value = propertyDefault.apply("default.int");
 

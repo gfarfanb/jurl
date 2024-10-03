@@ -1,5 +1,7 @@
 package com.legadi.cli.jurl.options;
 
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_ADD_ON_OPTION_CLASSES;
+
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +19,7 @@ public class OptionsReaderTest {
     @AfterEach
     public void cleanup() {
         Map<String, String> properties = new HashMap<>();
-        properties.put("addOnOptionClasses", "");
+        properties.put(PROP_ADD_ON_OPTION_CLASSES, "");
         Settings.mergeProperties("default", properties);
     }
     
@@ -64,7 +66,7 @@ public class OptionsReaderTest {
     @Test
     public void registerAddOnOptionsValidation() {
         Map<String, String> properties = new HashMap<>();
-        properties.put("addOnOptionClasses", SetDateOption.class.getName());
+        properties.put(PROP_ADD_ON_OPTION_CLASSES, SetDateOption.class.getName());
         Settings.mergeProperties("default", properties);
 
         OptionsReader readerAddOns = new OptionsReader(new String[] { "++set+date" });
@@ -76,7 +78,7 @@ public class OptionsReaderTest {
     @Test
     public void registerAddOnOptionsEmptyOptions() {
         Map<String, String> properties = new HashMap<>();
-        properties.put("addOnOptionClasses", " , , , ");
+        properties.put(PROP_ADD_ON_OPTION_CLASSES, " , , , ");
         Settings.mergeProperties("default", properties);
 
         OptionsReader reader = new OptionsReader(new String[] { "++not+found" });

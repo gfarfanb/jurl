@@ -205,7 +205,7 @@ public class ObjectsRegistry {
     private ObjectsRegistry() {}
 
     public static <T> T register(Class<?> groupClass, String typeClass, Object... args) {
-        if(CLASS_NAMES.containsKey(typeClass)) {
+        if(CLASS_NAMES.get(typeClass) != null) {
             Spec entry = CLASS_NAMES.get(typeClass);
             return instantiate(entry.getTypeClass(), entry.getArgs());
         } else {
@@ -291,7 +291,7 @@ public class ObjectsRegistry {
     public static <T> List<T> getAllRegisteredByClassOf(Class<T> groupClass) {
         return entriesByGroup(groupClass)
             .stream()
-            .filter(spec -> !CLASS_NAMES.containsKey(spec.getTypeClass().getName()))
+            .filter(spec -> CLASS_NAMES.get(spec.getTypeClass().getName()) == null)
             .map(spec -> instantiate(spec.getTypeClass(), spec.getArgs()))
             .map(object -> (T) object)
             .collect(Collectors.toList());
@@ -301,7 +301,7 @@ public class ObjectsRegistry {
     public static <T> List<T> getAllRegisteredByNameOf(Class<T> groupClass) {
         return entriesByGroup(groupClass)
             .stream()
-            .filter(spec -> CLASS_NAMES.containsKey(spec.getTypeClass().getName()))
+            .filter(spec -> CLASS_NAMES.get(spec.getTypeClass().getName()) != null)
             .map(spec -> instantiate(spec.getTypeClass(), spec.getArgs()))
             .map(object -> (T) object)
             .collect(Collectors.toList());
@@ -333,10 +333,10 @@ public class ObjectsRegistry {
         Named named = instantiate(typeClass, args);
 
         if(!named.allowOverride()) {
-            if(entries.containsKey(named.name().toLowerCase())) {
+            if(entries.get(named.name().toLowerCase()) != null) {
                 throw new IllegalStateException("Type with name '" + named.name() + "' was already registered: " + typeClass);
             }
-            if(isNotBlank(named.alias()) && entries.containsKey(named.alias().toLowerCase())) {
+            if(isNotBlank(named.alias()) && entries.get(named.alias().toLowerCase()) != null) {
                 throw new IllegalStateException("Type with alias '" + named.alias() + "' was already registered: " + typeClass);
             }
         }

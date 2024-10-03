@@ -1,10 +1,6 @@
 package com.legadi.cli.jurl.generators;
 
-import static com.legadi.cli.jurl.common.CommonUtils.INPUT_FORMAT;
-
-import java.util.Optional;
-
-import com.legadi.cli.jurl.common.CommonUtils;
+import com.legadi.cli.jurl.common.ConsoleInput;
 import com.legadi.cli.jurl.common.Settings;
 
 public class UserInputGenerator implements Generator {
@@ -19,10 +15,8 @@ public class UserInputGenerator implements Generator {
         if(settings.containsUserInput(param)) {
             return settings.get(param);
         } else {
-            String value = Optional.ofNullable(System.console())
-                .map(console -> console.readLine(String.format(INPUT_FORMAT, param)))
-                .filter(CommonUtils::isNotBlank)
-                .orElse(param);
+            ConsoleInput consoleInput = new ConsoleInput(settings);
+            String value = consoleInput.readInput(param, null);
             settings.putUserInput(param, value);
             return value;
         }

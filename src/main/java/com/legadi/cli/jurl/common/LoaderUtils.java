@@ -26,7 +26,7 @@ public class LoaderUtils {
 
         try {
 
-            if(CACHED_LINES.containsKey(internalFilePath)) {
+            if(CACHED_LINES.get(internalFilePath) != null) {
                 return new ArrayList<>(CACHED_LINES.get(internalFilePath));
             }
 

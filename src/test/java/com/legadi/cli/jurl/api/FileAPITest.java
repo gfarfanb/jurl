@@ -1,5 +1,6 @@
 package com.legadi.cli.jurl.api;
 
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_DOWNLOADS_LOCATION;
 import static com.legadi.cli.jurl.embedded.util.FileLoader.readLines;
 import static com.legadi.cli.jurl.executor.http.HTTPRequestExecutor.REQUEST_FILE_BOUNDARY;
 
@@ -280,7 +281,7 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
         Map<String, String> properties = new HashMap<>();
         String downloadsLocation = "./executions/Downloads";
 
-        properties.put("downloadsLocation", downloadsLocation);
+        properties.put(PROP_DOWNLOADS_LOCATION, downloadsLocation);
 
         Settings.mergeProperties("default", properties);
 
@@ -336,7 +337,7 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
 
         Files.delete(Paths.get(downloadsLocation));
 
-        properties.put("downloadsLocation", "");
+        properties.put(PROP_DOWNLOADS_LOCATION, "");
 
         Settings.mergeProperties("default", properties);
     }

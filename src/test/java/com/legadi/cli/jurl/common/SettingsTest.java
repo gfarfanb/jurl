@@ -2,6 +2,11 @@ package com.legadi.cli.jurl.common;
 
 import static com.legadi.cli.jurl.common.Settings.TAG_FORMATTER;
 import static com.legadi.cli.jurl.common.Settings.mergeProperties;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_OUTPUT_PATH;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTION_TIMES;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_REQUEST_BEHAVIOUR;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_WORKSPACE_PATH;
 
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -20,7 +25,7 @@ public class SettingsTest {
     public void getCommandProperties() {
         Settings settings = new Settings();
 
-        Assertions.assertEquals(System.getProperty("user.dir"), settings.get("workspacePath"));
+        Assertions.assertEquals(System.getProperty("user.dir"), settings.get(PROP_WORKSPACE_PATH));
         Assertions.assertDoesNotThrow(() -> TAG_FORMATTER.parse(settings.get("executionTag")));
     }
 
@@ -98,8 +103,8 @@ public class SettingsTest {
     public void getValidation() {
         Settings settings = new Settings();
 
-        Assertions.assertEquals("REQUEST", settings.get("requestBehaviour"));
-        Assertions.assertEquals(Integer.valueOf(1), settings.get("executionTimes", Integer::parseInt));
+        Assertions.assertEquals("REQUEST", settings.get(PROP_REQUEST_BEHAVIOUR));
+        Assertions.assertEquals(Integer.valueOf(1), settings.get(PROP_EXECUTION_TIMES, Integer::parseInt));
         Assertions.assertThrows(CommandException.class, () -> settings.get("property.not.found"));
     }
 
@@ -109,18 +114,18 @@ public class SettingsTest {
 
         Assertions.assertEquals("REQUEST", settings.getOrDefault("request.behaviour", "REQUEST"));
         Assertions.assertEquals(1, settings.getOrDefault("execution.times", 1, Integer::parseInt));
-        Assertions.assertEquals(1, settings.getOrDefault("executionTimes", 5, Integer::parseInt));
+        Assertions.assertEquals(1, settings.getOrDefault(PROP_EXECUTION_TIMES, 5, Integer::parseInt));
     }
 
     @Test
     public void getConfigFilePathValidation() {
         Settings settings = new Settings();
-        String configPath = settings.get("configPath");
+        String configPath = settings.get(PROP_CONFIG_PATH);
 
         Assertions.assertEquals(Paths.get("./config/config.json"), settings.getConfigFilePath());
 
         settings.setEnvironment("test");
-        settings.putOverride("configPath", configPath);
+        settings.putOverride(PROP_CONFIG_PATH, configPath);
         
         Assertions.assertEquals(Paths.get("./config/config.test.json"), settings.getConfigFilePath());
     }
@@ -128,12 +133,12 @@ public class SettingsTest {
     @Test
     public void getOverrideFilePathValidation() {
         Settings settings = new Settings();
-        String configOutputPath = settings.get("configOutputPath");
+        String configOutputPath = settings.get(PROP_CONFIG_OUTPUT_PATH);
 
         Assertions.assertEquals(Paths.get("./config/.output/override.json"), settings.getOverrideFilePath());
 
         settings.setEnvironment("test");
-        settings.putOverride("configOutputPath", configOutputPath);
+        settings.putOverride(PROP_CONFIG_OUTPUT_PATH, configOutputPath);
         
         Assertions.assertEquals(Paths.get("./config/.output/override.test.json"), settings.getOverrideFilePath());
     }
@@ -141,12 +146,12 @@ public class SettingsTest {
     @Test
     public void getOutputObjectPathValidation() {
         Settings settings = new Settings();
-        String configOutputPath = settings.get("configOutputPath");
+        String configOutputPath = settings.get(PROP_CONFIG_OUTPUT_PATH);
 
         Assertions.assertEquals(Paths.get("./config/.output/default"), settings.getOutputObjectPath());
 
         settings.setEnvironment("test");
-        settings.putOverride("configOutputPath", configOutputPath);
+        settings.putOverride(PROP_CONFIG_OUTPUT_PATH, configOutputPath);
         
         Assertions.assertEquals(Paths.get("./config/.output/test"), settings.getOutputObjectPath());
     }

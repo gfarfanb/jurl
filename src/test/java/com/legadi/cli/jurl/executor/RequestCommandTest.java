@@ -1,6 +1,7 @@
 package com.legadi.cli.jurl.executor;
 
 import static com.legadi.cli.jurl.common.JsonUtils.jsonToObject;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_OPEN_EDITOR_COMMAND;
 import static com.legadi.cli.jurl.model.RequestBehaviour.CURL_ONLY;
 import static com.legadi.cli.jurl.model.RequestBehaviour.PRINT_ONLY;
 
@@ -35,7 +36,7 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
     @AfterEach
     public void cleanup() {
         Map<String, String> properties = new HashMap<>();
-        properties.put("openEditorCommand", "");
+        properties.put(PROP_OPEN_EDITOR_COMMAND, "");
         Settings.mergeProperties("default", properties);
     }
 
@@ -152,7 +153,7 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
 
     @Test
     public void executeWithAuthAndException() {
-        String[] args = { "src/test/resources/auth-request.spec.http" };
+        String[] args = { "-n", "create", "src/test/resources/auth-request.spec.http" };
 
         requestCatcher.add(correlationId, "request-with-exception", "authorization");
         requestCatcher.add(correlationId, "request-with-exception-throw", new CommandException("authorization"));
@@ -256,7 +257,7 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
         String[] args = { "-oe", "-n", "create", "src/test/resources/basic-functions.spec.http" };
 
         Map<String, String> properties = new HashMap<>();
-        properties.put("openEditorCommand", "echo test");
+        properties.put(PROP_OPEN_EDITOR_COMMAND, "echo test");
         Settings.mergeProperties("default", properties);
 
         Assertions.assertDoesNotThrow(() -> new RequestCommand(args).execute());
@@ -272,7 +273,7 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
         String[] args = { "-oe", "-n", "create", "src/test/resources/basic-functions.spec.http" };
 
         Map<String, String> properties = new HashMap<>();
-        properties.put("openEditorCommand", "");
+        properties.put(PROP_OPEN_EDITOR_COMMAND, "");
         Settings.mergeProperties("default", properties);
 
         Assertions.assertDoesNotThrow(() -> new RequestCommand(args).execute());
@@ -288,7 +289,7 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
         String[] args = { "-oe", "-n", "create", "src/test/resources/basic-functions.spec.http" };
 
         Map<String, String> properties = new HashMap<>();
-        properties.put("openEditorCommand", "cmd-not-found arg1");
+        properties.put(PROP_OPEN_EDITOR_COMMAND, "cmd-not-found arg1");
         Settings.mergeProperties("default", properties);
 
         Assertions.assertDoesNotThrow(() -> new RequestCommand(args).execute());

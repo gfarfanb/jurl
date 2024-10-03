@@ -17,6 +17,12 @@ public class Command {
 
     private static final Logger LOGGER = Logger.getLogger(CommonUtils.class.getName());
 
+    static {
+        System.setProperty("jurl.os.name", System.getProperty("os.name"));
+    }
+
+    private Command() {}
+
     public static void exec(Settings settings, boolean inInterpreter, Level exitCodeLevel, String... commands) {
         exec(settings, out -> {}, inInterpreter, exitCodeLevel, commands);
     }
@@ -28,7 +34,7 @@ public class Command {
         List<String> commandParts = new ArrayList<>();
 
         if(inInterpreter) {
-            String os = System.getProperty("os.name").toLowerCase(Locale.ROOT);
+            String os = System.getProperty("jurl.os.name").toLowerCase(Locale.ROOT);
             if(os.contains("win")) {
                 commandParts.add("cmd.exe");
                 commandParts.add("/c");

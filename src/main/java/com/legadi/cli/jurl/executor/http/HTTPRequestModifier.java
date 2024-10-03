@@ -1,7 +1,5 @@
 package com.legadi.cli.jurl.executor.http;
 
-import static com.legadi.cli.jurl.common.CommonUtils.INPUT_DEFAULT_FORMAT;
-import static com.legadi.cli.jurl.common.CommonUtils.INPUT_FORMAT;
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
@@ -18,7 +16,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.legadi.cli.jurl.common.CommonUtils;
+import com.legadi.cli.jurl.common.ConsoleInput;
 import com.legadi.cli.jurl.common.InputNameResolver;
 import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
@@ -84,7 +82,8 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
             return Optional.empty();
         }
 
-        InputNameResolver inputNameResolver = new InputNameResolver(requestInputPath, authRequestInput);
+        InputNameResolver inputNameResolver = new InputNameResolver(settings,
+            requestInputPath, authRequestInput);
         String authRequestName = inputNameResolver.resolve(auth.getInputName());
         HTTPRequestEntry authRequestEntry = authRequestInput.getRequests().get(authRequestName);
 
@@ -234,8 +233,9 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
 
     @Override
     public void expandFlow(Settings settings, FlowEntry flow) {
+        ConsoleInput consoleInput = new ConsoleInput(settings);
         StringExpander stringExpander = new StringExpander(settings,
-            new PropertyDefault(flow.getDefaults()));
+            new PropertyDefault(consoleInput, flow.getDefaults()));
 
         expandMap(stringExpander, flow.getDefaults(), true);
 
@@ -247,8 +247,9 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
 
     @Override
     public void expandRequestDefinition(Settings settings, HTTPRequestEntry request) {
+        ConsoleInput consoleInput = new ConsoleInput(settings);
         StringExpander stringExpander = new StringExpander(settings,
-            new PropertyDefault(request.getDefaults()));
+            new PropertyDefault(consoleInput, request.getDefaults()));
 
         expandMap(stringExpander, request.getDefaults(), true);
 
@@ -284,8 +285,9 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
 
     private void expandRequestAuth(Settings settings, HTTPRequestAuthEntry requestAuth,
             Map<String, String> defaults) {
+        ConsoleInput consoleInput = new ConsoleInput(settings);
         StringExpander stringExpander = new StringExpander(settings,
-            new PropertyDefault(defaults));
+            new PropertyDefault(consoleInput, defaults));
 
         expandMap(stringExpander, defaults, true);
 
@@ -365,7 +367,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
             .collect(Collectors.toMap(HTTPRequestFileEntry::getPath, v -> v));
 
         for(HTTPRequestFileEntry apiFile : apiFiles) {
-            if(!filesByPath.containsKey(apiFile.getPath())) {
+            if(filesByPath.get(apiFile.getPath()) == null) {
                 requestFiles.add(apiFile);
                 continue;
             }
@@ -406,27 +408,23 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
 
     public static class PropertyDefault implements Function<String, String> {
 
+        private final ConsoleInput consoleInput;
         private final Map<String, String> defaults;
 
-        public PropertyDefault(Map<String, String> defaults) {
+        public PropertyDefault(ConsoleInput consoleInput, Map<String, String> defaults) {
+            this.consoleInput = consoleInput;
             this.defaults = defaults;
         }
 
         @Override
         public String apply(String property) {
             String defaultValue = defaults.get(property);
-            String message = defaultValue != null
-                ? String.format(INPUT_DEFAULT_FORMAT, property, defaultValue)
-                : String.format(INPUT_FORMAT, property);
 
             if(defaultValue == null) {
                 defaultValue = "";
             }
 
-            return Optional.ofNullable(System.console())
-                .map(console -> console.readLine(message))
-                .filter(CommonUtils::isNotBlank)
-                .orElse(defaultValue);
+            return consoleInput.readInput(property, defaultValue);
         }
     }
 }

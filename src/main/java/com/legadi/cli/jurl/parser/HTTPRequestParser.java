@@ -607,7 +607,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                         throw new RequestException(request,
                             "request.requestFiles[" + index + "].path (file path) is null or empty");
                     }
-                    if(!requestFilesByPath.containsKey(value)) {
+                    if(requestFilesByPath.get(value) == null) {
                         lastRequestFile = new HTTPRequestFileEntry();
                         requestFilesByPath.put(value, lastRequestFile);
                         request.getRequestFiles().add(lastRequestFile);

@@ -14,9 +14,7 @@ public class PasswordInputGeneratorTest extends GeneratorAbstractTest {
         String message = "P4s5w0rd";
         String value = Assertions.assertDoesNotThrow(() -> generate(message));
 
-        Assertions.assertNotNull(value);
-        Assertions.assertEquals("P4s5w0rd", value);
-        Assertions.assertEquals("P4s5w0rd", settings.get(message));
+        Assertions.assertNull(value);
 
         settings.putUserInput(message, "0v3rrid3d_P4s5w0rd");
 

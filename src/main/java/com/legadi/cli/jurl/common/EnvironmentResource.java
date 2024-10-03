@@ -33,7 +33,7 @@ public class EnvironmentResource<T> {
     }
 
     private Map<String, T> getResource(String environment) {
-        if(!data.containsKey(environment)) {
+        if(data.get(environment) == null) {
             data.put(environment, new HashMap<>());
         }
         return data.get(environment);

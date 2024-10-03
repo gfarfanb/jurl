@@ -23,6 +23,7 @@ import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_R
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_ASSERTIONS;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_AUTHENTICATION;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_CONDITIONS;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_USER_INPUT;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_START_IN_STEP_INDEX;
 import static com.legadi.cli.jurl.common.WriterUtils.createDirectories;
 
@@ -108,6 +109,10 @@ public interface SettingsDefaults {
 
     default int getStartInStepIndex() {
         return get(PROP_START_IN_STEP_INDEX, Integer::parseInt);
+    }
+
+    default boolean isSkipUserInput() {
+        return get(PROP_SKIP_USER_INPUT, Boolean::valueOf);
     }
 
     default String getSettingsParamRegex() {
