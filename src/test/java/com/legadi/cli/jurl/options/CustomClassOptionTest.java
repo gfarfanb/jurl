@@ -6,14 +6,12 @@ import static com.legadi.cli.jurl.embedded.util.ObjectName.RESPONSE;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.legadi.cli.jurl.assertions.AssertionFunction;
 import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 
-@Disabled
 public class CustomClassOptionTest extends OptionAbstractTest<CustomClassOption> {
 
     public CustomClassOptionTest() {
