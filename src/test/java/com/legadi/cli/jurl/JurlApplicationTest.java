@@ -1,5 +1,8 @@
 package com.legadi.cli.jurl;
 
+import static com.legadi.cli.jurl.embedded.util.ObjectName.REQUEST_WITH_EXCEPTION;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.REQUEST_WITH_EXCEPTION_THROW;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -32,8 +35,8 @@ public class JurlApplicationTest extends DummyAPIAbstractTest {
     public void mainUnexpectedError() {
         String[] args = { "-n", "create", "src/test/resources/basic-functions.spec.http" };
 
-        requestCatcher.add(correlationId, "request-with-exception", "create");
-        requestCatcher.add(correlationId, "request-with-exception-throw", new RuntimeException("Unexpected"));
+        requestCatcher.add(correlationId, REQUEST_WITH_EXCEPTION, "create");
+        requestCatcher.add(correlationId, REQUEST_WITH_EXCEPTION_THROW, new RuntimeException("Unexpected"));
 
         Assertions.assertDoesNotThrow(() -> JurlApplication.main(args));
     }

@@ -1,5 +1,6 @@
 package com.legadi.cli.jurl.embedded.controller;
 
+import static com.legadi.cli.jurl.embedded.util.ObjectName.BODY;
 import static com.legadi.cli.jurl.embedded.util.RequestCatcherManager.getCatcher;
 
 import java.util.Map;
@@ -29,7 +30,7 @@ public class AuthorizationController {
         RequestCatcher requestCatcher = getCatcher(requestHeaders.get("request-catcher"));
         UUID correlationId = UUID.randomUUID();
 
-        requestCatcher.add(correlationId, "auth-body", body);
+        requestCatcher.add(correlationId, BODY, body);
 
         AuthToken authToken = new AuthToken();
         authToken.setAccessToken(UUID.randomUUID().toString());

@@ -1,5 +1,6 @@
 package com.legadi.cli.jurl.embedded.controller;
 
+import static com.legadi.cli.jurl.embedded.util.ObjectName.BODY;
 import static com.legadi.cli.jurl.embedded.util.RequestCatcherManager.getCatcher;
 
 import java.util.Map;
@@ -31,7 +32,7 @@ public class BasicFunctionsController {
         RequestCatcher requestCatcher = getCatcher(requestHeaders.get("request-catcher"));
         UUID correlationId = UUID.randomUUID();
 
-        requestCatcher.add(correlationId, "basic-body", entity);
+        requestCatcher.add(correlationId, BODY, entity);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Resource-ID", correlationId.toString());
@@ -46,11 +47,11 @@ public class BasicFunctionsController {
             @RequestHeader Map<String, String> requestHeaders) {
         RequestCatcher requestCatcher = getCatcher(requestHeaders.get("request-catcher"));
 
-        if(!requestCatcher.contains(correlationId, "basic-body")) {
+        if(!requestCatcher.contains(correlationId, BODY)) {
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.ok(requestCatcher.getLast(correlationId, "basic-body"));
+        return ResponseEntity.ok(requestCatcher.getLast(correlationId, BODY));
     }
 
     @PutMapping("/body/{correlationId}")
@@ -59,11 +60,11 @@ public class BasicFunctionsController {
             @RequestHeader Map<String, String> requestHeaders) {
         RequestCatcher requestCatcher = getCatcher(requestHeaders.get("request-catcher"));
 
-        if(!requestCatcher.contains(correlationId, "basic-body")) {
+        if(!requestCatcher.contains(correlationId, BODY)) {
             return ResponseEntity.notFound().build();
         }
 
-        requestCatcher.add(correlationId, "basic-body", entity);
+        requestCatcher.add(correlationId, BODY, entity);
         return ResponseEntity.noContent().build();
     }
 
@@ -72,16 +73,32 @@ public class BasicFunctionsController {
             @RequestHeader Map<String, String> requestHeaders) {
         RequestCatcher requestCatcher = getCatcher(requestHeaders.get("request-catcher"));
 
-        if(!requestCatcher.contains(correlationId, "basic-body")) {
+        if(!requestCatcher.contains(correlationId, BODY)) {
             return ResponseEntity.notFound().build();
         }
 
-        requestCatcher.remove(correlationId, "basic-body");
+        requestCatcher.remove(correlationId, BODY);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/body/empty")
     public ResponseEntity<String> empty() {
         return ResponseEntity.ok("");
+    }
+
+    @PostMapping("/body/inputs")
+    public ResponseEntity<String> inputs(@RequestBody Map<String, String> entity,
+            @RequestHeader Map<String, String> requestHeaders) {
+        RequestCatcher requestCatcher = getCatcher(requestHeaders.get("request-catcher"));
+        UUID correlationId = UUID.randomUUID();
+
+        requestCatcher.add(correlationId, BODY, entity);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Resource-ID", correlationId.toString());
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .headers(headers)
+            .body("Created");
     }
 }

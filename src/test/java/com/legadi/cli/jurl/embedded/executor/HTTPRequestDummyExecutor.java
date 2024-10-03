@@ -1,5 +1,14 @@
 package com.legadi.cli.jurl.embedded.executor;
 
+import static com.legadi.cli.jurl.embedded.util.ObjectName.CONDITIONS_RESULT;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.EXECUTOR_EXECUTED;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.REQUEST;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.REQUEST_INPUT_PATH;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.REQUEST_WITH_EXCEPTION;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.REQUEST_WITH_EXCEPTION_THROW;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.RESPONSE;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.SETTINGS;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,22 +32,22 @@ public class HTTPRequestDummyExecutor extends HTTPRequestExecutor {
 
     @Override
     public Optional<AssertionResult> acceptsConditions(Settings settings, HTTPRequestEntry request) {
-        return requestCatcher.getLast(identifier, "conditions-result");
+        return requestCatcher.getLast(identifier, CONDITIONS_RESULT);
     }
 
     @Override
     public HTTPResponseEntry executeRequest(Settings settings, String requestInputPath,
             HTTPRequestEntry request) throws RequestException {
-        requestCatcher.add(identifier, "executor-executed", true);
+        requestCatcher.add(identifier, EXECUTOR_EXECUTED, true);
 
-        requestCatcher.add(identifier, "settings", settings);
-        requestCatcher.add(identifier, "request-input-path", requestInputPath);
-        requestCatcher.add(identifier, "request", request);
+        requestCatcher.add(identifier, SETTINGS, settings);
+        requestCatcher.add(identifier, REQUEST_INPUT_PATH, requestInputPath);
+        requestCatcher.add(identifier, REQUEST, request);
 
-        if(request.getName().equals(requestCatcher.getLast(identifier, "request-with-exception"))) {
-            throw requestCatcher.<RuntimeException>getLast(identifier, "request-with-exception-throw");
+        if(request.getName().equals(requestCatcher.getLast(identifier, REQUEST_WITH_EXCEPTION))) {
+            throw requestCatcher.<RuntimeException>getLast(identifier, REQUEST_WITH_EXCEPTION_THROW);
         }
 
-        return requestCatcher.getLast(identifier, "response");
+        return requestCatcher.getLast(identifier, RESPONSE);
     }
 }

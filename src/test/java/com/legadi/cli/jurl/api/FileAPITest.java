@@ -2,6 +2,12 @@ package com.legadi.cli.jurl.api;
 
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_DOWNLOADS_LOCATION;
 import static com.legadi.cli.jurl.embedded.util.FileLoader.readLines;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.ASSERTIONS_RESULT;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.BODY;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.REQUEST;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.REQUEST_INPUT_PATH;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.RESPONSE;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.SETTINGS;
 import static com.legadi.cli.jurl.executor.http.HTTPRequestExecutor.REQUEST_FILE_BOUNDARY;
 
 import java.io.File;
@@ -31,9 +37,9 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
     @Test
     public void upload() throws IOException {
         UUID uploadCorrelationId = jurl("-n", "upload", "src/test/resources/file.spec.http");
-        Settings uploadSettings = requestCatcher.getLast(uploadCorrelationId, "settings");
-        String requestInputPath = requestCatcher.getLast(uploadCorrelationId, "request-input-path");
-        HTTPRequestEntry uploadRequest = requestCatcher.getLast(uploadCorrelationId, "request");
+        Settings uploadSettings = requestCatcher.getLast(uploadCorrelationId, SETTINGS);
+        String requestInputPath = requestCatcher.getLast(uploadCorrelationId, REQUEST_INPUT_PATH);
+        HTTPRequestEntry uploadRequest = requestCatcher.getLast(uploadCorrelationId, REQUEST);
 
         Assertions.assertEquals("src/test/resources/file.spec.http", requestInputPath);
         Assertions.assertEquals("upload", uploadRequest.getName());
@@ -55,9 +61,9 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
         Assertions.assertTrue(uploadRequest.getOutputMappings().isEmpty());
         Assertions.assertEquals(1, uploadRequest.getAssertions().size());
 
-        HTTPResponseEntry uploadResponse = requestCatcher.getLast(uploadCorrelationId, "response");
+        HTTPResponseEntry uploadResponse = requestCatcher.getLast(uploadCorrelationId, RESPONSE);
         FileFormEntity uploadEntity = requestCatcher
-            .<FileFormEntity>getLastSaved("file-body")
+            .<FileFormEntity>getLastSaved(BODY)
             .getRight();
 
         Assertions.assertEquals("http://localhost:" + port + "/file", uploadResponse.getRequestUrl());
@@ -82,7 +88,7 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
         Assertions.assertDoesNotThrow(
             () -> UUID.fromString(uploadResponse.getResponseHeaders().get("Resource-ID")));
 
-        Optional<AssertionResult> uploadAssertionResult = requestCatcher.getLast(uploadCorrelationId, "assertions-result");
+        Optional<AssertionResult> uploadAssertionResult = requestCatcher.getLast(uploadCorrelationId, ASSERTIONS_RESULT);
 
         Assertions.assertTrue(uploadAssertionResult.isPresent());
         Assertions.assertEquals(1, uploadAssertionResult.get().getAssertions());
@@ -100,9 +106,9 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
     @Test
     public void uploadWithoutForm() throws IOException {
         UUID uploadCorrelationId = jurl("-n", "uploadWithoutForm", "src/test/resources/file.spec.http");
-        Settings uploadSettings = requestCatcher.getLast(uploadCorrelationId, "settings");
-        String requestInputPath = requestCatcher.getLast(uploadCorrelationId, "request-input-path");
-        HTTPRequestEntry uploadRequest = requestCatcher.getLast(uploadCorrelationId, "request");
+        Settings uploadSettings = requestCatcher.getLast(uploadCorrelationId, SETTINGS);
+        String requestInputPath = requestCatcher.getLast(uploadCorrelationId, REQUEST_INPUT_PATH);
+        HTTPRequestEntry uploadRequest = requestCatcher.getLast(uploadCorrelationId, REQUEST);
 
         Assertions.assertEquals("src/test/resources/file.spec.http", requestInputPath);
         Assertions.assertEquals("uploadWithoutForm", uploadRequest.getName());
@@ -124,9 +130,9 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
         Assertions.assertTrue(uploadRequest.getOutputMappings().isEmpty());
         Assertions.assertEquals(1, uploadRequest.getAssertions().size());
 
-        HTTPResponseEntry uploadResponse = requestCatcher.getLast(uploadCorrelationId, "response");
+        HTTPResponseEntry uploadResponse = requestCatcher.getLast(uploadCorrelationId, RESPONSE);
         FileFormEntity uploadEntity = requestCatcher
-            .<FileFormEntity>getLastSaved("file-body")
+            .<FileFormEntity>getLastSaved(BODY)
             .getRight();
 
         Assertions.assertEquals("http://localhost:" + port + "/file", uploadResponse.getRequestUrl());
@@ -151,7 +157,7 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
         Assertions.assertDoesNotThrow(
             () -> UUID.fromString(uploadResponse.getResponseHeaders().get("Resource-ID")));
 
-        Optional<AssertionResult> uploadAssertionResult = requestCatcher.getLast(uploadCorrelationId, "assertions-result");
+        Optional<AssertionResult> uploadAssertionResult = requestCatcher.getLast(uploadCorrelationId, ASSERTIONS_RESULT);
 
         Assertions.assertTrue(uploadAssertionResult.isPresent());
         Assertions.assertEquals(1, uploadAssertionResult.get().getAssertions());
@@ -169,8 +175,8 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
     @Test
     public void download() {
         UUID downloadCorrelationId = jurl("-n", "download", "src/test/resources/file.spec.http");
-        String requestInputPath = requestCatcher.getLast(downloadCorrelationId, "request-input-path");
-        HTTPRequestEntry downloadRequest = requestCatcher.getLast(downloadCorrelationId, "request");
+        String requestInputPath = requestCatcher.getLast(downloadCorrelationId, REQUEST_INPUT_PATH);
+        HTTPRequestEntry downloadRequest = requestCatcher.getLast(downloadCorrelationId, REQUEST);
 
         Assertions.assertEquals("src/test/resources/file.spec.http", requestInputPath);
         Assertions.assertEquals("download", downloadRequest.getName());
@@ -191,8 +197,8 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
         Assertions.assertTrue(downloadRequest.getOutputMappings().isEmpty());
         Assertions.assertEquals(1, downloadRequest.getAssertions().size());
 
-        HTTPResponseEntry downloadResponse = requestCatcher.getLast(downloadCorrelationId, "response");
-        Settings downloadSettings = requestCatcher.getLast(downloadCorrelationId, "settings");
+        HTTPResponseEntry downloadResponse = requestCatcher.getLast(downloadCorrelationId, RESPONSE);
+        Settings downloadSettings = requestCatcher.getLast(downloadCorrelationId, SETTINGS);
 
         Assertions.assertTrue(downloadResponse.getRequestUrl().startsWith("http://localhost:" + port + "/file"));
         Assertions.assertTrue(downloadResponse.getRequestUrl().contains("file=src/test/resources/file.csv"));
@@ -208,7 +214,7 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
         Assertions.assertEquals("attachment; filename=downloaded.csv",
             downloadResponse.getResponseHeaders().get("Content-Disposition"));
 
-        Optional<AssertionResult> downloadAssertionResult = requestCatcher.getLast(downloadCorrelationId, "assertions-result");
+        Optional<AssertionResult> downloadAssertionResult = requestCatcher.getLast(downloadCorrelationId, ASSERTIONS_RESULT);
 
         Assertions.assertTrue(downloadAssertionResult.isPresent());
         Assertions.assertEquals(1, downloadAssertionResult.get().getAssertions());
@@ -224,8 +230,8 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
     @Test
     public void downloadWithoutName() {
         UUID downloadCorrelationId = jurl("-n", "downloadWithoutName", "src/test/resources/file.spec.http");
-        String requestInputPath = requestCatcher.getLast(downloadCorrelationId, "request-input-path");
-        HTTPRequestEntry downloadRequest = requestCatcher.getLast(downloadCorrelationId, "request");
+        String requestInputPath = requestCatcher.getLast(downloadCorrelationId, REQUEST_INPUT_PATH);
+        HTTPRequestEntry downloadRequest = requestCatcher.getLast(downloadCorrelationId, REQUEST);
 
         Assertions.assertEquals("src/test/resources/file.spec.http", requestInputPath);
         Assertions.assertEquals("downloadWithoutName", downloadRequest.getName());
@@ -246,8 +252,8 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
         Assertions.assertTrue(downloadRequest.getOutputMappings().isEmpty());
         Assertions.assertEquals(1, downloadRequest.getAssertions().size());
 
-        HTTPResponseEntry downloadResponse = requestCatcher.getLast(downloadCorrelationId, "response");
-        Settings downloadSettings = requestCatcher.getLast(downloadCorrelationId, "settings");
+        HTTPResponseEntry downloadResponse = requestCatcher.getLast(downloadCorrelationId, RESPONSE);
+        Settings downloadSettings = requestCatcher.getLast(downloadCorrelationId, SETTINGS);
 
         Assertions.assertTrue(downloadResponse.getRequestUrl().startsWith("http://localhost:" + port + "/file"));
         Assertions.assertTrue(downloadResponse.getRequestUrl().contains("file=src/test/resources/file.csv"));
@@ -263,7 +269,7 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
         Assertions.assertEquals("attachment",
             downloadResponse.getResponseHeaders().get("Content-Disposition"));
 
-        Optional<AssertionResult> downloadAssertionResult = requestCatcher.getLast(downloadCorrelationId, "assertions-result");
+        Optional<AssertionResult> downloadAssertionResult = requestCatcher.getLast(downloadCorrelationId, ASSERTIONS_RESULT);
 
         Assertions.assertTrue(downloadAssertionResult.isPresent());
         Assertions.assertEquals(1, downloadAssertionResult.get().getAssertions());
@@ -286,8 +292,8 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
         Settings.mergeProperties("default", properties);
 
         UUID downloadCorrelationId = jurl("-di", "-n", "downloadInLocation", "src/test/resources/file.spec.http");
-        String requestInputPath = requestCatcher.getLast(downloadCorrelationId, "request-input-path");
-        HTTPRequestEntry downloadRequest = requestCatcher.getLast(downloadCorrelationId, "request");
+        String requestInputPath = requestCatcher.getLast(downloadCorrelationId, REQUEST_INPUT_PATH);
+        HTTPRequestEntry downloadRequest = requestCatcher.getLast(downloadCorrelationId, REQUEST);
 
         Assertions.assertEquals("src/test/resources/file.spec.http", requestInputPath);
         Assertions.assertEquals("downloadInLocation", downloadRequest.getName());
@@ -308,7 +314,7 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
         Assertions.assertTrue(downloadRequest.getOutputMappings().isEmpty());
         Assertions.assertEquals(1, downloadRequest.getAssertions().size());
 
-        HTTPResponseEntry downloadResponse = requestCatcher.getLast(downloadCorrelationId, "response");
+        HTTPResponseEntry downloadResponse = requestCatcher.getLast(downloadCorrelationId, RESPONSE);
 
         Assertions.assertTrue(downloadResponse.getRequestUrl().startsWith("http://localhost:" + port + "/file"));
         Assertions.assertTrue(downloadResponse.getRequestUrl().contains("file=src/test/resources/file.csv"));
@@ -321,7 +327,7 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
         Assertions.assertEquals("attachment; filename=saved.csv",
             downloadResponse.getResponseHeaders().get("Content-Disposition"));
 
-        Optional<AssertionResult> downloadAssertionResult = requestCatcher.getLast(downloadCorrelationId, "assertions-result");
+        Optional<AssertionResult> downloadAssertionResult = requestCatcher.getLast(downloadCorrelationId, ASSERTIONS_RESULT);
 
         Assertions.assertTrue(downloadAssertionResult.isPresent());
         Assertions.assertEquals(1, downloadAssertionResult.get().getAssertions());
@@ -346,8 +352,8 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
     public void uploadFiles() throws IOException {
         UUID uploadCorrelationId = jurl("-n", "uploadFiles", "src/test/resources/file.spec.http");
 
-        HTTPResponseEntry uploadResponse = requestCatcher.getLast(uploadCorrelationId, "response");
-        Settings uploadSettings = requestCatcher.getLast(uploadCorrelationId, "settings");
+        HTTPResponseEntry uploadResponse = requestCatcher.getLast(uploadCorrelationId, RESPONSE);
+        Settings uploadSettings = requestCatcher.getLast(uploadCorrelationId, SETTINGS);
 
         for(Path path : uploadResponse.getSentFilePaths()) {
             File uploadedFile = uploadSettings.getExecutionPath()

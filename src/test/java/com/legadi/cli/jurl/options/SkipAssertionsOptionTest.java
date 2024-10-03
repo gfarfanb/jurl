@@ -1,6 +1,9 @@
 package com.legadi.cli.jurl.options;
 
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_ASSERTIONS;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.ASSERTIONS_RESULT;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.RESPONSE;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.SETTINGS;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -27,9 +30,9 @@ public class SkipAssertionsOptionTest extends OptionAbstractTest<SkipAssertionsO
                 "src/test/resources/basic-functions.spec.http"
             ));
 
-        Settings settings = requestCatcher.getLast(correlationId, "settings");
-        Optional<AssertionResult> assertionResult = requestCatcher.getLast(correlationId, "assertions-result");
-        HTTPResponseEntry response = requestCatcher.getLast(correlationId, "response");
+        Settings settings = requestCatcher.getLast(correlationId, SETTINGS);
+        Optional<AssertionResult> assertionResult = requestCatcher.getLast(correlationId, ASSERTIONS_RESULT);
+        HTTPResponseEntry response = requestCatcher.getLast(correlationId, RESPONSE);
 
         Assertions.assertEquals(Boolean.TRUE.toString(), settings.get(PROP_SKIP_ASSERTIONS));
         Assertions.assertFalse(assertionResult.isPresent());

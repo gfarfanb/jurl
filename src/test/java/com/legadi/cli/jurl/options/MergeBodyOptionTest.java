@@ -2,6 +2,8 @@ package com.legadi.cli.jurl.options;
 
 import static com.legadi.cli.jurl.common.JsonUtils.loadJsonFile;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_MERGE_BODY_USING_TYPE;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.RESPONSE;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.SETTINGS;
 import static com.legadi.cli.jurl.executor.http.HTTPRequestModifier.BODY_TEMPORAL_PATH;
 
 import java.math.BigDecimal;
@@ -33,8 +35,8 @@ public class MergeBodyOptionTest extends OptionAbstractTest<MergeBodyOption> {
                 "src/test/resources/basic-functions.spec.http"
             ));
 
-        Settings settings = requestCatcher.getLast(correlationId, "settings");
-        HTTPResponseEntry response = requestCatcher.getLast(correlationId, "response");
+        Settings settings = requestCatcher.getLast(correlationId, SETTINGS);
+        HTTPResponseEntry response = requestCatcher.getLast(correlationId, RESPONSE);
 
         Assertions.assertEquals("json", settings.get(PROP_MERGE_BODY_USING_TYPE));
         Assertions.assertEquals(404, response.getStatusCode());

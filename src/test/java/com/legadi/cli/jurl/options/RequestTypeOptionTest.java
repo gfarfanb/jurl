@@ -1,6 +1,8 @@
 package com.legadi.cli.jurl.options;
 
 import static com.legadi.cli.jurl.common.ObjectsRegistry.register;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.RESPONSE;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.SETTINGS;
 
 import java.util.UUID;
 
@@ -42,8 +44,8 @@ public class RequestTypeOptionTest extends OptionAbstractTest<RequestTypeOption>
                 "src/test/resources/basic-functions.spec.http"
             ));
 
-        Settings settings = requestCatcher.getLast(correlationId, "settings");
-        HTTPResponseEntry response = requestCatcher.getLast(correlationId, "response");
+        Settings settings = requestCatcher.getLast(correlationId, SETTINGS);
+        HTTPResponseEntry response = requestCatcher.getLast(correlationId, RESPONSE);
 
         Assertions.assertEquals("https", settings.getRequestType());
         Assertions.assertEquals(201, response.getStatusCode());

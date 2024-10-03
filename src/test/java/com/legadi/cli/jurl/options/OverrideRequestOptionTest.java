@@ -2,6 +2,9 @@ package com.legadi.cli.jurl.options;
 
 import static com.legadi.cli.jurl.common.JsonUtils.jsonToObject;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_OVERRIDE_REQUEST_FILE_PATH;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.REQUEST;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.RESPONSE;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.SETTINGS;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -30,13 +33,13 @@ public class OverrideRequestOptionTest extends OptionAbstractTest<OverrideReques
                 "src/test/resources/basic-functions.spec.http"
             ));
 
-        Settings settings = requestCatcher.getLast(correlationId, "settings");
-        HTTPResponseEntry response = requestCatcher.getLast(correlationId, "response");
+        Settings settings = requestCatcher.getLast(correlationId, SETTINGS);
+        HTTPResponseEntry response = requestCatcher.getLast(correlationId, RESPONSE);
 
         Assertions.assertEquals("src/test/resources/basic-functions.body.json", settings.get(PROP_OVERRIDE_REQUEST_FILE_PATH));
         Assertions.assertEquals(201, response.getStatusCode());
 
-        HTTPRequestEntry request = requestCatcher.getLast(correlationId, "request");
+        HTTPRequestEntry request = requestCatcher.getLast(correlationId, REQUEST);
         Map<String, Object> body = jsonToObject(request.getBodyContent(), new TypeToken<Map<String, Object>>() {});
 
         Assertions.assertEquals("187b03f1-55d5-4d6b-954d-51cf5f20c952", body.get("access"));

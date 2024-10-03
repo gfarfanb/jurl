@@ -1,5 +1,11 @@
 package com.legadi.cli.jurl.embedded.executor;
 
+import static com.legadi.cli.jurl.embedded.util.ObjectName.CONDITIONS_RESULT;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.REQUEST;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.REQUEST_INPUT_PATH;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.RESPONSE;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.SETTINGS;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,17 +30,17 @@ public class HTTPRequestTestExecutor extends HTTPRequestExecutor {
     @Override
     public Optional<AssertionResult> acceptsConditions(Settings settings, HTTPRequestEntry request) {
         Optional<AssertionResult> conditionsResult = super.acceptsConditions(settings, request);
-        requestCatcher.add(identifier, "conditions-result", conditionsResult);
+        requestCatcher.add(identifier, CONDITIONS_RESULT, conditionsResult);
         return conditionsResult;
     }
 
     @Override
     public HTTPResponseEntry executeRequest(Settings settings, String requestInputPath,
             HTTPRequestEntry request) throws RequestException {
-        requestCatcher.add(identifier, "settings", settings);
-        requestCatcher.add(identifier, "request-input-path", requestInputPath);
-        requestCatcher.add(identifier, "request", request);
-        return requestCatcher.add(identifier, "response",
+        requestCatcher.add(identifier, SETTINGS, settings);
+        requestCatcher.add(identifier, REQUEST_INPUT_PATH, requestInputPath);
+        requestCatcher.add(identifier, REQUEST, request);
+        return requestCatcher.add(identifier, RESPONSE,
             super.executeRequest(settings, requestInputPath, request));
     }
 }

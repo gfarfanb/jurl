@@ -1,5 +1,7 @@
 package com.legadi.cli.jurl.embedded.executor;
 
+import static com.legadi.cli.jurl.embedded.util.ObjectName.ASSERTIONS_RESULT;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,7 +25,7 @@ public class HTTPResponseTestProcessor extends HTTPResponseProcessor {
     @Override
     public Optional<AssertionResult> processResponse(Settings settings,
             HTTPRequestEntry request, HTTPResponseEntry response) {
-        return requestCatcher.add(identifier, "assertions-result",
+        return requestCatcher.add(identifier, ASSERTIONS_RESULT,
             super.processResponse(settings, request, response));
     }
 }

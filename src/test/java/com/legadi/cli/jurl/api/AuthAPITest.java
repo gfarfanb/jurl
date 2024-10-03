@@ -1,5 +1,7 @@
 package com.legadi.cli.jurl.api;
 
+import static com.legadi.cli.jurl.embedded.util.ObjectName.REQUEST;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -20,7 +22,7 @@ public class AuthAPITest extends EmbeddedAPIAbstractTest {
                 "src/test/resources/auth-request.spec.http"
             ));
 
-        List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, "request");
+        List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, REQUEST);
 
         Assertions.assertEquals(6, requests.size());
 

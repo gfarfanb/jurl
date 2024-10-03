@@ -1,0 +1,16 @@
+package com.legadi.cli.jurl.embedded.util;
+
+public enum ObjectName {
+
+    ASSERTIONS_RESULT,
+    BODY,
+    CONDITIONS_RESULT,
+    EXECUTOR_EXECUTED,
+    PROCESSOR_EXECUTED,
+    REQUEST,
+    REQUEST_INPUT_PATH,
+    REQUEST_WITH_EXCEPTION,
+    REQUEST_WITH_EXCEPTION_THROW,
+    RESPONSE,
+    SETTINGS
+}

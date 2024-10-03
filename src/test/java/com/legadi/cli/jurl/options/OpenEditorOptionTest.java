@@ -1,6 +1,8 @@
 package com.legadi.cli.jurl.options;
 
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_OPEN_OUTPUT_IN_EDITOR;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.RESPONSE;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.SETTINGS;
 
 import java.util.UUID;
 
@@ -25,8 +27,8 @@ public class OpenEditorOptionTest extends OptionAbstractTest<OpenEditorOption> {
                 "src/test/resources/basic-functions.spec.http"
             ));
 
-        Settings settings = requestCatcher.getLast(correlationId, "settings");
-        HTTPResponseEntry response = requestCatcher.getLast(correlationId, "response");
+        Settings settings = requestCatcher.getLast(correlationId, SETTINGS);
+        HTTPResponseEntry response = requestCatcher.getLast(correlationId, RESPONSE);
 
         Assertions.assertEquals(Boolean.TRUE.toString(), settings.get(PROP_OPEN_OUTPUT_IN_EDITOR));
         Assertions.assertTrue(settings.getOpenEditorCommand().isEmpty());

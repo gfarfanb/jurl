@@ -1,6 +1,8 @@
 package com.legadi.cli.jurl.options;
 
 import static com.legadi.cli.jurl.common.JsonUtils.writeJsonFile;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.RESPONSE;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.SETTINGS;
 
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -40,8 +42,8 @@ public class EnvironmentOptionTest extends OptionAbstractTest<EnvironmentOption>
                 "src/test/resources/basic-functions.spec.http"
             ));
 
-        Settings envSettings = requestCatcher.getLast(correlationId, "settings");
-        HTTPResponseEntry response = requestCatcher.getLast(correlationId, "response");
+        Settings envSettings = requestCatcher.getLast(correlationId, SETTINGS);
+        HTTPResponseEntry response = requestCatcher.getLast(correlationId, RESPONSE);
 
         Assertions.assertEquals(env, envSettings.getEnvironment());
         Assertions.assertEquals(env, envSettings.get("env"));

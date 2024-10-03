@@ -1,6 +1,8 @@
 package com.legadi.cli.jurl.options;
 
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SAVE_OUTPUT_IN_LOCATION;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.RESPONSE;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.SETTINGS;
 
 import java.util.UUID;
 
@@ -25,8 +27,8 @@ public class DownloadInOptionTest extends OptionAbstractTest<DownloadInOption> {
                 "src/test/resources/basic-functions.spec.http"
             ));
 
-        Settings settings = requestCatcher.getLast(correlationId, "settings");
-        HTTPResponseEntry response = requestCatcher.getLast(correlationId, "response");
+        Settings settings = requestCatcher.getLast(correlationId, SETTINGS);
+        HTTPResponseEntry response = requestCatcher.getLast(correlationId, RESPONSE);
 
         Assertions.assertEquals(Boolean.TRUE.toString(), settings.get(PROP_SAVE_OUTPUT_IN_LOCATION));
         Assertions.assertTrue(settings.getDownloadsLocation().isEmpty());

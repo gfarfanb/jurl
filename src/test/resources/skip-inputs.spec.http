@@ -1,0 +1,10 @@
+
+### [request] inputs
+POST http://localhost:{{local.server.port}}/basic/body/inputs
+Content-Type: application/json
+Request-Catcher: {{request.catcher.identifier}}
+
+{
+    "userInput": "{{INPUT:}}",
+    "password": "{{PASSWORD:}}"
+}

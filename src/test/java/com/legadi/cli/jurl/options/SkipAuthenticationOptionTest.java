@@ -1,6 +1,8 @@
 package com.legadi.cli.jurl.options;
 
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_AUTHENTICATION;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.RESPONSE;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.SETTINGS;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,8 +27,8 @@ public class SkipAuthenticationOptionTest extends OptionAbstractTest<SkipAuthent
                 "src/test/resources/skip-auth-request.spec.http"
             ));
 
-        Settings authSettings = requestCatcher.getLast(authCorrelationId, "settings");
-        List<HTTPResponseEntry> authResponses = requestCatcher.getAll(authCorrelationId, "response");
+        Settings authSettings = requestCatcher.getLast(authCorrelationId, SETTINGS);
+        List<HTTPResponseEntry> authResponses = requestCatcher.getAll(authCorrelationId, RESPONSE);
 
         Assertions.assertEquals(Boolean.FALSE.toString(), authSettings.get(PROP_SKIP_AUTHENTICATION));
         Assertions.assertEquals(2, authResponses.size());
@@ -40,8 +42,8 @@ public class SkipAuthenticationOptionTest extends OptionAbstractTest<SkipAuthent
                 "src/test/resources/skip-auth-request.spec.http"
             ));
 
-        Settings skipSettings = requestCatcher.getLast(skipCorrelationId, "settings");
-        List<HTTPResponseEntry> skipResponses = requestCatcher.getAll(skipCorrelationId, "response");
+        Settings skipSettings = requestCatcher.getLast(skipCorrelationId, SETTINGS);
+        List<HTTPResponseEntry> skipResponses = requestCatcher.getAll(skipCorrelationId, RESPONSE);
 
         Assertions.assertEquals(Boolean.TRUE.toString(), skipSettings.get(PROP_SKIP_AUTHENTICATION));
         Assertions.assertEquals(1, skipResponses.size());

@@ -1,5 +1,8 @@
 package com.legadi.cli.jurl.options;
 
+import static com.legadi.cli.jurl.embedded.util.ObjectName.REQUEST;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.RESPONSE;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -25,8 +28,8 @@ public class StartInStepOptionTest extends OptionAbstractTest<StartInStepOption>
                 "src/test/resources/flow.spec.http"
             ));
 
-        List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, "request");
-        List<HTTPResponseEntry> responses = requestCatcher.getAll(correlationId, "response");
+        List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, REQUEST);
+        List<HTTPResponseEntry> responses = requestCatcher.getAll(correlationId, RESPONSE);
 
         Assertions.assertTrue(requests.stream().map(HTTPRequestEntry::getName)
             .noneMatch(n -> n.equalsIgnoreCase("authorization")));

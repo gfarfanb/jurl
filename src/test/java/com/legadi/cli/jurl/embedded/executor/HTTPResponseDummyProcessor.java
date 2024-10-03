@@ -1,5 +1,8 @@
 package com.legadi.cli.jurl.embedded.executor;
 
+import static com.legadi.cli.jurl.embedded.util.ObjectName.ASSERTIONS_RESULT;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.PROCESSOR_EXECUTED;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,8 +26,8 @@ public class HTTPResponseDummyProcessor extends HTTPResponseProcessor {
     @Override
     public Optional<AssertionResult> processResponse(Settings settings,
             HTTPRequestEntry request, HTTPResponseEntry response) {
-        requestCatcher.add(identifier, "processor-executed", true);
+        requestCatcher.add(identifier, PROCESSOR_EXECUTED, true);
 
-        return requestCatcher.getLast(identifier, "assertions-result");
+        return requestCatcher.getLast(identifier, ASSERTIONS_RESULT);
     }
 }

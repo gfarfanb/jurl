@@ -1,5 +1,12 @@
 package com.legadi.cli.jurl.embedded;
 
+import static com.legadi.cli.jurl.embedded.util.ObjectName.ASSERTIONS_RESULT;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.CONDITIONS_RESULT;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.EXECUTOR_EXECUTED;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.PROCESSOR_EXECUTED;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.REQUEST_WITH_EXCEPTION;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.RESPONSE;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -27,11 +34,11 @@ public abstract class DummyAPIAbstractTest {
         ObjectsRegistry.register(ResponseProcessor.class,
             HTTPResponseDummyProcessor.class, correlationId, requestCatcher);
 
-        requestCatcher.add(correlationId, "conditions-result", Optional.empty());
-        requestCatcher.add(correlationId, "response", new HTTPResponseEntry());
-        requestCatcher.add(correlationId, "assertions-result", Optional.empty());
-        requestCatcher.add(correlationId, "request-with-exception", "");
-        requestCatcher.add(correlationId, "executor-executed", false);
-        requestCatcher.add(correlationId, "processor-executed", false);
+        requestCatcher.add(correlationId, CONDITIONS_RESULT, Optional.empty());
+        requestCatcher.add(correlationId, RESPONSE, new HTTPResponseEntry());
+        requestCatcher.add(correlationId, ASSERTIONS_RESULT, Optional.empty());
+        requestCatcher.add(correlationId, REQUEST_WITH_EXCEPTION, "");
+        requestCatcher.add(correlationId, EXECUTOR_EXECUTED, false);
+        requestCatcher.add(correlationId, PROCESSOR_EXECUTED, false);
     }
 }

@@ -1,5 +1,7 @@
 package com.legadi.cli.jurl.options;
 
+import static com.legadi.cli.jurl.embedded.util.ObjectName.RESPONSE;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -24,7 +26,7 @@ public class TimesRepeatOptionTest extends OptionAbstractTest<TimesRepeatOption>
                 "src/test/resources/basic-functions.spec.http"
             ));
 
-        List<HTTPResponseEntry> responses = requestCatcher.getAll(correlationId, "response");
+        List<HTTPResponseEntry> responses = requestCatcher.getAll(correlationId, RESPONSE);
 
         Assertions.assertEquals(5, responses.size());
 

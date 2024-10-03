@@ -1,5 +1,9 @@
 package com.legadi.cli.jurl.api;
 
+import static com.legadi.cli.jurl.embedded.util.ObjectName.ASSERTIONS_RESULT;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.CONDITIONS_RESULT;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.SETTINGS;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +34,7 @@ public class FlowAPITest extends EmbeddedAPIAbstractTest {
         String previousExpirationMillis = settings.get("auth.expiration.millis");
 
         UUID authCorrelationId = jurl("-n", "authorization", "src/test/resources/flow.spec.http");
-        Settings authSettings = requestCatcher.getLast(authCorrelationId, "settings");
+        Settings authSettings = requestCatcher.getLast(authCorrelationId, SETTINGS);
 
         String currentToken = Assertions.assertDoesNotThrow(
             () -> authSettings.get("auth.access.token"));
@@ -43,7 +47,7 @@ public class FlowAPITest extends EmbeddedAPIAbstractTest {
         jurl("-n", "authorization", "src/test/resources/flow.spec.http");
 
         Optional<AssertionResult> skipped = requestCatcher
-            .<Optional<AssertionResult>>getLastSaved("conditions-result")
+            .<Optional<AssertionResult>>getLastSaved(CONDITIONS_RESULT)
             .getRight();;
 
         Assertions.assertTrue(skipped.isPresent());
@@ -60,7 +64,7 @@ public class FlowAPITest extends EmbeddedAPIAbstractTest {
             "src/test/resources/flow.spec.http");
 
         List<Pair<UUID, Settings>> settingsRecords = requestCatcher
-            .getLastSaved("settings", 5);
+            .getLastSaved(SETTINGS, 5);
 
         for(Pair<UUID, Settings> settingsRecord : settingsRecords) {
             Assertions.assertEquals(commonCorrelationId, settingsRecord.getLeft());
@@ -68,7 +72,7 @@ public class FlowAPITest extends EmbeddedAPIAbstractTest {
         }
 
         List<Pair<UUID, Optional<AssertionResult>>> assertionRecords = requestCatcher
-            .getLastSaved("assertions-result", 5);
+            .getLastSaved(ASSERTIONS_RESULT, 5);
 
         for(Pair<UUID, Optional<AssertionResult>> assertionRecord : assertionRecords) {
             Assertions.assertEquals(commonCorrelationId, assertionRecord.getLeft());

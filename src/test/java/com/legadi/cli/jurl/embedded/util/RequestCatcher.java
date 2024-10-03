@@ -13,11 +13,11 @@ import com.legadi.cli.jurl.common.Pair;
 
 public class RequestCatcher {
 
-    private final Map<UUID, Map<String, List<Object>>> data = new HashMap<>();
-    private final Map<String, List<Pair<UUID, Object>>> history = new HashMap<>();
+    private final Map<UUID, Map<ObjectName, List<Object>>> data = new HashMap<>();
+    private final Map<ObjectName, List<Pair<UUID, Object>>> history = new HashMap<>();
     private final Lock lock = new ReentrantLock();
 
-    public <T> T getLast(UUID correlationId, String name) {
+    public <T> T getLast(UUID correlationId, ObjectName name) {
         lock.lock();
 
         try {
@@ -32,7 +32,7 @@ public class RequestCatcher {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> List<T> getAll(UUID correlationId, String name) {
+    public <T> List<T> getAll(UUID correlationId, ObjectName name) {
         lock.lock();
 
         try {
@@ -44,7 +44,7 @@ public class RequestCatcher {
         }
     }
 
-    public <T> T add(UUID correlationId, String name, T value) {
+    public <T> T add(UUID correlationId, ObjectName name, T value) {
         lock.lock();
 
         try {
@@ -72,7 +72,7 @@ public class RequestCatcher {
         }
     }
 
-    public boolean contains(UUID correlationId, String name) {
+    public boolean contains(UUID correlationId, ObjectName name) {
         lock.lock();
 
         try {
@@ -83,11 +83,11 @@ public class RequestCatcher {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T remove(UUID correlationId, String name) {
+    public <T> T remove(UUID correlationId, ObjectName name) {
         lock.lock();
 
         try {
-            Map<String, List<Object>> dataByType = data.getOrDefault(correlationId, new HashMap<>());
+            Map<ObjectName, List<Object>> dataByType = data.getOrDefault(correlationId, new HashMap<>());
             List<T> values = (List<T>) dataByType.getOrDefault(name, new ArrayList<>());
             dataByType.remove(name);
             return !values.isEmpty() ? values.get(0) : null;
@@ -97,7 +97,7 @@ public class RequestCatcher {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> Pair<UUID, T> getLastSaved(String name) {
+    public <T> Pair<UUID, T> getLastSaved(ObjectName name) {
         lock.lock();
 
         try {
@@ -109,7 +109,7 @@ public class RequestCatcher {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> List<Pair<UUID, T>> getLastSaved(String name, int elements) {
+    public <T> List<Pair<UUID, T>> getLastSaved(ObjectName name, int elements) {
         lock.lock();
 
         try {
@@ -127,7 +127,7 @@ public class RequestCatcher {
         }
     }
 
-    private List<Pair<UUID, Object>> getHistoryRecords(String name) {
+    private List<Pair<UUID, Object>> getHistoryRecords(ObjectName name) {
         List<Pair<UUID, Object>> records = history.get(name);
         if(records == null) {
             throw new IllegalStateException("Records not found for: " + name);

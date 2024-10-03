@@ -1,6 +1,9 @@
 package com.legadi.cli.jurl.options;
 
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_REQUEST_BEHAVIOUR;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.ASSERTIONS_RESULT;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.RESPONSE;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.SETTINGS;
 import static com.legadi.cli.jurl.model.RequestBehaviour.PRINT_ONLY;
 
 import java.util.Optional;
@@ -28,9 +31,9 @@ public class RequestPrintOptionTest extends OptionAbstractTest<RequestPrintOptio
                 "src/test/resources/basic-functions.spec.http"
             ));
 
-        Settings settings = requestCatcher.getLast(correlationId, "settings");
-        Optional<AssertionResult> assertionResult = requestCatcher.getLast(correlationId, "assertions-result");
-        HTTPResponseEntry response = requestCatcher.getLast(correlationId, "response");
+        Settings settings = requestCatcher.getLast(correlationId, SETTINGS);
+        Optional<AssertionResult> assertionResult = requestCatcher.getLast(correlationId, ASSERTIONS_RESULT);
+        HTTPResponseEntry response = requestCatcher.getLast(correlationId, RESPONSE);
 
         Assertions.assertEquals(PRINT_ONLY.name(), settings.get(PROP_REQUEST_BEHAVIOUR));
         Assertions.assertFalse(assertionResult.isPresent());

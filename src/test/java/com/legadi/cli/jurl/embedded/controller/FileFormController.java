@@ -1,6 +1,7 @@
 package com.legadi.cli.jurl.embedded.controller;
 
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.BODY;
 import static com.legadi.cli.jurl.embedded.util.RequestCatcherManager.getCatcher;
 
 import java.io.IOException;
@@ -72,7 +73,7 @@ public class FileFormController {
         entity.setType(file.getContentType());
         entity.setField(file.getName());
 
-        requestCatcher.add(correlationId, "file-body", entity);
+        requestCatcher.add(correlationId, BODY, entity);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Resource-ID", correlationId.toString());
