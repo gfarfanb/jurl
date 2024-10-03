@@ -1,6 +1,7 @@
 package com.legadi.cli.jurl.common;
 
 import static com.legadi.cli.jurl.common.CommonUtils.isEmpty;
+import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.trim;
 
 import java.util.List;
@@ -46,7 +47,7 @@ public class ConsoleInput {
             return defaultValue;
         }
 
-        String inputMessage = defaultValue != null
+        String inputMessage = isNotBlank(defaultValue)
             ? String.format(INPUT_DEFAULT_FORMAT, message, defaultValue)
             : String.format(INPUT_FORMAT, message);
 
