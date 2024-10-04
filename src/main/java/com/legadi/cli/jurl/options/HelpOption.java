@@ -14,7 +14,8 @@ public class HelpOption extends Option {
 
     private static final Logger LOGGER = Logger.getLogger(HelpOption.class.getName());
 
-    private static final int TAB_LENGTH = 2;
+    private static final String COLON = ":";
+    private static final int TABS_FOR_COMPLEMENT = 3;
 
     @Override
     public String name() {
@@ -47,7 +48,7 @@ public class HelpOption extends Option {
         helpMessage.append("CLI Java application to provides an API test/client tool.\n\n");
         helpMessage.append("Usage: ");
 
-        String os = System.getProperty("os.name").toLowerCase(Locale.ROOT);
+        String os = System.getProperty("jurl.os.name").toLowerCase(Locale.ROOT);
         if(os.contains("win")) {
             helpMessage.append("jurl.bat ");
         } else {
@@ -56,41 +57,43 @@ public class HelpOption extends Option {
 
         helpMessage.append("[<option>]* [--help] [<add-on-option>]* <request-file>\n\n");
         helpMessage.append("Options:\n");
-        appendOptions(getAllRegisteredByClassOf(Option.class), helpMessage);
+        appendOptions(settings, getAllRegisteredByClassOf(Option.class), helpMessage);
         helpMessage.append("\n");
         helpMessage.append("Add-on options:\n");
-        appendOptions(getAllRegisteredByNameOf(Option.class), helpMessage);
+        appendOptions(settings, getAllRegisteredByNameOf(Option.class), helpMessage);
 
         LOGGER.info(helpMessage.toString());
 
         return false;
     }
 
-    private void appendOptions(List<Option> options, StringBuilder helpMessage) {
+    private void appendOptions(Settings settings, List<Option> options, StringBuilder helpMessage) {
         List<Option> opts = new ArrayList<>(options);
         int maxLength = options.stream()
             .map(Option::toString)
             .mapToInt(String::length)
             .max()
-            .orElse(0) + TAB_LENGTH + 1;
+            .orElse(0) + COLON.length();
+        int complementLength = maxLength
+            + settings.getConsoleTabLength() * TABS_FOR_COMPLEMENT;
 
         opts.sort((o1, o2) -> o1.name().compareTo(o2.name()));
 
         for(Option option : opts) {
-            String optionLine = option.toString();
+            String optionLine = option.toString() + COLON;
 
-            helpMessage.append(String.format("%-" + TAB_LENGTH + "s", ""));
-            helpMessage.append(String.format("%-" + maxLength + "s", optionLine + ":"));
+            helpMessage.append(String.format("%-" + settings.getConsoleTabLength() + "s", ""));
+            helpMessage.append(String.format("%-" + maxLength + "s", optionLine));
 
             boolean firstLine = true;
 
             for(String line : option.getDescription().split("\\r?\\n")) {
 
                 if(firstLine) {
-                    helpMessage.append(String.format("%-" + TAB_LENGTH + "s", ""));
+                    helpMessage.append(String.format("%-" + settings.getConsoleTabLength() + "s", ""));
                     firstLine = false;
                 } else {
-                    helpMessage.append(String.format("%-" + (TAB_LENGTH + maxLength + TAB_LENGTH + TAB_LENGTH) + "s", ""));
+                    helpMessage.append(String.format("%-" + complementLength + "s", ""));
                 }
 
                 helpMessage.append(line);

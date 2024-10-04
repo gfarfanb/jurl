@@ -2,7 +2,9 @@ package com.legadi.cli.jurl.options;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.legadi.cli.jurl.common.Named;
 import com.legadi.cli.jurl.common.Settings;
@@ -48,10 +50,13 @@ public abstract class Option implements Named {
 
     @Override
     public String toString() {
-        String[] args = getArgs();
-        return name() + ", " + alias()
-            + (args == null ? "" : " " + Arrays.stream(args)
-                .map(arg -> "<" + arg + ">")
-                .collect(Collectors.joining(" ")));
+        String args = Optional.ofNullable(getArgs())
+            .map(Arrays::stream)
+            .orElse(Stream.empty())
+            .map(arg -> "<" + arg + ">")
+            .collect(Collectors.joining(" "));
+        return name()
+            + (alias() != null ? ", " + alias() : "")
+            + (!args.isEmpty() ? " " + args : "");
     }
 }

@@ -78,7 +78,7 @@ public class RequestCommand {
         Settings settings = new Settings();
 
         executeOptions(settings, optionsReader.getOptionEntries());
-        executeInputPath(new ExecutionTrace(), settings, optionsReader.getRequestInputPath());
+        executeInputPath(new ExecutionTrace(settings), settings, optionsReader.getRequestInputPath());
     }
 
     private void executeOptions(Settings settings, List<OptionEntry> optionEntries) {

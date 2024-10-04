@@ -13,18 +13,18 @@ public class HelpOptionTest extends OptionAbstractTest<HelpOption> {
 
     @Test
     public void printHelpValidation() {
-        String currentOS = System.getProperty("os.name");
+        try {
+            System.setProperty("jurl.os.name", "win");
 
-        System.setProperty("os.name", "win");
+            Assertions.assertThrows(SkipExecutionException.class,
+                () -> jurl("-h"));
 
-        Assertions.assertThrows(SkipExecutionException.class,
-            () -> jurl("-h"));
+            System.setProperty("jurl.os.name", "linux");
 
-        System.setProperty("os.name", "linux");
-
-        Assertions.assertThrows(SkipExecutionException.class,
-            () -> jurl("-h"));
-
-        System.setProperty("os.name", currentOS);
+            Assertions.assertThrows(SkipExecutionException.class,
+                () -> jurl("-h"));
+        } finally {
+            System.setProperty("jurl.os.name", System.getProperty("os.name"));
+        }
     }
 }

@@ -8,6 +8,7 @@ import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTION_TAG;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_WORKSPACE_PATH;
 import static com.legadi.cli.jurl.common.WriterUtils.createDirectories;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -33,6 +34,9 @@ public class Settings implements SettingsDefaults {
     private static final String FORMAT_OVERRIDE_FILE = "override.%s.json";
 
     static {
+        System.setProperty("jurl.os.name", System.getProperty("os.name"));
+        System.setProperty("jurl.file.separator", File.separator);
+
         SETTINGS.putAllInCommon(loadInternalJsonProperties(DEFAULT_SETTINGS_FILE));
 
         Path configPath = createDirectories(Paths.get(

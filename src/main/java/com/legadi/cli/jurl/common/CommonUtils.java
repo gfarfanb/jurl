@@ -1,6 +1,5 @@
 package com.legadi.cli.jurl.common;
 
-import java.io.File;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
@@ -15,10 +14,6 @@ public class CommonUtils {
 
     public static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvxyz0123456789";
     public static final String NUMERIC_STRING = "0123456789";
-
-    static {
-        System.setProperty("jurl.file.separator", File.separator);
-    }
 
     private CommonUtils() {}
 

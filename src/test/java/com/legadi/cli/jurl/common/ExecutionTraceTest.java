@@ -9,7 +9,8 @@ public class ExecutionTraceTest {
 
     @Test
     public void validateOneCall() {
-        ExecutionTrace trace = new ExecutionTrace();
+        Settings settings = new Settings();
+        ExecutionTrace trace = new ExecutionTrace(settings);
 
         Assertions.assertDoesNotThrow(
             () -> trace.validateExecution("path/test", "test"));
@@ -17,7 +18,8 @@ public class ExecutionTraceTest {
 
     @Test
     public void validateSeveralCalls() {
-        ExecutionTrace trace = new ExecutionTrace();
+        Settings settings = new Settings();
+        ExecutionTrace trace = new ExecutionTrace(settings);
 
         Assertions.assertDoesNotThrow(
             () -> trace.validateExecution("path/test", "test-1"));
@@ -27,7 +29,8 @@ public class ExecutionTraceTest {
 
     @Test
     public void validateDifferentTraces() {
-        ExecutionTrace trace = new ExecutionTrace();
+        Settings settings = new Settings();
+        ExecutionTrace trace = new ExecutionTrace(settings);
 
         Assertions.assertDoesNotThrow(
             () -> trace.validateExecution("path/test", "test-1"));

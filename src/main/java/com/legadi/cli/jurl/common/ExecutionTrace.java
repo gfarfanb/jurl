@@ -9,13 +9,18 @@ import com.legadi.cli.jurl.exception.RecursiveCommandException;
 
 public class ExecutionTrace {
 
-    private static final String TAB = "    ";
+    private static final int TAB_FACTOR = 2;
 
     private final List<String> trace = new ArrayList<>();
     private final Lock lock = new ReentrantLock();
+    private final Settings settings;
+
+    public ExecutionTrace(Settings settings) {
+        this.settings = settings;
+    }
 
     public ExecutionTrace nextIteration() {
-        ExecutionTrace executionTrace = new ExecutionTrace();
+        ExecutionTrace executionTrace = new ExecutionTrace(settings);
         executionTrace.trace.addAll(trace);
         return executionTrace;
     }
@@ -44,7 +49,7 @@ public class ExecutionTrace {
 
         for(String command : trace) {
             output.append(tab).append("-> ").append(command).append("\n");
-            tab += TAB;
+            tab += String.format("%-" + (settings.getConsoleTabLength() + TAB_FACTOR) + "s", "");
         }
 
         return output.toString();

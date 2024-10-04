@@ -3,6 +3,8 @@ package com.legadi.cli.jurl.common;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_ADD_ON_OPTION_CLASSES;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_OUTPUT_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONSOLE_MENU_COLUMNS;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONSOLE_TAB_LENGTH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_DOWNLOADS_LOCATION;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTION_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTION_TIMES;
@@ -149,5 +151,13 @@ public interface SettingsDefaults {
 
     default String[] getPrintableMimeTypes() {
         return getOrDefault(PROP_PRINTABLE_MIME_TYPES, "").split(",");
+    }
+
+    default int getConsoleTabLength() {
+        return get(PROP_CONSOLE_TAB_LENGTH, Integer::parseInt);
+    }
+
+    default int getConsoleMenuColumns() {
+        return get(PROP_CONSOLE_MENU_COLUMNS, Integer::parseInt);
     }
 }

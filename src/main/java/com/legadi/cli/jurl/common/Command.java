@@ -17,10 +17,6 @@ public class Command {
 
     private static final Logger LOGGER = Logger.getLogger(CommonUtils.class.getName());
 
-    static {
-        System.setProperty("jurl.os.name", System.getProperty("os.name"));
-    }
-
     private Command() {}
 
     public static void exec(Settings settings, boolean inInterpreter, Level exitCodeLevel, String... commands) {
