@@ -1,6 +1,8 @@
 package com.legadi.cli.jurl.common;
 
 import static com.legadi.cli.jurl.common.Command.exec;
+import static com.legadi.cli.jurl.common.SettingsConstants.EXTERNAL_OS_NAME;
+import static com.legadi.cli.jurl.common.SettingsConstants.JURL_OS_NAME;
 import static java.util.logging.Level.INFO;
 
 import java.util.Locale;
@@ -18,7 +20,7 @@ public class CommandTest {
             Assertions.assertDoesNotThrow(
                 () -> exec(settings, true, INFO, "echo test"));
 
-            String os = System.getProperty("os.name").toLowerCase(Locale.ROOT);
+            String os = System.getProperty(EXTERNAL_OS_NAME).toLowerCase(Locale.ROOT);
 
             if(os.contains("win")) {
                 Assertions.assertDoesNotThrow(
@@ -30,15 +32,15 @@ public class CommandTest {
                     () -> exec(settings, true, INFO, "echo $HOME"));
             }
 
-            System.setProperty("jurl.os.name", "win");
+            System.setProperty(JURL_OS_NAME, "win");
             Assertions.assertDoesNotThrow(
                 () -> exec(settings, true, INFO, "echo test"));
 
-            System.setProperty("jurl.os.name", "linux");
+            System.setProperty(JURL_OS_NAME, "linux");
             Assertions.assertDoesNotThrow(
                 () -> exec(settings, true, INFO, "echo test"));
         } finally {
-            System.setProperty("jurl.os.name", System.getProperty("os.name"));
+            System.setProperty(JURL_OS_NAME, System.getProperty(EXTERNAL_OS_NAME));
         }
     }
 }

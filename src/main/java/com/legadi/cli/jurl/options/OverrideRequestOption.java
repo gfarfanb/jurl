@@ -23,7 +23,7 @@ public class OverrideRequestOption extends Option {
 
     @Override
     public String getDescription() {
-        return "Tells request to use the values defined in the file.\nThose values can be headers, params, assertions, output mappings,\ncontent, etc.";
+        return "Tells request to use the values defined in the file. Those values can be headers, params, assertions, output mappings, content, etc.";
     }
 
     @Override

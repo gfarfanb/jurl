@@ -26,7 +26,7 @@ public class EnvironmentSetValueOption extends Option {
 
     @Override
     public String getDescription() {
-        return "Saves a property value to the environment file './config[.<env>].json'.\nIt creates a new environment file if it doesn't exist.";
+        return "Saves a property value to the environment file './config[.<env>].json'. It creates a new environment file if it doesn't exist.";
     }
 
     @Override

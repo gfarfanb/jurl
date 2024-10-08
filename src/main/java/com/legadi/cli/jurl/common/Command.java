@@ -8,7 +8,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,8 +29,7 @@ public class Command {
         List<String> commandParts = new ArrayList<>();
 
         if(inInterpreter) {
-            String os = System.getProperty("jurl.os.name").toLowerCase(Locale.ROOT);
-            if(os.contains("win")) {
+            if(settings.isWindowsOS()) {
                 commandParts.add("cmd.exe");
                 commandParts.add("/c");
             } else {

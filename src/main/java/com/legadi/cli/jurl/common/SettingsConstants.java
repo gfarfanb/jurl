@@ -1,6 +1,23 @@
 package com.legadi.cli.jurl.common;
 
+import java.time.format.DateTimeFormatter;
+
 public class SettingsConstants {
+
+    public static final DateTimeFormatter TAG_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd.HH-mm-ss.n");
+    public static final String DEFAULT_ENVIRONMENT = "default";
+
+    public static final String DEFAULT_SETTINGS_FILE = "settings.default.json";
+    public static final String DEFAULT_CONFIG_FILE = "config.json";
+    public static final String DEFAULT_OVERRIDE_FILE = "override.json";
+    public static final String FORMAT_CONFIG_FILE = "config.%s.json";
+    public static final String FORMAT_OVERRIDE_FILE = "override.%s.json";
+
+    public static final String EXTERNAL_OS_NAME = "os.name";
+    public static final String JURL_OS_NAME = "jurl.os.name";
+    public static final String JURL_FILE_SEPARATOR = "jurl.file.separator";
+    public static final String EXTERNAL_CONSOLE_WIDTH = "JURL_CONSOLE_WIDTH";
+    public static final String JURL_CONSOLE_WIDTH = "jurl.console.width";
 
     public static final String PROP_EXECUTION_TAG = "executionTag";
     public static final String PROP_WORKSPACE_PATH = "workspacePath";
@@ -30,7 +47,7 @@ public class SettingsConstants {
     public static final String PROP_OVERRIDE_REQUEST_FILE_PATH = "overrideRequestFilePath";
     public static final String PROP_PRINTABLE_MIME_TYPES = "printableMimeTypes";
     public static final String PROP_CONSOLE_TAB_LENGTH = "consoleTabLength";
-    public static final String PROP_CONSOLE_MENU_COLUMNS = "consoleMenuColumns";
+    public static final String PROP_DEFAULT_CONSOLE_WIDTH = "defaultConsoleWidth";
 
     private SettingsConstants() {}
 }

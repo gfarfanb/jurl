@@ -1,5 +1,8 @@
 package com.legadi.cli.jurl.options;
 
+import static com.legadi.cli.jurl.common.SettingsConstants.EXTERNAL_OS_NAME;
+import static com.legadi.cli.jurl.common.SettingsConstants.JURL_OS_NAME;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -14,17 +17,17 @@ public class HelpOptionTest extends OptionAbstractTest<HelpOption> {
     @Test
     public void printHelpValidation() {
         try {
-            System.setProperty("jurl.os.name", "win");
+            System.setProperty(JURL_OS_NAME, "win");
 
             Assertions.assertThrows(SkipExecutionException.class,
                 () -> jurl("-h"));
 
-            System.setProperty("jurl.os.name", "linux");
+            System.setProperty(JURL_OS_NAME, "linux");
 
             Assertions.assertThrows(SkipExecutionException.class,
                 () -> jurl("-h"));
         } finally {
-            System.setProperty("jurl.os.name", System.getProperty("os.name"));
+            System.setProperty(JURL_OS_NAME, System.getProperty(EXTERNAL_OS_NAME));
         }
     }
 }

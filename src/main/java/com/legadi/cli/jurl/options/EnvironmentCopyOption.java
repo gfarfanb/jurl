@@ -26,7 +26,7 @@ public class EnvironmentCopyOption extends Option {
 
     @Override
     public String getDescription() {
-        return "Copies the content of a environment file './config[.<env>].json' to another one.\nIt creates a new environment file if it doesn't exist.";
+        return "Copies the content of a environment file './config[.<env>].json' to another one. It creates a new environment file if it doesn't exist.";
     }
 
     @Override

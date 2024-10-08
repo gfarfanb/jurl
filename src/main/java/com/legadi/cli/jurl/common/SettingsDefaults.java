@@ -1,10 +1,13 @@
 package com.legadi.cli.jurl.common;
 
+import static com.legadi.cli.jurl.common.SettingsConstants.JURL_CONSOLE_WIDTH;
+import static com.legadi.cli.jurl.common.SettingsConstants.JURL_FILE_SEPARATOR;
+import static com.legadi.cli.jurl.common.SettingsConstants.JURL_OS_NAME;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_ADD_ON_OPTION_CLASSES;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_OUTPUT_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
-import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONSOLE_MENU_COLUMNS;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONSOLE_TAB_LENGTH;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_DEFAULT_CONSOLE_WIDTH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_DOWNLOADS_LOCATION;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTION_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTION_TIMES;
@@ -32,6 +35,7 @@ import static com.legadi.cli.jurl.common.WriterUtils.createDirectories;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 import com.legadi.cli.jurl.model.RequestBehaviour;
@@ -48,6 +52,28 @@ public interface SettingsDefaults {
 
     String getOrDefaultWithValues(String propertyName, Map<String, String> values,
             String defaultValue);
+
+    default String getOSName() {
+        return System.getProperty(JURL_OS_NAME);
+    }
+
+    default boolean isWindowsOS() {
+        return Optional.ofNullable(getOSName())
+            .map(String::toLowerCase)
+            .filter(os -> os.contains("win"))
+            .isPresent();
+    }
+
+    default String getFileSeparator() {
+        return System.getProperty(JURL_FILE_SEPARATOR);
+    }
+
+    default int getConsoleWidth() {
+        return Optional.ofNullable(System.getProperty(JURL_CONSOLE_WIDTH))
+            .filter(CommonUtils::isNumeric)
+            .map(Integer::parseInt)
+            .orElse(getDefaultConsoleWidth());
+    }
 
     default Path getWorkspacePath() {
         return Paths.get(".").toAbsolutePath().normalize();
@@ -157,7 +183,11 @@ public interface SettingsDefaults {
         return get(PROP_CONSOLE_TAB_LENGTH, Integer::parseInt);
     }
 
-    default int getConsoleMenuColumns() {
-        return get(PROP_CONSOLE_MENU_COLUMNS, Integer::parseInt);
+    default int getDefaultConsoleWidth() {
+        return get(PROP_DEFAULT_CONSOLE_WIDTH, Integer::parseInt);
+    }
+
+    default String getTab() {
+        return String.format("%-" + getConsoleTabLength() + "s", "");
     }
 }

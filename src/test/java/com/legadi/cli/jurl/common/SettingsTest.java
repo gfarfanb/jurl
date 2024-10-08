@@ -1,12 +1,12 @@
 package com.legadi.cli.jurl.common;
 
-import static com.legadi.cli.jurl.common.Settings.TAG_FORMATTER;
 import static com.legadi.cli.jurl.common.Settings.mergeProperties;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_OUTPUT_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTION_TIMES;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_REQUEST_BEHAVIOUR;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_WORKSPACE_PATH;
+import static com.legadi.cli.jurl.common.SettingsConstants.TAG_FORMATTER;
 
 import java.nio.file.Paths;
 import java.time.LocalDateTime;

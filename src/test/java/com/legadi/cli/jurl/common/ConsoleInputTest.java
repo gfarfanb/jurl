@@ -145,9 +145,10 @@ public class ConsoleInputTest {
     public void selectOptionValidation() {
         Settings settings = new Settings();
         String expectedInput = "1";
-        List<String> options = Arrays.asList("Option 1", "Option 2", "Option 3");
+        List<String> options = Arrays.asList("Option 1", "Option 2");
+        int columnLength = settings.getConsoleWidth() / (options.size() + 1);
         ConsoleInput consoleInput = new ConsoleInputDummy(expectedInput,
-            settings, options, opt -> opt);
+            settings, options, opt -> String.format("%-" + columnLength + "s", opt));
         Optional<String> option;
 
         option = consoleInput.selectOption(null);
@@ -181,8 +182,9 @@ public class ConsoleInputTest {
     public void selectOptionWithDefault() {
         Settings settings = new Settings();
         List<String> options = Arrays.asList("Option 1", "Option 2", "Option 3");
+        int columnLength = settings.getConsoleWidth() / options.size();
         ConsoleInput consoleInput = new ConsoleInputDummy(null,
-            settings, options, opt -> opt);
+            settings, options, opt -> String.format("%-" + columnLength + "s", opt));
 
         Optional<String> option = consoleInput.selectOption("Option 2");
 
@@ -208,12 +210,11 @@ public class ConsoleInputTest {
         String expectedInput = "Option n";
         List<String> options = Arrays.asList("Option 1", "Option 2", "Option 3");
         ConsoleInput consoleInput = new ConsoleInputDummy(null,
-            settings, options, opt -> opt);
+            settings, options, opt -> String.format("%-" + settings.getConsoleWidth() + "s", opt));
 
         Assertions.assertThrows(ConsoleInputException.class,
             () -> consoleInput.selectOption(expectedInput));
     }
-
 
     public static class ConsoleInputDummy extends ConsoleInput {
 

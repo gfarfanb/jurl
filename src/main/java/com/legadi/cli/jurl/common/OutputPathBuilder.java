@@ -27,7 +27,8 @@ public class OutputPathBuilder {
     }
 
     public OutputPathBuilder setRequestPath(String requestPath) {
-        String[] pathParts = stripStart(requestPath, File.separator + ".").split(fileSeparatorAsDelimiter());
+        String[] pathParts = stripStart(requestPath, File.separator + ".")
+            .split(fileSeparatorAsDelimiter(settings));
         this.requestPath = Arrays
             .stream(pathParts)
             .map(part -> part.replaceAll(" ", "_"))

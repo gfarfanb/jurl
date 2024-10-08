@@ -53,8 +53,8 @@ public class CommonUtils {
         return strip(value, null);
     }
 
-    public static String fileSeparatorAsDelimiter() {
-        String separator = System.getProperty("jurl.file.separator");
+    public static String fileSeparatorAsDelimiter(Settings settings) {
+        String separator = settings.getFileSeparator();
         if(separator.equals("\\")) {
             return "\\\\";
         } else {

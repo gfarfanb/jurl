@@ -19,6 +19,7 @@ import static com.legadi.cli.jurl.common.CommonUtils.strip;
 import static com.legadi.cli.jurl.common.CommonUtils.stripEnd;
 import static com.legadi.cli.jurl.common.CommonUtils.stripStart;
 import static com.legadi.cli.jurl.common.CommonUtils.trim;
+import static com.legadi.cli.jurl.common.SettingsConstants.JURL_FILE_SEPARATOR;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -123,21 +124,22 @@ public class CommonUtilsTest {
 
     @Test
     public void fileSeparatorAsDelimiterValidation() {
-        String delimiter = fileSeparatorAsDelimiter();
+        Settings settings = new Settings();
+        String delimiter = fileSeparatorAsDelimiter(settings);
 
         Assertions.assertNotNull(delimiter);
 
-        System.setProperty("jurl.file.separator", "\\");
+        System.setProperty(JURL_FILE_SEPARATOR, "\\");
 
-        delimiter = fileSeparatorAsDelimiter();
+        delimiter = fileSeparatorAsDelimiter(settings);
         Assertions.assertEquals("\\\\", delimiter);
 
-        System.setProperty("jurl.file.separator", "/");
+        System.setProperty(JURL_FILE_SEPARATOR, "/");
 
-        delimiter = fileSeparatorAsDelimiter();
+        delimiter = fileSeparatorAsDelimiter(settings);
         Assertions.assertEquals("/", delimiter);
 
-        System.setProperty("jurl.file.separator", File.separator);
+        System.setProperty(JURL_FILE_SEPARATOR, File.separator);
     }
 
     @Test

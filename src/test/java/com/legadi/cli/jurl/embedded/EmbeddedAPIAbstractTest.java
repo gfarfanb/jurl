@@ -1,5 +1,7 @@
 package com.legadi.cli.jurl.embedded;
 
+import static com.legadi.cli.jurl.common.SettingsConstants.DEFAULT_ENVIRONMENT;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -50,7 +52,7 @@ public abstract class EmbeddedAPIAbstractTest {
         Map<String, String> properties = new HashMap<>();
         properties.put("local.server.port", Integer.toString(port));
         properties.put("request.catcher.identifier", requestCatcherId);
-        Settings.mergeProperties(Settings.DEFAULT_ENVIRONMENT, properties);
+        Settings.mergeProperties(DEFAULT_ENVIRONMENT, properties);
 
         ObjectsRegistry.register(RequestExecutor.class, 
             HTTPRequestTestExecutor.class, correlationId, requestCatcher);

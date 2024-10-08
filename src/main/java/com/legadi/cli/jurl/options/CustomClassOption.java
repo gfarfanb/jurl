@@ -29,8 +29,8 @@ public class CustomClassOption extends Option {
 
     @Override
     public String getDescription() {
-        return "Registers a custom class.\nIf there is an existing class that accepts the\nsame input the last one will be taken.\nThese are the allowed types:\n"
-            + getGroupClasses().stream().map(Class::getName).sorted().collect(Collectors.joining("\n"));
+        return "Registers a custom class. If there is an existing class that accepts the same input the last one will be taken. These are the allowed types:"
+            + "\n" + getGroupClasses().stream().map(Class::getName).sorted().collect(Collectors.joining("\n"));
     }
 
     @Override
@@ -51,7 +51,7 @@ public class CustomClassOption extends Option {
                 return expectedType;
             }
         }
-        throw new CommandException("Type not allowed: " + typeClass + "\nIt must be a sub-type of:\n"
-            + getGroupClasses().stream().map(Class::getName).sorted().collect(Collectors.joining("\n")));
+        throw new CommandException("Type not allowed: " + typeClass + "\nIt must be a sub-type of:"
+            + "\n" + getGroupClasses().stream().map(Class::getName).sorted().collect(Collectors.joining("\n")));
     }
 }

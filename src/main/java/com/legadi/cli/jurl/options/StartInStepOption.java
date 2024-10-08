@@ -25,7 +25,7 @@ public class StartInStepOption extends Option {
 
     @Override
     public String getDescription() {
-        return "Tells command from which step the flow is going to start the execution.\nNumber '1' is the first element.";
+        return "Tells command from which step the flow is going to start the execution. Number '1' is the first element.";
     }
 
     @Override

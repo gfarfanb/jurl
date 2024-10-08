@@ -23,7 +23,7 @@ public class OpenEditorOption extends Option {
 
     @Override
     public String getDescription() {
-        return "Tells request to open the output in an editor.\nUses 'openEditorCommand' from request settings.";
+        return "Tells request to open the output in an editor. Uses 'openEditorCommand' from request settings.";
     }
 
     @Override

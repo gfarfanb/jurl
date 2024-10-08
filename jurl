@@ -25,4 +25,6 @@ if [ ! -x "$JAVA_CMD" ] ; then
     exit 1
 fi
 
+export JURL_CONSOLE_WIDTH=$( tput cols )
+
 exec "$JAVA_CMD" -jar "$JURL_CMD" ${1+"$@"} >&2

@@ -29,7 +29,7 @@ public class CleanOutputOption extends Option {
 
     @Override
     public String getDescription() {
-        return "Remove all the execution outputs and history files from\nthe specified date (inclusive): 'yyyy-MM-dd'.\nIf 'all' is received in the argument all output files\nwill be deleted.";
+        return "Remove all the execution outputs and history files from the specified date (inclusive): 'yyyy-MM-dd'. If 'all' is received in the argument all output files will be deleted.";
     }
 
     @Override

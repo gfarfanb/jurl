@@ -25,7 +25,7 @@ public class EnvironmentOption extends Option {
 
     @Override
     public String getDescription() {
-        return "Loads to the settings the file: \n'./config[.<env>].json'.";
+        return "Loads to the settings the file: './config[.<env>].json'";
     }
 
     @Override

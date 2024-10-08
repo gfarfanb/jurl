@@ -2,19 +2,31 @@ package com.legadi.cli.jurl.common;
 
 import static com.legadi.cli.jurl.common.JsonUtils.loadInternalJsonProperties;
 import static com.legadi.cli.jurl.common.JsonUtils.loadJsonProperties;
+import static com.legadi.cli.jurl.common.SettingsConstants.DEFAULT_CONFIG_FILE;
+import static com.legadi.cli.jurl.common.SettingsConstants.DEFAULT_ENVIRONMENT;
+import static com.legadi.cli.jurl.common.SettingsConstants.DEFAULT_OVERRIDE_FILE;
+import static com.legadi.cli.jurl.common.SettingsConstants.DEFAULT_SETTINGS_FILE;
+import static com.legadi.cli.jurl.common.SettingsConstants.EXTERNAL_CONSOLE_WIDTH;
+import static com.legadi.cli.jurl.common.SettingsConstants.EXTERNAL_OS_NAME;
+import static com.legadi.cli.jurl.common.SettingsConstants.FORMAT_CONFIG_FILE;
+import static com.legadi.cli.jurl.common.SettingsConstants.FORMAT_OVERRIDE_FILE;
+import static com.legadi.cli.jurl.common.SettingsConstants.JURL_CONSOLE_WIDTH;
+import static com.legadi.cli.jurl.common.SettingsConstants.JURL_FILE_SEPARATOR;
+import static com.legadi.cli.jurl.common.SettingsConstants.JURL_OS_NAME;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_OUTPUT_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTION_TAG;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_WORKSPACE_PATH;
+import static com.legadi.cli.jurl.common.SettingsConstants.TAG_FORMATTER;
 import static com.legadi.cli.jurl.common.WriterUtils.createDirectories;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 import com.legadi.cli.jurl.exception.CommandException;
@@ -24,18 +36,11 @@ public class Settings implements SettingsDefaults {
     private static final EnvironmentResource<String> SETTINGS = new EnvironmentResource<>();
     private static final Map<String, String> EMPTY = new HashMap<>();
 
-    public static final DateTimeFormatter TAG_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd.HH-mm-ss.n");
-    public static final String DEFAULT_ENVIRONMENT = "default";
-
-    private static final String DEFAULT_SETTINGS_FILE = "settings.default.json";
-    private static final String DEFAULT_CONFIG_FILE = "config.json";
-    private static final String DEFAULT_OVERRIDE_FILE = "override.json";
-    private static final String FORMAT_CONFIG_FILE = "config.%s.json";
-    private static final String FORMAT_OVERRIDE_FILE = "override.%s.json";
-
     static {
-        System.setProperty("jurl.os.name", System.getProperty("os.name"));
-        System.setProperty("jurl.file.separator", File.separator);
+        System.setProperty(JURL_OS_NAME, System.getProperty(EXTERNAL_OS_NAME));
+        System.setProperty(JURL_FILE_SEPARATOR, File.separator);
+        System.setProperty(JURL_CONSOLE_WIDTH, Optional.ofNullable(System.getenv(EXTERNAL_CONSOLE_WIDTH))
+            .orElse(""));
 
         SETTINGS.putAllInCommon(loadInternalJsonProperties(DEFAULT_SETTINGS_FILE));
 

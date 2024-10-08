@@ -26,10 +26,18 @@ goto existsJava
 set "JAVA_CMD=%JAVA_HOME%\bin\java.exe"
 
 :existsJava
-if exist "%JAVA_CMD%" goto executeJurl
+if exist "%JAVA_CMD%" goto setWidth
 echo 'java' command is not installed or >&2
 echo JAVA_HOME environment variable is not defined correctly >&2
 exit /b 1
+
+:setWidth
+for /F "usebackq tokens=1,2* delims=: " %%V in (`mode con`) do (
+    if .%%V==.Columns (
+        set JURL_CONSOLE_WIDTH=%%W
+        goto executeJurl
+    )
+)
 
 :executeJurl
 "%JAVA_CMD%" -jar "%JURL_CMD%" %* >&2

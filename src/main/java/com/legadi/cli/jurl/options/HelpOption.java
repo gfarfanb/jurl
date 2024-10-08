@@ -4,10 +4,13 @@ import static com.legadi.cli.jurl.common.ObjectsRegistry.getAllRegisteredByClass
 import static com.legadi.cli.jurl.common.ObjectsRegistry.getAllRegisteredByNameOf;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
+import com.legadi.cli.jurl.common.CommonUtils;
 import com.legadi.cli.jurl.common.Settings;
 
 public class HelpOption extends Option {
@@ -48,8 +51,7 @@ public class HelpOption extends Option {
         helpMessage.append("CLI Java application to provides an API test/client tool.\n\n");
         helpMessage.append("Usage: ");
 
-        String os = System.getProperty("jurl.os.name").toLowerCase(Locale.ROOT);
-        if(os.contains("win")) {
+        if(settings.isWindowsOS()) {
             helpMessage.append("jurl.bat ");
         } else {
             helpMessage.append("sh jurl.sh ");
@@ -82,15 +84,16 @@ public class HelpOption extends Option {
         for(Option option : opts) {
             String optionLine = option.toString() + COLON;
 
-            helpMessage.append(String.format("%-" + settings.getConsoleTabLength() + "s", ""));
+            helpMessage.append(settings.getTab());
             helpMessage.append(String.format("%-" + maxLength + "s", optionLine));
 
             boolean firstLine = true;
+            List<String> lines = getDescriptionLines(settings, option, maxLength);
 
-            for(String line : option.getDescription().split("\\r?\\n")) {
+            for(String line : lines) {
 
                 if(firstLine) {
-                    helpMessage.append(String.format("%-" + settings.getConsoleTabLength() + "s", ""));
+                    helpMessage.append(settings.getTab());
                     firstLine = false;
                 } else {
                     helpMessage.append(String.format("%-" + complementLength + "s", ""));
@@ -100,5 +103,34 @@ public class HelpOption extends Option {
                 helpMessage.append("\n");
             }
         }
+    }
+
+    private List<String> getDescriptionLines(Settings settings, Option option, int maxLength) {
+        int length = settings.getConsoleWidth() - maxLength
+            - settings.getConsoleTabLength() * TABS_FOR_COMPLEMENT;
+        return Arrays.stream(option.getDescription().split("\\r?\\n"))
+            .map(line -> splitIntoLinesByLength(line, length))
+            .flatMap(List::stream)
+            .collect(Collectors.toList());
+    }
+
+    private List<String> splitIntoLinesByLength(String input, int lineLength){
+        StringTokenizer tok = new StringTokenizer(input, " ");
+        StringBuilder output = new StringBuilder(input.length());
+        int lengthCount = 0;
+        while (tok.hasMoreTokens()) {
+            String word = tok.nextToken();
+
+            if (lengthCount + word.length() > lineLength) {
+                output.append("\n");
+                lengthCount = 0;
+            }
+            output.append(word + " ");
+
+            lengthCount += word.length() + 1;
+        }
+        return Arrays.stream(output.toString().split("\n"))
+            .filter(CommonUtils::isNotBlank)
+            .collect(Collectors.toList());
     }
 }

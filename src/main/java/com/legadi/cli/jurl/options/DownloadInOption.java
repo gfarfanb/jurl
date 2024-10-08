@@ -23,7 +23,7 @@ public class DownloadInOption extends Option {
 
     @Override
     public String getDescription() {
-        return "Tells request to save the output in a download directory.\nUses 'downloadsLocation' from request settings.";
+        return "Tells request to save the output in a download directory. Uses 'downloadsLocation' from request settings.";
     }
 
     @Override
