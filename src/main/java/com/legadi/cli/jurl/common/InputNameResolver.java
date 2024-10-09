@@ -33,10 +33,10 @@ public class InputNameResolver {
         }
 
         List<String> requestNames = listRequestNames();
-        ConsoleInput consoleInput = new ConsoleInput(settings, requestNames, this::appendType);
+        ConsoleInput consoleInput = new ConsoleInput(settings, this::appendType);
 
         try {
-            Optional<String> requestName = consoleInput.selectOption(requestInput.getDefaultRequest());
+            Optional<String> requestName = consoleInput.selectOption(requestNames, requestInput.getDefaultRequest());
 
             LOGGER.info("Selected: [" + getType(requestName.orElse(null))  +  "] "
                 + requestName.orElse(null) + " - " + requestInputPath);
@@ -57,7 +57,7 @@ public class InputNameResolver {
     }
 
     private String appendType(String requestName) {
-        return requestName + " [" + getType(requestName) + "]";
+        return getType(requestName) + ":" + requestName;
     }
 
     private String getType(String requestName) {

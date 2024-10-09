@@ -1,5 +1,6 @@
 package com.legadi.cli.jurl.common;
 
+import static com.legadi.cli.jurl.common.CommonUtils.INVALID_INDEX;
 import static com.legadi.cli.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.trim;
@@ -22,25 +23,18 @@ public class ConsoleInput {
     public static final String OPTION_INPUT = "Select an option> ";
 
     public static final int START_INDEX = 1;
-    public static final int INVALID_INDEX = -1;
 
     public static final int TABS_FOR_MARGIN = 2;
 
     private final Settings settings;
-    private final List<String> options;
     private final Function<String, String> optionDecorator;
 
     public ConsoleInput(Settings settings) {
-        this(settings, null, null);
+        this(settings, null);
     }
 
-    public ConsoleInput(Settings settings, List<String> options,
-            Function<String, String> optionDecorator) {
+    public ConsoleInput(Settings settings, Function<String, String> optionDecorator) {
         this.settings = settings;
-        this.options = Optional.ofNullable(options)
-            .map(List::stream)
-            .orElse(Stream.empty())
-            .collect(Collectors.toList());
         this.optionDecorator = optionDecorator != null
             ? optionDecorator : opt -> opt;
     }
@@ -72,13 +66,18 @@ public class ConsoleInput {
             .orElse(defaultValue);
     }
 
-    public Optional<String> selectOption(String defaultOption) {
+    public Optional<String> selectOption(List<String> options, String defaultOption) {
         if(settings.isSkipUserInput()) {
             return Optional.ofNullable(defaultOption);
         }
 
-        int defaultIndex = getDefaultIndex(defaultOption);
-        Optional<String> menu = toMenu(defaultIndex);
+        options = Optional.ofNullable(options)
+            .map(List::stream)
+            .orElse(Stream.empty())
+            .collect(Collectors.toList());
+
+        int defaultIndex = getDefaultIndex(options, defaultOption);
+        Optional<String> menu = toMenu(options, defaultIndex);
 
         if(!menu.isPresent()) {
             return Optional.ofNullable(defaultOption);
@@ -99,7 +98,7 @@ public class ConsoleInput {
         }
     }
 
-    private int getDefaultIndex(String defaultOption) {
+    private int getDefaultIndex(List<String> options, String defaultOption) {
         if(defaultOption == null) {
             return INVALID_INDEX;
         }
@@ -117,13 +116,13 @@ public class ConsoleInput {
         return INVALID_INDEX;
     }
 
-    private Optional<String> toMenu(int defaultIndex) {
+    private Optional<String> toMenu(List<String> options, int defaultIndex) {
         if(isEmpty(options)) {
             return Optional.empty();
         }
 
         StringBuilder menu = new StringBuilder();
-        List<String> formattedOptions = getFormattedOptions(defaultIndex);
+        List<String> formattedOptions = getFormattedOptions(options, defaultIndex);
         int maxLength = formattedOptions.stream()
             .mapToInt(String::length)
             .max()
@@ -142,7 +141,7 @@ public class ConsoleInput {
         return Optional.of(menu.toString());
     }
 
-    private List<String> getFormattedOptions(int defaultIndex) {
+    private List<String> getFormattedOptions(List<String> options, int defaultIndex) {
         List<String> formattedOptions = new ArrayList<>();
         int index = START_INDEX;
 

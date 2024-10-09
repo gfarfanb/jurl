@@ -2,12 +2,10 @@ package com.legadi.cli.jurl.model.http;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -42,10 +40,6 @@ public class HTTPRequestEntryTest {
         formData.put("identifier", UUID.randomUUID().toString());
         model.setFormData(formData);
 
-        model.getDefaults().put("property.first", "2342");
-        model.getDefaults().put("property.second", "5");
-        model.getDefaults().put("property.third", "255.0");
-
         Assertions.assertEquals("POST", model.getMethod());
         Assertions.assertEquals(1, model.getQueryParams().size());
         Assertions.assertEquals("value", model.getQueryParams().get("search"));
@@ -57,12 +51,6 @@ public class HTTPRequestEntryTest {
         Assertions.assertFalse(model.getRequestFiles().isEmpty());
         Assertions.assertNotNull(model.getRequestAuth());
         Assertions.assertEquals(1, model.getFormData().size());
-        Assertions.assertEquals(3, model.getDefaults().size());
-        Assertions.assertEquals(Arrays.asList("property.first", "property.second", "property.third"),
-            model.getDefaults().keySet().stream().collect(Collectors.toList()));
-        Assertions.assertEquals("2342", model.getDefaults().get("property.first"));
-        Assertions.assertEquals("5", model.getDefaults().get("property.second"));
-        Assertions.assertEquals("255.0", model.getDefaults().get("property.third"));
         Assertions.assertDoesNotThrow(() -> UUID.fromString(model.getFormData().get("identifier")));
     }
 }

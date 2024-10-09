@@ -1,5 +1,6 @@
 package com.legadi.cli.jurl.common;
 
+import static com.legadi.cli.jurl.common.CommonUtils.EMPTY_MAP;
 import static com.legadi.cli.jurl.common.JsonUtils.loadInternalJsonProperties;
 import static com.legadi.cli.jurl.common.JsonUtils.loadJsonProperties;
 import static com.legadi.cli.jurl.common.SettingsConstants.DEFAULT_CONFIG_FILE;
@@ -34,7 +35,6 @@ import com.legadi.cli.jurl.exception.CommandException;
 public class Settings implements SettingsDefaults {
 
     private static final EnvironmentResource<String> SETTINGS = new EnvironmentResource<>();
-    private static final Map<String, String> EMPTY = new HashMap<>();
 
     static {
         System.setProperty(JURL_OS_NAME, System.getProperty(EXTERNAL_OS_NAME));
@@ -66,7 +66,7 @@ public class Settings implements SettingsDefaults {
     private String environment;
 
     public Settings() {
-        this(DEFAULT_ENVIRONMENT, EMPTY, EMPTY);
+        this(DEFAULT_ENVIRONMENT, EMPTY_MAP, EMPTY_MAP);
     }
 
     private Settings(String environment,
@@ -126,7 +126,7 @@ public class Settings implements SettingsDefaults {
 
     @Override
     public String getOrDefault(String propertyName, String defaultValue) {
-        return getOrDefaultWithValues(propertyName, EMPTY, defaultValue);
+        return getOrDefaultWithValues(propertyName, EMPTY_MAP, defaultValue);
     }
 
     @Override
@@ -186,7 +186,7 @@ public class Settings implements SettingsDefaults {
     }
 
     public Settings createForStep() {
-        return new Settings(environment, userInputProperties, EMPTY);
+        return new Settings(environment, userInputProperties, EMPTY_MAP);
     }
 
     public static void mergeProperties(String environment, Map<String, String> properties) {

@@ -267,7 +267,7 @@ public class ObjectsRegistryTest {
         }
 
         @Override
-        public Path apply(Settings settings, Map<String, String> defaults, MixerEntry entry) {
+        public Path apply(Settings settings, Map<String, Object> defaults, MixerEntry entry) {
             return null;
         }
     }

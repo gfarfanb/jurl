@@ -14,7 +14,7 @@ public class FlowEntryTest {
     public void setterGetterValidation() {
         FlowEntry model = new FlowEntry();
 
-        Map<String, String> defaults = new HashMap<>();
+        Map<String, Object> defaults = new HashMap<>();
         defaults.put("default.int", "5");
         model.setDefaults(defaults);
 

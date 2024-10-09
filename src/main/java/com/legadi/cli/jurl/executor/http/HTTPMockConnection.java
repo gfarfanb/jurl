@@ -41,7 +41,7 @@ public class HTTPMockConnection extends HttpURLConnection {
     private final Settings settings;
     private final String requestFilePath;
     private final String inputName;
-    private final Map<String, String> defaults;
+    private final Map<String, Object> defaults;
 
     private int responseCode;
     private Long secondsDelay;
@@ -54,7 +54,7 @@ public class HTTPMockConnection extends HttpURLConnection {
 
     public HTTPMockConnection(URL url, Settings settings,
             String requestFilePath, String inputName,
-            Map<String, String> defaults,
+            Map<String, Object> defaults,
             HTTPMockEntry mockEntry) {
         super(null);
 

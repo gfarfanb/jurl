@@ -16,7 +16,7 @@ public interface BodyMixer extends Evaluable {
 
     String type();
 
-    Path apply(Settings settings, Map<String, String> defaults, MixerEntry entry);
+    Path apply(Settings settings, Map<String, Object> defaults, MixerEntry entry);
 
     public static class MixerEntry {
 

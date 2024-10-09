@@ -1,5 +1,8 @@
 package com.legadi.cli.jurl.common;
 
+import static com.legadi.cli.jurl.common.CommonUtils.EMPTY_MAP;
+import static com.legadi.cli.jurl.common.CommonUtils.INVALID_INDEX;
+import static com.legadi.cli.jurl.common.CommonUtils.getDefaultFieldIndex;
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.stripEnd;
@@ -7,8 +10,8 @@ import static com.legadi.cli.jurl.common.CommonUtils.trim;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.find;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findByName;
 
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -16,6 +19,7 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.legadi.cli.jurl.exception.ConsoleInputException;
 import com.legadi.cli.jurl.generators.Generator;
 import com.legadi.cli.jurl.modifiers.ValueModifier;
 
@@ -24,16 +28,17 @@ public class StringExpander {
     private final Pattern paramTagPattern = Pattern.compile("^([\\w_]+:)?(~(.*)~)?(.*)$");
     private final Pattern paramPattern;
     private final Settings settings;
-    private final Function<String, String> propertyDefault;
+    private final PropertyDefaultResolver propertyDefaultResolver;
 
     public StringExpander(Settings settings) {
         this(settings, null);
     }
 
-    public StringExpander(Settings settings, Function<String, String> propertyDefault) {
+    public StringExpander(Settings settings, Map<String, Object> propertyDefaults) {
         this.paramPattern = Pattern.compile(settings.getSettingsParamRegex());
         this.settings = settings;
-        this.propertyDefault = propertyDefault;
+        this.propertyDefaultResolver = propertyDefaults != null
+            ? new PropertyDefaultResolver(settings, propertyDefaults) : null;
     }
 
     public Settings getSettings() {
@@ -41,7 +46,7 @@ public class StringExpander {
     }
 
     public String replaceAllInContent(String content) {
-        return replaceAllInContent(new HashMap<>(), content);
+        return replaceAllInContent(EMPTY_MAP, content);
     }
 
     public String replaceAllInContent(Map<String, String> values, String content) {
@@ -110,10 +115,58 @@ public class StringExpander {
     private String getValue(String property, Map<String, String> values) {
         String value = settings.getOrDefaultWithValues(property, values, "");
 
-        if(propertyDefault != null && isBlank(value)) {
-            return propertyDefault.apply(property);
+        if(propertyDefaultResolver != null && isBlank(value)) {
+            return propertyDefaultResolver.apply(property);
         } else {
             return value;
+        }
+    }
+
+    public static class PropertyDefaultResolver implements Function<String, String> {
+
+        private final ConsoleInput consoleInput;
+        private final Map<String, Object> defaults;
+
+        public PropertyDefaultResolver(Settings settings, Map<String, Object> defaults) {
+            this.consoleInput = new ConsoleInput(settings);
+            this.defaults = defaults;
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public String apply(String property) {
+            Object defaultValue = defaults.get(property);
+
+            if(defaultValue == null) {
+                defaultValue = "";
+            }
+
+            if(defaultValue instanceof List) {
+                return getDefault(property, (List<String>) defaultValue);
+            } else {
+                return consoleInput.readInput(property, defaultValue.toString());
+            }
+        }
+
+        private String getDefault(String property, List<String> defaultValues) {
+            int defaultIndex = Optional.ofNullable(defaults.get(getDefaultFieldIndex(property)))
+                .map(val -> (String) val)
+                .filter(CommonUtils::isNumeric)
+                .map(Integer::parseInt)
+                .orElse(INVALID_INDEX);
+            String defaultValue;
+
+            try {
+                defaultValue = defaultValues.get(defaultIndex);
+            } catch(IndexOutOfBoundsException ex) {
+                defaultValue = "";
+            }
+            try {
+                return consoleInput.selectOption(defaultValues, defaultValue)
+                    .orElse("");
+            } catch(ConsoleInputException ex) {
+                return "";
+            }
         }
     }
 }

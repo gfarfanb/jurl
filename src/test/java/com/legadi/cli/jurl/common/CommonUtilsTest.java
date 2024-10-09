@@ -5,6 +5,7 @@ import static com.legadi.cli.jurl.common.CommonUtils.NUMERIC_STRING;
 import static com.legadi.cli.jurl.common.CommonUtils.avoidFirstZero;
 import static com.legadi.cli.jurl.common.CommonUtils.fileSeparatorAsDelimiter;
 import static com.legadi.cli.jurl.common.CommonUtils.getAllFields;
+import static com.legadi.cli.jurl.common.CommonUtils.getDefaultFieldIndex;
 import static com.legadi.cli.jurl.common.CommonUtils.getOrDefault;
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isEmpty;
@@ -226,6 +227,13 @@ public class CommonUtilsTest {
         Assertions.assertEquals("1.5", avoidFirstZero("0.5", "1"));
         Assertions.assertEquals("-1", avoidFirstZero("-1", "1"));
         Assertions.assertEquals("-0.5", avoidFirstZero("-0.5", "1"));
+    }
+
+    @Test
+    public void getDefaultFieldIndexValidation() {
+        Assertions.assertNull(getDefaultFieldIndex(null));
+        Assertions.assertEquals("field-default-index", getDefaultFieldIndex("field"));
+        Assertions.assertEquals("5-default-index", getDefaultFieldIndex("5"));
     }
 
     @Test

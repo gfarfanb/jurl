@@ -1,7 +1,10 @@
 package com.legadi.cli.jurl.parser;
 
+import static com.legadi.cli.jurl.common.CommonUtils.getDefaultFieldIndex;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -144,9 +147,10 @@ public class HTTPRequestParserTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void parseLoadDefaults() {
         Settings settings = new Settings();
-        Path requestPath = Paths.get("src/test/resources/parser/http-request.config.spec.http");
+        Path requestPath = Paths.get("src/test/resources/parser/http-request.defaults.spec.http");
         HTTPRequestParser parser = new HTTPRequestParser();
 
         RequestInput<HTTPRequestEntry> requestInput = Assertions.assertDoesNotThrow(
@@ -156,9 +160,18 @@ public class HTTPRequestParserTest {
 
         Assertions.assertNotNull(request);
 
+        List<String> values = (List<String>) request.getDefaults().get("steps");
+        int defaultIndex = Assertions.assertDoesNotThrow(
+            () -> Integer.parseInt((String) request.getDefaults().get(getDefaultFieldIndex("steps"))));
+
         Assertions.assertEquals("value1", request.getDefaults().get("field1"));
         Assertions.assertEquals("value2", request.getDefaults().get("field2"));
         Assertions.assertEquals("value3", request.getDefaults().get("field3"));
+        Assertions.assertEquals("1/4", values.get(0));
+        Assertions.assertEquals("2/4", values.get(1));
+        Assertions.assertEquals("3/4", values.get(2));
+        Assertions.assertEquals("4/4", values.get(3));
+        Assertions.assertEquals("3/4", values.get(defaultIndex));
     }
 
     @Test

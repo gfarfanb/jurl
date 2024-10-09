@@ -22,6 +22,7 @@ public class RequestEntry<T extends MockEntry> {
     protected Map<String, String> outputMappings = new LinkedHashMap<>();
     protected List<AssertionEntry> assertions = new ArrayList<>();
     protected List<OptionEntry> options = new ArrayList<>();
+    protected Map<String, Object> defaults = new LinkedHashMap<>();
 
     public String getName() {
         return name;
@@ -117,5 +118,13 @@ public class RequestEntry<T extends MockEntry> {
 
     public void setOptions(List<OptionEntry> options) {
         this.options = options;
+    }
+
+    public Map<String, Object> getDefaults() {
+        return defaults;
+    }
+
+    public void setDefaults(Map<String, Object> defaults) {
+        this.defaults = defaults;
     }
 }

@@ -80,13 +80,13 @@ public class WriterUtils {
     }
 
     public static void expandFile(Settings settings, Path inputFilePath, Path outputFilePath,
-            Map<String, String> defaults) {
+            Map<String, Object> defaults) {
         expandFile(settings, inputFilePath, outputFilePath, defaults, line -> {});
     }
 
     public static void expandFile(Settings settings, Path inputFilePath, Path outputFilePath,
-            Map<String, String> defaults, Consumer<String> lineConsumer) {
-        StringExpander stringExpander = new StringExpander(settings);
+            Map<String, Object> defaults, Consumer<String> lineConsumer) {
+        StringExpander stringExpander = new StringExpander(settings, defaults);
 
         try(BufferedReader br = Files.newBufferedReader(inputFilePath);
                 BufferedWriter writer = Files.newBufferedWriter(outputFilePath)) {

@@ -11,9 +11,13 @@ import java.util.regex.Pattern;
 public class CommonUtils {
 
     private static final Pattern NUMBER_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
+    private static final String DEFAULT_FIELD_INDEX_FORMAT = "%s-default-index";
 
     public static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvxyz0123456789";
     public static final String NUMERIC_STRING = "0123456789";
+    public static final int INVALID_INDEX = -1;
+
+    public static final Map<String, String> EMPTY_MAP = new HashMap<>();
 
     private CommonUtils() {}
 
@@ -140,6 +144,13 @@ public class CommonUtils {
         } else {
             return number;
         }
+    }
+
+    public static String getDefaultFieldIndex(String field) {
+        if(field == null) {
+            return null;
+        }
+        return String.format(DEFAULT_FIELD_INDEX_FORMAT, field);
     }
 
     public static String nextString(int length) {

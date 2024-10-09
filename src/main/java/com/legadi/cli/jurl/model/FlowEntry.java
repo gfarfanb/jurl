@@ -7,14 +7,14 @@ import java.util.Map;
 
 public class FlowEntry {
 
-    private Map<String, String> defaults = new HashMap<>();
+    private Map<String, Object> defaults = new HashMap<>();
     private List<StepEntry> steps = new ArrayList<>();
 
-    public Map<String, String> getDefaults() {
+    public Map<String, Object> getDefaults() {
         return defaults;
     }
 
-    public void setDefaults(Map<String, String> defaults) {
+    public void setDefaults(Map<String, Object> defaults) {
         this.defaults = defaults;
     }
 

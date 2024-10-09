@@ -35,7 +35,7 @@ public class JsonBodyMixer implements BodyMixer {
     }
 
     @Override
-    public Path apply(Settings settings, Map<String, String> defaults, MixerEntry entry) {
+    public Path apply(Settings settings, Map<String, Object> defaults, MixerEntry entry) {
         Path temporalBodyPath = expandBodyFile(settings, defaults, entry);
         Object json;
 
@@ -144,7 +144,7 @@ public class JsonBodyMixer implements BodyMixer {
         }
     }
 
-    private Path expandBodyFile(Settings settings, Map<String, String> defaults, MixerEntry entry) {
+    private Path expandBodyFile(Settings settings, Map<String, Object> defaults, MixerEntry entry) {
         OutputPathBuilder pathBuilder = new OutputPathBuilder(settings)
             .setRequestPath(entry.getRequestPath())
             .setRequestName(entry.getRequestName())

@@ -43,19 +43,19 @@ public class ConsoleInputTest {
     public void selectOptionImplementation() {
         Settings settings = new Settings();
         List<String> options = Arrays.asList("Option 1", "Option 2", "Option 3");
-        ConsoleInput consoleInput = new ConsoleInput(settings, options, null);
+        ConsoleInput consoleInput = new ConsoleInput(settings, null);
 
         if(System.console() == null) {
-            Assertions.assertTrue(consoleInput.selectOption("Option 1").isPresent());
+            Assertions.assertTrue(consoleInput.selectOption(options, "Option 1").isPresent());
         } else {
             Assertions.assertNotNull(consoleInput);
         }
 
-        ConsoleInput consoleInputDecorator = new ConsoleInput(settings, options, opt -> opt);
+        ConsoleInput consoleInputDecorator = new ConsoleInput(settings, opt -> opt);
 
         if(System.console() == null) {
             Assertions.assertThrows(ConsoleInputException.class,
-                () -> consoleInputDecorator.selectOption("Option n"));
+                () -> consoleInputDecorator.selectOption(options, "Option n"));
         } else {
             Assertions.assertNotNull(consoleInputDecorator);
         }
@@ -148,15 +148,15 @@ public class ConsoleInputTest {
         List<String> options = Arrays.asList("Option 1", "Option 2");
         int columnLength = settings.getConsoleWidth() / (options.size() + 1);
         ConsoleInput consoleInput = new ConsoleInputDummy(expectedInput,
-            settings, options, opt -> String.format("%-" + columnLength + "s", opt));
+            settings, opt -> String.format("%-" + columnLength + "s", opt));
         Optional<String> option;
 
-        option = consoleInput.selectOption(null);
+        option = consoleInput.selectOption(options, null);
 
         Assertions.assertTrue(option.isPresent());
         Assertions.assertEquals("Option 1", option.get());
 
-        option = consoleInput.selectOption("Option 2");
+        option = consoleInput.selectOption(options, "Option 2");
 
         Assertions.assertTrue(option.isPresent());
         Assertions.assertEquals("Option 1", option.get());
@@ -168,11 +168,11 @@ public class ConsoleInputTest {
         String expectedInput = "Option 1";
         List<String> options = Arrays.asList("Option 1", "Option 2", "Option 3");
         ConsoleInput consoleInput = new ConsoleInputDummy(expectedInput,
-            settings, options, null);
+            settings, null);
 
         settings.putUserInput(PROP_SKIP_USER_INPUT, Boolean.TRUE.toString());
 
-        Optional<String> option = consoleInput.selectOption(expectedInput);
+        Optional<String> option = consoleInput.selectOption(options, expectedInput);
 
         Assertions.assertTrue(option.isPresent());
         Assertions.assertEquals(expectedInput, option.get());
@@ -184,9 +184,9 @@ public class ConsoleInputTest {
         List<String> options = Arrays.asList("Option 1", "Option 2", "Option 3");
         int columnLength = settings.getConsoleWidth() / options.size();
         ConsoleInput consoleInput = new ConsoleInputDummy(null,
-            settings, options, opt -> String.format("%-" + columnLength + "s", opt));
+            settings, opt -> String.format("%-" + columnLength + "s", opt));
 
-        Optional<String> option = consoleInput.selectOption("Option 2");
+        Optional<String> option = consoleInput.selectOption(options, "Option 2");
 
         Assertions.assertTrue(option.isPresent());
         Assertions.assertEquals("Option 2", option.get());
@@ -196,9 +196,9 @@ public class ConsoleInputTest {
     public void selectOptionFromEmpty() {
         Settings settings = new Settings();
         String expectedInput = "Option 1";
-        ConsoleInput consoleInput = new ConsoleInputDummy(null, settings, null, null);
+        ConsoleInput consoleInput = new ConsoleInputDummy(null, settings, null);
 
-        Optional<String> option = consoleInput.selectOption(expectedInput);
+        Optional<String> option = consoleInput.selectOption(null, expectedInput);
 
         Assertions.assertTrue(option.isPresent());
         Assertions.assertEquals(expectedInput, option.get());
@@ -210,10 +210,10 @@ public class ConsoleInputTest {
         String expectedInput = "Option n";
         List<String> options = Arrays.asList("Option 1", "Option 2", "Option 3");
         ConsoleInput consoleInput = new ConsoleInputDummy(null,
-            settings, options, opt -> String.format("%-" + settings.getConsoleWidth() + "s", opt));
+            settings, opt -> String.format("%-" + settings.getConsoleWidth() + "s", opt));
 
         Assertions.assertThrows(ConsoleInputException.class,
-            () -> consoleInput.selectOption(expectedInput));
+            () -> consoleInput.selectOption(options, expectedInput));
     }
 
     public static class ConsoleInputDummy extends ConsoleInput {
@@ -226,8 +226,8 @@ public class ConsoleInputTest {
         }
 
         public ConsoleInputDummy(String input, Settings settings,
-                List<String> options, Function<String, String> optionDecorator) {
-            super(settings, options, optionDecorator);
+                Function<String, String> optionDecorator) {
+            super(settings, optionDecorator);
             this.input = input;
         }
 

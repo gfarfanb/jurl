@@ -4,3 +4,7 @@
 @set-field1 = value1
 @set-field2 = value2
 @set-field3 = value3
+@list-steps = 1/4
+@list*-steps = 2/4
+@list*-steps = 3/4
+@list-steps = 4/4

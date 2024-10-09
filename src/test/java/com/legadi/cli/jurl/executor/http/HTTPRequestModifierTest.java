@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -24,13 +24,11 @@ import org.junit.jupiter.api.Test;
 
 import com.google.gson.reflect.TypeToken;
 import com.legadi.cli.jurl.assertions.EqualsToAssertionFunction;
-import com.legadi.cli.jurl.common.ConsoleInput;
 import com.legadi.cli.jurl.common.OutputPathBuilder;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.exception.RequestException;
 import com.legadi.cli.jurl.executor.RequestModifier;
-import com.legadi.cli.jurl.executor.http.HTTPRequestModifier.PropertyDefault;
 import com.legadi.cli.jurl.model.AssertionEntry;
 import com.legadi.cli.jurl.model.AuthenticationRequest;
 import com.legadi.cli.jurl.model.FlowEntry;
@@ -42,8 +40,8 @@ import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestFileEntry;
 import com.legadi.cli.jurl.options.Option;
 import com.legadi.cli.jurl.options.OptionsReader;
-import com.legadi.cli.jurl.options.SetValueOption;
 import com.legadi.cli.jurl.options.OptionsReader.OptionEntry;
+import com.legadi.cli.jurl.options.SetValueOption;
 
 public class HTTPRequestModifierTest {
 
@@ -756,6 +754,11 @@ public class HTTPRequestModifierTest {
             new String[] { "{{optionArg1}}", "{{optionArg2}}" });
         request.getOptions().add(option);
 
+        request.getDefaults().put("default.int", "5");
+        request.getDefaults().put("pad.index", "0000{{default.int}}");
+        request.getDefaults().put("indexes", Arrays.asList("1", "2", "3", "4", "{{default.int}}"));
+        request.getDefaults().put("empty.val", null);
+
         request.setMethod("{{method}}");
         request.getQueryParams().put("param", "{{queryParam}}");
         request.getHeaders().put("Accept", "{{headerAccept}}");
@@ -795,6 +798,10 @@ public class HTTPRequestModifierTest {
         Assertions.assertEquals("right", request.getConditions().get(0).getArgs()[1]);
         Assertions.assertEquals("name", request.getOptions().get(0).getRight()[0]);
         Assertions.assertEquals("value", request.getOptions().get(0).getRight()[1]);
+        Assertions.assertEquals("5", request.getDefaults().get("default.int"));
+        Assertions.assertEquals("00005", request.getDefaults().get("pad.index"));
+        Assertions.assertEquals(Arrays.asList("1", "2", "3", "4", "5"), request.getDefaults().get("indexes"));
+        Assertions.assertNull(request.getDefaults().get("empty.val"));
         Assertions.assertEquals("POST", request.getMethod());
         Assertions.assertEquals("5", request.getQueryParams().get("param"));
         Assertions.assertEquals("application/json", request.getHeaders().get("Accept"));
@@ -811,32 +818,5 @@ public class HTTPRequestModifierTest {
         Assertions.assertEquals("/response.json", request.getMockDefinition().getResponseFilePath());
         Assertions.assertEquals(RuntimeException.class.getName(), request.getMockDefinition().getExceptionClassOnOutputStream());
         Assertions.assertEquals(Exception.class.getName(), request.getMockDefinition().getExceptionClassOnResponseCode());
-    }
-
-    @Test
-    public void propertyDefaultNotFound() {
-        Settings settings = new Settings();
-        ConsoleInput consoleInput = new ConsoleInput(settings);
-        Map<String, String> defaults = new HashMap<>();
-        PropertyDefault propertyDefault = new PropertyDefault(consoleInput, defaults);
-
-        String value = propertyDefault.apply("property.not.found");
-
-        Assertions.assertEquals("", value);
-    }
-
-    @Test
-    public void propertyDefaultWithDefault() {
-        Settings settings = new Settings();
-        ConsoleInput consoleInput = new ConsoleInput(settings);
-        Map<String, String> defaults = new HashMap<>();
-
-        defaults.put("default.int", "5");
-
-        PropertyDefault propertyDefault = new PropertyDefault(consoleInput, defaults);
-
-        String value = propertyDefault.apply("default.int");
-
-        Assertions.assertEquals("5", value);
     }
 }

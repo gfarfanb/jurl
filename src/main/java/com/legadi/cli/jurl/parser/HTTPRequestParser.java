@@ -1,6 +1,7 @@
 package com.legadi.cli.jurl.parser;
 
 import static com.legadi.cli.jurl.common.CommonUtils.getAllFields;
+import static com.legadi.cli.jurl.common.CommonUtils.getDefaultFieldIndex;
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.strip;
@@ -66,13 +67,13 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         SECTION("^(?i)###[ ]*\\[(api|request|flow)\\](.*)"),
         SOURCE("^(?i)source (.*)"),
         REQUEST_FIELD("^(?i)@([\\w:.\\-_@~]+)[ ]*=(.*)"),
-        SET_DEFAULT("^(?i)@set-([\\w:.\\-_@~]+)[ ]*=(.*)"),
+        SET_DEFAULT("^(?i)@(set|list|list\\*)-([\\w:.\\-_@~]+)[ ]*=(.*)"),
         FIELD_VARIABLE("^(?i)(file|auth|mock|form|output)[ ]*[@]?([\\w:.\\-_@~]+)[ ]*=(.*)"),
         URL("^(?i)http.*"),
         URL_METHOD("^(?i)(get|head|post|put|delete|connect|options|trace|patch)[ ]*(.*)"),
         HEADER("^(?i)(mock)?[ ]*([\\w\\-]+): (.*)"),
         QUERY_PARAM("^&([\\w:.\\-_@~]+)=(.*)"),
-        CONDITION_ASSERTION_OPT("^(?i)(condition|assert|opt) ([\\w:.\\-_@~]+) (.*)"),
+        CONDITION_ASSERTION_OPT("^(?i)(condition|assert|opt) ([\\w:.\\-_@~]+)(.*)"),
         STEP_SPEC("^(?i)step (.*)"),
         COMMENT("^#(.*)");
 
@@ -431,16 +432,33 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             });
     }
 
-    private void addDefault(Map<String, String> defaults, String line) {
+    private void addDefault(Map<String, Object> defaults, String line) {
         applyLine(LinePattern.SET_DEFAULT, line,
             matcher -> {
-                String property = trim(matcher.group(1));
-                String value = trim(matcher.group(2));
+                String type = trim(matcher.group(1));
+                String property = trim(matcher.group(2));
+                String value = trim(matcher.group(3));
 
-                defaults.put(property, value);
+                if("set".equalsIgnoreCase(type)) {
+                    defaults.put(property, value);
+                } else if("list*".equalsIgnoreCase(type)) {
+                    int index = addValueToDefaultList(defaults, property, value);
+                    defaults.put(getDefaultFieldIndex(property), Integer.toString(index));
+                } else {
+                    // type = "list"
+                    addValueToDefaultList(defaults, property, value);
+                }
 
                 return null;
             });
+    }
+
+    @SuppressWarnings("unchecked")
+    private int addValueToDefaultList(Map<String, Object> defaults, String property, String value) {
+        List<String> values = (List<String>) defaults.getOrDefault(property, new ArrayList<>());
+        values.add(value);
+        defaults.putIfAbsent(property, values);
+        return values.size() - 1;
     }
 
     private void addFileField(RequestFileSupplier fileSupplier, String fieldName, String value)

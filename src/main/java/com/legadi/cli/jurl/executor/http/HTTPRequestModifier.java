@@ -13,10 +13,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.legadi.cli.jurl.common.ConsoleInput;
 import com.legadi.cli.jurl.common.InputNameResolver;
 import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
@@ -67,7 +65,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         }
 
         HTTPRequestAuthEntry auth = request.getRequestAuth();
-        Map<String, String> defaults = new HashMap<>(api.getDefaults());
+        Map<String, Object> defaults = new HashMap<>(api.getDefaults());
         defaults.putAll(request.getDefaults());
 
         expandRequestAuth(settings, auth, defaults);
@@ -183,7 +181,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         formData.putAll(request.getFormData());
         request.setFormData(formData);
 
-        Map<String, String> defaults = new HashMap<>(api.getDefaults());
+        Map<String, Object> defaults = new HashMap<>(api.getDefaults());
         defaults.putAll(request.getDefaults());
         request.setDefaults(defaults);
     }
@@ -233,11 +231,9 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
 
     @Override
     public void expandFlow(Settings settings, FlowEntry flow) {
-        ConsoleInput consoleInput = new ConsoleInput(settings);
-        StringExpander stringExpander = new StringExpander(settings,
-            new PropertyDefault(consoleInput, flow.getDefaults()));
+        StringExpander stringExpander = new StringExpander(settings, flow.getDefaults());
 
-        expandMap(stringExpander, flow.getDefaults(), true);
+        expandDefaults(stringExpander, flow.getDefaults());
 
         for(StepEntry step : flow.getSteps()) {
             step.setRequestInputPath(stringExpander.replaceAllInContent(step.getRequestInputPath()));
@@ -247,11 +243,9 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
 
     @Override
     public void expandRequestDefinition(Settings settings, HTTPRequestEntry request) {
-        ConsoleInput consoleInput = new ConsoleInput(settings);
-        StringExpander stringExpander = new StringExpander(settings,
-            new PropertyDefault(consoleInput, request.getDefaults()));
+        StringExpander stringExpander = new StringExpander(settings, request.getDefaults());
 
-        expandMap(stringExpander, request.getDefaults(), true);
+        expandDefaults(stringExpander, request.getDefaults());
 
         request.setUrl(stringExpander.replaceAllInContent(request.getUrl()));
         request.setProtocol(stringExpander.replaceAllInContent(request.getProtocol()));
@@ -263,7 +257,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         if(request.getMockDefinition() != null) {
             HTTPMockEntry mock = request.getMockDefinition();
 
-            expandMap(stringExpander, mock.getResponseHeaders(), false);
+            expandMap(stringExpander, mock.getResponseHeaders());
             mock.setResponseContent(stringExpander.replaceAllInContent(mock.getResponseContent()));
             mock.setResponseFilePath(stringExpander.replaceAllInContent(mock.getResponseFilePath()));
             mock.setExceptionClassOnOutputStream(stringExpander.replaceAllInContent(mock.getExceptionClassOnOutputStream()));
@@ -274,22 +268,20 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         request.getOptions().stream().map(Pair::getRight).forEach(args -> expandArray(stringExpander, args));
 
         request.setMethod(stringExpander.replaceAllInContent(request.getMethod()));
-        expandMap(stringExpander, request.getQueryParams(), false);
-        expandMap(stringExpander, request.getHeaders(), false);
+        expandMap(stringExpander, request.getQueryParams());
+        expandMap(stringExpander, request.getHeaders());
         request.setBodyCharset(stringExpander.replaceAllInContent(request.getBodyCharset()));
         request.setBodyContent(stringExpander.replaceAllInContent(request.getBodyContent()));
         request.setBodyFilePath(stringExpander.replaceAllInContent(request.getBodyFilePath()));
         request.getRequestFiles().forEach(requestFile -> expandRequestFile(stringExpander, requestFile));
-        expandMap(stringExpander, request.getFormData(), false);
+        expandMap(stringExpander, request.getFormData());
     }
 
     private void expandRequestAuth(Settings settings, HTTPRequestAuthEntry requestAuth,
-            Map<String, String> defaults) {
-        ConsoleInput consoleInput = new ConsoleInput(settings);
-        StringExpander stringExpander = new StringExpander(settings,
-            new PropertyDefault(consoleInput, defaults));
+            Map<String, Object> defaults) {
+        StringExpander stringExpander = new StringExpander(settings, defaults);
 
-        expandMap(stringExpander, defaults, true);
+        expandDefaults(stringExpander, defaults);
 
         requestAuth.setRequestInputPath(stringExpander.replaceAllInContent(requestAuth.getRequestInputPath()));
         requestAuth.setInputName(stringExpander.replaceAllInContent(requestAuth.getInputName()));
@@ -313,16 +305,30 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         requestFile.setMineType(stringExpander.replaceAllInContent(requestFile.getMineType()));
     }
 
-    private void expandMap(StringExpander stringExpander, Map<String, String> map, boolean isDefaults) {
-        if(map == null) {
+    @SuppressWarnings("unchecked")
+    private void expandDefaults(StringExpander stringExpander, Map<String, Object> defaults) {
+        if(defaults == null) {
             return;
         }
-        for(Map.Entry<String, String> entry : map.entrySet()) {
-            if(isDefaults) {
-                map.put(entry.getKey(), stringExpander.replaceAllInContent(map, entry.getValue()));
-            } else {
-                map.put(entry.getKey(), stringExpander.replaceAllInContent(entry.getValue()));
+        Map<String, String> map = new HashMap<>();
+        for(Map.Entry<String, Object> entry : defaults.entrySet()) {
+            if(entry.getValue() instanceof String) {
+                String value = stringExpander.replaceAllInContent(map, (String) entry.getValue());
+                map.put(entry.getKey(), value);
+                defaults.put(entry.getKey(), value);
+            } else if(entry.getValue() instanceof List) {
+                List<String> values = ((List<String>) entry.getValue())
+                    .stream()
+                    .map(val -> stringExpander.replaceAllInContent(map, val))
+                    .collect(Collectors.toList());
+                defaults.put(entry.getKey(), values);
             }
+        }
+    }
+
+    private void expandMap(StringExpander stringExpander, Map<String, String> map) {
+        for(Map.Entry<String, String> entry : map.entrySet()) {
+            map.put(entry.getKey(), stringExpander.replaceAllInContent(entry.getValue()));
         }
     }
 
@@ -403,28 +409,6 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         }
         if(isBlank(request.getPasswordParam())) {
             request.setPasswordParam(api.getPasswordParam());
-        }
-    }
-
-    public static class PropertyDefault implements Function<String, String> {
-
-        private final ConsoleInput consoleInput;
-        private final Map<String, String> defaults;
-
-        public PropertyDefault(ConsoleInput consoleInput, Map<String, String> defaults) {
-            this.consoleInput = consoleInput;
-            this.defaults = defaults;
-        }
-
-        @Override
-        public String apply(String property) {
-            String defaultValue = defaults.get(property);
-
-            if(defaultValue == null) {
-                defaultValue = "";
-            }
-
-            return consoleInput.readInput(property, defaultValue);
         }
     }
 }
