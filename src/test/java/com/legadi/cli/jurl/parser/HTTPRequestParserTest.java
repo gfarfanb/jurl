@@ -102,7 +102,9 @@ public class HTTPRequestParserTest {
 
         HTTPRequestEntry request = requestInput.getRequests().get("request");
 
-        Assertions.assertNotNull(request);
+        Assertions.assertEquals("request", request.getName());
+        Assertions.assertEquals("Request specification", request.getDescription());
+        Assertions.assertEquals("POST", request.getMethod());
         Assertions.assertEquals("POST", request.getMethod());
         Assertions.assertEquals("http://localhost:5555/spec", request.getUrl());
         Assertions.assertEquals(1, request.getQueryParams().size());

@@ -56,6 +56,8 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     private static final Map<String, Field> MOCK_FIELDS = getAllFields(HTTPMockEntry.class);
     private static final Map<String, String> ESCAPED_CHARS = new HashMap<>();
 
+    private static final Pattern NAME_DESCRIPTION_PATTERN = Pattern.compile("^(?i)(.*)[ ]*:(.*)");
+
     static {
         ESCAPED_CHARS.put("\\\\#", "#");
     }
@@ -103,7 +105,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             AtomicReference<Pair<HTTPRequestEntry, RequestFileSupplier>> apiCarrier =
                 new AtomicReference<>(new Pair<>(apiRequest, new RequestFileSupplier(apiRequest)));
             AtomicReference<Pair<HTTPRequestEntry, RequestFileSupplier>> requestCarrier = new AtomicReference<>();
-            AtomicReference<Pair<String, FlowEntry>> flowCarrier = new AtomicReference<>();
+            AtomicReference<FlowEntry> flowCarrier = new AtomicReference<>();
             Set<String> sectionNames = new HashSet<>();
 
             requestInput.setApi(apiCarrier.get().getLeft());
@@ -148,7 +150,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             RequestInput<HTTPRequestEntry> requestInput,
             AtomicReference<Pair<HTTPRequestEntry, RequestFileSupplier>> apiCarrier,
             AtomicReference<Pair<HTTPRequestEntry, RequestFileSupplier>> requestCarrier,
-            AtomicReference<Pair<String, FlowEntry>> flowCarrier,
+            AtomicReference<FlowEntry> flowCarrier,
             Set<String> sectionNames) throws IOException {
 
         for(String line : lines) {
@@ -239,9 +241,9 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         }
     }
 
-    private void decorateFlow(AtomicReference<Pair<String, FlowEntry>> flowCarrier,
+    private void decorateFlow(AtomicReference<FlowEntry> flowCarrier,
             String line) {
-        FlowEntry flow = flowCarrier.get().getRight();
+        FlowEntry flow = flowCarrier.get();
 
         addDefault(flow.getDefaults(), line);
         addStep(flow.getSteps(), line);
@@ -273,38 +275,46 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
     private void readSection(Set<String> sectionNames,
             AtomicReference<Pair<HTTPRequestEntry, RequestFileSupplier>> requestCarrier,
-            AtomicReference<Pair<String, FlowEntry>> flowCarrier,
+            AtomicReference<FlowEntry> flowCarrier,
             RequestInput<HTTPRequestEntry> requestInput, String line) {
         applyLine(LinePattern.SECTION, line,
             matcher -> {
                 String type = trim(matcher.group(1)).toLowerCase();
+                Pair<String, String> nameDescription;
                 Section section = null;
                 String name = null;
 
                 switch(type) {
                     case "request":
                         HTTPRequestEntry request = new HTTPRequestEntry();
-                        name = trim(matcher.group(2));
+                        nameDescription = getNameAndDescription(
+                            trim(matcher.group(2)));
+                        name = nameDescription.getLeft();
 
                         if(isBlank(name)) {
                             throw new CommandException("Request name is null or empty");
                         }
 
                         request.setName(name);
+                        request.setDescription(nameDescription.getRight());
                         requestCarrier.set(new Pair<>(request, new RequestFileSupplier(request)));
                         requestInput.getRequests().put(name, request);
                         section = Section.REQUEST;
                         break;
                     case "flow":
-                        name = trim(matcher.group(2));
+                        nameDescription = getNameAndDescription(
+                            trim(matcher.group(2)));
+                        name = nameDescription.getLeft();
 
                         if(isBlank(name)) {
                             throw new CommandException("Flow name is null or empty");
                         }
 
-                        Pair<String, FlowEntry> flow = new Pair<>(name, new FlowEntry());
+                        FlowEntry flow = new FlowEntry();
+                        flow.setName(name);
+                        flow.setDescription(nameDescription.getRight());
                         flowCarrier.set(flow);
-                        requestInput.getFlows().put(name, flowCarrier.get().getRight());
+                        requestInput.getFlows().put(name, flow);
                         section = Section.FLOW;
                         break;
                     default:
@@ -321,6 +331,18 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
                 return section;
             });
+    }
+
+    private Pair<String, String> getNameAndDescription(String line) {
+        Matcher matcher = NAME_DESCRIPTION_PATTERN.matcher(line);
+
+        if(matcher.find()) {
+            String name = trim(matcher.group(1));
+            String description = trim(matcher.group(2));
+            return new Pair<>(name, description);
+        } else {
+            return new Pair<>(line, null);
+        }
     }
 
     private void readSource(String line) {

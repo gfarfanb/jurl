@@ -125,10 +125,12 @@ public class StringExpander {
     public static class PropertyDefaultResolver implements Function<String, String> {
 
         private final ConsoleInput consoleInput;
+        private final Settings settings;
         private final Map<String, Object> defaults;
 
         public PropertyDefaultResolver(Settings settings, Map<String, Object> defaults) {
             this.consoleInput = new ConsoleInput(settings);
+            this.settings = settings;
             this.defaults = defaults;
         }
 
@@ -141,11 +143,13 @@ public class StringExpander {
                 defaultValue = "";
             }
 
+            String value;
             if(defaultValue instanceof List) {
-                return getDefault(property, (List<String>) defaultValue);
+                value = getDefault(property, (List<String>) defaultValue);
             } else {
-                return consoleInput.readInput(property, defaultValue.toString());
+                value = consoleInput.readInput(property, defaultValue.toString());
             }
+            return saveInput(property, value);
         }
 
         private String getDefault(String property, List<String> defaultValues) {
@@ -162,11 +166,19 @@ public class StringExpander {
                 defaultValue = "";
             }
             try {
-                return consoleInput.selectOption(defaultValues, defaultValue)
+                String value = consoleInput.selectOption(defaultValues, defaultValue)
                     .orElse("");
+                return saveInput(property, value);
             } catch(ConsoleInputException ex) {
                 return "";
             }
+        }
+
+        private String saveInput(String property, String value) {
+            if(isNotBlank(value)) {
+                settings.putUserInput(property, value);
+            }
+            return value;
         }
     }
 }

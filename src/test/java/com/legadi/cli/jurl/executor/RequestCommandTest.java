@@ -2,6 +2,8 @@ package com.legadi.cli.jurl.executor;
 
 import static com.legadi.cli.jurl.common.JsonUtils.jsonToObject;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_OPEN_EDITOR_COMMAND;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_REQUEST_BEHAVIOUR;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_USER_INPUT;
 import static com.legadi.cli.jurl.embedded.util.ObjectName.ASSERTIONS_RESULT;
 import static com.legadi.cli.jurl.embedded.util.ObjectName.CONDITIONS_RESULT;
 import static com.legadi.cli.jurl.embedded.util.ObjectName.EXECUTOR_EXECUTED;
@@ -37,6 +39,7 @@ import com.legadi.cli.jurl.exception.InvalidAssertionsFoundException;
 import com.legadi.cli.jurl.exception.RecursiveCommandException;
 import com.legadi.cli.jurl.exception.SkipExecutionException;
 import com.legadi.cli.jurl.model.AssertionResult;
+import com.legadi.cli.jurl.model.RequestBehaviour;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 
 public class RequestCommandTest extends DummyAPIAbstractTest {
@@ -57,10 +60,37 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
         List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, REQUEST);
 
         Assertions.assertEquals(1, requests.size());
+        Assertions.assertEquals("create", requests.get(0).getName());
+    }
 
-        for(HTTPRequestEntry request : requests) {
-            Assertions.assertEquals("create", request.getName());
-        }
+    @Test
+    public void executePrint() {
+        String[] args = { "-p", "-n", "create", "src/test/resources/basic-functions.spec.http" };
+
+        Assertions.assertDoesNotThrow(() -> new RequestCommand(args).execute());
+
+        Settings settings = requestCatcher.getLast(correlationId, SETTINGS);
+        List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, REQUEST);
+
+        Assertions.assertEquals(1, requests.size());
+        Assertions.assertEquals("create", requests.get(0).getName());
+        Assertions.assertEquals(RequestBehaviour.PRINT_ONLY.name(), settings.get(PROP_REQUEST_BEHAVIOUR));
+        Assertions.assertEquals(Boolean.TRUE.toString(), settings.get(PROP_SKIP_USER_INPUT));
+    }
+
+    @Test
+    public void executeCurl() {
+        String[] args = { "-c", "-n", "create", "src/test/resources/basic-functions.spec.http" };
+
+        Assertions.assertDoesNotThrow(() -> new RequestCommand(args).execute());
+
+        Settings settings = requestCatcher.getLast(correlationId, SETTINGS);
+        List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, REQUEST);
+
+        Assertions.assertEquals(1, requests.size());
+        Assertions.assertEquals("create", requests.get(0).getName());
+        Assertions.assertEquals(RequestBehaviour.CURL_ONLY.name(), settings.get(PROP_REQUEST_BEHAVIOUR));
+        Assertions.assertEquals(Boolean.TRUE.toString(), settings.get(PROP_SKIP_USER_INPUT));
     }
 
     @Test
@@ -157,6 +187,38 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
 
         Assertions.assertEquals(1, requests.size());
         Assertions.assertEquals("create", requests.get(0).getName());
+    }
+
+    @Test
+    public void executePrintAuth() {
+        String[] args = { "-p", "-n", "create", "src/test/resources/auth-request.spec.http" };
+
+        Assertions.assertDoesNotThrow(() -> new RequestCommand(args).execute());
+
+        Settings settings = requestCatcher.getLast(correlationId, SETTINGS);
+        List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, REQUEST);
+
+        Assertions.assertEquals(2, requests.size());
+        Assertions.assertEquals("authorization", requests.get(0).getName());
+        Assertions.assertEquals("create", requests.get(1).getName());
+        Assertions.assertEquals(RequestBehaviour.PRINT_ONLY.name(), settings.get(PROP_REQUEST_BEHAVIOUR));
+        Assertions.assertEquals(Boolean.TRUE.toString(), settings.get(PROP_SKIP_USER_INPUT));
+    }
+
+    @Test
+    public void executeCurlAuth() {
+        String[] args = { "-c", "-n", "create", "src/test/resources/auth-request.spec.http" };
+
+        Assertions.assertDoesNotThrow(() -> new RequestCommand(args).execute());
+
+        Settings settings = requestCatcher.getLast(correlationId, SETTINGS);
+        List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, REQUEST);
+
+        Assertions.assertEquals(2, requests.size());
+        Assertions.assertEquals("authorization", requests.get(0).getName());
+        Assertions.assertEquals("create", requests.get(1).getName());
+        Assertions.assertEquals(RequestBehaviour.CURL_ONLY.name(), settings.get(PROP_REQUEST_BEHAVIOUR));
+        Assertions.assertEquals(Boolean.TRUE.toString(), settings.get(PROP_SKIP_USER_INPUT));
     }
 
     @Test
@@ -339,6 +401,34 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
         List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, SETTINGS);
 
         Assertions.assertEquals(3, requests.size());
+    }
+
+    @Test
+    public void executeFlowPrint() {
+        String[] args = { "-p", "-n", "basicCrud", "src/test/resources/flow.spec.http" };
+
+        Assertions.assertDoesNotThrow(() -> new RequestCommand(args).execute());
+
+        Settings settings = requestCatcher.getLast(correlationId, SETTINGS);
+        List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, REQUEST);
+
+        Assertions.assertEquals(3, requests.size());
+        Assertions.assertEquals(RequestBehaviour.PRINT_ONLY.name(), settings.get(PROP_REQUEST_BEHAVIOUR));
+        Assertions.assertEquals(Boolean.TRUE.toString(), settings.get(PROP_SKIP_USER_INPUT));
+    }
+
+    @Test
+    public void executeFlowCurl() {
+        String[] args = { "-c", "-n", "basicCrudDescription", "src/test/resources/flow.spec.http" };
+
+        Assertions.assertDoesNotThrow(() -> new RequestCommand(args).execute());
+
+        Settings settings = requestCatcher.getLast(correlationId, SETTINGS);
+        List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, REQUEST);
+
+        Assertions.assertEquals(3, requests.size());
+        Assertions.assertEquals(RequestBehaviour.CURL_ONLY.name(), settings.get(PROP_REQUEST_BEHAVIOUR));
+        Assertions.assertEquals(Boolean.TRUE.toString(), settings.get(PROP_SKIP_USER_INPUT));
     }
 
     @Test

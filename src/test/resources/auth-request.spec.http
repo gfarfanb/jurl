@@ -14,7 +14,7 @@ Content-Type: application/json
 Request-Catcher: {{request.catcher.identifier}}
 
 
-### [request] create
+### [request] create: Create with authorization
 @method = POST
 @endpoint = /body
 

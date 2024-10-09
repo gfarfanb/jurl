@@ -10,6 +10,7 @@ import com.legadi.cli.jurl.options.OptionsReader.OptionEntry;
 public class RequestEntry<T extends MockEntry> {
 
     protected String name;
+    protected String description;
     protected String url;
     protected String protocol;
     protected String host;
@@ -30,6 +31,14 @@ public class RequestEntry<T extends MockEntry> {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getUrl() {

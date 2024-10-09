@@ -1,6 +1,7 @@
 package com.legadi.cli.jurl.options;
 
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_REQUEST_BEHAVIOUR;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_USER_INPUT;
 
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.model.RequestBehaviour;
@@ -34,7 +35,8 @@ public class RequestPrintOption extends Option {
 
     @Override
     public boolean execute(Settings settings, String[] args) {
-        settings.putOverride(PROP_REQUEST_BEHAVIOUR, RequestBehaviour.PRINT_ONLY.name());
+        settings.putUserInput(PROP_REQUEST_BEHAVIOUR, RequestBehaviour.PRINT_ONLY.name());
+        settings.putUserInput(PROP_SKIP_USER_INPUT, Boolean.TRUE.toString());
         return true;
     }
 }

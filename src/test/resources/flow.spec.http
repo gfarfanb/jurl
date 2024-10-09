@@ -38,6 +38,13 @@ step -n obtain src/test/resources/basic-functions.spec.http
 step -n remove src/test/resources/basic-functions.spec.http
 
 
+### [flow] basicCrudDescription: Basic CRUD with description
+
+step -n create -mb json src/test/resources/basic-functions.spec.http
+step -n obtain src/test/resources/basic-functions.spec.http
+step -n remove src/test/resources/basic-functions.spec.http
+
+
 ### [flow] invalidRecursiveFlow
 
 step -n authorization

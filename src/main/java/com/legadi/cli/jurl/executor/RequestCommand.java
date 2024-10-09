@@ -12,8 +12,6 @@ import static com.legadi.cli.jurl.common.WriterUtils.writeFile;
 import static com.legadi.cli.jurl.model.ExecutionStatus.FAILED;
 import static com.legadi.cli.jurl.model.ExecutionStatus.SKIPPED;
 import static com.legadi.cli.jurl.model.ExecutionStatus.SUCCESSFUL;
-import static com.legadi.cli.jurl.model.RequestBehaviour.CURL_ONLY;
-import static com.legadi.cli.jurl.model.RequestBehaviour.PRINT_ONLY;
 import static java.util.logging.Level.INFO;
 
 import java.io.File;
@@ -161,10 +159,17 @@ public class RequestCommand {
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, settings.getRequestType());
         modifier.expandFlow(settings, flow);
 
-        LOGGER.fine("Executing flow:"
-            + "\n  index=" + index
-            + "\n  flowName=" + flowName
-            + "\n  requestInputPath=" + requestInputPath);
+        if(settings.getRequestBehaviour().isPrintBehaviour()) {
+            LOGGER.info("Flow-Name: " + flow.getName()
+                + (isNotBlank(flow.getDescription()) ? "\nDescription: " + flow.getDescription() : "")
+                + "\nRequest-Input-Path: " + requestInputPath);
+            LOGGER.info("");
+        } else {
+            LOGGER.fine("Executing flow:"
+                + "\n  index=" + index
+                + "\n  flowName=" + flowName
+                + "\n  requestInputPath=" + requestInputPath);
+        }
 
         ExecutionStats stats = new ExecutionStats(flow.getSteps().size());
         int stepIndex = 1;
@@ -182,10 +187,14 @@ public class RequestCommand {
             Settings stepSettings = settings.createForStep();
 
             try {
-                LOGGER.info("Executing step - "
-                    + "[" + requestInputPath + "/" + flowName + "]"
-                    + " index=" + index
-                    + " step("+ stepIndex + "/" + flow.getSteps().size() + ") ");
+                if(settings.getRequestBehaviour().isPrintBehaviour()) {
+                    LOGGER.info("Step: "+ stepIndex + "/" + flow.getSteps().size());
+                } else {
+                    LOGGER.info("Executing step - "
+                        + "[" + requestInputPath + "/" + flowName + "]"
+                        + " index=" + index
+                        + " step("+ stepIndex + "/" + flow.getSteps().size() + ") ");
+                }
 
                 ExecutionStatus status = executeStep(stepSettings, trace, step, requestInputPath, requestInput);
                 stats.count(status);
@@ -202,13 +211,15 @@ public class RequestCommand {
             stepIndex++;
         }
 
-        LOGGER.info("Steps completed:"
-            + "\n  index=" + index
-            + "\n  inputFile=" + requestInputPath
-            + "\n  flowName=" + flowName
-            + "\n  environment=" + settings.getEnvironment()
-            + "\n  steps=" + stats.getExecutions()
-            + "\n  stats=" + stats);
+        if(!settings.getRequestBehaviour().isPrintBehaviour()) {
+            LOGGER.info("Steps completed:"
+                + "\n  index=" + index
+                + "\n  inputFile=" + requestInputPath
+                + "\n  flowName=" + flowName
+                + "\n  environment=" + settings.getEnvironment()
+                + "\n  steps=" + stats.getExecutions()
+                + "\n  stats=" + stats);
+        }
 
         return new Pair<>(flowName, stats);
     }
@@ -250,10 +261,17 @@ public class RequestCommand {
             stats = new ExecutionStats(ONLY_REQUEST_EXECUTIONS);
         }
 
-        LOGGER.fine("Executing request:"
-            + "\n  index=" + index
-            + "\n  requestName=" + requestName
-            + "\n  requestInputPath=" + requestInputPath);
+        if(settings.getRequestBehaviour().isPrintBehaviour()) {
+            LOGGER.info("Request-Name: " + request.getName()
+                + (isNotBlank(request.getDescription()) ? "\nDescription: " + request.getDescription() : "")
+                + "\nRequest-Input-Path: " + requestInputPath);
+            LOGGER.info("");
+        } else {
+            LOGGER.fine("Executing request:"
+                + "\n  index=" + index
+                + "\n  requestName=" + requestName
+                + "\n  requestInputPath=" + requestInputPath);
+        }
 
         executeOptions(settings, request.getOptions());
 
@@ -334,7 +352,7 @@ public class RequestCommand {
         ResponseProcessor<?, ?> processor = findByNameOrFail(ResponseProcessor.class, settings.getRequestType());
         Optional<AssertionResult> conditionsResult = executor.accepts(settings, request);
 
-        if(!isPrintOnly(settings)
+        if(!settings.getRequestBehaviour().isPrintBehaviour()
                 && conditionsResult.isPresent()
                 && !conditionsResult.get().isPassed()) {
             LOGGER.info(executionCompletedMessage(settings, index, requestInputPath,
@@ -388,7 +406,7 @@ public class RequestCommand {
                 LOGGER.info(executionCompletedMessage(settings, index, requestInputPath,
                     request, response, status, historyEntry));
             }
-        } else if(!isPrintOnly(settings)) {
+        } else if(!settings.getRequestBehaviour().isPrintBehaviour()) {
             LOGGER.info(executionCompletedMessage(settings, index, requestInputPath,
                 request, response, status, historyEntry));
         }
@@ -439,11 +457,6 @@ public class RequestCommand {
         }
 
         exec(settings, false, INFO, settings.getOpenEditorCommand());
-    }
-
-    private boolean isPrintOnly(Settings settings) {
-        return settings.getRequestBehaviour() == CURL_ONLY
-            || settings.getRequestBehaviour() == PRINT_ONLY;
     }
 
     private String executionCompletedMessage(Settings settings, ExecutionIndex index,
