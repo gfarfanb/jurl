@@ -14,20 +14,8 @@ output pokemonId = {{OUT/id}}
 @basePath = /api/v2
 @endpoint = /pokemon/{{pokemonId}}/encounters
 
-output locationArea = {{OUT/[first].location_area}}
-
 
 ### [flow] pokemon-details
 
 step -n pokemon
 step -n encounters
-
-
-### [request] dummy
-GET https://pokeapi.co/api/v2/dummy
-
-opt --mock
-
-mock @responseContent = { "name": "DUMMY" }
-mock @statusCode = 200
-mock Content-Type: application/json
