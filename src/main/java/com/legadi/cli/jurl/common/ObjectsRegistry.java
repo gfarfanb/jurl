@@ -74,6 +74,7 @@ import com.legadi.cli.jurl.modifiers.DefaultValueModifier;
 import com.legadi.cli.jurl.modifiers.DivideValueModifier;
 import com.legadi.cli.jurl.modifiers.MultiplyValueModifier;
 import com.legadi.cli.jurl.modifiers.PrefixValueModifier;
+import com.legadi.cli.jurl.modifiers.ReadFileModifier;
 import com.legadi.cli.jurl.modifiers.SubtractValueModifier;
 import com.legadi.cli.jurl.modifiers.SuffixValueModifier;
 import com.legadi.cli.jurl.modifiers.ValueModifier;
@@ -197,6 +198,7 @@ public class ObjectsRegistry {
         register(ValueModifier.class, DivideValueModifier.class);
         register(ValueModifier.class, MultiplyValueModifier.class);
         register(ValueModifier.class, PrefixValueModifier.class);
+        register(ValueModifier.class, ReadFileModifier.class);
         register(ValueModifier.class, SubtractValueModifier.class);
         register(ValueModifier.class, SuffixValueModifier.class);
         register(ValueModifier.class, WindowsSeparatorValueModifier.class);
