@@ -1,5 +1,5 @@
 {
-    "workspacePath": null,
+    "workspacePath": ".",
     "configPath": "./config/",
     "configOutputPath": "./config/.output/",
     "executionPath": "./executions/",

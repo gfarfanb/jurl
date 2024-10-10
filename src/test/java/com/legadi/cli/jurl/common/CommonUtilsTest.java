@@ -4,6 +4,8 @@ import static com.legadi.cli.jurl.common.CommonUtils.ALPHA_NUMERIC_STRING;
 import static com.legadi.cli.jurl.common.CommonUtils.NUMERIC_STRING;
 import static com.legadi.cli.jurl.common.CommonUtils.avoidFirstZero;
 import static com.legadi.cli.jurl.common.CommonUtils.fileSeparatorAsDelimiter;
+import static com.legadi.cli.jurl.common.CommonUtils.formatAsOrderedList;
+import static com.legadi.cli.jurl.common.CommonUtils.formatInColumns;
 import static com.legadi.cli.jurl.common.CommonUtils.getAllFields;
 import static com.legadi.cli.jurl.common.CommonUtils.getDefaultFieldIndex;
 import static com.legadi.cli.jurl.common.CommonUtils.getOrDefault;
@@ -28,7 +30,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -303,4 +307,67 @@ public class CommonUtilsTest {
 
         Assertions.assertTrue(objectFields.isEmpty());
     }
+
+    @Test
+    public void formatAsOrderedListValidation() {
+        List<String> entries = Arrays.asList("Entry 1", "Entry 2", "Entry 3");
+        List<String> formattedEntries = formatAsOrderedList(entries,
+            (i, entry) -> entry.equalsIgnoreCase("Entry 2"),
+            entry -> entry);
+
+        Assertions.assertEquals("1) Entry 1", formattedEntries.get(0));
+        Assertions.assertEquals("2) (default) Entry 2", formattedEntries.get(1));
+        Assertions.assertEquals("3) Entry 3", formattedEntries.get(2));
+    }
+
+    @Test
+    public void formatInColumnsValidation() {
+        Settings settings = new Settings();
+        List<String> entries = Arrays.asList("Entry 1", "Entry 2", "Entry 3");
+        String output = formatInColumns(settings, entries).toString();
+
+        for(String entry : entries) {
+            Assertions.assertTrue(output.contains(entry));
+        }
+
+        Assertions.assertTrue(output.endsWith("\n"));
+    }
+
+    @Test
+    public void formatInColumnsMaxLength() {
+        Settings settings = new Settings();
+        List<String> entries = Arrays.asList(
+            String.format("%-" + settings.getConsoleWidth() + "s", "Entry 1"),
+            String.format("%-" + settings.getConsoleWidth() + "s", "Entry 2"),
+            String.format("%-" + settings.getConsoleWidth() + "s", "Entry 3")
+        );
+        String output = formatInColumns(settings, entries).toString();
+        String[] lines = output.split("\n");
+
+        Assertions.assertEquals(3, lines.length);
+        Assertions.assertTrue(lines[0].contains("Entry 1"));
+        Assertions.assertTrue(lines[1].contains("Entry 2"));
+        Assertions.assertTrue(lines[2].contains("Entry 3"));
+    }
+
+    @Test
+    public void formatInColumnsSingleLines() {
+        Settings settings = new Settings();
+        List<String> entries = Arrays.asList("Entry 1", "Entry 2");
+        int columnLength = settings.getConsoleWidth() / (entries.size() + 1);
+        
+        entries = entries
+            .stream()
+            .map(e -> String.format("%-" + columnLength + "s", e))
+            .collect(Collectors.toList());
+
+        String output = formatInColumns(settings, entries).toString();
+        String[] lines = output.split("\n");
+
+        Assertions.assertEquals(1, lines.length);
+        Assertions.assertTrue(lines[0].contains("Entry 1"));
+        Assertions.assertTrue(lines[0].contains("Entry 2"));
+    }
+
+
 }

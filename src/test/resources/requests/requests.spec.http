@@ -1,0 +1,23 @@
+
+### [request] create
+POST http://localhost:{{local.server.port}}/basic/body
+Content-Type: application/json
+
+@bodyFilePath = src/test/resources/requests/request.txt
+
+
+### [request] obtain
+GET http://localhost:{{local.server.port}}/basic/body/{{basic.functions.id}}
+
+
+### [request] update
+PUT http://localhost:{{local.server.port}}/basic/body/{{basic.functions.id}}
+Content-Type: application/json
+
+{
+    "email": "jurl@test.com"
+}
+
+
+### [request] remove
+DELETE http://localhost:{{local.server.port}}/basic/body/{{basic.functions.id}}

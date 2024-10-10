@@ -182,9 +182,8 @@ public class ConsoleInputTest {
     public void selectOptionWithDefault() {
         Settings settings = new Settings();
         List<String> options = Arrays.asList("Option 1", "Option 2", "Option 3");
-        int columnLength = settings.getConsoleWidth() / options.size();
         ConsoleInput consoleInput = new ConsoleInputDummy(null,
-            settings, opt -> String.format("%-" + columnLength + "s", opt));
+            settings, opt -> opt);
 
         Optional<String> option = consoleInput.selectOption(options, "Option 2");
 

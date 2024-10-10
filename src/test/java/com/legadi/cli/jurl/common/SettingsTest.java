@@ -5,7 +5,6 @@ import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_OUTPUT_PA
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTION_TIMES;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_REQUEST_BEHAVIOUR;
-import static com.legadi.cli.jurl.common.SettingsConstants.PROP_WORKSPACE_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.TAG_FORMATTER;
 
 import java.nio.file.Paths;
@@ -25,7 +24,6 @@ public class SettingsTest {
     public void getCommandProperties() {
         Settings settings = new Settings();
 
-        Assertions.assertEquals(System.getProperty("user.dir"), settings.get(PROP_WORKSPACE_PATH));
         Assertions.assertDoesNotThrow(() -> TAG_FORMATTER.parse(settings.get("executionTag")));
     }
 
@@ -33,6 +31,7 @@ public class SettingsTest {
     public void getDefaults() {
         Settings settings = new Settings();
 
+        Assertions.assertEquals(Paths.get(System.getProperty("user.dir")), settings.getWorkspacePath());
         Assertions.assertEquals(Paths.get("./config/"), settings.getConfigPath());
         Assertions.assertEquals(Paths.get("./config/.output/"), settings.getConfigOutputPath());
         Assertions.assertEquals(Paths.get("./executions/"), settings.getExecutionPath());

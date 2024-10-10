@@ -1,5 +1,9 @@
 package com.legadi.cli.jurl.common;
 
+import static com.legadi.cli.jurl.common.CommonUtils.FLOW_NAME;
+import static com.legadi.cli.jurl.common.CommonUtils.FLOW_TAG;
+import static com.legadi.cli.jurl.common.CommonUtils.REQUEST_NAME;
+import static com.legadi.cli.jurl.common.CommonUtils.REQUEST_TAG;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 
 import java.util.ArrayList;
@@ -48,7 +52,7 @@ public class InputNameResolver {
         }
     }
 
-    private List<String> listRequestNames() {
+    public List<String> listRequestNames() {
         List<String> requestNames = new ArrayList<>();
         requestNames.addAll(requestInput.getRequests().keySet());
         requestNames.addAll(requestInput.getFlows().keySet());
@@ -56,8 +60,9 @@ public class InputNameResolver {
         return requestNames;
     }
 
-    private String appendType(String requestName) {
-        return getType(requestName) + ":" + requestName;
+    public String appendType(String requestName) {
+        return requestInput.getFlows().get(requestName) != null
+            ? requestName + " " + FLOW_TAG : requestName + " " + REQUEST_TAG;
     }
 
     private String getType(String requestName) {
@@ -65,6 +70,6 @@ public class InputNameResolver {
             return null;
         }
         return requestInput.getFlows().get(requestName) != null
-            ? "flow" : "request";
+            ? FLOW_NAME : REQUEST_NAME;
     }
 }

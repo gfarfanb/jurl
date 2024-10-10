@@ -88,6 +88,7 @@ import com.legadi.cli.jurl.options.EnvironmentOption;
 import com.legadi.cli.jurl.options.EnvironmentRemoveValueOption;
 import com.legadi.cli.jurl.options.EnvironmentSetValueOption;
 import com.legadi.cli.jurl.options.HelpOption;
+import com.legadi.cli.jurl.options.ListRequestsOption;
 import com.legadi.cli.jurl.options.MergeBodyOption;
 import com.legadi.cli.jurl.options.MockRequestOption;
 import com.legadi.cli.jurl.options.OpenEditorOption;
@@ -129,6 +130,7 @@ public class ObjectsRegistry {
         register(Option.class, EnvironmentRemoveValueOption.class);
         register(Option.class, EnvironmentSetValueOption.class);
         register(Option.class, HelpOption.class);
+        register(Option.class, ListRequestsOption.class);
         register(Option.class, MergeBodyOption.class);
         register(Option.class, MockRequestOption.class);
         register(Option.class, OpenEditorOption.class);

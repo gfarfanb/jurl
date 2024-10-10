@@ -1,12 +1,17 @@
 package com.legadi.cli.jurl.common;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class CommonUtils {
 
@@ -15,6 +20,14 @@ public class CommonUtils {
 
     public static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvxyz0123456789";
     public static final String NUMERIC_STRING = "0123456789";
+
+    public static final String REQUEST_TAG = "[rq]";
+    public static final String REQUEST_NAME = "request";
+    public static final String FLOW_TAG = "[fl]";
+    public static final String FLOW_NAME = "flow";
+
+    public static final int TABS_FOR_MARGIN = 2;
+    public static final int START_INDEX = 1;
     public static final int INVALID_INDEX = -1;
 
     public static final Map<String, String> EMPTY_MAP = new HashMap<>();
@@ -191,5 +204,68 @@ public class CommonUtils {
         }
 
         return fields;
+    }
+
+
+
+    public static List<String> formatAsOrderedList(List<String> entries,
+            BiPredicate<Integer, String> isDefault,
+            Function<String, String> decorator) {
+        List<String> formattedEntries = new ArrayList<>();
+        int index = START_INDEX;
+
+        for(String entry : entries) {
+            formattedEntries.add(
+                index + ") "
+                + (isDefault.test(index, entry) ? "(default) " : "")
+                + decorator.apply(entry)
+            );
+            index++;
+        }
+
+        return formattedEntries;
+    }
+
+    public static StringBuilder formatInColumns(Settings settings, List<String> entries) {
+        entries = entries.stream().map(e -> e + settings.getTab()).collect(Collectors.toList());
+
+        StringBuilder formatted = new StringBuilder();
+        int maxLength = entries.stream()
+            .mapToInt(String::length)
+            .max()
+            .orElse(1);
+        int columns = (settings.getConsoleWidth() - (settings.getConsoleTabLength() * TABS_FOR_MARGIN))
+            / maxLength;
+
+        if(columns > 1) {
+            appendInColumns(formatted, entries, columns, maxLength);
+        } else {
+            entries.forEach(e -> formatted.append(e).append("\n"));
+        }
+
+        return formatted;
+    }
+
+    private static void appendInColumns(StringBuilder menu, List<String> entries,
+            int columns, int maxLength) {
+        boolean newLine = false;
+        int column = 0;
+
+        for(String entry : entries) {
+            menu.append(String.format("%-" + maxLength + "s", entry));
+
+            if(column < (columns - 1)) {
+                newLine = false;
+                column++;
+            } else {
+                newLine = true;
+                column = 0;
+                menu.append("\n");
+            }
+        }
+
+        if(!newLine) {
+            menu.append("\n");
+        }
     }
 }

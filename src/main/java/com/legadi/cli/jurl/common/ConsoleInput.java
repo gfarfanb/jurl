@@ -1,11 +1,13 @@
 package com.legadi.cli.jurl.common;
 
 import static com.legadi.cli.jurl.common.CommonUtils.INVALID_INDEX;
+import static com.legadi.cli.jurl.common.CommonUtils.START_INDEX;
+import static com.legadi.cli.jurl.common.CommonUtils.formatAsOrderedList;
+import static com.legadi.cli.jurl.common.CommonUtils.formatInColumns;
 import static com.legadi.cli.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.trim;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -21,10 +23,6 @@ public class ConsoleInput {
     public static final String INPUT_DEFAULT_FORMAT = "input: %s [default: %s]> ";
     public static final String PASSWORD_FORMAT = "pswrd: %s> ";
     public static final String OPTION_INPUT = "Select an option> ";
-
-    public static final int START_INDEX = 1;
-
-    public static final int TABS_FOR_MARGIN = 2;
 
     private final Settings settings;
     private final Function<String, String> optionDecorator;
@@ -121,63 +119,13 @@ public class ConsoleInput {
             return Optional.empty();
         }
 
-        StringBuilder menu = new StringBuilder();
-        List<String> formattedOptions = getFormattedOptions(options, defaultIndex);
-        int maxLength = formattedOptions.stream()
-            .mapToInt(String::length)
-            .max()
-            .orElse(1);
-        int columns = (settings.getConsoleWidth() - settings.getConsoleTabLength() * TABS_FOR_MARGIN)
-            / maxLength;
-
-        if(columns > 1) {
-            appendInColumns(menu, formattedOptions, columns, maxLength);
-        } else {
-            formattedOptions.forEach(opt -> menu.append(opt).append("\n"));
-        }
+        List<String> formattedOptions = formatAsOrderedList(options,
+            (i, opt) -> i == defaultIndex, optionDecorator);
+        StringBuilder menu = formatInColumns(settings, formattedOptions);
 
         menu.append(OPTION_INPUT);
 
         return Optional.of(menu.toString());
-    }
-
-    private List<String> getFormattedOptions(List<String> options, int defaultIndex) {
-        List<String> formattedOptions = new ArrayList<>();
-        int index = START_INDEX;
-
-        for(String option : options) {
-            formattedOptions.add(
-                index + ") "
-                + (index == defaultIndex ? "(default) " : "")
-                + optionDecorator.apply(option)
-                + settings.getTab()
-            );
-            index++;
-        }
-
-        return formattedOptions;
-    }
-
-    private void appendInColumns(StringBuilder menu, List<String> formattedOptions, int columns, int maxLength) {
-        boolean newLine = false;
-        int column = 0;
-
-        for(String option : formattedOptions) {
-            menu.append(String.format("%-" + maxLength + "s", option));
-
-            if(column < (columns - 1)) {
-                newLine = false;
-                column++;
-            } else {
-                newLine = true;
-                column = 0;
-                menu.append("\n");
-            }
-        }
-
-        if(!newLine) {
-            menu.append("\n");
-        }
     }
 
     protected Optional<String> readLine(String message) {

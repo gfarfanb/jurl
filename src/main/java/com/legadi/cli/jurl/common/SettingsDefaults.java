@@ -30,6 +30,7 @@ import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_AUTHENTICAT
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_CONDITIONS;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_USER_INPUT;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_START_IN_STEP_INDEX;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_WORKSPACE_PATH;
 import static com.legadi.cli.jurl.common.WriterUtils.createDirectories;
 
 import java.nio.file.Path;
@@ -76,7 +77,7 @@ public interface SettingsDefaults {
     }
 
     default Path getWorkspacePath() {
-        return Paths.get(".").toAbsolutePath().normalize();
+        return Paths.get(get(PROP_WORKSPACE_PATH)).toAbsolutePath().normalize();
     }
 
     default Path getConfigPath() {

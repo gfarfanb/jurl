@@ -17,7 +17,6 @@ import static com.legadi.cli.jurl.common.SettingsConstants.JURL_OS_NAME;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_OUTPUT_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTION_TAG;
-import static com.legadi.cli.jurl.common.SettingsConstants.PROP_WORKSPACE_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.TAG_FORMATTER;
 import static com.legadi.cli.jurl.common.WriterUtils.createDirectories;
 
@@ -81,7 +80,6 @@ public class Settings implements SettingsDefaults {
         this.executionTag = TAG_FORMATTER.format(timestamp);
 
         commandProperties.put(PROP_EXECUTION_TAG, executionTag);
-        commandProperties.put(PROP_WORKSPACE_PATH, getWorkspacePath().toString());
     }
 
     public LocalDateTime getTimestamp() {
