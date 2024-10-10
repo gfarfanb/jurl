@@ -11,6 +11,7 @@ import static com.legadi.cli.jurl.common.SettingsConstants.PROP_DEFAULT_CONSOLE_
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_DOWNLOADS_LOCATION;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTION_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTION_TIMES;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_FILTER_NAME;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_HISTORY_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_INPUT_NAME;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_MERGE_BODY_USING_TYPE;
@@ -134,6 +135,10 @@ public interface SettingsDefaults {
 
     default String getInputName() {
         return get(PROP_INPUT_NAME);
+    }
+
+    default String getFilterName() {
+        return get(PROP_FILTER_NAME);
     }
 
     default int getStartInStepIndex() {

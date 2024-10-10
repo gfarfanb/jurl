@@ -4,6 +4,7 @@ import static com.legadi.cli.jurl.common.CommonUtils.FLOW_NAME;
 import static com.legadi.cli.jurl.common.CommonUtils.FLOW_TAG;
 import static com.legadi.cli.jurl.common.CommonUtils.REQUEST_NAME;
 import static com.legadi.cli.jurl.common.CommonUtils.REQUEST_TAG;
+import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.exception.ConsoleInputException;
@@ -36,7 +38,27 @@ public class InputNameResolver {
             return inputName;
         }
 
-        List<String> requestNames = listRequestNames();
+        return resolve(listRequestNames());
+    }
+
+    public String filterAndResolve(String inputName, String filterName) {
+        if(isBlank(inputName) && isNotBlank(filterName)) {
+            List<String> requestNames = listRequestNames()
+                .stream()
+                .filter(name -> name.toLowerCase().contains(filterName.toLowerCase()))
+                .collect(Collectors.toList());
+
+            if(requestNames.isEmpty() || requestNames.size() == 1) {
+                return filterName;
+            }
+
+            return resolve(requestNames);
+        } else {
+            return resolve(inputName);
+        }
+    }
+
+    private String resolve(List<String> requestNames) {
         ConsoleInput consoleInput = new ConsoleInput(settings, this::appendType);
 
         try {

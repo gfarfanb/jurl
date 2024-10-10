@@ -35,6 +35,7 @@ public class SettingsConstants {
     public static final String PROP_SAVE_OUTPUT_IN_LOCATION = "saveOutputInLocation";
     public static final String PROP_EXECUTION_TIMES = "executionTimes";
     public static final String PROP_INPUT_NAME = "inputName";
+    public static final String PROP_FILTER_NAME = "filterName";
     public static final String PROP_START_IN_STEP_INDEX = "startInStepIndex";
     public static final String PROP_SKIP_USER_INPUT = "skipUserInput";
     public static final String PROP_SETTINGS_PARAM_REGEX = "settingsParamRegex";

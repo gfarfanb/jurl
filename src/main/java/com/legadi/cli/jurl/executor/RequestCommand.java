@@ -102,7 +102,7 @@ public class RequestCommand {
         int times = settings.getTimes() > 0 ? settings.getTimes() : EXECUTE_ONCE;
         InputNameResolver inputNameResolver = new InputNameResolver(settings,
             requestInputPath, requestInput);
-        String inputName = inputNameResolver.resolve(settings.getInputName());
+        String inputName = inputNameResolver.filterAndResolve(settings.getInputName(), settings.getFilterName());
         boolean isExecutionAsFlow = requestInput.getFlows().get(inputName) != null;
         ExecutionStats stats = new ExecutionStats(times);
         AtomicReference<String> inputNameCarrier = new AtomicReference<>();

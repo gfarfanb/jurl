@@ -96,6 +96,7 @@ import com.legadi.cli.jurl.options.Option;
 import com.legadi.cli.jurl.options.OverrideRequestOption;
 import com.legadi.cli.jurl.options.RequestPrintOption;
 import com.legadi.cli.jurl.options.RequestTypeOption;
+import com.legadi.cli.jurl.options.SetFilterNameOption;
 import com.legadi.cli.jurl.options.SetInputNameOption;
 import com.legadi.cli.jurl.options.SetValueOption;
 import com.legadi.cli.jurl.options.SkipAssertionsOption;
@@ -137,6 +138,7 @@ public class ObjectsRegistry {
         register(Option.class, OverrideRequestOption.class);
         register(Option.class, RequestPrintOption.class);
         register(Option.class, RequestTypeOption.class);
+        register(Option.class, SetFilterNameOption.class);
         register(Option.class, SetInputNameOption.class);
         register(Option.class, SetValueOption.class);
         register(Option.class, SkipAssertionsOption.class);
