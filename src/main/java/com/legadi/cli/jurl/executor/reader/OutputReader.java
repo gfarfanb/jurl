@@ -12,7 +12,7 @@ public interface OutputReader extends Evaluable {
     @Override
     default boolean accepts(String contentType) {
         return Arrays.stream(types())
-            .anyMatch(type -> contentType.toLowerCase().startsWith(type.toLowerCase()));
+            .anyMatch(type -> contentType.toLowerCase().contains(type.toLowerCase()));
     }
 
     String[] types();

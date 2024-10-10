@@ -236,7 +236,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         expandDefaults(stringExpander, flow.getDefaults());
 
         for(StepEntry step : flow.getSteps()) {
-            step.setRequestInputPath(stringExpander.replaceAllInContent(step.getRequestInputPath()));
+            step.setRequestInputPath(stringExpander.replaceAllInPath(step.getRequestInputPath()));
             step.getOptions().stream().map(OptionEntry::getRight).forEach(args -> expandArray(stringExpander, args));
         }
     }
@@ -259,7 +259,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
 
             expandMap(stringExpander, mock.getResponseHeaders());
             mock.setResponseContent(stringExpander.replaceAllInContent(mock.getResponseContent()));
-            mock.setResponseFilePath(stringExpander.replaceAllInContent(mock.getResponseFilePath()));
+            mock.setResponseFilePath(stringExpander.replaceAllInPath(mock.getResponseFilePath()));
             mock.setExceptionClassOnOutputStream(stringExpander.replaceAllInContent(mock.getExceptionClassOnOutputStream()));
             mock.setExceptionClassOnResponseCode(stringExpander.replaceAllInContent(mock.getExceptionClassOnResponseCode()));
         }
@@ -272,7 +272,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         expandMap(stringExpander, request.getHeaders());
         request.setBodyCharset(stringExpander.replaceAllInContent(request.getBodyCharset()));
         request.setBodyContent(stringExpander.replaceAllInContent(request.getBodyContent()));
-        request.setBodyFilePath(stringExpander.replaceAllInContent(request.getBodyFilePath()));
+        request.setBodyFilePath(stringExpander.replaceAllInPath(request.getBodyFilePath()));
         request.getRequestFiles().forEach(requestFile -> expandRequestFile(stringExpander, requestFile));
         expandMap(stringExpander, request.getFormData());
     }
@@ -283,7 +283,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
 
         expandDefaults(stringExpander, defaults);
 
-        requestAuth.setRequestInputPath(stringExpander.replaceAllInContent(requestAuth.getRequestInputPath()));
+        requestAuth.setRequestInputPath(stringExpander.replaceAllInPath(requestAuth.getRequestInputPath()));
         requestAuth.setInputName(stringExpander.replaceAllInContent(requestAuth.getInputName()));
         requestAuth.setAuthType(stringExpander.replaceAllInContent(requestAuth.getAuthType()));
         requestAuth.setTokenParam(stringExpander.replaceAllInContent(requestAuth.getTokenParam()));
@@ -300,7 +300,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
 
     private void expandRequestFile(StringExpander stringExpander, HTTPRequestFileEntry requestFile) {
         requestFile.setName(stringExpander.replaceAllInContent(requestFile.getName()));
-        requestFile.setPath(stringExpander.replaceAllInContent(requestFile.getPath()));
+        requestFile.setPath(stringExpander.replaceAllInPath(requestFile.getPath()));
         requestFile.setField(stringExpander.replaceAllInContent(requestFile.getField()));
         requestFile.setMineType(stringExpander.replaceAllInContent(requestFile.getMineType()));
     }

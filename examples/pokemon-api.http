@@ -20,3 +20,14 @@ output pokemonId = {{OUT/id}}
 
 step -n pokemon
 step -n encounters
+
+
+### [request] dummy
+GET https://pokeapi.co/api/v2/dummy
+
+opt --mock
+
+mock @responseFilePath = examples/data/encounters.response
+mock Content-Type: application/json
+
+output locationArea = {{OUT/[first].location_area}}

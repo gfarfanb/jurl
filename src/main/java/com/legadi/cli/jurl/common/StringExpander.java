@@ -5,11 +5,14 @@ import static com.legadi.cli.jurl.common.CommonUtils.INVALID_INDEX;
 import static com.legadi.cli.jurl.common.CommonUtils.getDefaultFieldIndex;
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
+import static com.legadi.cli.jurl.common.CommonUtils.strip;
 import static com.legadi.cli.jurl.common.CommonUtils.stripEnd;
 import static com.legadi.cli.jurl.common.CommonUtils.trim;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.find;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findByName;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +32,7 @@ public class StringExpander {
     private final Pattern paramPattern;
     private final Settings settings;
     private final PropertyDefaultResolver propertyDefaultResolver;
+    private final String outputPathPart;
 
     public StringExpander(Settings settings) {
         this(settings, null);
@@ -39,17 +43,30 @@ public class StringExpander {
         this.settings = settings;
         this.propertyDefaultResolver = propertyDefaults != null
             ? new PropertyDefaultResolver(settings, propertyDefaults) : null;
+        this.outputPathPart = strip(settings.getConfigOutputPath().toString(), "./");
     }
 
     public Settings getSettings() {
         return settings;
     }
 
+    public String replaceAllInPath(String content) {
+        return replaceAllInContent(EMPTY_MAP, content, false);
+    }
+
+    public String replaceAllInPath(Map<String, String> values, String content) {
+        return replaceAllInContent(values, content, false);
+    }
+
     public String replaceAllInContent(String content) {
-        return replaceAllInContent(EMPTY_MAP, content);
+        return replaceAllInContent(EMPTY_MAP, content, true);
     }
 
     public String replaceAllInContent(Map<String, String> values, String content) {
+        return replaceAllInContent(values, content, true);
+    }
+
+    private String replaceAllInContent(Map<String, String> values, String content, boolean expandFromOutput) {
         if(content == null) {
             return null;
         }
@@ -75,7 +92,7 @@ public class StringExpander {
                 }
 
                 if(value == null) {
-                    value = getValue(property, values);
+                    value = getValue(property, values, expandFromOutput);
                 }
 
                 if(isNotBlank(modifierDefinition)) {
@@ -86,8 +103,11 @@ public class StringExpander {
                     }
                 }
 
+                String paramTagEscaped = paramTag.replaceAll("\\[", "\\\\[");
+                paramTagEscaped = paramTagEscaped.replaceAll("\\]", "\\\\]");
+
                 String paramRegex = settings.getSettingsParamRegexBegin()
-                    + paramTag + settings.getSettingsParamRegexEnd();
+                    + paramTagEscaped + settings.getSettingsParamRegexEnd();
 
                 content = content.replaceAll(paramRegex, value);
 
@@ -112,12 +132,32 @@ public class StringExpander {
         return paramNames;
     }
 
-    private String getValue(String property, Map<String, String> values) {
+    private String getValue(String property, Map<String, String> values, boolean expandFromOutput) {
         String value = settings.getOrDefaultWithValues(property, values, "");
+
+        if(expandFromOutput && isNotBlank(value)) {
+            value = expandFromOutput(value);
+        }
 
         if(propertyDefaultResolver != null && isBlank(value)) {
             return propertyDefaultResolver.apply(property);
         } else {
+            return value;
+        }
+    }
+
+    private String expandFromOutput(String value) {
+        if(!value.contains(outputPathPart)) {
+            return value;
+        }
+        try {
+            File output = new File(value);
+            if(output.exists()) {
+                return new String(Files.readAllBytes(output.toPath()));
+            } else {
+                return value;
+            }
+        } catch(Exception ex) {
             return value;
         }
     }
