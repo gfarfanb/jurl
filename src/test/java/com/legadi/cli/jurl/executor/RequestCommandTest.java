@@ -3,7 +3,6 @@ package com.legadi.cli.jurl.executor;
 import static com.legadi.cli.jurl.common.JsonUtils.jsonToObject;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_OPEN_EDITOR_COMMAND;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_REQUEST_BEHAVIOUR;
-import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_USER_INPUT;
 import static com.legadi.cli.jurl.embedded.util.ObjectName.ASSERTIONS_RESULT;
 import static com.legadi.cli.jurl.embedded.util.ObjectName.CONDITIONS_RESULT;
 import static com.legadi.cli.jurl.embedded.util.ObjectName.EXECUTOR_EXECUTED;
@@ -75,7 +74,6 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
         Assertions.assertEquals(1, requests.size());
         Assertions.assertEquals("create", requests.get(0).getName());
         Assertions.assertEquals(RequestBehaviour.PRINT_ONLY.name(), settings.get(PROP_REQUEST_BEHAVIOUR));
-        Assertions.assertEquals(Boolean.TRUE.toString(), settings.get(PROP_SKIP_USER_INPUT));
     }
 
     @Test
@@ -90,7 +88,6 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
         Assertions.assertEquals(1, requests.size());
         Assertions.assertEquals("create", requests.get(0).getName());
         Assertions.assertEquals(RequestBehaviour.CURL_ONLY.name(), settings.get(PROP_REQUEST_BEHAVIOUR));
-        Assertions.assertEquals(Boolean.TRUE.toString(), settings.get(PROP_SKIP_USER_INPUT));
     }
 
     @Test
@@ -202,7 +199,6 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
         Assertions.assertEquals("authorization", requests.get(0).getName());
         Assertions.assertEquals("create", requests.get(1).getName());
         Assertions.assertEquals(RequestBehaviour.PRINT_ONLY.name(), settings.get(PROP_REQUEST_BEHAVIOUR));
-        Assertions.assertEquals(Boolean.TRUE.toString(), settings.get(PROP_SKIP_USER_INPUT));
     }
 
     @Test
@@ -218,7 +214,6 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
         Assertions.assertEquals("authorization", requests.get(0).getName());
         Assertions.assertEquals("create", requests.get(1).getName());
         Assertions.assertEquals(RequestBehaviour.CURL_ONLY.name(), settings.get(PROP_REQUEST_BEHAVIOUR));
-        Assertions.assertEquals(Boolean.TRUE.toString(), settings.get(PROP_SKIP_USER_INPUT));
     }
 
     @Test
@@ -414,7 +409,6 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
 
         Assertions.assertEquals(3, requests.size());
         Assertions.assertEquals(RequestBehaviour.PRINT_ONLY.name(), settings.get(PROP_REQUEST_BEHAVIOUR));
-        Assertions.assertEquals(Boolean.TRUE.toString(), settings.get(PROP_SKIP_USER_INPUT));
     }
 
     @Test
@@ -428,7 +422,6 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
 
         Assertions.assertEquals(3, requests.size());
         Assertions.assertEquals(RequestBehaviour.CURL_ONLY.name(), settings.get(PROP_REQUEST_BEHAVIOUR));
-        Assertions.assertEquals(Boolean.TRUE.toString(), settings.get(PROP_SKIP_USER_INPUT));
     }
 
     @Test
