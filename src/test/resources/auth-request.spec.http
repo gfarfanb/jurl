@@ -34,3 +34,8 @@ Request-Catcher: {{request.catcher.identifier}}
 output basic.functions.id = {{HTTP/header.Resource-ID}}
 
 assert EQUALS_TO 201 {{HTTP/status}}
+
+
+### [flow] createInFlow: Create with authorization within a flow
+
+step -n create

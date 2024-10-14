@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -137,6 +138,23 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
     }
 
     @Test
+    public void executeTimesFlow() {
+        String[] args = { "-n", "basicCrudTwice", "src/test/resources/flow.spec.http" };
+
+        Assertions.assertDoesNotThrow(() -> new RequestCommand(args).execute());
+
+        List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, REQUEST);
+
+        Map<String, Long> requestsCount = requests
+            .stream()
+            .collect(Collectors.groupingBy(HTTPRequestEntry::getName, Collectors.counting()));
+
+        Assertions.assertEquals(2, requestsCount.get("create"));
+        Assertions.assertEquals(2, requestsCount.get("obtain"));
+        Assertions.assertEquals(2, requestsCount.get("remove"));
+    }
+
+    @Test
     public void executeNoInputName() {
         String[] args = { "src/test/resources/basic-functions.spec.http" };
 
@@ -164,6 +182,25 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
         List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, REQUEST);
 
         Assertions.assertEquals(3, requests.size());
+
+        Set<String> requestNames = new HashSet<>();
+        requestNames.add("authorization");
+        requestNames.add("create");
+
+        for(HTTPRequestEntry request : requests) {
+            Assertions.assertTrue(requestNames.contains(request.getName()));
+        }
+    }
+
+    @Test
+    public void executeWithFlow() {
+        String[] args = { "-n", "createInFlow", "src/test/resources/auth-request.spec.http" };
+
+        Assertions.assertDoesNotThrow(() -> new RequestCommand(args).execute());
+
+        List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, REQUEST);
+
+        Assertions.assertEquals(2, requests.size());
 
         Set<String> requestNames = new HashSet<>();
         requestNames.add("authorization");
@@ -219,6 +256,17 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
     @Test
     public void executeWithAuthAndException() {
         String[] args = { "-n", "create", "src/test/resources/auth-request.spec.http" };
+
+        requestCatcher.add(correlationId, REQUEST_WITH_EXCEPTION, "authorization");
+        requestCatcher.add(correlationId, REQUEST_WITH_EXCEPTION_THROW, new CommandException("authorization"));
+
+        Assertions.assertThrows(CommandException.class,
+            () -> new RequestCommand(args).execute());
+    }
+
+    @Test
+    public void executeWithFlowAndException() {
+        String[] args = { "-n", "createInFlow", "src/test/resources/auth-request.spec.http" };
 
         requestCatcher.add(correlationId, REQUEST_WITH_EXCEPTION, "authorization");
         requestCatcher.add(correlationId, REQUEST_WITH_EXCEPTION_THROW, new CommandException("authorization"));

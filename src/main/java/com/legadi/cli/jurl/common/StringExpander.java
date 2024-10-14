@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,6 +25,8 @@ import com.legadi.cli.jurl.generators.Generator;
 import com.legadi.cli.jurl.modifiers.ValueModifier;
 
 public class StringExpander {
+
+    private static final Logger LOGGER = Logger.getLogger(StringExpander.class.getName());
 
     private final Pattern paramTagPattern = Pattern.compile("^([\\w_]+:)?(~(.*)~)?(.*)$");
     private final Pattern paramPattern;
@@ -171,6 +174,9 @@ public class StringExpander {
             try {
                 String value = consoleInput.selectOption(defaultValues, defaultValue)
                     .orElse("");
+
+                LOGGER.info("");
+
                 return saveInput(property, value);
             } catch(ConsoleInputException ex) {
                 return "";

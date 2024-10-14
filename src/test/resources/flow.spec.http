@@ -63,3 +63,10 @@ step -t five
 ### [flow] levels
 
 step -n basicCrud
+
+
+### [flow] basicCrudTwice
+
+step -t 2 -n create -mb json src/test/resources/basic-functions.spec.http
+step -t 2 -n obtain src/test/resources/basic-functions.spec.http
+step -t 2 -n remove src/test/resources/basic-functions.spec.http

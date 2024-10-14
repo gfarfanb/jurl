@@ -34,6 +34,7 @@ import com.legadi.cli.jurl.common.InputNameResolver;
 import com.legadi.cli.jurl.common.OutputPathBuilder;
 import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.StepTag;
 import com.legadi.cli.jurl.common.StringExpander;
 import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.exception.InvalidAssertionsFoundException;
@@ -76,7 +77,7 @@ public class RequestCommand {
         Settings settings = new Settings();
 
         executeOptions(settings, optionsReader.getOptionEntries());
-        executeInputPath(new ExecutionTrace(settings), settings, optionsReader.getRequestInputPath());
+        executeInputPath(new ExecutionTrace(settings), settings, optionsReader.getRequestInputPath(), null);
     }
 
     private void executeOptions(Settings settings, List<OptionEntry> optionEntries) {
@@ -91,7 +92,8 @@ public class RequestCommand {
         }
     }
 
-    private ExecutionStatus executeInputPath(ExecutionTrace trace, Settings settings, String requestInputPath) {
+    private ExecutionStatus executeInputPath(ExecutionTrace trace, Settings settings,
+            String requestInputPath, StepTag stepTag) {
         if(isBlank(requestInputPath)) {
             throw new CommandException("Request input path is null or empty");
         }
@@ -119,14 +121,14 @@ public class RequestCommand {
                     if(isExecutionAsFlow) {
                         Pair<String, ExecutionStats> flowStats = processFlow(index, trace.nextIteration(),
                             inputName, requestInputPath, requestInput,
-                            settings.createForNextExecution());
+                            settings.createForNextExecution(), stepTag);
 
                         inputNameCarrier.set(flowStats.getLeft());
                         stats.count(flowStats.getRight().computeStatus());
                     } else {
                         Pair<String, ExecutionStats> requestStats = processRequest(index,
                             inputName, requestInputPath, requestInput,
-                            settings.createForNextExecution());
+                            settings.createForNextExecution(), stepTag);
 
                         inputNameCarrier.set(requestStats.getLeft());
                         stats.count(requestStats.getRight().computeStatus());
@@ -140,6 +142,8 @@ public class RequestCommand {
                     + "\n  inputFile=" + requestInputPath
                     + "\n  inputName=" + inputNameCarrier.get()
                     + "\n  environment=" + settings.getEnvironment()
+                    + (stepTag != null ? "\n  flow=" + stepTag.getFlowLabel() : "")
+                    + (stepTag != null ? "\n  step=" + stepTag.getStepLabel() : "")
                     + "\n  executions=" + stats.getExecutions()
                     + "\n  stats=" + stats);
             }
@@ -147,8 +151,8 @@ public class RequestCommand {
     }
 
     private Pair<String, ExecutionStats> processFlow(ExecutionIndex index, ExecutionTrace trace,
-            String flowName, String requestInputPath,
-            RequestInput<?> requestInput, Settings settings) {
+            String flowName, String requestInputPath, RequestInput<?> requestInput, Settings settings,
+            StepTag stepTagParent) {
         FlowEntry flow = requestInput.getFlows().get(flowName);
 
         if(isEmpty(flow.getSteps())) {
@@ -168,19 +172,27 @@ public class RequestCommand {
             LOGGER.fine("Executing flow:"
                 + "\n  index=" + index
                 + "\n  flowName=" + flowName
-                + "\n  requestInputPath=" + requestInputPath);
+                + "\n  requestInputPath=" + requestInputPath
+                + (stepTagParent != null ? "\n  flow=" + stepTagParent.getFlowLabel() : "")
+                + (stepTagParent != null ? "\n  step=" + stepTagParent.getStepLabel() : ""));
         }
 
         ExecutionStats stats = new ExecutionStats(flow.getSteps().size());
         int stepIndex = 1;
 
         for(StepEntry step : flow.getSteps()) {
+            StepTag stepTag = new StepTag(requestInputPath, flowName, stepIndex, flow.getSteps().size());
+
             if(stepIndex < settings.getStartInStepIndex()) {
                 LOGGER.info("Step skipped - "
-                    + "[" + requestInputPath + "/" + flowName + "]"
+                    + "[" + stepTag.getFlowLabel() + "]"
                     + " index=" + index
-                    + " step("+ stepIndex + "/" + flow.getSteps().size() + ") ");
+                    + " step="+ stepTag.getStepLabel());
+                LOGGER.info("");
+
+                stats.count(ExecutionStatus.SKIPPED);
                 stepIndex++;
+
                 continue;
             }
 
@@ -188,15 +200,16 @@ public class RequestCommand {
 
             try {
                 if(settings.getRequestBehaviour().isPrintBehaviour()) {
-                    LOGGER.info("Step: "+ stepIndex + "/" + flow.getSteps().size());
+                    LOGGER.info("Step: "+ stepTag.getStepLabel());
                 } else {
                     LOGGER.info("Executing step - "
-                        + "[" + requestInputPath + "/" + flowName + "]"
+                        + "[" + stepTag.getFlowLabel() + "]"
                         + " index=" + index
-                        + " step("+ stepIndex + "/" + flow.getSteps().size() + ") ");
+                        + " step="+ stepTag.getStepLabel());
+                    LOGGER.info("");
                 }
 
-                ExecutionStatus status = executeStep(stepSettings, trace, step, requestInputPath, requestInput);
+                ExecutionStatus status = executeStep(stepSettings, trace, step, requestInputPath, stepTag);
                 stats.count(status);
             } catch(RecursiveCommandException ex) {
                 throw ex;
@@ -204,7 +217,7 @@ public class RequestCommand {
                 throw new CommandException(
                     "[" + requestInputPath + "/" + flowName + "]"
                     + " index=" + index
-                    + " step("+ stepIndex + "/" + flow.getSteps().size() + ") "
+                    + " step="+ stepTag
                     + " - " + ex.getMessage());
             }
 
@@ -212,7 +225,7 @@ public class RequestCommand {
         }
 
         if(!settings.getRequestBehaviour().isPrintBehaviour()) {
-            LOGGER.info("Steps completed:"
+            LOGGER.info((stepTagParent != null ? "Step: " : "") + "Flow completed:"
                 + "\n  index=" + index
                 + "\n  inputFile=" + requestInputPath
                 + "\n  flowName=" + flowName
@@ -225,19 +238,19 @@ public class RequestCommand {
     }
 
     private ExecutionStatus executeStep(Settings settings, ExecutionTrace trace, StepEntry step,
-            String requestInputPath, RequestInput<?> requestInput) {
+            String requestInputPath, StepTag stepTag) {
         executeOptions(settings, step.getOptions());
 
         if(isNotBlank(step.getRequestInputPath())) {
-            return executeInputPath(trace, settings, step.getRequestInputPath());
+            return executeInputPath(trace, settings, step.getRequestInputPath(), stepTag);
         } else {
-            return executeInputPath(trace, settings, requestInputPath);
+            return executeInputPath(trace, settings, requestInputPath, stepTag);
         }
     }
 
     private Pair<String, ExecutionStats> processRequest(ExecutionIndex index,
-            String requestName, String requestInputPath,
-            RequestInput<?> requestInput, Settings settings) {
+            String requestName, String requestInputPath, RequestInput<?> requestInput,
+            Settings settings, StepTag stepTag) {
         if(isEmpty(requestInput.getRequests())) {
             throw new CommandException("No requests are defined in the request file: " + requestInputPath);
         }
@@ -251,7 +264,7 @@ public class RequestCommand {
         }
 
         Optional<ExecutionStatus> authStatus = processAuthentication(requestName,
-                requestInputPath, requestInput, settings.createForNextExecution());
+                requestInputPath, requestInput, settings.createForNextExecution(), stepTag);
         ExecutionStats stats;
 
         if(authStatus.isPresent()) {
@@ -270,7 +283,9 @@ public class RequestCommand {
             LOGGER.fine("Executing request:"
                 + "\n  index=" + index
                 + "\n  requestName=" + requestName
-                + "\n  requestInputPath=" + requestInputPath);
+                + "\n  requestInputPath=" + requestInputPath
+                + (stepTag != null ? "\n  flow=" + stepTag.getFlowLabel() : "")
+                + (stepTag != null ? "\n  step=" + stepTag.getStepLabel() : ""));
         }
 
         executeOptions(settings, request.getOptions());
@@ -280,7 +295,7 @@ public class RequestCommand {
 
         try {
             ExecutionStatus status = executeRequest(index, stringExpander,
-                requestInputPath, requestInput.getApi(), request);
+                requestInputPath, requestInput.getApi(), request, stepTag);
 
             stats.count(status);
 
@@ -295,7 +310,8 @@ public class RequestCommand {
 
     @SuppressWarnings("unchecked")
     private Optional<ExecutionStatus> processAuthentication(String requestName,
-            String requestInputPath, RequestInput<?> requestInput, Settings settings) {
+            String requestInputPath, RequestInput<?> requestInput, Settings settings,
+            StepTag stepTag) {
         lock.lock();
 
         try {
@@ -325,18 +341,23 @@ public class RequestCommand {
             LOGGER.fine("Executing authentication request"
                 + "\n  index=" + index
                 + "\n  authName=" + authRequest.getAuthRequestName()
-                + "\n  requestInputPath=" + authRequest.getAuthRequestInputPath());
+                + "\n  requestInputPath=" + authRequest.getAuthRequestInputPath()
+                + (stepTag != null ? "\n  flow=" + stepTag.getFlowLabel() : "")
+                + (stepTag != null ? "\n  step=" + stepTag.getStepLabel() : ""));
 
             executeOptions(settings, authRequest.getAuthOptions());
             modifier.mergeHeader(authRequest.getAuthApi(), authRequest.getAuthRequest());
 
             try {
                 return Optional.of(executeRequest(index, new StringExpander(settings),
-                    authRequest.getAuthRequestInputPath(), authRequest.getAuthApi(), authRequest.getAuthRequest()));
+                    authRequest.getAuthRequestInputPath(), authRequest.getAuthApi(), authRequest.getAuthRequest(),
+                    stepTag));
             } catch(CommandException | RequestException ex) {
                 throw new CommandException(
                     "[" + authRequest.getAuthRequestInputPath() + "/" + authRequest.getAuthRequestName() + "] "
                     + " index=" + index
+                    + (stepTag != null ? " flow=" + stepTag.getFlowLabel() : "")
+                    + (stepTag != null ? " step=" + stepTag.getStepLabel() : "")
                     + " - " + ex.getMessage());
             }
         } finally {
@@ -345,7 +366,7 @@ public class RequestCommand {
     }
 
     private ExecutionStatus executeRequest(ExecutionIndex index, StringExpander stringExpander, String requestInputPath,
-            RequestEntry<? extends MockEntry> api, RequestEntry<? extends MockEntry> request) {
+            RequestEntry<? extends MockEntry> api, RequestEntry<? extends MockEntry> request, StepTag stepTag) {
         Settings settings = stringExpander.getSettings();
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, settings.getRequestType());
         RequestExecutor<?, ?> executor = findByNameOrFail(RequestExecutor.class, settings.getRequestType());
@@ -356,7 +377,7 @@ public class RequestCommand {
                 && conditionsResult.isPresent()
                 && !conditionsResult.get().isPassed()) {
             LOGGER.info(executionCompletedMessage(settings, index, requestInputPath,
-                request, null, SKIPPED, null));
+                request, null, SKIPPED, null, stepTag));
             conditionsResult.get().getFailedMessages().forEach(LOGGER::info);
             LOGGER.info("");
             return FAILED;
@@ -400,15 +421,15 @@ public class RequestCommand {
             if(!assertionResult.get().isPassed()) {
                 status = FAILED;
                 LOGGER.warning(executionCompletedMessage(settings, index, requestInputPath,
-                    request, response, status, historyEntry));
+                    request, response, status, historyEntry, stepTag));
                 assertionResult.get().getFailedMessages().forEach(LOGGER::warning);
             } else {
                 LOGGER.info(executionCompletedMessage(settings, index, requestInputPath,
-                    request, response, status, historyEntry));
+                    request, response, status, historyEntry, stepTag));
             }
         } else if(!settings.getRequestBehaviour().isPrintBehaviour()) {
             LOGGER.info(executionCompletedMessage(settings, index, requestInputPath,
-                request, response, status, historyEntry));
+                request, response, status, historyEntry, stepTag));
         }
 
         LOGGER.info("");
@@ -461,13 +482,15 @@ public class RequestCommand {
 
     private String executionCompletedMessage(Settings settings, ExecutionIndex index,
             String inputPath, RequestEntry<?> request, ResponseEntry response,
-            ExecutionStatus status, HistoryEntry historyEntry) {
-        return "Request completed:"
+            ExecutionStatus status, HistoryEntry historyEntry, StepTag stepTag) {
+        return (stepTag != null ? "Step: " : "") + "Request completed:"
             + (response != null && response.getResult() != null
                 ? "\n  result=" + response.getResult() : "")
             + "\n  inputFile=" + inputPath
             + "\n  requestName=" + request.getName()
             + "\n  environment=" + settings.getEnvironment()
+            + (stepTag != null ? "\n  flow=" + stepTag.getFlowLabel() : "")
+            + (stepTag != null ? "\n  step=" + stepTag.getStepLabel() : "")
             + "\n  index=" + index
             + "\n  executionStatus=" + status
             + "\n  executionTag=" + settings.getExecutionTag()
