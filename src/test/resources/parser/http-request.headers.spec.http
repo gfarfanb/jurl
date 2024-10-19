@@ -1,0 +1,14 @@
+
+### [request] headers
+
+POST http://localhost:5555/spec
+getHeader: get
+headHeader: head
+postHeader: post
+putHeader: put
+deleteHeader: delete
+connectHeader: connect
+optionsHeader: options
+traceHeader: trace
+patchHeader: patch
+Common-Header: common

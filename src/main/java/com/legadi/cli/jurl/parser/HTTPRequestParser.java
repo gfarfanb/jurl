@@ -72,7 +72,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         SET_DEFAULT("^(?i)@(set|list|list\\*)-([\\w:.\\-_@~]+)[ ]*=(.*)"),
         FIELD_VARIABLE("^(?i)(file|auth|mock|form|output)[ ]*[@]?([\\w:.\\-_@~]+)[ ]*=(.*)"),
         URL("^(?i)http.*"),
-        URL_METHOD("^(?i)(get|head|post|put|delete|connect|options|trace|patch)[ ]*(.*)"),
+        URL_METHOD("^(?i)(get|head|post|put|delete|connect|options|trace|patch)[ ]+(.*)"),
         HEADER("^(?i)(mock)?[ ]*([\\w\\-]+): (.*)"),
         QUERY_PARAM("^&([\\w:.\\-_@~]+)=(.*)"),
         CONDITION_ASSERTION_OPT("^(?i)(condition|assert|opt) ([\\w:.\\-_@~]+)(.*)"),

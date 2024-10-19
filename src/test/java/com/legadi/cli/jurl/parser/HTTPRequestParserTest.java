@@ -399,4 +399,27 @@ public class HTTPRequestParserTest {
         Assertions.assertThrows(IllegalStateException.class,
             () -> parser.parseInput(settings, requestPath));
     }
+
+    @Test
+    public void parseRequestByHeaderWithMethodAsPrefix() {
+        Settings settings = new Settings();
+        Path requestPath = Paths.get("src/test/resources/parser/http-request.headers.spec.http");
+        HTTPRequestParser parser = new HTTPRequestParser();
+
+        RequestInput<HTTPRequestEntry> requestInput = Assertions.assertDoesNotThrow(
+            () -> parser.parseInput(settings, requestPath));
+        HTTPRequestEntry request = requestInput.getRequests().get("headers");
+
+        Assertions.assertEquals(10, request.getHeaders().size());
+        Assertions.assertEquals("get", request.getHeaders().get("getHeader"));
+        Assertions.assertEquals("head", request.getHeaders().get("headHeader"));
+        Assertions.assertEquals("post", request.getHeaders().get("postHeader"));
+        Assertions.assertEquals("put", request.getHeaders().get("putHeader"));
+        Assertions.assertEquals("delete", request.getHeaders().get("deleteHeader"));
+        Assertions.assertEquals("connect", request.getHeaders().get("connectHeader"));
+        Assertions.assertEquals("options", request.getHeaders().get("optionsHeader"));
+        Assertions.assertEquals("trace", request.getHeaders().get("traceHeader"));
+        Assertions.assertEquals("patch", request.getHeaders().get("patchHeader"));
+        Assertions.assertEquals("common", request.getHeaders().get("Common-Header"));
+    }
 }
