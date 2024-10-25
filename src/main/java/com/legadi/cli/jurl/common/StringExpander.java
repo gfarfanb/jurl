@@ -171,6 +171,7 @@ public class StringExpander {
             } catch(IndexOutOfBoundsException ex) {
                 defaultValue = "";
             }
+
             try {
                 String value = consoleInput.selectOption(defaultValues, defaultValue)
                     .orElse("");
