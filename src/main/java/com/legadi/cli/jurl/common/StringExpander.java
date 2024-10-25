@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 
 import com.legadi.cli.jurl.exception.ConsoleInputException;
 import com.legadi.cli.jurl.generators.Generator;
+import com.legadi.cli.jurl.modifiers.DefaultValueModifier;
 import com.legadi.cli.jurl.modifiers.ValueModifier;
 
 public class StringExpander {
@@ -71,22 +72,25 @@ public class StringExpander {
                 Optional<Generator> generator = findByName(Generator.class, stripEnd(paramTagMatcher.group(1), ":"));
                 String modifierDefinition = paramTagMatcher.group(3);
                 String property = trim(paramTagMatcher.group(4));
+                Optional<ValueModifier> modifier;
                 String value = null;
 
                 if(generator.isPresent()) {
                     value = generator.get().get(settings, property);
                 }
 
-                if(value == null) {
-                    value = getValue(property, values);
+                if(isNotBlank(modifierDefinition)) {
+                    modifier = find(ValueModifier.class, modifierDefinition);
+                } else {
+                    modifier = Optional.empty();
                 }
 
-                if(isNotBlank(modifierDefinition)) {
-                    Optional<ValueModifier> modifier = find(ValueModifier.class, modifierDefinition);
+                if(value == null) {
+                    value = getValue(property, values, modifier, modifierDefinition);
+                }
 
-                    if(modifier.isPresent()) {
-                        value = modifier.get().applyByDefinition(settings, values, modifierDefinition, value);
-                    }
+                if(modifier.isPresent() && !isDefaultModifier(modifier)) {
+                    value = modifier.get().applyByDefinition(settings, values, modifierDefinition, value);
                 }
 
                 String paramTagEscaped = paramTag.replaceAll("\\[", "\\\\[");
@@ -118,14 +122,23 @@ public class StringExpander {
         return paramNames;
     }
 
-    private String getValue(String property, Map<String, String> values) {
+    private String getValue(String property, Map<String, String> values,
+            Optional<ValueModifier> modifier, String modifierDefinition) {
         String value = settings.getOrDefaultWithValues(property, values, "");
+
+        if(isDefaultModifier(modifier)) {
+            return modifier.get().applyByDefinition(settings, values, modifierDefinition, value);
+        }
 
         if(propertyDefaultResolver != null && isBlank(value)) {
             return propertyDefaultResolver.apply(property);
         } else {
             return value;
         }
+    }
+
+    private boolean isDefaultModifier(Optional<ValueModifier> modifier) {
+        return modifier.isPresent() && modifier.get().getClass() == DefaultValueModifier.class;
     }
 
     public static class PropertyDefaultResolver implements Function<String, String> {
