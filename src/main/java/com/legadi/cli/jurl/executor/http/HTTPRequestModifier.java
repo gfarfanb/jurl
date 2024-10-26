@@ -13,7 +13,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.legadi.cli.jurl.common.InputNameResolver;
 import com.legadi.cli.jurl.common.Pair;
@@ -92,15 +94,24 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         AuthorizationType authType = AuthorizationType.valueOfOrDefault(auth.getAuthType());
         AuthenticationRequest<HTTPRequestEntry> authRequest = new AuthenticationRequest<>();
 
+        List<OptionEntry> authOptions = new ArrayList<>(options);
+        authOptions.addAll(api.getOptions());
+
+        authRequestEntry.getDefaults().putAll(defaults);
+
         authRequest.setAuthRequestInputPath(requestInputPath);
         authRequest.setAuthRequestName(authRequestName);
         authRequest.setAuthType(authType);
-        authRequest.setAuthOptions(options
+        authRequest.setAuthOptions(authOptions
                 .stream()
                 .filter(opt -> opt.getLeft().allowedForRequestAuth())
                 .collect(Collectors.toList()));
         authRequest.setAuthApi(authRequestInput.getApi());
         authRequest.setAuthRequest(authRequestEntry);
+
+        StringExpander stringExpander = new StringExpander(settings, defaults);
+        authRequest.getAuthOptions().stream().map(Pair::getRight)
+            .forEach(args -> expandArray(stringExpander, args, filterDefaults(defaults)));
 
         return Optional.of(authRequest);
     }
@@ -235,9 +246,12 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
 
         expandDefaults(stringExpander, flow.getDefaults());
 
+        Map<String, String> defaults = filterDefaults(flow.getDefaults());
+
         for(StepEntry step : flow.getSteps()) {
-            step.setRequestInputPath(stringExpander.replaceAllInContent(step.getRequestInputPath()));
-            step.getOptions().stream().map(OptionEntry::getRight).forEach(args -> expandArray(stringExpander, args));
+            step.setRequestInputPath(stringExpander.replaceAllInContent(defaults, step.getRequestInputPath()));
+            step.getOptions().stream().map(OptionEntry::getRight)
+                .forEach(args -> expandArray(stringExpander, args, defaults));
         }
     }
 
@@ -247,62 +261,68 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
 
         expandDefaults(stringExpander, request.getDefaults());
 
-        request.setUrl(stringExpander.replaceAllInContent(request.getUrl()));
-        request.setProtocol(stringExpander.replaceAllInContent(request.getProtocol()));
-        request.setHost(stringExpander.replaceAllInContent(request.getHost()));
-        request.setPort(stringExpander.replaceAllInContent(request.getPort()));
-        request.setBasePath(stringExpander.replaceAllInContent(request.getBasePath()));
-        request.setEndpoint(stringExpander.replaceAllInContent(request.getEndpoint()));
+        Map<String, String> defaults = filterDefaults(request.getDefaults());
+
+        request.setUrl(stringExpander.replaceAllInContent(defaults, request.getUrl()));
+        request.setProtocol(stringExpander.replaceAllInContent(defaults, request.getProtocol()));
+        request.setHost(stringExpander.replaceAllInContent(defaults, request.getHost()));
+        request.setPort(stringExpander.replaceAllInContent(defaults, request.getPort()));
+        request.setBasePath(stringExpander.replaceAllInContent(defaults, request.getBasePath()));
+        request.setEndpoint(stringExpander.replaceAllInContent(defaults, request.getEndpoint()));
 
         if(request.getMockDefinition() != null) {
             HTTPMockEntry mock = request.getMockDefinition();
 
-            expandMap(stringExpander, mock.getResponseHeaders());
-            mock.setResponseContent(stringExpander.replaceAllInContent(mock.getResponseContent()));
-            mock.setResponseFilePath(stringExpander.replaceAllInContent(mock.getResponseFilePath()));
-            mock.setExceptionClassOnOutputStream(stringExpander.replaceAllInContent(mock.getExceptionClassOnOutputStream()));
-            mock.setExceptionClassOnResponseCode(stringExpander.replaceAllInContent(mock.getExceptionClassOnResponseCode()));
+            expandMap(stringExpander, mock.getResponseHeaders(), defaults);
+            mock.setResponseContent(stringExpander.replaceAllInContent(defaults, mock.getResponseContent()));
+            mock.setResponseFilePath(stringExpander.replaceAllInContent(defaults, mock.getResponseFilePath()));
+            mock.setExceptionClassOnOutputStream(stringExpander.replaceAllInContent(defaults, mock.getExceptionClassOnOutputStream()));
+            mock.setExceptionClassOnResponseCode(stringExpander.replaceAllInContent(defaults, mock.getExceptionClassOnResponseCode()));
         }
 
-        request.getConditions().forEach(condition -> expandAssertion(stringExpander, condition));
-        request.getOptions().stream().map(Pair::getRight).forEach(args -> expandArray(stringExpander, args));
+        request.getConditions().forEach(condition -> expandAssertion(stringExpander, condition, defaults));
+        request.getOptions().stream().map(Pair::getRight).forEach(args -> expandArray(stringExpander, args, defaults));
 
-        request.setMethod(stringExpander.replaceAllInContent(request.getMethod()));
-        expandMap(stringExpander, request.getQueryParams());
-        expandMap(stringExpander, request.getHeaders());
-        request.setBodyCharset(stringExpander.replaceAllInContent(request.getBodyCharset()));
-        request.setBodyContent(stringExpander.replaceAllInContent(request.getBodyContent()));
-        request.setBodyFilePath(stringExpander.replaceAllInContent(request.getBodyFilePath()));
-        request.getRequestFiles().forEach(requestFile -> expandRequestFile(stringExpander, requestFile));
-        expandMap(stringExpander, request.getFormData());
+        request.setMethod(stringExpander.replaceAllInContent(defaults, request.getMethod()));
+        expandMap(stringExpander, request.getQueryParams(), defaults);
+        expandMap(stringExpander, request.getHeaders(), defaults);
+        request.setBodyCharset(stringExpander.replaceAllInContent(defaults, request.getBodyCharset()));
+        request.setBodyContent(stringExpander.replaceAllInContent(defaults, request.getBodyContent()));
+        request.setBodyFilePath(stringExpander.replaceAllInContent(defaults, request.getBodyFilePath()));
+        request.getRequestFiles().forEach(requestFile -> expandRequestFile(stringExpander, requestFile, defaults));
+        expandMap(stringExpander, request.getFormData(), defaults);
     }
 
     private void expandRequestAuth(Settings settings, HTTPRequestAuthEntry requestAuth,
-            Map<String, Object> defaults) {
-        StringExpander stringExpander = new StringExpander(settings, defaults);
+            Map<String, Object> authDefaults) {
+        StringExpander stringExpander = new StringExpander(settings, authDefaults);
 
-        expandDefaults(stringExpander, defaults);
+        expandDefaults(stringExpander, authDefaults);
 
-        requestAuth.setRequestInputPath(stringExpander.replaceAllInContent(requestAuth.getRequestInputPath()));
-        requestAuth.setInputName(stringExpander.replaceAllInContent(requestAuth.getInputName()));
-        requestAuth.setAuthType(stringExpander.replaceAllInContent(requestAuth.getAuthType()));
-        requestAuth.setTokenParam(stringExpander.replaceAllInContent(requestAuth.getTokenParam()));
-        requestAuth.setUsernameParam(stringExpander.replaceAllInContent(requestAuth.getUsernameParam()));
-        requestAuth.setPasswordParam(stringExpander.replaceAllInContent(requestAuth.getPasswordParam()));
+        Map<String, String> defaults = filterDefaults(authDefaults);
+
+        requestAuth.setRequestInputPath(stringExpander.replaceAllInContent(defaults, requestAuth.getRequestInputPath()));
+        requestAuth.setInputName(stringExpander.replaceAllInContent(defaults, requestAuth.getInputName()));
+        requestAuth.setAuthType(stringExpander.replaceAllInContent(defaults, requestAuth.getAuthType()));
+        requestAuth.setTokenParam(stringExpander.replaceAllInContent(defaults, requestAuth.getTokenParam()));
+        requestAuth.setUsernameParam(stringExpander.replaceAllInContent(defaults, requestAuth.getUsernameParam()));
+        requestAuth.setPasswordParam(stringExpander.replaceAllInContent(defaults, requestAuth.getPasswordParam()));
     }
 
-    private void expandAssertion(StringExpander stringExpander, AssertionEntry assertionEntry) {
-        assertionEntry.setName(stringExpander.replaceAllInContent(assertionEntry.getName()));
-        assertionEntry.setAssertionClass(stringExpander.replaceAllInContent(assertionEntry.getAssertionClass()));
-        assertionEntry.setMessage(stringExpander.replaceAllInContent(assertionEntry.getMessage()));
-        expandArray(stringExpander, assertionEntry.getArgs());
+    private void expandAssertion(StringExpander stringExpander, AssertionEntry assertionEntry,
+            Map<String, String> defaults) {
+        assertionEntry.setName(stringExpander.replaceAllInContent(defaults, assertionEntry.getName()));
+        assertionEntry.setAssertionClass(stringExpander.replaceAllInContent(defaults, assertionEntry.getAssertionClass()));
+        assertionEntry.setMessage(stringExpander.replaceAllInContent(defaults, assertionEntry.getMessage()));
+        expandArray(stringExpander, assertionEntry.getArgs(), defaults);
     }
 
-    private void expandRequestFile(StringExpander stringExpander, HTTPRequestFileEntry requestFile) {
-        requestFile.setName(stringExpander.replaceAllInContent(requestFile.getName()));
-        requestFile.setPath(stringExpander.replaceAllInContent(requestFile.getPath()));
-        requestFile.setField(stringExpander.replaceAllInContent(requestFile.getField()));
-        requestFile.setMineType(stringExpander.replaceAllInContent(requestFile.getMineType()));
+    private void expandRequestFile(StringExpander stringExpander, HTTPRequestFileEntry requestFile,
+            Map<String, String> defaults) {
+        requestFile.setName(stringExpander.replaceAllInContent(defaults, requestFile.getName()));
+        requestFile.setPath(stringExpander.replaceAllInContent(defaults, requestFile.getPath()));
+        requestFile.setField(stringExpander.replaceAllInContent(defaults, requestFile.getField()));
+        requestFile.setMineType(stringExpander.replaceAllInContent(defaults, requestFile.getMineType()));
     }
 
     @SuppressWarnings("unchecked")
@@ -326,18 +346,20 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         }
     }
 
-    private void expandMap(StringExpander stringExpander, Map<String, String> map) {
+    private void expandMap(StringExpander stringExpander, Map<String, String> map,
+            Map<String, String> defaults) {
         for(Map.Entry<String, String> entry : map.entrySet()) {
-            map.put(entry.getKey(), stringExpander.replaceAllInContent(entry.getValue()));
+            map.put(entry.getKey(), stringExpander.replaceAllInContent(defaults, entry.getValue()));
         }
     }
 
-    private void expandArray(StringExpander stringExpander, String[] array) {
+    private void expandArray(StringExpander stringExpander, String[] array,
+            Map<String, String> defaults) {
         if(array == null) {
             return;
         }
         for(int i = 0; i < array.length; i++) {
-            array[i] = stringExpander.replaceAllInContent(array[i]);
+            array[i] = stringExpander.replaceAllInContent(defaults, array[i]);
         }
     }
 
@@ -410,5 +432,14 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         if(isBlank(request.getPasswordParam())) {
             request.setPasswordParam(api.getPasswordParam());
         }
+    }
+
+    private Map<String, String> filterDefaults(Map<String, Object> defaults) {
+        return Optional.ofNullable(defaults)
+            .map(Map::entrySet)
+            .map(Set::stream)
+            .orElse(Stream.empty())
+            .filter(e -> e.getValue() instanceof String)
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> (String) e.getValue()));
     }
 }

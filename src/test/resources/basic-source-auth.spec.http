@@ -1,23 +1,20 @@
 
+source src/test/resources/auth.part.http
+
 ### [api]
 @protocol = http
 @host = localhost
 @port = {{local.server.port}}
 @basePath = basic
 
-auth @requestInputPath = src/test/resources/auth.spec.http
-auth @inputName = authorization
-auth @authType = TOKEN
-auth @tokenParam = auth.bearer.token
-
-opt -s clientId {{UUID:}}
-opt -s clientSecret {{UUID:}}
-
 Content-Type: application/json
 Request-Catcher: {{request.catcher.identifier}}
 
+@set-clientId = {{UUID:}}
+@set-clientSecret = {{UUID:}}
 
-### [request] create: Create with authorization
+
+### [request] create
 @method = POST
 @endpoint = /body
 
@@ -37,8 +34,3 @@ Request-Catcher: {{request.catcher.identifier}}
 output basic.functions.id = {{HTTP/header.Resource-ID}}
 
 assert EQUALS_TO 201 {{HTTP/status}}
-
-
-### [flow] createInFlow: Create with authorization within a flow
-
-step -n create

@@ -180,6 +180,7 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
         Assertions.assertDoesNotThrow(() -> new RequestCommand(args).execute());
 
         List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, REQUEST);
+        List<Settings> settingsList = requestCatcher.getAll(correlationId, SETTINGS);
 
         Assertions.assertEquals(3, requests.size());
 
@@ -189,6 +190,36 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
 
         for(HTTPRequestEntry request : requests) {
             Assertions.assertTrue(requestNames.contains(request.getName()));
+        }
+
+        for(Settings settings : settingsList) {
+            if(settings.containsUserInput("clientId")) {
+                Assertions.assertDoesNotThrow(() -> UUID.fromString(settings.get("clientId")));
+            }
+            if(settings.containsUserInput("clientSecret")) {
+                Assertions.assertDoesNotThrow(() -> UUID.fromString(settings.get("clientSecret")));
+            }
+        }
+    }
+
+    @Test
+    public void executeSourceAuth() {
+        String[] args = { "-n", "create", "src/test/resources/basic-source-auth.spec.http" };
+
+        Assertions.assertDoesNotThrow(() -> new RequestCommand(args).execute());
+
+        List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, REQUEST);
+
+        Assertions.assertEquals(2, requests.size());
+
+        Set<String> requestNames = new HashSet<>();
+        requestNames.add("authorization");
+        requestNames.add("create");
+
+        for(HTTPRequestEntry request : requests) {
+            Assertions.assertTrue(requestNames.contains(request.getName()));
+            Assertions.assertDoesNotThrow(() -> UUID.fromString((String) request.getDefaults().get("clientId")));
+            Assertions.assertDoesNotThrow(() -> UUID.fromString((String) request.getDefaults().get("clientSecret")));
         }
     }
 
