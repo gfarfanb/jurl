@@ -58,8 +58,11 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
     private static final Pattern NAME_DESCRIPTION_PATTERN = Pattern.compile("^(?i)(.*)[ ]*:(.*)");
 
+    private static final String ALL_ENVS = "all";
+
     static {
         ESCAPED_CHARS.put("\\\\#", "#");
+        ESCAPED_CHARS.put("\\\\:", ":");
     }
 
     public enum LinePattern {
@@ -77,7 +80,8 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         QUERY_PARAM("^&([\\w:.\\-_@~]+)=(.*)"),
         CONDITION_ASSERTION_OPT("^(?i)(condition|assert|opt) ([\\w:.\\-_@~]+)(.*)"),
         STEP_SPEC("^(?i)step (.*)"),
-        COMMENT("^#(.*)");
+        COMMENT("^#(.*)"),
+        ENV_LABEL("^:(.*)");
 
         private final Pattern pattern;
 
@@ -106,13 +110,14 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                 new AtomicReference<>(new Pair<>(apiRequest, new RequestFileSupplier(apiRequest)));
             AtomicReference<Pair<HTTPRequestEntry, RequestFileSupplier>> requestCarrier = new AtomicReference<>();
             AtomicReference<FlowEntry> flowCarrier = new AtomicReference<>();
+            Set<String> labeledEnvs = new HashSet<>();
             Set<String> sectionNames = new HashSet<>();
 
             requestInput.setApi(apiCarrier.get().getLeft());
 
             LOGGER.fine("Processing lines of file: " + requestPath);
-            processLines(lines, Section.DEFAULT, requestInput,
-                apiCarrier, requestCarrier, flowCarrier, sectionNames);
+            processLines(settings, lines, Section.DEFAULT, requestInput,
+                apiCarrier, requestCarrier, flowCarrier, labeledEnvs, sectionNames);
 
             if(isNotBlank(requestInput.getDefaultRequest())
                     && !sectionNames.contains(requestInput.getDefaultRequest())) {
@@ -135,8 +140,9 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             HTTPRequestEntry request =  new HTTPRequestEntry();
             AtomicReference<Pair<HTTPRequestEntry, RequestFileSupplier>> requestCarrier =
                 new AtomicReference<>(new Pair<>(request, new RequestFileSupplier(request)));
+            Set<String> labeledEnvs = new HashSet<>();
 
-            processLines(lines, requestCarrier);
+            processLines(settings, lines, requestCarrier, labeledEnvs);
 
             return requestCarrier.get().getLeft();
         } catch(CommandException ex) {
@@ -146,16 +152,17 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         }
     }
 
-    private Section processLines(List<String> lines, Section section,
+    private Section processLines(Settings settings, List<String> lines, Section section,
             RequestInput<HTTPRequestEntry> requestInput,
             AtomicReference<Pair<HTTPRequestEntry, RequestFileSupplier>> apiCarrier,
             AtomicReference<Pair<HTTPRequestEntry, RequestFileSupplier>> requestCarrier,
             AtomicReference<FlowEntry> flowCarrier,
-            Set<String> sectionNames) throws IOException {
+            Set<String> labeledEnvs, Set<String> sectionNames) throws IOException {
 
         for(String line : lines) {
             try {
                 readEmptyLine(line);
+                readEnvLabel(settings, labeledEnvs, line);
                 readSection(sectionNames, requestCarrier, flowCarrier, requestInput, line);
                 readSource(line);
                 readComment(line);
@@ -183,8 +190,8 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                     List<String> sourceLines = Files.readAllLines(ex.getSourcePath());
 
                     LOGGER.fine("[" + ex.getLinePattern() + "] Processing lines of sourced file: " + ex.getSourcePath());
-                    section = processLines(sourceLines, section, requestInput,
-                        apiCarrier, requestCarrier, flowCarrier, sectionNames);
+                    section = processLines(settings, sourceLines, section, requestInput,
+                        apiCarrier, requestCarrier, flowCarrier, labeledEnvs, sectionNames);
                 }
             }
         }
@@ -192,12 +199,14 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         return section;
     }
 
-    private void processLines(List<String> lines,
-            AtomicReference<Pair<HTTPRequestEntry, RequestFileSupplier>> requestCarrier) {
+    private void processLines(Settings settings, List<String> lines,
+            AtomicReference<Pair<HTTPRequestEntry, RequestFileSupplier>> requestCarrier,
+            Set<String> labeledEnvs) {
 
         for(String line : lines) {
             try {
                 readEmptyLine(line);
+                readEnvLabel(settings, labeledEnvs, line);
                 readComment(line);
                 line = removeEscapedChars(line);
 
@@ -260,6 +269,34 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         if(isBlank(line)) {
             throw new ParsedLineException(LinePattern.EMPTY, null, null);
         }
+    }
+
+    private void readEnvLabel(Settings settings, Set<String> labeledEnvs, String line) {
+        applyLine(LinePattern.ENV_LABEL, line,
+            matcher -> {
+                String[] envs = trim(matcher.group(1)).toLowerCase().split(",");
+
+                labeledEnvs.clear();
+                
+                for(String env : envs) {
+                    if(isNotBlank(env)) {
+                        labeledEnvs.add(env);
+                    }
+                }
+
+                return null;
+            });
+
+        if(labeledEnvs.isEmpty() || labeledEnvs.contains(ALL_ENVS)) {
+            return;
+        }
+
+        String currentEnv = settings.getEnvironment().toLowerCase();
+        if(labeledEnvs.contains(currentEnv)) {
+            return;
+        }
+
+        throw new ParsedLineException(LinePattern.EMPTY, null, null);
     }
 
     private void addDefaultType(RequestInput<HTTPRequestEntry> requestInput, String line) {

@@ -1,0 +1,15 @@
+
+### [request] request
+
+POST http://localhost:5555/spec
+
+:test
+Discarded-Header: discarded;
+
+:all
+Content-Type: application/txt
+
+:default,  ,dev ,qa ,stage
+Composing request with envs
+\: This is a normal line
+\\: With required escaped character \

@@ -422,4 +422,26 @@ public class HTTPRequestParserTest {
         Assertions.assertEquals("patch", request.getHeaders().get("patchHeader"));
         Assertions.assertEquals("common", request.getHeaders().get("Common-Header"));
     }
+
+    @Test
+    public void parseRequestByEscapedLabeledEnvs() {
+        Settings settings = new Settings();
+        Path requestPath = Paths.get("src/test/resources/parser/http-request.labeled-envs.http");
+        HTTPRequestParser parser = new HTTPRequestParser();
+
+        RequestInput<HTTPRequestEntry> requestInput = Assertions.assertDoesNotThrow(
+            () -> parser.parseInput(settings, requestPath));
+        HTTPRequestEntry request = requestInput.getRequests().get("request");
+        String expectedBody = "Composing request with envs"
+            + "\n: This is a normal line"
+            + "\n\\: With required escaped character \\";
+
+        Assertions.assertNotNull(request);
+        Assertions.assertEquals("POST", request.getMethod());
+        Assertions.assertEquals("http://localhost:5555/spec", request.getUrl());
+        Assertions.assertEquals(1, request.getHeaders().size());
+        Assertions.assertNull(request.getHeaders().get("Discarded-Header"));
+        Assertions.assertEquals("application/txt", request.getHeaders().get("Content-Type"));
+        Assertions.assertEquals(expectedBody, request.getBodyContent());
+    }
 }
