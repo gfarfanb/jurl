@@ -6,7 +6,7 @@ POST http://localhost:5555/spec
 
 Content-Type: application/txt
 
-\# This is a normal line
+{{ESCAPED:hash}} This is a normal line
 # This is a comment
-\# Another line
-\\# With required escaped character \
+{{ESCAPED:hash}} Another line
+\# It doesn't required ESCAPED generator \

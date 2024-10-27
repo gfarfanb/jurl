@@ -57,6 +57,7 @@ import com.legadi.cli.jurl.generators.DateTimeGenerator;
 import com.legadi.cli.jurl.generators.DecimalGenerator;
 import com.legadi.cli.jurl.generators.EmailGenerator;
 import com.legadi.cli.jurl.generators.EmptyGenerator;
+import com.legadi.cli.jurl.generators.EscapedGenerator;
 import com.legadi.cli.jurl.generators.FullNameGenerator;
 import com.legadi.cli.jurl.generators.Generator;
 import com.legadi.cli.jurl.generators.IntegerGenerator;
@@ -186,6 +187,7 @@ public class ObjectsRegistry {
         register(Generator.class, DecimalGenerator.class);
         register(Generator.class, EmailGenerator.class);
         register(Generator.class, EmptyGenerator.class);
+        register(Generator.class, EscapedGenerator.class);
         register(Generator.class, FullNameGenerator.class);
         register(Generator.class, IntegerGenerator.class);
         register(Generator.class, LastNameGenerator.class);

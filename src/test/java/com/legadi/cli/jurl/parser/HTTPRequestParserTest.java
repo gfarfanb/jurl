@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import com.legadi.cli.jurl.assertions.EqualsToAssertionFunction;
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.StringExpander;
 import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.model.FlowEntry;
 import com.legadi.cli.jurl.model.RequestInput;
@@ -358,7 +359,8 @@ public class HTTPRequestParserTest {
         HTTPRequestEntry request = requestInput.getRequests().get("request");
         String expectedBody = "# This is a normal line"
             + "\n# Another line"
-            + "\n\\# With required escaped character \\";
+            + "\n\\# It doesn't required ESCAPED generator \\";
+        StringExpander stringExpander = new StringExpander(settings);
 
         Assertions.assertNotNull(request);
         Assertions.assertEquals("POST", request.getMethod());
@@ -367,7 +369,7 @@ public class HTTPRequestParserTest {
         Assertions.assertEquals("value", request.getQueryParams().get("param"));
         Assertions.assertEquals(1, request.getHeaders().size());
         Assertions.assertEquals("application/txt", request.getHeaders().get("Content-Type"));
-        Assertions.assertEquals(expectedBody, request.getBodyContent());
+        Assertions.assertEquals(expectedBody, stringExpander.replaceAllInContent(request.getBodyContent()));
     }
 
     @Test
@@ -428,13 +430,16 @@ public class HTTPRequestParserTest {
         Settings settings = new Settings();
         Path requestPath = Paths.get("src/test/resources/parser/http-request.labeled-envs.http");
         HTTPRequestParser parser = new HTTPRequestParser();
+        StringExpander stringExpander = new StringExpander(settings);
 
         RequestInput<HTTPRequestEntry> requestInput = Assertions.assertDoesNotThrow(
             () -> parser.parseInput(settings, requestPath));
         HTTPRequestEntry request = requestInput.getRequests().get("request");
         String expectedBody = "Composing request with envs"
             + "\n: This is a normal line"
-            + "\n\\: With required escaped character \\";
+            + "\nEnv labeled with regex"
+            + "\n"
+            + "\nEOF\n";
 
         Assertions.assertNotNull(request);
         Assertions.assertEquals("POST", request.getMethod());
@@ -442,6 +447,6 @@ public class HTTPRequestParserTest {
         Assertions.assertEquals(1, request.getHeaders().size());
         Assertions.assertNull(request.getHeaders().get("Discarded-Header"));
         Assertions.assertEquals("application/txt", request.getHeaders().get("Content-Type"));
-        Assertions.assertEquals(expectedBody, request.getBodyContent());
+        Assertions.assertEquals(expectedBody, stringExpander.replaceAllInContent(request.getBodyContent()));
     }
 }

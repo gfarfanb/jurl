@@ -54,16 +54,10 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     private static final String REQUEST_FILE_FIELD_FIELD = "field";
     private static final Map<String, Field> REQUEST_AUTH_FIELDS = getAllFields(HTTPRequestAuthEntry.class);
     private static final Map<String, Field> MOCK_FIELDS = getAllFields(HTTPMockEntry.class);
-    private static final Map<String, String> ESCAPED_CHARS = new HashMap<>();
 
     private static final Pattern NAME_DESCRIPTION_PATTERN = Pattern.compile("^(?i)(.*)[ ]*:(.*)");
 
     private static final String ALL_ENVS = "all";
-
-    static {
-        ESCAPED_CHARS.put("\\\\#", "#");
-        ESCAPED_CHARS.put("\\\\:", ":");
-    }
 
     public enum LinePattern {
 
@@ -163,10 +157,9 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             try {
                 readEmptyLine(line);
                 readEnvLabel(settings, labeledEnvs, line);
-                readSection(sectionNames, requestCarrier, flowCarrier, requestInput, line);
+                readSection(labeledEnvs, sectionNames, requestCarrier, flowCarrier, requestInput, line);
                 readSource(line);
                 readComment(line);
-                line = removeEscapedChars(line);
 
                 addDefaultType(requestInput, line);
 
@@ -208,7 +201,6 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                 readEmptyLine(line);
                 readEnvLabel(settings, labeledEnvs, line);
                 readComment(line);
-                line = removeEscapedChars(line);
 
                 decorateRequest(requestCarrier, line);
             } catch(ParsedLineException ex) {}
@@ -258,13 +250,6 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         addStep(flow.getSteps(), line);
     }
 
-    private String removeEscapedChars(String line) {
-        for(Map.Entry<String, String> escapedEntry : ESCAPED_CHARS.entrySet()) {
-            line = line.replaceAll(escapedEntry.getKey(), escapedEntry.getValue());
-        }
-        return line;
-    }
-
     private void readEmptyLine(String line) {
         if(isBlank(line)) {
             throw new ParsedLineException(LinePattern.EMPTY, null, null);
@@ -292,7 +277,13 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         }
 
         String currentEnv = settings.getEnvironment().toLowerCase();
-        if(labeledEnvs.contains(currentEnv)) {
+        boolean envMatches = labeledEnvs
+            .stream()
+            .map(Pattern::compile)
+            .map(p -> p.matcher(currentEnv))
+            .anyMatch(Matcher::find);
+
+        if(envMatches) {
             return;
         }
 
@@ -310,7 +301,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             });
     }
 
-    private void readSection(Set<String> sectionNames,
+    private void readSection(Set<String> labeledEnvs, Set<String> sectionNames,
             AtomicReference<Pair<HTTPRequestEntry, RequestFileSupplier>> requestCarrier,
             AtomicReference<FlowEntry> flowCarrier,
             RequestInput<HTTPRequestEntry> requestInput, String line) {
@@ -320,6 +311,8 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                 Pair<String, String> nameDescription;
                 Section section = null;
                 String name = null;
+
+                labeledEnvs.clear();
 
                 switch(type) {
                     case "request":

@@ -11,5 +11,11 @@ Content-Type: application/txt
 
 :default,  ,dev ,qa ,stage
 Composing request with envs
-\: This is a normal line
-\\: With required escaped character \
+{{ESCAPED:colon}} This is a normal line
+:d.*
+Env labeled with regex
+{{EMPTY:}}
+:label-.*
+Discarded line
+:default
+EOF{{ESCAPED:lf}}
