@@ -3,6 +3,9 @@
 
 
 ### [request] pokemon
+
+@set-name = gengar
+
 GET https://pokeapi.co/api/v2/pokemon/{{name}}
 
 output pokemonId = {{OUT/id}}
