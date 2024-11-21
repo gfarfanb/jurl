@@ -9,10 +9,16 @@ public class WindowsSeparatorValueModifierTest extends ValueModifierAbstractTest
         super("win-separator");
     }
 
+    @Override
+    public String[] sampleValidArgs() {
+        return new String[0];
+    }
+
     @Test
     public void windowsSeparator() {
+        String[] args = {};
         String result = Assertions.assertDoesNotThrow(
-            () -> apply("win-separator", ".\\executions\\src\\test"));
+            () -> apply(args, ".\\executions\\src\\test"));
 
         Assertions.assertEquals(".\\\\executions\\\\src\\\\test", result);
     }

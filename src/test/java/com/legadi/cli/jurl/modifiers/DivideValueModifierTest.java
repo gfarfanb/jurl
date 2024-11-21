@@ -9,10 +9,16 @@ public class DivideValueModifierTest extends ValueModifierAbstractTest<DivideVal
         super("divide");
     }
 
+    @Override
+    public String[] sampleValidArgs() {
+        return new String[] { "5" };
+    }
+
     @Test
     public void divide() {
+        String[] args = { "5" };
         String result = Assertions.assertDoesNotThrow(
-            () -> apply("divide~5", "25"));
+            () -> apply(args, "25"));
 
         Assertions.assertEquals("5", result);
     }

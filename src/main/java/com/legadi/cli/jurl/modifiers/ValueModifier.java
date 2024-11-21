@@ -1,12 +1,19 @@
 package com.legadi.cli.jurl.modifiers;
 
+import static com.legadi.cli.jurl.common.CommonUtils.ARGS_ESCAPED;
+import static com.legadi.cli.jurl.common.CommonUtils.ARGS_SEPARATOR;
+import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.strip;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import com.legadi.cli.jurl.common.Evaluable;
 import com.legadi.cli.jurl.common.Named;
+import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.exception.ModifierException;
 
@@ -26,17 +33,34 @@ public interface ValueModifier extends Evaluable, Named {
 
     String apply(Function<String, String> getter, String[] args, String value) throws Exception;
 
-    default String applyByDefinition(Settings settings, Map<String, String> values,
-            String definition, String value) {
-        String[] input = strip(definition, "~").split("~");
-        String[] args = new String[input.length - 1];
+    default Pair<String[], String> extractArgsAndValue(String definition) {
+        String separatorTag = UUID.randomUUID().toString();
 
-        System.arraycopy(input, 1, args, 0, args.length);
+        definition = strip(definition, ARGS_SEPARATOR)
+            .replaceAll(ARGS_ESCAPED, separatorTag);
 
-        if(args.length < getArgs().length) {
-            throw new ModifierException(name(), getArgs(), args, value, "Invalid number of arguments for modifier");
+        String[] parts = isBlank(definition) ? new String[0] : definition.split(ARGS_SEPARATOR);
+
+        IntStream.range(0, parts.length)
+            .forEach(i -> parts[i] = parts[i].replaceAll(separatorTag, ARGS_SEPARATOR));
+
+        String[] args = new String[getArgs().length];
+
+        try {
+            System.arraycopy(parts, 0, args, 0, args.length);
+        } catch(IndexOutOfBoundsException ex) {
+            throw new ModifierException(name(), getArgs(), parts, null, "Invalid number of arguments for modifier");
         }
 
+        String value = IntStream.range(args.length, parts.length)
+            .mapToObj(i -> parts[i])
+            .collect(Collectors.joining(ARGS_SEPARATOR));
+
+        return new Pair<>(args, value);
+    }
+
+    default String applyByDefinition(Settings settings, Map<String, String> values,
+            String[] args, String value) {
         try {
             Function<String, String> getter = property -> values.getOrDefault(property,
                 settings.getOrDefault(property, property));

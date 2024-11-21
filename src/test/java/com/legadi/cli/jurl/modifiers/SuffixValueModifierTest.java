@@ -9,10 +9,16 @@ public class SuffixValueModifierTest extends ValueModifierAbstractTest<SuffixVal
         super("suffix");
     }
 
+    @Override
+    public String[] sampleValidArgs() {
+        return new String[] { ".val" };
+    }
+
     @Test
     public void suffix() {
+        String[] args = { ".val" };
         String result = Assertions.assertDoesNotThrow(
-            () -> apply("suffix~.val", "name"));
+            () -> apply(args, "name"));
 
         Assertions.assertEquals("name.val", result);
     }

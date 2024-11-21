@@ -10,7 +10,7 @@ public class PickAnyGenerator implements Generator {
 
     @Override
     public String name() {
-        return "PICK_ANY";
+        return "PICK-ANY";
     }
 
     @Override

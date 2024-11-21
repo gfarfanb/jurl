@@ -9,10 +9,16 @@ public class SubtractValueModifierTest extends ValueModifierAbstractTest<Subtrac
         super("subtract");
     }
 
+    @Override
+    public String[] sampleValidArgs() {
+        return new String[] { "5" };
+    }
+
     @Test
     public void subtract() {
+        String[] args = { "5" };
         String result = Assertions.assertDoesNotThrow(
-            () -> apply("subtract~5", "10"));
+            () -> apply(args, "10"));
 
         Assertions.assertEquals("5", result);
     }

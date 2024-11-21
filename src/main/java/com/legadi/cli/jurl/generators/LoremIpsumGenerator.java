@@ -18,7 +18,7 @@ public class LoremIpsumGenerator implements Generator {
 
     @Override
     public String name() {
-        return "LOREM_IPSUM";
+        return "LOREM-IPSUM";
     }
 
     @Override

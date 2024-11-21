@@ -11,7 +11,7 @@ public class AlphaNumericGenerator implements Generator {
 
     @Override
     public String name() {
-        return "ALPHA_NUMERIC";
+        return "ALPHA-NUMERIC";
     }
 
     @Override

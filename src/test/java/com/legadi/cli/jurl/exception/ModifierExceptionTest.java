@@ -17,12 +17,12 @@ public class ModifierExceptionTest {
         String[] values = new String[] { "5" };
 
         try {
-            throw new ModifierException(modifier.name(), modifier.getArgs(), values, "add~5", null);
+            throw new ModifierException(modifier.name(), modifier.getArgs(), values, "add:5", null);
         } catch(RuntimeException ex) {
             String expected = "modifier=" + modifier.name()
                 + " args=" + Arrays.toString(modifier.getArgs())
                 + " values=" + Arrays.toString(values)
-                + " input=add~5";
+                + " input=add:5";
 
             Assertions.assertDoesNotThrow(() -> (ModifierException) ex);
             Assertions.assertEquals(expected, ex.getMessage());
@@ -35,12 +35,12 @@ public class ModifierExceptionTest {
         String[] values = new String[] { "5" };
 
         try {
-            throw new ModifierException(modifier.name(), modifier.getArgs(), values, "add~5", "Invalid arguments");
+            throw new ModifierException(modifier.name(), modifier.getArgs(), values, "add:5", "Invalid arguments");
         } catch(RuntimeException ex) {
             String expected = "modifier=" + modifier.name()
                 + " args=" + Arrays.toString(modifier.getArgs())
                 + " values=" + Arrays.toString(values)
-                + " input=add~5 - Invalid arguments";
+                + " input=add:5 - Invalid arguments";
 
             Assertions.assertDoesNotThrow(() -> (ModifierException) ex);
             Assertions.assertEquals(expected, ex.getMessage());

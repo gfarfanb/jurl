@@ -8,7 +8,7 @@ public class FullNameGenerator extends NamePartGenerator {
 
     @Override
     public String name() {
-        return "FULL_NAME";
+        return "FULL-NAME";
     }
 
     @Override

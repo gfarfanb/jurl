@@ -9,10 +9,16 @@ public class MultiplyValueModifierTest extends ValueModifierAbstractTest<Multipl
         super("multiply");
     }
 
+    @Override
+    public String[] sampleValidArgs() {
+        return new String[] { "5" };
+    }
+
     @Test
     public void multiply() {
+        String[] args = { "5" };
         String result = Assertions.assertDoesNotThrow(
-            () -> apply("multiply~5", "5"));
+            () -> apply(args, "5"));
 
         Assertions.assertEquals("25", result);
     }

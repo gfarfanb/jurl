@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 public class PickAnyGeneratorTest extends GeneratorAbstractTest {
 
     public PickAnyGeneratorTest() {
-        super("PICK_ANY");
+        super("PICK-ANY");
     }
 
     @Test

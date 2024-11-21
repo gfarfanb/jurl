@@ -1,13 +1,20 @@
 package com.legadi.cli.jurl.common;
 
+import static com.legadi.cli.jurl.common.CommonUtils.ARGS_ESCAPED;
+import static com.legadi.cli.jurl.common.CommonUtils.ARGS_REGEX;
+import static com.legadi.cli.jurl.common.CommonUtils.ARGS_SEPARATOR;
 import static com.legadi.cli.jurl.common.CommonUtils.EMPTY_MAP;
 import static com.legadi.cli.jurl.common.CommonUtils.INVALID_INDEX;
+import static com.legadi.cli.jurl.common.CommonUtils.LSQUARE_ESCAPED;
+import static com.legadi.cli.jurl.common.CommonUtils.LSQUARE_REGEX;
+import static com.legadi.cli.jurl.common.CommonUtils.RSQUARE_ESCAPED;
+import static com.legadi.cli.jurl.common.CommonUtils.RSQUARE_REGEX;
 import static com.legadi.cli.jurl.common.CommonUtils.getDefaultFieldIndex;
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.stripEnd;
+import static com.legadi.cli.jurl.common.CommonUtils.stripStart;
 import static com.legadi.cli.jurl.common.CommonUtils.trim;
-import static com.legadi.cli.jurl.common.ObjectsRegistry.find;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findByName;
 
 import java.util.HashSet;
@@ -29,7 +36,8 @@ public class StringExpander {
 
     private static final Logger LOGGER = Logger.getLogger(StringExpander.class.getName());
 
-    private final Pattern paramTagPattern = Pattern.compile("^([\\w_]+:)?(~(.*)~)?(.*)$");
+    private static final Pattern PARAM_TAG_PATTERN = Pattern.compile("^([\\w_-]+" + ARGS_SEPARATOR + ")?(.*)$");
+
     private final Pattern paramPattern;
     private final Settings settings;
     private final PropertyDefaultResolver propertyDefaultResolver;
@@ -65,36 +73,26 @@ public class StringExpander {
             String paramTag = paramMatcher.group(1);
 
             if(!paramTags.contains(paramTag)) {
-                Matcher paramTagMatcher = paramTagPattern.matcher(paramTag);
-
-                paramTagMatcher.find();
-
-                Optional<Generator> generator = findByName(Generator.class, stripEnd(paramTagMatcher.group(1), ":"));
-                String modifierDefinition = paramTagMatcher.group(3);
-                String property = trim(paramTagMatcher.group(4));
-                Optional<ValueModifier> modifier;
+                ParamTagDefinition paramTagDef = parseParamTag(paramTag);
                 String value = null;
 
-                if(generator.isPresent()) {
-                    value = generator.get().get(settings, property);
-                }
-
-                if(isNotBlank(modifierDefinition)) {
-                    modifier = find(ValueModifier.class, modifierDefinition);
-                } else {
-                    modifier = Optional.empty();
+                if(paramTagDef.getGenerator().isPresent()) {
+                    value = paramTagDef.getGenerator().get().get(settings, paramTagDef.getValue());
                 }
 
                 if(value == null) {
-                    value = getValue(property, values, modifier, modifierDefinition);
+                    value = getValue(paramTagDef.getValue(), values,
+                        paramTagDef.getModifier(), paramTagDef.getModifierArgs());
                 }
 
-                if(modifier.isPresent() && !isDefaultModifier(modifier)) {
-                    value = modifier.get().applyByDefinition(settings, values, modifierDefinition, value);
+                if(paramTagDef.getModifier().isPresent() && !isDefaultModifier(paramTagDef.getModifier())) {
+                    value = paramTagDef.getModifier().get().applyByDefinition(settings, values,
+                        paramTagDef.getModifierArgs(), value);
                 }
 
-                String paramTagEscaped = paramTag.replaceAll("\\[", "\\\\[");
-                paramTagEscaped = paramTagEscaped.replaceAll("\\]", "\\\\]");
+                String paramTagEscaped = paramTag.replaceAll(LSQUARE_REGEX, LSQUARE_ESCAPED);
+                paramTagEscaped = paramTagEscaped.replaceAll(RSQUARE_REGEX, RSQUARE_ESCAPED);
+                paramTagEscaped = paramTagEscaped.replaceAll(ARGS_REGEX, ARGS_ESCAPED);
 
                 String paramRegex = settings.getSettingsParamRegexBegin()
                     + paramTagEscaped + settings.getSettingsParamRegexEnd();
@@ -106,6 +104,29 @@ public class StringExpander {
         }
 
         return content;
+    }
+
+    public ParamTagDefinition parseParamTag(String paramTag) {
+        Matcher paramTagMatcher = PARAM_TAG_PATTERN.matcher(paramTag);
+        paramTagMatcher.find();
+
+        String generatorName = stripEnd(paramTagMatcher.group(1), ARGS_SEPARATOR);
+        Optional<Generator> generator = findByName(Generator.class, generatorName);
+        String valuePart = stripStart(paramTagMatcher.group(2), ARGS_SEPARATOR);
+
+        Matcher valueMatcher = PARAM_TAG_PATTERN.matcher(valuePart);
+        valueMatcher.find();
+
+        String modifierName = stripEnd(valueMatcher.group(1), ARGS_SEPARATOR);
+        Optional<ValueModifier> modifier = findByName(ValueModifier.class, modifierName);
+
+        if(modifier.isPresent()) {
+            String modifierPart = trim(valueMatcher.group(2));
+            Pair<String[], String> argsAndValue = modifier.get().extractArgsAndValue(modifierPart);
+            return new ParamTagDefinition(generator, modifier, argsAndValue.getLeft(), argsAndValue.getRight());
+        } else {
+            return new ParamTagDefinition(generator, modifier, null, valuePart);
+        }
     }
 
     public Set<String> scanParamsInContent(String content) {
@@ -123,11 +144,11 @@ public class StringExpander {
     }
 
     private String getValue(String property, Map<String, String> values,
-            Optional<ValueModifier> modifier, String modifierDefinition) {
+            Optional<ValueModifier> modifier, String[] modifierArgs) {
         String value = settings.getOrDefaultWithValues(property, values, "");
 
         if(isDefaultModifier(modifier)) {
-            return modifier.get().applyByDefinition(settings, values, modifierDefinition, value);
+            return modifier.get().applyByDefinition(settings, values, modifierArgs, value);
         }
 
         if(propertyDefaultResolver != null && isBlank(value)) {
@@ -139,6 +160,38 @@ public class StringExpander {
 
     private boolean isDefaultModifier(Optional<ValueModifier> modifier) {
         return modifier.isPresent() && modifier.get().getClass() == DefaultValueModifier.class;
+    }
+
+    public static class ParamTagDefinition {
+
+        private final Optional<Generator> generator;
+        private final Optional<ValueModifier> modifier;
+        private final String[] modifierArgs;
+        private final String value;
+
+        public ParamTagDefinition(Optional<Generator> generator, Optional<ValueModifier> modifier,
+                String[] modifierArgs, String value) {
+            this.generator = generator;
+            this.modifier = modifier;
+            this.modifierArgs = modifierArgs;
+            this.value = value;
+        }
+
+        public Optional<Generator> getGenerator() {
+            return generator;
+        }
+
+        public Optional<ValueModifier> getModifier() {
+            return modifier;
+        }
+
+        public String[] getModifierArgs() {
+            return modifierArgs;
+        }
+
+        public String getValue() {
+            return value;
+        }
     }
 
     public static class PropertyDefaultResolver implements Function<String, String> {

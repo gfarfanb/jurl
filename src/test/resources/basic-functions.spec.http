@@ -16,15 +16,15 @@ Request-Catcher: {{request.catcher.identifier}}
 
 {
     "access": "{{UUID:}}",
-    "name": "{{FULL_NAME:}}",
+    "name": "{{FULL-NAME:}}",
     "email": "{{EMAIL:}}",
-    "nickname": "{{ALPHA_NUMERIC:}}",
+    "nickname": "{{ALPHA-NUMERIC:}}",
     "amount": {{DECIMAL:}},
     "active": {{BOOLEAN:}},
     "coins": {{INTEGER:}},
-    "bio": "{{LOREM_IPSUM:}}",
-    "type": "{{PICK_ANY:A,B,C}}",
-    "timestamp": "{{DATE_TIME:}}"
+    "bio": "{{LOREM-IPSUM:}}",
+    "type": "{{PICK-ANY:A,B,C}}",
+    "timestamp": "{{DATE-TIME:}}"
 }
 
 output basic.functions.id = {{HTTP/header.Resource-ID}}

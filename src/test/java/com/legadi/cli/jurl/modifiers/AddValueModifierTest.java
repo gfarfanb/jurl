@@ -9,10 +9,16 @@ public class AddValueModifierTest extends ValueModifierAbstractTest<AddValueModi
         super("add");
     }
 
+    @Override
+    public String[] sampleValidArgs() {
+        return new String[] { "5" };
+    }
+
     @Test
     public void add() {
+        String[] args = { "5" };
         String result = Assertions.assertDoesNotThrow(
-            () -> apply("add~5", "5"));
+            () -> apply(args, "5"));
 
         Assertions.assertEquals("10", result);
     }

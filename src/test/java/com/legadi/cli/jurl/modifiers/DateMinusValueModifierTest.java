@@ -13,13 +13,19 @@ public class DateMinusValueModifierTest extends ValueModifierAbstractTest<DateMi
         super("date-minus");
     }
 
+    @Override
+    public String[] sampleValidArgs() {
+        return new String[] { "ISO_LOCAL_DATE_TIME", "DAYS", "5" };
+    }
+
     @Test
     public void minus() {
         LocalDateTime date = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+        String[] args = { "ISO_LOCAL_DATE_TIME", "DAYS", "5" };
 
         String result = Assertions.assertDoesNotThrow(
-            () -> apply("date-minus~ISO_LOCAL_DATE_TIME~DAYS~5", formatter.format(date)));
+            () -> apply(args, formatter.format(date)));
 
         Assertions.assertEquals(formatter.format(date.minus(5, ChronoUnit.DAYS)), result);
     }

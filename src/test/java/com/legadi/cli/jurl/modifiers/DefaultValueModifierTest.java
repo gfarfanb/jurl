@@ -9,18 +9,25 @@ public class DefaultValueModifierTest extends ValueModifierAbstractTest<DefaultV
         super("default");
     }
 
+    @Override
+    public String[] sampleValidArgs() {
+        return new String[] { "5" };
+    }
+
     @Test
     public void originalValue() {
+        String[] args = { "5" };
         String result = Assertions.assertDoesNotThrow(
-            () -> apply("default~5", "10"));
+            () -> apply(args, "10"));
 
         Assertions.assertEquals("10", result);
     }
 
     @Test
     public void defaultValue() {
+        String[] args = { "5" };
         String result = Assertions.assertDoesNotThrow(
-            () -> apply("default~5", null));
+            () -> apply(args, null));
 
         Assertions.assertEquals("5", result);
     }

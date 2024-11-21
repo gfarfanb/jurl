@@ -16,34 +16,45 @@ public class DateEpochValueModifierTest extends ValueModifierAbstractTest<DateEp
         super("date-epoch");
     }
 
+    @Override
+    public String[] sampleValidArgs() {
+        return new String[] { "ISO_LOCAL_DATE_TIME", "MILLIS" };
+    }
+
     @Test
     public void epoch() {
         LocalDateTime date = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
         Duration secondsDuration = Duration.ofSeconds(date.toEpochSecond(ZoneOffset.UTC));
 
+        String[] epochMillisArgs = { "ISO_LOCAL_DATE_TIME", "MILLIS" };
         String epochMillis = Assertions.assertDoesNotThrow(
-            () -> apply("date-epoch~ISO_LOCAL_DATE_TIME~MILLIS", formatter.format(date)));
+            () -> apply(epochMillisArgs, formatter.format(date)));
         Assertions.assertEquals(Long.toString(secondsDuration.toMillis()), epochMillis);
 
+        String[] epochNanosArgs = { "ISO_LOCAL_DATE_TIME", "NANOS" };
         String epochNanos = Assertions.assertDoesNotThrow(
-            () -> apply("date-epoch~ISO_LOCAL_DATE_TIME~NANOS", formatter.format(date)));
+            () -> apply(epochNanosArgs, formatter.format(date)));
         Assertions.assertEquals(Long.toString(secondsDuration.toNanos()), epochNanos);
 
+        String[] epochSecondsArgs = { "ISO_LOCAL_DATE_TIME", "SECONDS" };
         String epochSeconds = Assertions.assertDoesNotThrow(
-            () -> apply("date-epoch~ISO_LOCAL_DATE_TIME~SECONDS", formatter.format(date)));
+            () -> apply(epochSecondsArgs, formatter.format(date)));
         Assertions.assertEquals(Long.toString(secondsDuration.getSeconds()), epochSeconds);
 
+        String[] epochMinutesArgs = { "ISO_LOCAL_DATE_TIME", "MINUTES" };
         String epochMinutes = Assertions.assertDoesNotThrow(
-            () -> apply("date-epoch~ISO_LOCAL_DATE_TIME~MINUTES", formatter.format(date)));
+            () -> apply(epochMinutesArgs, formatter.format(date)));
         Assertions.assertEquals(Long.toString(secondsDuration.toMinutes()), epochMinutes);
 
+        String[] epochHoursArgs = { "ISO_LOCAL_DATE_TIME", "HOURS" };
         String epochHours = Assertions.assertDoesNotThrow(
-            () -> apply("date-epoch~ISO_LOCAL_DATE_TIME~HOURS", formatter.format(date)));
+            () -> apply(epochHoursArgs, formatter.format(date)));
         Assertions.assertEquals(Long.toString(secondsDuration.toHours()), epochHours);
 
+        String[] epochDaysArgs = { "ISO_LOCAL_DATE_TIME", "DAYS" };
         String epochDays = Assertions.assertDoesNotThrow(
-            () -> apply("date-epoch~ISO_LOCAL_DATE_TIME~DAYS", formatter.format(date)));
+            () -> apply(epochDaysArgs, formatter.format(date)));
         Assertions.assertEquals(Long.toString(secondsDuration.toDays()), epochDays);
     }
 
@@ -51,8 +62,9 @@ public class DateEpochValueModifierTest extends ValueModifierAbstractTest<DateEp
     public void epochInvalid() {
         LocalDateTime date = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+        String[] args = { "ISO_LOCAL_DATE_TIME", "MONTHS" };
 
         Assertions.assertThrows(CommandException.class,
-            () -> apply("date-epoch~ISO_LOCAL_DATE_TIME~MONTHS", formatter.format(date)));
+            () -> apply(args, formatter.format(date)));
     }
 }

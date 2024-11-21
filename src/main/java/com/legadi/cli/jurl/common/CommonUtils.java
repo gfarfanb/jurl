@@ -21,6 +21,16 @@ public class CommonUtils {
     public static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvxyz0123456789";
     public static final String NUMERIC_STRING = "0123456789";
 
+    public static final String ARGS_SEPARATOR = ":";
+    public static final String ARGS_REGEX = "\\" + ARGS_SEPARATOR;
+    public static final String ARGS_ESCAPED = "\\\\" + ARGS_SEPARATOR;
+    public static final String LSQUARE_SEPARATOR = "[";
+    public static final String LSQUARE_REGEX = "\\" + LSQUARE_SEPARATOR;
+    public static final String LSQUARE_ESCAPED = "\\\\" + LSQUARE_SEPARATOR;
+    public static final String RSQUARE_SEPARATOR = "]";
+    public static final String RSQUARE_REGEX = "\\" + RSQUARE_SEPARATOR;
+    public static final String RSQUARE_ESCAPED = "\\\\" + RSQUARE_SEPARATOR;
+
     public static final String REQUEST_TAG = "[rq]";
     public static final String REQUEST_NAME = "request";
     public static final String FLOW_TAG = "[fl]";

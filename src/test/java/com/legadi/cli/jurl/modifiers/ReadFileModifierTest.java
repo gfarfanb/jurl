@@ -15,10 +15,16 @@ public class ReadFileModifierTest extends ValueModifierAbstractTest<ReadFileModi
         super("read-file");
     }
 
+    @Override
+    public String[] sampleValidArgs() {
+        return new String[0];
+    }
+
     @Test
     public void readFile() {
+        String[] args = {};
         String result = Assertions.assertDoesNotThrow(
-            () -> apply("read-file", "src/test/resources/json-body.json"));
+            () -> apply(args, "src/test/resources/json-body.json"));
         Map<String, String> body = jsonToObject(result, new TypeToken<Map<String, String>>() {});
 
         Assertions.assertEquals("json", body.get("type"));
@@ -26,16 +32,18 @@ public class ReadFileModifierTest extends ValueModifierAbstractTest<ReadFileModi
 
     @Test
     public void readFileNotFound() {
+        String[] args = {};
         String result = Assertions.assertDoesNotThrow(
-            () -> apply("read-file", "src/test/resources/not-found-body.json"));
+            () -> apply(args, "src/test/resources/not-found-body.json"));
 
         Assertions.assertEquals("src/test/resources/not-found-body.json", result);
     }
 
     @Test
     public void readFileException() {
+        String[] args = {};
         String result = Assertions.assertDoesNotThrow(
-            () -> apply("read-file", null));
+            () -> apply(args, null));
 
         Assertions.assertNull(result);
     }

@@ -16,7 +16,7 @@ file @name = uploaded.csv
 file @mineType = text/csv
 
 form identifier = {{UUID:}}
-form timestamp = {{DATE_TIME:}}
+form timestamp = {{DATE-TIME:}}
 
 assert EQUALS_TO 201 {{HTTP/status}}
 

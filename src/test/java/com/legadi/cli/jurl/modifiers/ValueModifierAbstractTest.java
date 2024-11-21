@@ -1,14 +1,18 @@
 package com.legadi.cli.jurl.modifiers;
 
+import static com.legadi.cli.jurl.common.CommonUtils.ARGS_SEPARATOR;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findByNameOrFail;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findOrFail;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.exception.ModifierException;
 
@@ -33,21 +37,35 @@ public abstract class ValueModifierAbstractTest<T extends ValueModifier> {
 
     @Test
     public void expectedArgs() {
-        String[] args = modifier.getArgs();
+        String[] args = sampleValidArgs();
+        String[] invalidArgs = null;
 
         if(args.length > 0) {
-            String[] def = new String[args.length - 1];
+            invalidArgs = new String[args.length - 1];
+            System.arraycopy(args, 0, invalidArgs, 0, invalidArgs.length);
+        }
 
-            System.arraycopy(args, 1, def, 0, def.length);
+        String validArgsDefinition = Arrays.stream(sampleValidArgs())
+            .collect(Collectors.joining(ARGS_SEPARATOR));
 
-            String definition = String.join("~", def);
+        Pair<String[], String> argsAndValue = Assertions.assertDoesNotThrow(
+            () -> modifier.extractArgsAndValue(validArgsDefinition));
+
+        Assertions.assertEquals(args.length, argsAndValue.getLeft().length);
+        Assertions.assertNotNull(argsAndValue.getRight());
+
+        if(invalidArgs != null) {
+            String invalidArgsDefinition = Arrays.stream(invalidArgs)
+                .collect(Collectors.joining(ARGS_SEPARATOR));
 
             Assertions.assertThrows(ModifierException.class, 
-                () -> modifier.applyByDefinition(settings, values, definition, null));
+                () -> modifier.extractArgsAndValue(invalidArgsDefinition));
         }
     }
 
-    public String apply(String definition, String value) {
-        return modifier.applyByDefinition(settings, values, definition, value);
+    public abstract String[] sampleValidArgs();
+
+    public String apply(String[] args, String value) {
+        return modifier.applyByDefinition(settings, values, args, value);
     }
 }

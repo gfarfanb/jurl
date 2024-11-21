@@ -6,7 +6,7 @@ public class LastNameGenerator extends NamePartGenerator {
 
     @Override
     public String name() {
-        return "LAST_NAME";
+        return "LAST-NAME";
     }
 
     @Override

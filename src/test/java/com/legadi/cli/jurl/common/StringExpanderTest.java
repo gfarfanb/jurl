@@ -89,7 +89,7 @@ public class StringExpanderTest {
         StringExpander expander = new StringExpander(settings);
         Map<String, String> values = new HashMap<>();
 
-        Assertions.assertEquals("0", expander.replaceAllInContent(values, "{{~default~0~number}}"));
+        Assertions.assertEquals("0", expander.replaceAllInContent(values, "{{:default:0:number}}"));
     }
 
     @Test
@@ -98,7 +98,7 @@ public class StringExpanderTest {
         StringExpander expander = new StringExpander(settings);
         Map<String, String> values = new HashMap<>();
 
-        Assertions.assertTrue(expander.replaceAllInContent(values, "{{~not-found~number}}").isEmpty());
+        Assertions.assertTrue(expander.replaceAllInContent(values, "{{:not-found:number}}").isEmpty());
     }
 
     @Test

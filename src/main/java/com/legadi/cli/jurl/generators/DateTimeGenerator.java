@@ -11,7 +11,7 @@ public class DateTimeGenerator implements Generator {
 
     @Override
     public String name() {
-        return "DATE_TIME";
+        return "DATE-TIME";
     }
 
     @Override

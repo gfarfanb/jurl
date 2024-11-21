@@ -9,10 +9,16 @@ public class PrefixValueModifierTest extends ValueModifierAbstractTest<PrefixVal
         super("prefix");
     }
 
+    @Override
+    public String[] sampleValidArgs() {
+        return new String[] { "prop." };
+    }
+
     @Test
     public void prefix() {
+        String[] args = { "prop." };
         String result = Assertions.assertDoesNotThrow(
-            () -> apply("prefix~prop.", "name"));
+            () -> apply(args, "name"));
 
         Assertions.assertEquals("prop.name", result);
     }
