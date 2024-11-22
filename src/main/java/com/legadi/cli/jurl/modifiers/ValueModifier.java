@@ -31,7 +31,7 @@ public interface ValueModifier extends Evaluable, Named {
 
     String[] getArgs();
 
-    String apply(Function<String, String> getter, String[] args, String value) throws Exception;
+    String apply(Function<String, String> propertyResolver, String[] args, String value) throws Exception;
 
     default Pair<String[], String> extractArgsAndValue(String definition) {
         String separatorTag = UUID.randomUUID().toString();
@@ -62,10 +62,10 @@ public interface ValueModifier extends Evaluable, Named {
     default String applyByDefinition(Settings settings, Map<String, String> values,
             String[] args, String value) {
         try {
-            Function<String, String> getter = property -> values.getOrDefault(property,
+            Function<String, String> propertyResolver = property -> values.getOrDefault(property,
                 settings.getOrDefault(property, property));
 
-            return apply(getter, args, value);
+            return apply(propertyResolver, args, value);
         } catch(Exception ex) {
             throw new ModifierException(name(), getArgs(), args, value, ex.getMessage());
         }

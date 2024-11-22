@@ -15,11 +15,11 @@ public abstract class DateOperationValueModifier implements ValueModifier {
     }
 
     @Override
-    public String apply(Function<String, String> getter, String[] args, String value) throws Exception {
+    public String apply(Function<String, String> propertyResolver, String[] args, String value) throws Exception {
         DateTimeFormatter formatter = getFormatter(args[0]);
         LocalDateTime date = LocalDateTime.from(formatter.parse(value));
         ChronoUnit timeUnit = ChronoUnit.valueOf(args[1]);
-        long input = Long.parseLong(getter.apply(args[2]));
+        long input = Long.parseLong(propertyResolver.apply(args[2]));
 
         return formatter.format(apply(date, input, timeUnit));
     }

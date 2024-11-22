@@ -24,7 +24,7 @@ public class DateEpochValueModifier implements ValueModifier {
     }
 
     @Override
-    public String apply(Function<String, String> getter, String[] args, String value) throws Exception {
+    public String apply(Function<String, String> propertyResolver, String[] args, String value) throws Exception {
         DateTimeFormatter formatter = getFormatter(args[0]);
         LocalDateTime date = LocalDateTime.from(formatter.parse(value));
         ChronoUnit timeUnit = ChronoUnit.valueOf(args[1]);

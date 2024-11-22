@@ -15,8 +15,8 @@ public class PrefixValueModifier implements ValueModifier {
     }
 
     @Override
-    public String apply(Function<String, String> getter, String[] args, String value) throws Exception {
-        String input = getter.apply(args[0]);
+    public String apply(Function<String, String> propertyResolver, String[] args, String value) throws Exception {
+        String input = propertyResolver.apply(args[0]);
         return input + value;
     }
 }

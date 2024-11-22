@@ -15,7 +15,7 @@ public class WindowsSeparatorValueModifier implements ValueModifier {
     }
 
     @Override
-    public String apply(Function<String, String> getter, String[] args, String value) throws Exception {
+    public String apply(Function<String, String> propertyResolver, String[] args, String value) throws Exception {
         return value.replaceAll("\\\\", "\\\\\\\\");
     }
 }

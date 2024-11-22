@@ -17,7 +17,7 @@ public class ReadFileModifier implements ValueModifier {
     }
 
     @Override
-    public String apply(Function<String, String> getter, String[] args, String value) throws Exception {
+    public String apply(Function<String, String> propertyResolver, String[] args, String value) throws Exception {
         try {
             File output = new File(value);
             if(output.exists()) {
