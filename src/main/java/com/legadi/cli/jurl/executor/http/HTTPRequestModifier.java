@@ -34,6 +34,7 @@ import com.legadi.cli.jurl.model.http.HTTPRequestAuthEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestFileEntry;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
+import com.legadi.cli.jurl.options.SkipAuthenticationOption;
 import com.legadi.cli.jurl.options.OptionsReader.OptionEntry;
 import com.legadi.cli.jurl.parser.HTTPRequestParser;
 import com.legadi.cli.jurl.parser.RequestParser;
@@ -52,6 +53,11 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
             String requestName, String requestInputPath, RequestInput<HTTPRequestEntry> requestInput,
             Settings settings, List<OptionEntry> options) {
         HTTPRequestEntry request = requestInput.getRequests().get(requestName);
+
+        if(containsSkipAuth(request)) {
+            return Optional.empty();
+        }
+
         HTTPRequestEntry api = requestInput.getApi();
 
         if(request.getRequestAuth() == null) {
@@ -285,6 +291,14 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         request.setBodyFilePath(stringExpander.replaceAllInContent(request.getBodyFilePath()));
         request.getRequestFiles().forEach(requestFile -> expandRequestFile(stringExpander, requestFile));
         expandMap(stringExpander, request.getFormData());
+    }
+
+    private boolean containsSkipAuth(HTTPRequestEntry request) {
+        return request.getOptions()
+            .stream()
+            .map(Pair::getLeft)
+            .map(Object::getClass)
+            .anyMatch(SkipAuthenticationOption.class::isAssignableFrom);
     }
 
     private void expandRequestAuth(Settings settings, HTTPRequestAuthEntry requestAuth,
