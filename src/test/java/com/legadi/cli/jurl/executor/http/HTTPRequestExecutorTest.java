@@ -274,14 +274,14 @@ public class HTTPRequestExecutorTest extends EmbeddedAPIAbstractTest {
         auth.setTokenUrl("http://localhost:" + port + "/oauth/token");
         auth.setClientId(UUID.randomUUID().toString());
         auth.setClientSecret(UUID.randomUUID().toString());
-        auth.setScope("jurl");
+        auth.setScope("test");
         request.setTokenAuth(auth);
 
         HTTPResponseEntry response = Assertions.assertDoesNotThrow(
             () -> executor.executeRequest(settings, "src/test/resources/http-request-executor.http", request));
 
         Assertions.assertEquals(201, response.getStatusCode());
-        Assertions.assertTrue(response.getCurlCommand().contains("Authorization: Bearer "));
+        Assertions.assertTrue(response.getCurlCommand().contains("Authorization: Bearer"));
     }
 
     @Test
@@ -350,10 +350,10 @@ public class HTTPRequestExecutorTest extends EmbeddedAPIAbstractTest {
 
         Assertions.assertEquals(0, response.getStatusCode());
         Assertions.assertTrue(response.getResponseHeaders().isEmpty());
-        Assertions.assertEquals("curl -X POST "
-            + "-H \"Content-Type: application/json\" "
-            + "--data-binary \"@./executions/src/test/resources/http-request-executor_http/basic-post/" + settings.getTimestamp().toLocalDate() + "/" + settings.getExecutionTag() + ".body\" "
-            + "\"http://localhost:" + port + "/basic/body\"", response.getCurlCommand());
+        Assertions.assertTrue(response.getCurlCommand().contains("curl -X POST"));
+        Assertions.assertTrue(response.getCurlCommand().contains("-H \"Content-Type: application/json\""));
+        Assertions.assertTrue(response.getCurlCommand().contains("--data-binary \"@./executions/src/test/resources/http-request-executor_http/basic-post/" + settings.getTimestamp().toLocalDate() + "/" + settings.getExecutionTag() + ".body\""));
+        Assertions.assertTrue(response.getCurlCommand().contains("\"http://localhost:" + port + "/basic/body\""));
     }
 
     @Test

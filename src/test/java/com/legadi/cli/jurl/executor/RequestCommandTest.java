@@ -182,10 +182,10 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
         List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, REQUEST);
         List<Settings> settingsList = requestCatcher.getAll(correlationId, SETTINGS);
 
-        Assertions.assertEquals(3, requests.size());
+        Assertions.assertEquals(4, requests.size());
 
         Set<String> requestNames = new HashSet<>();
-        requestNames.add("authorization");
+        requestNames.add("create/token-authorization");
         requestNames.add("create");
 
         for(HTTPRequestEntry request : requests) {
@@ -212,15 +212,11 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
 
         Assertions.assertEquals(2, requests.size());
 
-        Set<String> requestNames = new HashSet<>();
-        requestNames.add("authorization");
-        requestNames.add("create");
+        Assertions.assertEquals("create/token-authorization", requests.get(0).getName());
 
-        for(HTTPRequestEntry request : requests) {
-            Assertions.assertTrue(requestNames.contains(request.getName()));
-            Assertions.assertDoesNotThrow(() -> UUID.fromString((String) request.getDefaults().get("clientId")));
-            Assertions.assertDoesNotThrow(() -> UUID.fromString((String) request.getDefaults().get("clientSecret")));
-        }
+        Assertions.assertEquals("create", requests.get(1).getName());
+        Assertions.assertDoesNotThrow(() -> UUID.fromString((String) requests.get(1).getDefaults().get("clientId")));
+        Assertions.assertDoesNotThrow(() -> UUID.fromString((String) requests.get(1).getDefaults().get("clientSecret")));
     }
 
     @Test
@@ -234,7 +230,7 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
         Assertions.assertEquals(2, requests.size());
 
         Set<String> requestNames = new HashSet<>();
-        requestNames.add("authorization");
+        requestNames.add("create/token-authorization");
         requestNames.add("create");
 
         for(HTTPRequestEntry request : requests) {
@@ -264,7 +260,7 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
         List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, REQUEST);
 
         Assertions.assertEquals(2, requests.size());
-        Assertions.assertEquals("authorization", requests.get(0).getName());
+        Assertions.assertEquals("create/token-authorization", requests.get(0).getName());
         Assertions.assertEquals("create", requests.get(1).getName());
         Assertions.assertEquals(RequestBehaviour.PRINT_ONLY.name(), settings.get(PROP_REQUEST_BEHAVIOUR));
     }
@@ -279,7 +275,7 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
         List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, REQUEST);
 
         Assertions.assertEquals(2, requests.size());
-        Assertions.assertEquals("authorization", requests.get(0).getName());
+        Assertions.assertEquals("create/token-authorization", requests.get(0).getName());
         Assertions.assertEquals("create", requests.get(1).getName());
         Assertions.assertEquals(RequestBehaviour.CURL_ONLY.name(), settings.get(PROP_REQUEST_BEHAVIOUR));
     }
@@ -288,7 +284,7 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
     public void executeWithAuthAndException() {
         String[] args = { "-n", "create", "src/test/resources/auth-request.spec.http" };
 
-        requestCatcher.add(correlationId, REQUEST_WITH_EXCEPTION, "authorization");
+        requestCatcher.add(correlationId, REQUEST_WITH_EXCEPTION, "create/token-authorization");
         requestCatcher.add(correlationId, REQUEST_WITH_EXCEPTION_THROW, new CommandException("authorization"));
 
         Assertions.assertThrows(CommandException.class,
@@ -299,7 +295,7 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
     public void executeWithFlowAndException() {
         String[] args = { "-n", "createInFlow", "src/test/resources/auth-request.spec.http" };
 
-        requestCatcher.add(correlationId, REQUEST_WITH_EXCEPTION, "authorization");
+        requestCatcher.add(correlationId, REQUEST_WITH_EXCEPTION, "create/token-authorization");
         requestCatcher.add(correlationId, REQUEST_WITH_EXCEPTION_THROW, new CommandException("authorization"));
 
         Assertions.assertThrows(CommandException.class,
@@ -474,7 +470,7 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
 
         List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, SETTINGS);
 
-        Assertions.assertEquals(3, requests.size());
+        Assertions.assertEquals(6, requests.size());
     }
 
     @Test
@@ -486,7 +482,7 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
         Settings settings = requestCatcher.getLast(correlationId, SETTINGS);
         List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, REQUEST);
 
-        Assertions.assertEquals(3, requests.size());
+        Assertions.assertEquals(6, requests.size());
         Assertions.assertEquals(RequestBehaviour.PRINT_ONLY.name(), settings.get(PROP_REQUEST_BEHAVIOUR));
     }
 
@@ -499,7 +495,7 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
         Settings settings = requestCatcher.getLast(correlationId, SETTINGS);
         List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, REQUEST);
 
-        Assertions.assertEquals(3, requests.size());
+        Assertions.assertEquals(6, requests.size());
         Assertions.assertEquals(RequestBehaviour.CURL_ONLY.name(), settings.get(PROP_REQUEST_BEHAVIOUR));
     }
 
@@ -535,7 +531,7 @@ public class RequestCommandTest extends DummyAPIAbstractTest {
 
         List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, REQUEST);
 
-        Assertions.assertEquals(6, requests.size());
+        Assertions.assertEquals(12, requests.size());
     }
 
     @Test

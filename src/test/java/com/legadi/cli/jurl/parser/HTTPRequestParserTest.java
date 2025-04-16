@@ -67,11 +67,13 @@ public class HTTPRequestParserTest {
         Assertions.assertEquals(1, mock.getResponseHeaders().size());
         Assertions.assertEquals("application/json", mock.getResponseHeaders().get("Accept"));
 
-        HTTPTokenAuthEntry auth = api.getRequestAuth();
+        HTTPTokenAuthEntry auth = api.getTokenAuth();
 
         Assertions.assertNotNull(auth);
-        Assertions.assertEquals("TOKEN", auth.getAuthType());
-        Assertions.assertEquals("auth.bearer.token", auth.getTokenParam());
+        Assertions.assertEquals("http://localhost:5555/oauth/token", auth.getTokenUrl());
+        Assertions.assertEquals("http-api-client-id", auth.getClientId());
+        Assertions.assertEquals("http-api-client-secret", auth.getClientSecret());
+        Assertions.assertEquals("test", auth.getScope());
     }
 
     @Test
@@ -132,11 +134,13 @@ public class HTTPRequestParserTest {
         Assertions.assertEquals(1, mock.getResponseHeaders().size());
         Assertions.assertEquals("application/json", mock.getResponseHeaders().get("Accept"));
 
-        HTTPTokenAuthEntry auth = request.getRequestAuth();
+        HTTPTokenAuthEntry auth = request.getTokenAuth();
 
         Assertions.assertNotNull(auth);
-        Assertions.assertEquals("TOKEN", auth.getAuthType());
-        Assertions.assertEquals("auth.bearer.token", auth.getTokenParam());
+        Assertions.assertEquals("http://localhost:5555/oauth/token", auth.getTokenUrl());
+        Assertions.assertEquals("http-request-client-id", auth.getClientId());
+        Assertions.assertEquals("http-request-client-secret", auth.getClientSecret());
+        Assertions.assertEquals("test", auth.getScope());
     }
 
     @Test
@@ -307,11 +311,13 @@ public class HTTPRequestParserTest {
         Assertions.assertEquals(1, mock.getResponseHeaders().size());
         Assertions.assertEquals("application/json", mock.getResponseHeaders().get("Accept"));
 
-        HTTPTokenAuthEntry auth = request.getRequestAuth();
+        HTTPTokenAuthEntry auth = request.getTokenAuth();
 
         Assertions.assertNotNull(auth);
-        Assertions.assertEquals("TOKEN", auth.getAuthType());
-        Assertions.assertEquals("auth.bearer.token", auth.getTokenParam());
+        Assertions.assertEquals("http://localhost:5555/oauth/token", auth.getTokenUrl());
+        Assertions.assertEquals("http-request-client-id", auth.getClientId());
+        Assertions.assertEquals("http-request-client-secret", auth.getClientSecret());
+        Assertions.assertEquals("test", auth.getScope());
     }
 
     @Test

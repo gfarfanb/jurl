@@ -22,7 +22,7 @@ import com.legadi.cli.jurl.embedded.util.RequestCatcher;
 @RequestMapping("/oauth")
 public class AuthorizationController {
 
-    public static final long DEFAULT_EXPIRES = 5L;
+    public static final long DEFAULT_EXPIRES_SECONDS = 300L;
 
     @PostMapping(value = "/token", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity<AuthToken> bearer(@RequestBody String body,
@@ -35,7 +35,7 @@ public class AuthorizationController {
         AuthToken authToken = new AuthToken();
         authToken.setAccessToken(UUID.randomUUID().toString());
         authToken.setTokenType("bearer");
-        authToken.setExpiresIn(DEFAULT_EXPIRES);
+        authToken.setExpiresIn(DEFAULT_EXPIRES_SECONDS);
         authToken.setScope("jurl");
 
         return ResponseEntity.status(HttpStatus.OK)

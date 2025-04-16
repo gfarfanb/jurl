@@ -32,6 +32,7 @@ import com.legadi.cli.jurl.model.http.HTTPMockEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestFileEntry;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
+import com.legadi.cli.jurl.model.http.auth.HTTPBasicAuthEntry;
 import com.legadi.cli.jurl.model.http.auth.HTTPTokenAuthEntry;
 import com.legadi.cli.jurl.options.OptionsReader.OptionEntry;
 import com.legadi.cli.jurl.options.SkipAuthenticationOption;
@@ -117,7 +118,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
 
     @Override
     public void mergeAPIDefinition(Settings settings, HTTPRequestEntry api, HTTPRequestEntry request) {
-        if(api == null) {
+        if(api == null || request == null) {
             return;
         }
 
@@ -176,6 +177,18 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         Map<String, Object> defaults = new HashMap<>(api.getDefaults());
         defaults.putAll(request.getDefaults());
         request.setDefaults(defaults);
+
+        if(request.getBasicAuth() == null) {
+            request.setBasicAuth(api.getBasicAuth());
+        } else if(api.getBasicAuth() != null) {
+            mergeBasicAuth(api.getBasicAuth(), request.getBasicAuth());
+        }
+
+        if(request.getTokenAuth() == null) {
+            request.setTokenAuth(api.getTokenAuth());
+        } else if(api.getTokenAuth() != null) {
+            mergeTokenAuth(api.getTokenAuth(), request.getTokenAuth());
+        }
     }
 
     @Override
@@ -453,6 +466,15 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
             if(isBlank(requestFile.getMineType())) {
                 requestFile.setMineType(apiFile.getMineType());
             }
+        }
+    }
+
+    private void mergeBasicAuth(HTTPBasicAuthEntry api, HTTPBasicAuthEntry request) {
+        if(isBlank(request.getUsername())) {
+            request.setUsername(api.getUsername());
+        }
+        if(isBlank(request.getPassword())) {
+            request.setPassword(api.getPassword());
         }
     }
 

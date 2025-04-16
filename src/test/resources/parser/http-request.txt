@@ -4,9 +4,11 @@ mock @responseContent = {}
 mock Accept: application/json
 mock field = discarded
 
-auth @authType = TOKEN
-auth @tokenParam = auth.bearer.token
-auth field = discarded
+token @tokenUrl = http://localhost:5555/oauth/token
+token @clientId = http-request-client-id
+token @clientSecret = http-request-client-secret
+token @scope = test
+token field = discarded
 
 file @path = src/test/resources/file.csv
 file @mineType = text/csv

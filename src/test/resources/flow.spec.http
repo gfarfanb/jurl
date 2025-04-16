@@ -1,12 +1,10 @@
 
 ### [api]
 
-Request-Catcher: {{request.catcher.identifier}}
-
-token @tokenUrl http://localhost:{{local.server.port}}/oauth/token
-token @clientId flow-spec-client-id
-token @clientSecret {{UUID:}}
-token @scope test
+token @tokenUrl = http://localhost:{{local.server.port}}/oauth/token
+token @clientId = {{UUID:}}
+token @clientSecret = {{UUID:}}
+token @scope = test
 
 
 ### [flow] basicWithAuthorization
@@ -21,16 +19,27 @@ step -s flow.tag {{basic.with.authorization.tag}} -n remove {{spec.path}}/basic-
 
 ### [flow] basicCrud
 
-step -n create -mb json src/test/resources/basic-functions.spec.http
+step -n create src/test/resources/basic-functions.spec.http
 step -n obtain src/test/resources/basic-functions.spec.http
 step -n remove src/test/resources/basic-functions.spec.http
 
 
 ### [flow] basicCrudDescription: Basic CRUD with description
 
-step -n create -mb json src/test/resources/basic-functions.spec.http
+step -n create src/test/resources/basic-functions.spec.http
 step -n obtain src/test/resources/basic-functions.spec.http
 step -n remove src/test/resources/basic-functions.spec.http
+
+
+### [flow] basicWithQuery
+
+@set-spec.path = {{workspacePath}}/src/test/resources
+
+step -s flow.tag {{basic.with.authorization.tag}} -n obtain {{spec.path}}/basic-functions.spec.http
+step -s flow.tag {{basic.with.authorization.tag}} -n create {{spec.path}}/basic-functions.spec.http
+step -s flow.tag {{basic.with.authorization.tag}} -n obtain {{spec.path}}/basic-functions.spec.http
+step -s flow.tag {{basic.with.authorization.tag}} -n update -mb json {{spec.path}}/basic-functions.spec.http
+step -s flow.tag {{basic.with.authorization.tag}} -n remove {{spec.path}}/basic-functions.spec.http
 
 
 ### [flow] invalidRecursiveFlow
@@ -53,6 +62,6 @@ step -n basicCrud
 
 ### [flow] basicCrudTwice
 
-step -t 2 -n create -mb json src/test/resources/basic-functions.spec.http
+step -t 2 -n create src/test/resources/basic-functions.spec.http
 step -t 2 -n obtain src/test/resources/basic-functions.spec.http
 step -t 2 -n remove src/test/resources/basic-functions.spec.http

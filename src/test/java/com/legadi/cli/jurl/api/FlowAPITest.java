@@ -1,12 +1,11 @@
 package com.legadi.cli.jurl.api;
 
+import static com.legadi.cli.jurl.common.CommonUtils.toGeneratedParam;
 import static com.legadi.cli.jurl.embedded.util.ObjectName.ASSERTIONS_RESULT;
-import static com.legadi.cli.jurl.embedded.util.ObjectName.CONDITIONS_RESULT;
+import static com.legadi.cli.jurl.embedded.util.ObjectName.REQUEST;
 import static com.legadi.cli.jurl.embedded.util.ObjectName.SETTINGS;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -18,40 +17,39 @@ import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.embedded.EmbeddedAPIAbstractTest;
 import com.legadi.cli.jurl.exception.RecursiveCommandException;
 import com.legadi.cli.jurl.model.AssertionResult;
+import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
+import com.legadi.cli.jurl.model.http.auth.HTTPTokenAuthEntry;
 
 public class FlowAPITest extends EmbeddedAPIAbstractTest {
 
     @Test
     public void authorization() {
-        Settings settings = new Settings();
-        Map<String, String> properties = new HashMap<>();
-
-        properties.put("auth.expiration.millis", "0");
-
-        Settings.mergeProperties("default", properties);
-
-        String previousToken = settings.getOrDefault("auth.access.token", null);
-        String previousExpirationMillis = settings.get("auth.expiration.millis");
-
-        UUID authCorrelationId = jurl("-n", "authorization", "src/test/resources/flow.spec.http");
+        UUID authCorrelationId = jurl("-n", "basicWithAuthorization", "src/test/resources/flow.spec.http");
         Settings authSettings = requestCatcher.getLast(authCorrelationId, SETTINGS);
+        HTTPTokenAuthEntry authEntry = requestCatcher.<HTTPRequestEntry>getAll(authCorrelationId, REQUEST)
+            .stream()
+            .filter(r -> !r.getName().contains("authorization"))
+            .findAny()
+            .map(HTTPRequestEntry::getTokenAuth)
+            .get();
 
-        String currentToken = Assertions.assertDoesNotThrow(
-            () -> authSettings.get("auth.access.token"));
-        String currentExpirationMillis = Assertions.assertDoesNotThrow(
-            () -> authSettings.get("auth.expiration.millis"));
+        String tokenParam = toGeneratedParam(authSettings.getRequestType(),
+            authEntry.getClientId(), "access-token");
+        String expirationMillisParam = toGeneratedParam(authSettings.getRequestType(),
+            authEntry.getClientId(), "expiration-millis");
+        String expirationDateParam = toGeneratedParam(authSettings.getRequestType(),
+            authEntry.getClientId(), "expiration-date");
+        String expirationTimeUnitParam = toGeneratedParam(authSettings.getRequestType(),
+            authEntry.getClientId(), "expires-in.SECONDS");
 
-        Assertions.assertNotEquals(previousToken, currentToken);
-        Assertions.assertNotEquals(previousExpirationMillis, currentExpirationMillis);
-
-        jurl("-n", "authorization", "src/test/resources/flow.spec.http");
-
-        Optional<AssertionResult> skipped = requestCatcher
-            .<Optional<AssertionResult>>getLastSaved(CONDITIONS_RESULT)
-            .getRight();;
-
-        Assertions.assertTrue(skipped.isPresent());
-        Assertions.assertFalse(skipped.get().isPassed());
+        Assertions.assertDoesNotThrow(
+            () -> authSettings.get(tokenParam));
+        Assertions.assertDoesNotThrow(
+            () -> authSettings.get(expirationMillisParam));
+        Assertions.assertDoesNotThrow(
+            () -> authSettings.get(expirationDateParam));
+        Assertions.assertDoesNotThrow(
+            () -> authSettings.get(expirationTimeUnitParam));
     }
 
     @Test

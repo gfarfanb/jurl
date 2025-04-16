@@ -223,6 +223,14 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             HTTPRequestEntry request, CurlBuilder curlBuilder) {
         StringBuilder printableHeaders = new StringBuilder();
 
+        if(request.getBasicAuth() != null) {
+            addBasicHeader(connection, settings, request.getBasicAuth(), curlBuilder, printableHeaders);
+        }
+
+        if(request.getTokenAuth() != null) {
+            addTokenHeader(connection, settings, request.getTokenAuth(), curlBuilder, printableHeaders);
+        }
+
         request.getHeaders()
             .entrySet()
             .stream()
@@ -232,14 +240,6 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
                 curlBuilder.addHeader(e.getKey(), e.getValue());
                 printableHeaders.append(e.getKey()).append(": ").append(e.getValue()).append("\n");
             });
-
-        if(request.getBasicAuth() != null) {
-            addBasicHeader(connection, settings, request.getBasicAuth(), curlBuilder, printableHeaders);
-        }
-
-        if(request.getTokenAuth() != null) {
-            addTokenHeader(connection, settings, request.getTokenAuth(), curlBuilder, printableHeaders);
-        }
 
         log(settings, printableHeaders.toString(), null);
     }
@@ -262,9 +262,14 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     private void addTokenHeader(HttpURLConnection connection, Settings settings,
             HTTPTokenAuthEntry authEntry, CurlBuilder curlBuilder, StringBuilder printableHeaders) {
         String tokenParam = toGeneratedParam(settings.getRequestType(), authEntry.getClientId(), "access-token");
-        String token = settings.get(tokenParam);
+        String token = settings.getOrDefault(tokenParam, "");
 
-        LOGGER.fine("Adding token authorization - param=" + tokenParam + " token=" + token);
+        if(isBlank(token)) {
+            LOGGER.warning("Bearer token was not generated for client ID:" + authEntry.getClientId());
+        } else {
+            LOGGER.fine("Adding token authorization - clientId=" + authEntry.getClientId()
+                + " token=" + token + " param=" + tokenParam);
+        }
 
         connection.setRequestProperty("Authorization", "Bearer " + token);
         curlBuilder.addHeader("Authorization", "Bearer " + token);

@@ -73,7 +73,7 @@ public class RequestCommand {
         Settings settings = new Settings();
 
         executeOptions(settings, optionsReader.getOptionEntries());
-        executeInputPath(new ExecutionTrace(settings), settings, optionsReader.getRequestInputPath(), null);
+        executeInputPath(new ExecutionTrace(settings), settings, null, optionsReader.getRequestInputPath(), null);
     }
 
     private void executeOptions(Settings settings, List<OptionEntry> optionEntries) {
@@ -89,13 +89,18 @@ public class RequestCommand {
     }
 
     private ExecutionStatus executeInputPath(ExecutionTrace trace, Settings settings,
-            String requestInputPath, StepTag stepTag) {
+            RequestInput<?> parentRequestInput, String requestInputPath, StepTag stepTag) {
         if(isBlank(requestInputPath)) {
             throw new CommandException("Request input path is null or empty");
         }
 
         RequestParser<?> requestParser = findOrFail(RequestParser.class, settings.getRequestType());
         RequestInput<?> requestInput = requestParser.parseInput(settings, Paths.get(requestInputPath));
+
+        if(parentRequestInput != null) {
+            RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, settings.getRequestType());
+            modifier.mergeAPI(settings, parentRequestInput.getApi(), requestInput.getApi());
+        }
 
         int times = settings.getTimes() > 0 ? settings.getTimes() : EXECUTE_ONCE;
         InputNameResolver inputNameResolver = new InputNameResolver(settings,
@@ -205,7 +210,7 @@ public class RequestCommand {
                     LOGGER.info("");
                 }
 
-                ExecutionStatus status = executeStep(stepSettings, trace, step, requestInputPath, stepTag);
+                ExecutionStatus status = executeStep(stepSettings, trace, step, requestInput, requestInputPath, stepTag);
                 stats.count(status);
             } catch(RecursiveCommandException ex) {
                 throw ex;
@@ -234,13 +239,13 @@ public class RequestCommand {
     }
 
     private ExecutionStatus executeStep(Settings settings, ExecutionTrace trace, StepEntry step,
-            String requestInputPath, StepTag stepTag) {
+            RequestInput<?> parentRequestInput, String requestInputPath, StepTag stepTag) {
         executeOptions(settings, step.getOptions());
 
         if(isNotBlank(step.getRequestInputPath())) {
-            return executeInputPath(trace, settings, step.getRequestInputPath(), stepTag);
+            return executeInputPath(trace, settings, parentRequestInput, step.getRequestInputPath(), stepTag);
         } else {
-            return executeInputPath(trace, settings, requestInputPath, stepTag);
+            return executeInputPath(trace, settings, parentRequestInput, requestInputPath, stepTag);
         }
     }
 
@@ -335,7 +340,7 @@ public class RequestCommand {
                 + (stepTag != null ? "\n  step=" + stepTag.getStepLabel() : ""));
 
             try {
-                return Optional.of(executeRequest(index, new StringExpander(settings),
+                return Optional.of(executeRequest(index, new StringExpander(settings.createForStep()),
                     requestInputPath, null, authRequest,
                     stepTag));
             } catch(CommandException | RequestException ex) {
