@@ -3,6 +3,7 @@ package com.legadi.cli.jurl.executor.http;
 import static com.legadi.cli.jurl.assertions.AssertionsResolver.evaluate;
 import static com.legadi.cli.jurl.common.Command.exec;
 import static com.legadi.cli.jurl.common.CommonUtils.getOrDefault;
+import static com.legadi.cli.jurl.common.CommonUtils.toGeneratedParam;
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotEmpty;
@@ -48,12 +49,12 @@ import com.legadi.cli.jurl.common.URLBuilder;
 import com.legadi.cli.jurl.exception.RequestException;
 import com.legadi.cli.jurl.executor.RequestExecutor;
 import com.legadi.cli.jurl.model.AssertionResult;
-import com.legadi.cli.jurl.model.AuthorizationType;
 import com.legadi.cli.jurl.model.RequestBehaviour;
-import com.legadi.cli.jurl.model.http.HTTPRequestAuthEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestFileEntry;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
+import com.legadi.cli.jurl.model.http.auth.HTTPBasicAuthEntry;
+import com.legadi.cli.jurl.model.http.auth.HTTPTokenAuthEntry;
 
 public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HTTPResponseEntry> {
 
@@ -222,6 +223,14 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             HTTPRequestEntry request, CurlBuilder curlBuilder) {
         StringBuilder printableHeaders = new StringBuilder();
 
+        if(request.getBasicAuth() != null) {
+            addBasicHeader(connection, settings, request.getBasicAuth(), curlBuilder, printableHeaders);
+        }
+
+        if(request.getTokenAuth() != null) {
+            addTokenHeader(connection, settings, request.getTokenAuth(), curlBuilder, printableHeaders);
+        }
+
         request.getHeaders()
             .entrySet()
             .stream()
@@ -232,33 +241,39 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
                 printableHeaders.append(e.getKey()).append(": ").append(e.getValue()).append("\n");
             });
 
-        if(request.getRequestAuth() != null) {
-            HTTPRequestAuthEntry auth = request.getRequestAuth();
-            AuthorizationType authType = AuthorizationType.valueOfOrDefault(auth.getAuthType());
+        log(settings, printableHeaders.toString(), null);
+    }
 
-            switch(authType) {
-                case BASIC:
-                    String username = settings.get(auth.getUsernameParam());
-                    String password = settings.get(auth.getPasswordParam());
-                    String basicDecoded = username + ":" + password;
-                    String basicValue = Base64.getEncoder().encodeToString(basicDecoded.getBytes());
-                    connection.setRequestProperty("Authorization", "Basic " + basicValue);
-                    curlBuilder.addHeader("Authorization", "Basic " + basicValue);
-                    printableHeaders.append("Authorization").append(": Basic ").append(basicValue).append("\n");
-                    break;
-                case TOKEN:
-                    String token = settings.get(auth.getTokenParam());
-                    connection.setRequestProperty("Authorization", "Bearer " + token);
-                    curlBuilder.addHeader("Authorization", "Bearer " + token);
-                    printableHeaders.append("Authorization").append(": Bearer ").append(token).append("\n");
-                    break;
-                default:
-                    LOGGER.fine("Authorization type not specified");
-                    break;
-            }
+    private void addBasicHeader(HttpURLConnection connection, Settings settings,
+            HTTPBasicAuthEntry authEntry, CurlBuilder curlBuilder, StringBuilder printableHeaders) {
+        LOGGER.fine("Adding token authorization - username=" + authEntry.getUsername()
+            + " password=" + authEntry.getPassword());
+
+        String username = authEntry.getUsername();
+        String password = authEntry.getPassword();
+        String basicDecoded = username + ":" + password;
+        String basicValue = Base64.getEncoder().encodeToString(basicDecoded.getBytes());
+
+        connection.setRequestProperty("Authorization", "Basic " + basicValue);
+        curlBuilder.addHeader("Authorization", "Basic " + basicValue);
+        printableHeaders.append("Authorization").append(": Basic ").append(basicValue).append("\n");
+    }
+
+    private void addTokenHeader(HttpURLConnection connection, Settings settings,
+            HTTPTokenAuthEntry authEntry, CurlBuilder curlBuilder, StringBuilder printableHeaders) {
+        String tokenParam = toGeneratedParam(settings.getRequestType(), authEntry.getClientId(), "access-token");
+        String token = settings.getOrDefault(tokenParam, "");
+
+        if(isBlank(token)) {
+            LOGGER.warning("Bearer token was not generated for client ID:" + authEntry.getClientId());
+        } else {
+            LOGGER.fine("Adding token authorization - clientId=" + authEntry.getClientId()
+                + " token=" + token + " param=" + tokenParam);
         }
 
-        log(settings, printableHeaders.toString(), null);
+        connection.setRequestProperty("Authorization", "Bearer " + token);
+        curlBuilder.addHeader("Authorization", "Bearer " + token);
+        printableHeaders.append("Authorization").append(": Bearer ").append(token).append("\n");
     }
 
     private Path sendBody(HttpURLConnection connection, Settings settings, 

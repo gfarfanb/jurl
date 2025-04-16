@@ -1,5 +1,6 @@
 package com.legadi.cli.jurl.embedded.executor;
 
+import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.embedded.util.ObjectName.CONDITIONS_RESULT;
 import static com.legadi.cli.jurl.embedded.util.ObjectName.REQUEST;
 import static com.legadi.cli.jurl.embedded.util.ObjectName.REQUEST_INPUT_PATH;
@@ -37,6 +38,11 @@ public class HTTPRequestTestExecutor extends HTTPRequestExecutor {
     @Override
     public HTTPResponseEntry executeRequest(Settings settings, String requestInputPath,
             HTTPRequestEntry request) throws RequestException {
+        if(isBlank(request.getHeaders().get("Request-Catcher"))) {
+            request.getHeaders().put("Request-Catcher",
+                settings.getOrDefault("request.catcher.identifier", ""));
+        }
+
         requestCatcher.add(identifier, SETTINGS, settings);
         requestCatcher.add(identifier, REQUEST_INPUT_PATH, requestInputPath);
         requestCatcher.add(identifier, REQUEST, request);

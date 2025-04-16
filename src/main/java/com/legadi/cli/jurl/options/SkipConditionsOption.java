@@ -27,11 +27,6 @@ public class SkipConditionsOption extends Option {
     }
 
     @Override
-    public boolean allowedForRequestAuth() {
-        return true;
-    }
-
-    @Override
     public boolean execute(Settings settings, String[] args) {
         settings.putOverride(PROP_SKIP_CONDITIONS, Boolean.TRUE.toString());
         return true;

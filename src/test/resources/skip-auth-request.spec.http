@@ -5,13 +5,12 @@
 @port = {{local.server.port}}
 @basePath = basic
 
-auth @requestInputPath = src/test/resources/skip-auth.spec.http
-auth @inputName = authorization
-auth @authType = TOKEN
-auth @tokenParam = auth.bearer.token
+token @tokenUrl = http://localhost:{{local.server.port}}/oauth/token
+token @clientId = {{UUID:}}
+token @clientSecret = {{UUID:}}
+token @scope = test
 
 Content-Type: application/json
-Request-Catcher: {{request.catcher.identifier}}
 
 
 ### [request] create

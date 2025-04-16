@@ -24,22 +24,21 @@ public class StartInStepOptionTest extends OptionAbstractTest<StartInStepOption>
         UUID correlationId = Assertions.assertDoesNotThrow(
             () -> jurl(
                 "-si", "2",
-                "-n", "basicWithAuthorization",
+                "-n", "basicWithQuery",
                 "src/test/resources/flow.spec.http"
             ));
 
         List<HTTPRequestEntry> requests = requestCatcher.getAll(correlationId, REQUEST);
         List<HTTPResponseEntry> responses = requestCatcher.getAll(correlationId, RESPONSE);
 
-        Assertions.assertTrue(requests.stream().map(HTTPRequestEntry::getName)
-            .noneMatch(n -> n.equalsIgnoreCase("authorization")));
-        Assertions.assertEquals(4, requests.size());
-        Assertions.assertEquals(4, responses.size());
+        Assertions.assertEquals(5, requests.size());
+        Assertions.assertEquals(5, responses.size());
 
-        Assertions.assertEquals("create", requests.get(0).getName());
-        Assertions.assertEquals("obtain", requests.get(1).getName());
-        Assertions.assertEquals("update", requests.get(2).getName());
-        Assertions.assertEquals("remove", requests.get(3).getName());
+        Assertions.assertEquals("create/token-authorization", requests.get(0).getName());
+        Assertions.assertEquals("create", requests.get(1).getName());
+        Assertions.assertEquals("obtain", requests.get(2).getName());
+        Assertions.assertEquals("update", requests.get(3).getName());
+        Assertions.assertEquals("remove", requests.get(4).getName());
     }
 
     @Test

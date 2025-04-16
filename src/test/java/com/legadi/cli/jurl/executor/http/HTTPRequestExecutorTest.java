@@ -8,9 +8,6 @@ import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_CONDITIONS;
 import static com.legadi.cli.jurl.common.WriterUtils.writeFile;
 import static com.legadi.cli.jurl.executor.http.HTTPRequestModifier.BODY_TEMPORAL_PATH;
 import static com.legadi.cli.jurl.model.AssertionType.CONDITION;
-import static com.legadi.cli.jurl.model.AuthorizationType.BASIC;
-import static com.legadi.cli.jurl.model.AuthorizationType.EMPTY;
-import static com.legadi.cli.jurl.model.AuthorizationType.TOKEN;
 import static com.legadi.cli.jurl.model.RequestBehaviour.CURL_ONLY;
 import static com.legadi.cli.jurl.model.RequestBehaviour.PRINT_ONLY;
 
@@ -37,10 +34,11 @@ import com.legadi.cli.jurl.executor.RequestExecutor;
 import com.legadi.cli.jurl.model.AssertionEntry;
 import com.legadi.cli.jurl.model.AssertionResult;
 import com.legadi.cli.jurl.model.http.HTTPMockEntry;
-import com.legadi.cli.jurl.model.http.HTTPRequestAuthEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestFileEntry;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
+import com.legadi.cli.jurl.model.http.auth.HTTPBasicAuthEntry;
+import com.legadi.cli.jurl.model.http.auth.HTTPTokenAuthEntry;
 
 public class HTTPRequestExecutorTest extends EmbeddedAPIAbstractTest {
 
@@ -244,11 +242,10 @@ public class HTTPRequestExecutorTest extends EmbeddedAPIAbstractTest {
         settings.putOverride("username", "test");
         settings.putOverride("password", "73st");
 
-        HTTPRequestAuthEntry auth = new HTTPRequestAuthEntry();
-        auth.setAuthType(BASIC.name());
-        auth.setUsernameParam("username");
-        auth.setPasswordParam("password");
-        request.setRequestAuth(auth);
+        HTTPBasicAuthEntry auth = new HTTPBasicAuthEntry();
+        auth.setUsername("test");
+        auth.setPassword("73st");
+        request.setBasicAuth(auth);
 
         HTTPResponseEntry response = Assertions.assertDoesNotThrow(
             () -> executor.executeRequest(settings, "src/test/resources/http-request-executor.http", request));
@@ -264,6 +261,7 @@ public class HTTPRequestExecutorTest extends EmbeddedAPIAbstractTest {
         HTTPRequestExecutor executor = findByNameOrFail(RequestExecutor.class, "http");
         HTTPRequestEntry request = new HTTPRequestEntry();
         Settings settings = new Settings();
+        HTTPAuthEntryFactory authEntryFactory = new HTTPAuthEntryFactory(settings);
 
         request.setName("basic-post");
         request.setUrl("http://localhost:" + port + "/basic/body");
@@ -272,21 +270,18 @@ public class HTTPRequestExecutorTest extends EmbeddedAPIAbstractTest {
         request.getHeaders().put("Request-Catcher", requestCatcherId);
         request.setBodyContent("{}");
 
-        String token = UUID.randomUUID().toString();
-
-        settings.putOverride("token", token);
-        
-
-        HTTPRequestAuthEntry auth = new HTTPRequestAuthEntry();
-        auth.setAuthType(TOKEN.name());
-        auth.setTokenParam("token");
-        request.setRequestAuth(auth);
+        HTTPTokenAuthEntry auth = authEntryFactory.instanceTokenAuth();
+        auth.setTokenUrl("http://localhost:" + port + "/oauth/token");
+        auth.setClientId(UUID.randomUUID().toString());
+        auth.setClientSecret(UUID.randomUUID().toString());
+        auth.setScope("test");
+        request.setTokenAuth(auth);
 
         HTTPResponseEntry response = Assertions.assertDoesNotThrow(
             () -> executor.executeRequest(settings, "src/test/resources/http-request-executor.http", request));
 
         Assertions.assertEquals(201, response.getStatusCode());
-        Assertions.assertTrue(response.getCurlCommand().contains("Authorization: Bearer " + token));
+        Assertions.assertTrue(response.getCurlCommand().contains("Authorization: Bearer"));
     }
 
     @Test
@@ -301,14 +296,6 @@ public class HTTPRequestExecutorTest extends EmbeddedAPIAbstractTest {
         request.getHeaders().put("Content-Type", "application/json");
         request.getHeaders().put("Request-Catcher", requestCatcherId);
         request.setBodyContent("{}");
-
-        String token = UUID.randomUUID().toString();
-
-        settings.putOverride("token", token);
-
-        HTTPRequestAuthEntry auth = new HTTPRequestAuthEntry();
-        auth.setAuthType(EMPTY.name());
-        request.setRequestAuth(auth);
 
         HTTPResponseEntry response = Assertions.assertDoesNotThrow(
             () -> executor.executeRequest(settings, "src/test/resources/http-request-executor.http", request));
@@ -363,10 +350,10 @@ public class HTTPRequestExecutorTest extends EmbeddedAPIAbstractTest {
 
         Assertions.assertEquals(0, response.getStatusCode());
         Assertions.assertTrue(response.getResponseHeaders().isEmpty());
-        Assertions.assertEquals("curl -X POST "
-            + "-H \"Content-Type: application/json\" "
-            + "--data-binary \"@./executions/src/test/resources/http-request-executor_http/basic-post/" + settings.getTimestamp().toLocalDate() + "/" + settings.getExecutionTag() + ".body\" "
-            + "\"http://localhost:" + port + "/basic/body\"", response.getCurlCommand());
+        Assertions.assertTrue(response.getCurlCommand().contains("curl -X POST"));
+        Assertions.assertTrue(response.getCurlCommand().contains("-H \"Content-Type: application/json\""));
+        Assertions.assertTrue(response.getCurlCommand().contains("--data-binary \"@./executions/src/test/resources/http-request-executor_http/basic-post/" + settings.getTimestamp().toLocalDate() + "/" + settings.getExecutionTag() + ".body\""));
+        Assertions.assertTrue(response.getCurlCommand().contains("\"http://localhost:" + port + "/basic/body\""));
     }
 
     @Test

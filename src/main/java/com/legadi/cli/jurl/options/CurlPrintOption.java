@@ -28,11 +28,6 @@ public class CurlPrintOption extends Option {
     }
 
     @Override
-    public boolean allowedForRequestAuth() {
-        return true;
-    }
-
-    @Override
     public boolean execute(Settings settings, String[] args) {
         settings.putUserInput(PROP_REQUEST_BEHAVIOUR, RequestBehaviour.CURL_ONLY.name());
         return true;

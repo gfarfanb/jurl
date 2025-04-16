@@ -4,6 +4,18 @@ import static com.legadi.cli.jurl.common.SettingsConstants.JURL_CONSOLE_WIDTH;
 import static com.legadi.cli.jurl.common.SettingsConstants.JURL_FILE_SEPARATOR;
 import static com.legadi.cli.jurl.common.SettingsConstants.JURL_OS_NAME;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_ADD_ON_OPTION_CLASSES;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_ACCESS_TOKEN_FIELD_NAME;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_BODY_TEMPLATE;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_CLIENT_ID_FIELD_NAME;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_CLIENT_SECRET_FIELD_NAME;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_CONTENT_TYPE;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_EXPIRES_IN_FIELD_NAME;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_EXPIRES_IN_TIME_UNIT;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_GRANT_TYPE;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_GRANT_TYPE_FIELD_NAME;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_REQUEST_METHOD;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_SCOPE_FIELD_NAME;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_TOKEN_TYPE_FIELD_NAME;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_OUTPUT_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONSOLE_TAB_LENGTH;
@@ -195,5 +207,53 @@ public interface SettingsDefaults {
 
     default String getTab() {
         return String.format("%-" + getConsoleTabLength() + "s", "");
+    }
+
+    default String getAuthBearerGrantType() {
+        return get(PROP_AUTH_BEARER_GRANT_TYPE);
+    }
+
+    default String getAuthBearerGrantTypeFieldName() {
+        return get(PROP_AUTH_BEARER_GRANT_TYPE_FIELD_NAME);
+    }
+
+    default String getAuthBearerClientIdFieldName() {
+        return get(PROP_AUTH_BEARER_CLIENT_ID_FIELD_NAME);
+    }
+
+    default String getAuthBearerClientSecretFieldName() {
+        return get(PROP_AUTH_BEARER_CLIENT_SECRET_FIELD_NAME);
+    }
+
+    default String getAuthBearerScopeFieldName() {
+        return get(PROP_AUTH_BEARER_SCOPE_FIELD_NAME);
+    }
+
+    default String getAuthBearerAccessTokenFieldName() {
+        return get(PROP_AUTH_BEARER_ACCESS_TOKEN_FIELD_NAME);
+    }
+
+    default String getAuthBearerExpiresInFieldName() {
+        return get(PROP_AUTH_BEARER_EXPIRES_IN_FIELD_NAME);
+    }
+
+    default String getAuthBearerExpiresInTimeUnit() {
+        return get(PROP_AUTH_BEARER_EXPIRES_IN_TIME_UNIT);
+    }
+
+    default String getAuthBearerTokenTypeFieldName() {
+        return get(PROP_AUTH_BEARER_TOKEN_TYPE_FIELD_NAME);
+    }
+
+    default String getAuthBearerRequestMethod() {
+        return get(PROP_AUTH_BEARER_REQUEST_METHOD);
+    }
+
+    default String getAuthBearerContentType() {
+        return get(PROP_AUTH_BEARER_CONTENT_TYPE);
+    }
+
+    default String getAuthBearerBodyTemplate() {
+        return get(PROP_AUTH_BEARER_BODY_TEMPLATE);
     }
 }

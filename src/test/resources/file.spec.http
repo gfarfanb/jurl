@@ -1,9 +1,4 @@
 
-### [api]
-
-Request-Catcher: {{request.catcher.identifier}}
-
-
 ### [request] upload
 http://localhost:{{local.server.port}}/file
 

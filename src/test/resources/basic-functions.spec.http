@@ -6,7 +6,6 @@
 @basePath = basic
 
 Content-Type: application/json
-Request-Catcher: {{request.catcher.identifier}}
 
 
 ### [request] create

@@ -31,15 +31,17 @@ import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.exception.RequestException;
+import com.legadi.cli.jurl.executor.http.HTTPAuthEntryFactory;
 import com.legadi.cli.jurl.model.AssertionEntry;
 import com.legadi.cli.jurl.model.AssertionType;
 import com.legadi.cli.jurl.model.FlowEntry;
 import com.legadi.cli.jurl.model.RequestInput;
 import com.legadi.cli.jurl.model.StepEntry;
 import com.legadi.cli.jurl.model.http.HTTPMockEntry;
-import com.legadi.cli.jurl.model.http.HTTPRequestAuthEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestFileEntry;
+import com.legadi.cli.jurl.model.http.auth.HTTPBasicAuthEntry;
+import com.legadi.cli.jurl.model.http.auth.HTTPTokenAuthEntry;
 import com.legadi.cli.jurl.options.Option;
 import com.legadi.cli.jurl.options.OptionsReader;
 import com.legadi.cli.jurl.options.OptionsReader.OptionEntry;
@@ -52,7 +54,8 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     private static final Map<String, Field> REQUEST_FILE_FIELDS = getAllFields(HTTPRequestFileEntry.class);
     private static final String REQUEST_FILE_FIELD_PATH = "path";
     private static final String REQUEST_FILE_FIELD_FIELD = "field";
-    private static final Map<String, Field> REQUEST_AUTH_FIELDS = getAllFields(HTTPRequestAuthEntry.class);
+    private static final Map<String, Field> BASIC_AUTH_FIELDS = getAllFields(HTTPBasicAuthEntry.class);
+    private static final Map<String, Field> TOKEN_AUTH_FIELDS = getAllFields(HTTPTokenAuthEntry.class);
     private static final Map<String, Field> MOCK_FIELDS = getAllFields(HTTPMockEntry.class);
 
     private static final Pattern NAME_DESCRIPTION_PATTERN = Pattern.compile("^(?i)(.*)[ ]*:(.*)");
@@ -67,7 +70,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         SOURCE("^(?i)source (.*)"),
         REQUEST_FIELD("^(?i)@([\\w:.\\-_@~]+)[ ]*=(.*)"),
         SET_DEFAULT("^(?i)@(set|list|list\\*)-([\\w:.\\-_@~]+)[ ]*=(.*)"),
-        FIELD_VARIABLE("^(?i)(file|auth|mock|form|output)[ ]*[@]?([\\w:.\\-_@~]+)[ ]*=(.*)"),
+        FIELD_VARIABLE("^(?i)(file|basic|token|mock|form|output)[ ]*[@]?([\\w:.\\-_@~]+)[ ]*=(.*)"),
         URL("^(?i)http.*"),
         URL_METHOD("^(?i)(get|head|post|put|delete|connect|options|trace|patch)[ ]+(.*)"),
         HEADER("^(?i)(mock)?[ ]*([\\w\\-]+): (.*)"),
@@ -165,10 +168,10 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
                 switch(section) {
                     case API:
-                        decorateRequest(apiCarrier, line);
+                        decorateRequest(settings, apiCarrier, line);
                         break;
                     case REQUEST:
-                        decorateRequest(requestCarrier, line);
+                        decorateRequest(settings, requestCarrier, line);
                         break;
                     case FLOW:
                         decorateFlow(flowCarrier, line);
@@ -202,20 +205,28 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                 readEnvLabel(settings, labeledEnvs, line);
                 readComment(line);
 
-                decorateRequest(requestCarrier, line);
+                decorateRequest(settings, requestCarrier, line);
             } catch(ParsedLineException ex) {}
         }
     }
 
-    private void decorateRequest(AtomicReference<Pair<HTTPRequestEntry, RequestFileSupplier>> requestCarrier,
+    private void decorateRequest(Settings settings,
+            AtomicReference<Pair<HTTPRequestEntry, RequestFileSupplier>> requestCarrier,
             String line) {
         HTTPRequestEntry request = requestCarrier.get().getLeft();
         RequestFileSupplier fileSupplier = requestCarrier.get().getRight();
-        Supplier<HTTPRequestAuthEntry> authSupplier = () -> {
-            if(request.getRequestAuth() == null) {
-                request.setRequestAuth(new HTTPRequestAuthEntry());
+        HTTPAuthEntryFactory authEntryFactory = new HTTPAuthEntryFactory(settings);
+        Supplier<HTTPBasicAuthEntry> basicAuthSupplier = () -> {
+            if(request.getBasicAuth() == null) {
+                request.setBasicAuth(new HTTPBasicAuthEntry());
             }
-            return request.getRequestAuth();
+            return request.getBasicAuth();
+        };
+        Supplier<HTTPTokenAuthEntry> tokenAuthSupplier = () -> {
+            if(request.getTokenAuth() == null) {
+                request.setTokenAuth(authEntryFactory.instanceTokenAuth());
+            }
+            return request.getTokenAuth();
         };
         Supplier<HTTPMockEntry> mockSupplier = () -> {
             if(request.getMockDefinition() == null) {
@@ -230,7 +241,8 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         addHeader(request, mockSupplier, line);
         addDefault(request.getDefaults(), line);
         addRequestField(request, line);
-        addFieldOrVariable(request, fileSupplier, authSupplier, mockSupplier, line);
+        addFieldOrVariable(request, fileSupplier,
+            basicAuthSupplier, tokenAuthSupplier, mockSupplier, line);
         addConditionOrAssertion(request, line);
 
         String body = request.getBodyContent();
@@ -451,7 +463,8 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
     private void addFieldOrVariable(HTTPRequestEntry request,
             RequestFileSupplier fileSupplier,
-            Supplier<HTTPRequestAuthEntry> authSupplier,
+            Supplier<HTTPBasicAuthEntry> basicAuthSupplier,
+            Supplier<HTTPTokenAuthEntry> tokenAuthSupplier,
             Supplier<HTTPMockEntry> mockSupplier,
             String line) {
         applyLine(LinePattern.FIELD_VARIABLE, line,
@@ -465,9 +478,13 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                     if(isFieldRequired) {
                         addFileField(fileSupplier, fieldName, value);
                     }
-                } else if("auth".equalsIgnoreCase(type)) {
+                } else if("basic".equalsIgnoreCase(type)) {
                     if(isFieldRequired) {
-                        addField(REQUEST_AUTH_FIELDS, authSupplier.get(), fieldName, value);
+                        addField(BASIC_AUTH_FIELDS, basicAuthSupplier.get(), fieldName, value);
+                    }
+                } else if("token".equalsIgnoreCase(type)) {
+                    if(isFieldRequired) {
+                        addField(TOKEN_AUTH_FIELDS, tokenAuthSupplier.get(), fieldName, value);
                     }
                 } else if("mock".equalsIgnoreCase(type)) {
                     if(isFieldRequired) {

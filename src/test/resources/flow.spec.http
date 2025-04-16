@@ -1,30 +1,16 @@
 
 ### [api]
 
-Request-Catcher: {{request.catcher.identifier}}
-
-
-### [request] authorization
-POST http://localhost:{{local.server.port}}/oauth/token
-Content-Type: application/x-www-form-urlencoded
-
-grant_type=client_credentials&client_id={{UUID:}}&client_secret={{UUID:}}
-
-condition LESS_THAN {{:default:0:auth.expiration.millis}} {{DATE-TIME:date-epoch:ISO_LOCAL_DATE_TIME:MILLIS:}}
-
-output auth.access.token = {{OUT/access_token}}
-output auth.expires-in.secs = {{OUT/expires_in}}
-output auth.expiration.date = {{DATE-TIME:date-plus:yyyy-MM-dd'T'HH\:mm\:ss.n:SECONDS:auth.expires-in.secs:}}
-output auth.expiration.millis = {{:date-epoch:ISO_LOCAL_DATE_TIME:MILLIS:auth.expiration.date}}
-
-assert EQUALS_TO 200 {{HTTP/status}}
+token @tokenUrl = http://localhost:{{local.server.port}}/oauth/token
+token @clientId = {{UUID:}}
+token @clientSecret = {{UUID:}}
+token @scope = test
 
 
 ### [flow] basicWithAuthorization
 
 @set-spec.path = {{workspacePath}}/src/test/resources
 
-step -s flow.tag {{basic.with.authorization.tag}} -n authorization
 step -s flow.tag {{basic.with.authorization.tag}} -n create {{spec.path}}/basic-functions.spec.http
 step -s flow.tag {{basic.with.authorization.tag}} -n obtain {{spec.path}}/basic-functions.spec.http
 step -s flow.tag {{basic.with.authorization.tag}} -n update -mb json {{spec.path}}/basic-functions.spec.http
@@ -33,22 +19,31 @@ step -s flow.tag {{basic.with.authorization.tag}} -n remove {{spec.path}}/basic-
 
 ### [flow] basicCrud
 
-step -n create -mb json src/test/resources/basic-functions.spec.http
+step -n create src/test/resources/basic-functions.spec.http
 step -n obtain src/test/resources/basic-functions.spec.http
 step -n remove src/test/resources/basic-functions.spec.http
 
 
 ### [flow] basicCrudDescription: Basic CRUD with description
 
-step -n create -mb json src/test/resources/basic-functions.spec.http
+step -n create src/test/resources/basic-functions.spec.http
 step -n obtain src/test/resources/basic-functions.spec.http
 step -n remove src/test/resources/basic-functions.spec.http
 
 
+### [flow] basicWithQuery
+
+@set-spec.path = {{workspacePath}}/src/test/resources
+
+step -s flow.tag {{basic.with.authorization.tag}} -n obtain {{spec.path}}/basic-functions.spec.http
+step -s flow.tag {{basic.with.authorization.tag}} -n create {{spec.path}}/basic-functions.spec.http
+step -s flow.tag {{basic.with.authorization.tag}} -n obtain {{spec.path}}/basic-functions.spec.http
+step -s flow.tag {{basic.with.authorization.tag}} -n update -mb json {{spec.path}}/basic-functions.spec.http
+step -s flow.tag {{basic.with.authorization.tag}} -n remove {{spec.path}}/basic-functions.spec.http
+
+
 ### [flow] invalidRecursiveFlow
 
-step -n authorization
-step -n authorization
 step -n invalidRecursiveFlow src/test/resources/flow.spec.http
 
 
@@ -67,6 +62,6 @@ step -n basicCrud
 
 ### [flow] basicCrudTwice
 
-step -t 2 -n create -mb json src/test/resources/basic-functions.spec.http
+step -t 2 -n create src/test/resources/basic-functions.spec.http
 step -t 2 -n obtain src/test/resources/basic-functions.spec.http
 step -t 2 -n remove src/test/resources/basic-functions.spec.http

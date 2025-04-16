@@ -28,7 +28,7 @@ public class AuthAPITest extends EmbeddedAPIAbstractTest {
 
         HTTPRequestEntry authRequest = requests.get(0);
 
-        Assertions.assertEquals("authorization", authRequest.getName());
+        Assertions.assertEquals("create/token-authorization", authRequest.getName());
 
         List<HTTPRequestEntry> createRequests = requests.subList(1, requests.size());
 

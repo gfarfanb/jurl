@@ -8,7 +8,6 @@ source src/test/resources/auth.part.http
 @basePath = basic
 
 Content-Type: application/json
-Request-Catcher: {{request.catcher.identifier}}
 
 @set-clientId = {{UUID:}}
 @set-clientSecret = {{UUID:}}
