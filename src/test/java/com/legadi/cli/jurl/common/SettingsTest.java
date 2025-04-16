@@ -69,6 +69,21 @@ public class SettingsTest {
                 "text/xml"
             },
             settings.getPrintableMimeTypes());
+        Assertions.assertEquals(2, settings.getConsoleTabLength());
+        Assertions.assertEquals(120, settings.getDefaultConsoleWidth());
+        Assertions.assertEquals("client_credentials", settings.getAuthBearerGrantType());
+        Assertions.assertEquals("grant_type", settings.getAuthBearerGrantTypeFieldName());
+        Assertions.assertEquals("client_id", settings.getAuthBearerClientIdFieldName());
+        Assertions.assertEquals("client_secret", settings.getAuthBearerClientSecretFieldName());
+        Assertions.assertEquals("scope", settings.getAuthBearerScopeFieldName());
+        Assertions.assertEquals("access_token", settings.getAuthBearerAccessTokenFieldName());
+        Assertions.assertEquals("expires_in", settings.getAuthBearerExpiresInFieldName());
+        Assertions.assertEquals("SECONDS", settings.getAuthBearerExpiresInTimeUnit());
+        Assertions.assertEquals("token_type", settings.getAuthBearerTokenTypeFieldName());
+        Assertions.assertEquals("POST", settings.getAuthBearerRequestMethod());
+        Assertions.assertEquals("application/x-www-form-urlencoded", settings.getAuthBearerContentType());
+        Assertions.assertEquals("{{grantTypeFieldName}}={{grantType}}&{{clientIdFieldName}}={{clientId}}&{{clientSecretFieldName}}={{clientSecret}}&{{scopeFieldName}}={{scope}}",
+            settings.getAuthBearerBodyTemplate());
     }
 
     @Test

@@ -13,15 +13,7 @@ public class HTTPAuthEntryFactory {
 
     public HTTPTokenAuthEntry instanceTokenAuth() {
         HTTPTokenAuthEntry authEntry = new HTTPTokenAuthEntry();
-        authEntry.setGrantType(settings.getGranType());
-        authEntry.setGrantTypeFieldName(settings.getGrantTypeFieldName());
-        authEntry.setClientIdFieldName(settings.getClientIdFieldName());
-        authEntry.setClientSecretFieldName(settings.getClientSecretFieldName());
-        authEntry.setScopeFieldName(settings.getScopeFieldName());
-        authEntry.setAccessTokenFieldName(settings.getAccessTokenFieldName());
-        authEntry.setExpiresInFieldName(settings.getExpiresInFieldName());
-        authEntry.setExpiresInTimeUnit(settings.getExpiresInTimeUnit());
-        authEntry.setTokenTypeFieldName(settings.getTokenTypeFieldName());
+        authEntry.setGrantType(settings.getAuthBearerGrantType());
         return authEntry;
     }
 }

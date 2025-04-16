@@ -18,6 +18,7 @@ import com.legadi.cli.jurl.model.RequestInput;
 import com.legadi.cli.jurl.model.StepEntry;
 import com.legadi.cli.jurl.model.http.HTTPMockEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
+import com.legadi.cli.jurl.model.http.auth.HTTPBasicAuthEntry;
 import com.legadi.cli.jurl.model.http.auth.HTTPTokenAuthEntry;
 
 public class HTTPRequestParserTest {
@@ -67,13 +68,19 @@ public class HTTPRequestParserTest {
         Assertions.assertEquals(1, mock.getResponseHeaders().size());
         Assertions.assertEquals("application/json", mock.getResponseHeaders().get("Accept"));
 
-        HTTPTokenAuthEntry auth = api.getTokenAuth();
+        HTTPBasicAuthEntry basicAuth = api.getBasicAuth();
 
-        Assertions.assertNotNull(auth);
-        Assertions.assertEquals("http://localhost:5555/oauth/token", auth.getTokenUrl());
-        Assertions.assertEquals("http-api-client-id", auth.getClientId());
-        Assertions.assertEquals("http-api-client-secret", auth.getClientSecret());
-        Assertions.assertEquals("test", auth.getScope());
+        Assertions.assertNotNull(basicAuth);
+        Assertions.assertEquals("http-api-username", basicAuth.getUsername());
+        Assertions.assertEquals("http-api-password", basicAuth.getPassword());
+
+        HTTPTokenAuthEntry tokenAuth = api.getTokenAuth();
+
+        Assertions.assertNotNull(tokenAuth);
+        Assertions.assertEquals("http://localhost:5555/oauth/token", tokenAuth.getTokenUrl());
+        Assertions.assertEquals("http-api-client-id", tokenAuth.getClientId());
+        Assertions.assertEquals("http-api-client-secret", tokenAuth.getClientSecret());
+        Assertions.assertEquals("test", tokenAuth.getScope());
     }
 
     @Test

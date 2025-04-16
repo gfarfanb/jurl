@@ -34,6 +34,7 @@ import com.legadi.cli.jurl.model.StepEntry;
 import com.legadi.cli.jurl.model.http.HTTPMockEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestFileEntry;
+import com.legadi.cli.jurl.model.http.auth.HTTPBasicAuthEntry;
 import com.legadi.cli.jurl.model.http.auth.HTTPTokenAuthEntry;
 import com.legadi.cli.jurl.options.Option;
 import com.legadi.cli.jurl.options.OptionsReader;
@@ -508,6 +509,160 @@ public class HTTPRequestModifierTest {
         Assertions.assertEquals("application/xml", request.getRequestFiles().get(0).getMineType());
         Assertions.assertFalse(request.getFormData().isEmpty());
         Assertions.assertEquals("field-value", request.getFormData().get("field"));
+    }
+
+    @Test
+    public void mergeAPIDefinitionNullRequestsObjects() {
+        Settings settings = new Settings();
+        HTTPRequestEntry api = new HTTPRequestEntry();
+        HTTPRequestEntry request = new HTTPRequestEntry();
+
+        RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
+
+        Assertions.assertDoesNotThrow(() -> modifier.mergeAPI(settings, null, request));
+        Assertions.assertDoesNotThrow(() -> modifier.mergeAPI(settings, api, null));
+    }
+
+    @Test
+    public void mergeAPIDefinitionAPIBasicAuth() {
+        RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
+        Settings settings = new Settings();
+
+        HTTPRequestEntry api;
+        HTTPRequestEntry request;
+        HTTPBasicAuthEntry apiBasicAuth;
+        HTTPBasicAuthEntry requestBasicAuth;
+
+        api = new HTTPRequestEntry();
+        request = new HTTPRequestEntry();
+
+        apiBasicAuth = new HTTPBasicAuthEntry();
+        apiBasicAuth.setUsername("api-username");
+        apiBasicAuth.setPassword("api-password");
+        api.setBasicAuth(apiBasicAuth);
+
+        modifier.mergeAPI(settings, api, request);
+
+        Assertions.assertEquals("api-username", request.getBasicAuth().getUsername());
+        Assertions.assertEquals("api-password", request.getBasicAuth().getPassword());
+
+        api = new HTTPRequestEntry();
+        request = new HTTPRequestEntry();
+
+        requestBasicAuth = new HTTPBasicAuthEntry();
+        requestBasicAuth.setUsername("request-username");
+        requestBasicAuth.setPassword("request-password");
+        request.setBasicAuth(requestBasicAuth);
+
+        modifier.mergeAPI(settings, api, request);
+
+        Assertions.assertEquals("request-username", request.getBasicAuth().getUsername());
+        Assertions.assertEquals("request-password", request.getBasicAuth().getPassword());
+
+        api = new HTTPRequestEntry();
+        request = new HTTPRequestEntry();
+
+        apiBasicAuth = new HTTPBasicAuthEntry();
+        apiBasicAuth.setUsername("api-username");
+        apiBasicAuth.setPassword("api-password");
+        api.setBasicAuth(apiBasicAuth);
+
+        requestBasicAuth = new HTTPBasicAuthEntry();
+        requestBasicAuth.setUsername("request-username");
+        requestBasicAuth.setPassword("request-password");
+        request.setBasicAuth(requestBasicAuth);
+
+        modifier.mergeAPI(settings, api, request);
+
+        Assertions.assertEquals("request-username", request.getBasicAuth().getUsername());
+        Assertions.assertEquals("request-password", request.getBasicAuth().getPassword());
+
+        api = new HTTPRequestEntry();
+        request = new HTTPRequestEntry();
+
+        apiBasicAuth = new HTTPBasicAuthEntry();
+        apiBasicAuth.setUsername("api-username");
+        apiBasicAuth.setPassword("api-password");
+        api.setBasicAuth(apiBasicAuth);
+
+        requestBasicAuth = new HTTPBasicAuthEntry();
+        request.setBasicAuth(requestBasicAuth);
+
+        modifier.mergeAPI(settings, api, request);
+
+        Assertions.assertEquals("api-username", request.getBasicAuth().getUsername());
+        Assertions.assertEquals("api-password", request.getBasicAuth().getPassword());
+    }
+
+    @Test
+    public void mergeAPIDefinitionAPITokenAuth() {
+        RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
+        Settings settings = new Settings();
+
+        HTTPRequestEntry api;
+        HTTPRequestEntry request;
+        HTTPTokenAuthEntry apiTokenAuth;
+        HTTPTokenAuthEntry requestTokenAuth;
+
+        api = new HTTPRequestEntry();
+        request = new HTTPRequestEntry();
+
+        apiTokenAuth = new HTTPTokenAuthEntry();
+        apiTokenAuth.setClientId("api-client-id");
+        apiTokenAuth.setClientSecret("api-client-secret");
+        api.setTokenAuth(apiTokenAuth);
+
+        modifier.mergeAPI(settings, api, request);
+
+        Assertions.assertEquals("api-client-id", request.getTokenAuth().getClientId());
+        Assertions.assertEquals("api-client-secret", request.getTokenAuth().getClientSecret());
+
+        api = new HTTPRequestEntry();
+        request = new HTTPRequestEntry();
+
+        requestTokenAuth = new HTTPTokenAuthEntry();
+        requestTokenAuth.setClientId("request-client-id");
+        requestTokenAuth.setClientSecret("request-client-secret");
+        request.setTokenAuth(requestTokenAuth);
+
+        modifier.mergeAPI(settings, api, request);
+
+        Assertions.assertEquals("request-client-id", request.getTokenAuth().getClientId());
+        Assertions.assertEquals("request-client-secret", request.getTokenAuth().getClientSecret());
+
+        api = new HTTPRequestEntry();
+        request = new HTTPRequestEntry();
+
+        apiTokenAuth = new HTTPTokenAuthEntry();
+        apiTokenAuth.setClientId("api-client-id");
+        apiTokenAuth.setClientSecret("api-client-id");
+        api.setTokenAuth(apiTokenAuth);
+
+        requestTokenAuth = new HTTPTokenAuthEntry();
+        requestTokenAuth.setClientId("request-client-id");
+        requestTokenAuth.setClientSecret("request-client-secret");
+        request.setTokenAuth(requestTokenAuth);
+
+        modifier.mergeAPI(settings, api, request);
+
+        Assertions.assertEquals("request-client-id", request.getTokenAuth().getClientId());
+        Assertions.assertEquals("request-client-secret", request.getTokenAuth().getClientSecret());
+
+        api = new HTTPRequestEntry();
+        request = new HTTPRequestEntry();
+
+        apiTokenAuth = new HTTPTokenAuthEntry();
+        apiTokenAuth.setClientId("api-client-id");
+        apiTokenAuth.setClientSecret("api-client-secret");
+        api.setTokenAuth(apiTokenAuth);
+
+        requestTokenAuth = new HTTPTokenAuthEntry();
+        request.setTokenAuth(requestTokenAuth);
+
+        modifier.mergeAPI(settings, api, request);
+
+        Assertions.assertEquals("api-client-id", request.getTokenAuth().getClientId());
+        Assertions.assertEquals("api-client-secret", request.getTokenAuth().getClientSecret());
     }
 
     @Test

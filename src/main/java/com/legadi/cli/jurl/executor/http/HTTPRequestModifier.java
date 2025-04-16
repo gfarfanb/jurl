@@ -288,29 +288,29 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         HTTPRequestEntry authRequest = new HTTPRequestEntry();
 
         authRequest.setName(requestName + "/token-authorization");
-        authRequest.setMethod(settings.getTokenRequestMethod());
+        authRequest.setMethod(settings.getAuthBearerRequestMethod());
         authRequest.setUrl(authEntry.getTokenUrl());
-        authRequest.getHeaders().put("Content-Type", "application/x-www-form-urlencoded");
+        authRequest.getHeaders().put("Content-Type", settings.getAuthBearerContentType());
 
         Map<String, String> bodyParams = new HashMap<>();
-        bodyParams.put("grantTypeFieldName", authEntry.getGrantTypeFieldName());
+        bodyParams.put("grantTypeFieldName", settings.getAuthBearerGrantTypeFieldName());
         bodyParams.put("grantType", authEntry.getGrantType());
-        bodyParams.put("clientIdFieldName", authEntry.getClientIdFieldName());
+        bodyParams.put("clientIdFieldName", settings.getAuthBearerClientIdFieldName());
         bodyParams.put("clientId", authEntry.getClientId());
-        bodyParams.put("clientSecretFieldName", authEntry.getClientSecretFieldName());
+        bodyParams.put("clientSecretFieldName", settings.getAuthBearerClientSecretFieldName());
         bodyParams.put("clientSecret", authEntry.getClientSecret());
-        bodyParams.put("scopeFieldName", authEntry.getScopeFieldName());
+        bodyParams.put("scopeFieldName", settings.getAuthBearerScopeFieldName());
         bodyParams.put("scope", authEntry.getScope());
 
         StringExpander stringExpander = new StringExpander(new Settings());
-        authRequest.setBodyContent(stringExpander.replaceAllInContent(bodyParams, settings.getTokenBodyTemplate()));
+        authRequest.setBodyContent(stringExpander.replaceAllInContent(bodyParams, settings.getAuthBearerBodyTemplate()));
 
         String expirationMillisParam = toGeneratedParam(settings.getRequestType(),
             authEntry.getClientId(), "expiration-millis");
         String tokenParam = toGeneratedParam(settings.getRequestType(),
             authEntry.getClientId(), "access-token");
         String expiresInUnitParam = toGeneratedParam(settings.getRequestType(),
-            authEntry.getClientId(), "expires-in." + authEntry.getExpiresInTimeUnit());
+            authEntry.getClientId(), "expires-in." + settings.getAuthBearerExpiresInTimeUnit());
         String expirationDateParam = toGeneratedParam(settings.getRequestType(),
             authEntry.getClientId(), "expiration-date");
 
@@ -323,9 +323,10 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         expirationCondition.setType(AssertionType.CONDITION);
         authRequest.getConditions().add(expirationCondition);
 
-        authRequest.getOutputMappings().put(tokenParam, "{{OUT/" + authEntry.getAccessTokenFieldName() + "}}");
-        authRequest.getOutputMappings().put(expiresInUnitParam, "{{OUT/" + authEntry.getExpiresInFieldName() + "}}");
-        authRequest.getOutputMappings().put(expirationDateParam, "{{DATE-TIME:date-plus:yyyy-MM-dd'T'HH\\:mm\\:ss.n:" + authEntry.getExpiresInTimeUnit() + ":" + expiresInUnitParam + ":}}");
+        authRequest.getOutputMappings().put(tokenParam, "{{OUT/" + settings.getAuthBearerAccessTokenFieldName() + "}}");
+        authRequest.getOutputMappings().put(expiresInUnitParam, "{{OUT/" + settings.getAuthBearerExpiresInFieldName() + "}}");
+        authRequest.getOutputMappings().put(expirationDateParam, "{{DATE-TIME:date-plus:yyyy-MM-dd'T'HH\\:mm\\:ss.n:"
+            + settings.getAuthBearerExpiresInTimeUnit() + ":" + expiresInUnitParam + ":}}");
         authRequest.getOutputMappings().put(expirationMillisParam, "{{:date-epoch:ISO_LOCAL_DATE_TIME:MILLIS:" + expirationDateParam +"}}");
 
         AssertionEntry http200Assertion = new AssertionEntry();
@@ -355,18 +356,10 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         expandDefaults(stringExpander, authDefaults);
 
         authEntry.setTokenUrl(stringExpander.replaceAllInContent(authEntry.getTokenUrl()));
-        expandMap(stringExpander, authEntry.getHeaders());
         authEntry.setGrantType(stringExpander.replaceAllInContent(authEntry.getGrantType()));
-        authEntry.setGrantTypeFieldName(stringExpander.replaceAllInContent(authEntry.getGrantTypeFieldName()));
         authEntry.setClientId(stringExpander.replaceAllInContent(authEntry.getClientId()));
-        authEntry.setClientIdFieldName(stringExpander.replaceAllInContent(authEntry.getClientIdFieldName()));
         authEntry.setClientSecret(stringExpander.replaceAllInContent(authEntry.getClientSecret()));
-        authEntry.setClientSecretFieldName(stringExpander.replaceAllInContent(authEntry.getClientSecretFieldName()));
         authEntry.setScope(stringExpander.replaceAllInContent(authEntry.getScope()));
-        authEntry.setScopeFieldName(stringExpander.replaceAllInContent(authEntry.getScopeFieldName()));
-        authEntry.setAccessTokenFieldName(stringExpander.replaceAllInContent(authEntry.getAccessTokenFieldName()));
-        authEntry.setExpiresInFieldName(stringExpander.replaceAllInContent(authEntry.getExpiresInFieldName()));
-        authEntry.setTokenTypeFieldName(stringExpander.replaceAllInContent(authEntry.getTokenTypeFieldName()));
     }
 
     private void expandAssertion(StringExpander stringExpander, AssertionEntry assertionEntry) {
@@ -483,42 +476,17 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
             request.setTokenUrl(api.getTokenUrl());
         }
 
-        Map<String, String> headers = new HashMap<>(api.getHeaders());
-        headers.putAll(request.getHeaders());
-        request.setHeaders(headers);
-
         if(isBlank(request.getGrantType())) {
             request.setGrantType(api.getGrantType());
-        }
-        if(isBlank(request.getGrantTypeFieldName())) {
-            request.setGrantTypeFieldName(api.getGrantTypeFieldName());
         }
         if(isBlank(request.getClientId())) {
             request.setClientId(api.getClientId());
         }
-        if(isBlank(request.getClientIdFieldName())) {
-            request.setClientIdFieldName(api.getClientIdFieldName());
-        }
         if(isBlank(request.getClientSecret())) {
             request.setClientSecret(api.getClientSecret());
         }
-        if(isBlank(request.getClientSecretFieldName())) {
-            request.setClientSecretFieldName(api.getClientSecretFieldName());
-        }
         if(isBlank(request.getScope())) {
             request.setScope(api.getScope());
-        }
-        if(isBlank(request.getScopeFieldName())) {
-            request.setScopeFieldName(api.getScopeFieldName());
-        }
-        if(isBlank(request.getAccessTokenFieldName())) {
-            request.setAccessTokenFieldName(api.getAccessTokenFieldName());
-        }
-        if(isBlank(request.getExpiresInFieldName())) {
-            request.setExpiresInFieldName(api.getExpiresInFieldName());
-        }
-        if(isBlank(request.getTokenTypeFieldName())) {
-            request.setTokenTypeFieldName(api.getTokenTypeFieldName());
         }
     }
 }

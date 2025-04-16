@@ -49,17 +49,18 @@ public class SettingsConstants {
     public static final String PROP_PRINTABLE_MIME_TYPES = "printableMimeTypes";
     public static final String PROP_CONSOLE_TAB_LENGTH = "consoleTabLength";
     public static final String PROP_DEFAULT_CONSOLE_WIDTH = "defaultConsoleWidth";
-    public static final String PROP_GRAN_TYPE = "granType";
-    public static final String PROP_GRANT_TYPE_FIELD_NAME = "grantTypeFieldName";
-    public static final String PROP_CLIENT_ID_FIELD_NAME = "clientIdFieldName";
-    public static final String PROP_CLIENT_SECRET_FIELD_NAME = "clientSecretFieldName";
-    public static final String PROP_SCOPE_FIELD_NAME = "scopeFieldName";
-    public static final String PROP_ACCESS_TOKEN_FIELD_NAME = "accessTokenFieldName";
-    public static final String PROP_EXPIRES_IN_FIELD_NAME = "expiresInFieldName";
-    public static final String PROP_EXPIRES_IN_TIME_UNIT = "expiresInTimeUnit";
-    public static final String PROP_TOKEN_TYPE_FIELD_NAME = "tokenTypeFieldName";
-    public static final String PROP_TOKEN_REQUEST_METHOD = "tokenRequestMethod";
-    public static final String PROP_TOKEN_BODY_TEMPLATE = "tokenBodyTemplate";
+    public static final String PROP_AUTH_BEARER_GRANT_TYPE = "authBearerGrantType";
+    public static final String PROP_AUTH_BEARER_GRANT_TYPE_FIELD_NAME = "authBearerGrantTypeFieldName";
+    public static final String PROP_AUTH_BEARER_CLIENT_ID_FIELD_NAME = "authBearerClientIdFieldName";
+    public static final String PROP_AUTH_BEARER_CLIENT_SECRET_FIELD_NAME = "authBearerClientSecretFieldName";
+    public static final String PROP_AUTH_BEARER_SCOPE_FIELD_NAME = "authBearerScopeFieldName";
+    public static final String PROP_AUTH_BEARER_ACCESS_TOKEN_FIELD_NAME = "authBearerAccessTokenFieldName";
+    public static final String PROP_AUTH_BEARER_EXPIRES_IN_FIELD_NAME = "authBearerExpiresInFieldName";
+    public static final String PROP_AUTH_BEARER_EXPIRES_IN_TIME_UNIT = "authBearerExpiresInTimeUnit";
+    public static final String PROP_AUTH_BEARER_TOKEN_TYPE_FIELD_NAME = "authBearerTokenTypeFieldName";
+    public static final String PROP_AUTH_BEARER_REQUEST_METHOD = "authBearerRequestMethod";
+    public static final String PROP_AUTH_BEARER_CONTENT_TYPE = "authBearerContentType";
+    public static final String PROP_AUTH_BEARER_BODY_TEMPLATE = "authBearerBodyTemplate";
 
     private SettingsConstants() {}
 }

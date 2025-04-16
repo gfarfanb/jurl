@@ -6,6 +6,10 @@ mock @responseContent = {}
 mock Accept: application/json
 mock field = discarded
 
+basic @username = http-api-username
+basic @password = http-api-password
+basic field = discarded
+
 token @tokenUrl = http://localhost:5555/oauth/token
 token @clientId = http-api-client-id
 token @clientSecret = http-api-client-secret
