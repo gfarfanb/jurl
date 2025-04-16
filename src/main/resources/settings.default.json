@@ -20,6 +20,7 @@
     "settingsParamRegex": "(?:\\{\\{([\\w.,\\-:\\'@~|\\[\\]/\\\\]+)\\}\\})",
     "settingsParamRegexBegin": "\\{\\{",
     "settingsParamRegexEnd": "\\}\\}",
+    "executeAuthentication": false,
     "skipAuthentication": false,
     "skipConditions": false,
     "skipAssertions": false,

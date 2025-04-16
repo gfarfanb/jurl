@@ -1,5 +1,6 @@
 package com.legadi.cli.jurl.executor.http;
 
+import static com.legadi.cli.jurl.common.JsonUtils.removeJsonProperties;
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.toGeneratedParam;
@@ -89,6 +90,15 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         }
         if(isBlank(request.getTokenAuth().getScope())) {
             throw new CommandException("'scope' is required for token authorization");
+        }
+
+        if(settings.isExecuteAuthentication()) {
+            String clientId = request.getTokenAuth().getClientId();
+            removeJsonProperties(settings.getOverrideFilePath(),
+                toGeneratedParam(settings.getRequestType(), clientId, "expiration-millis"),
+                toGeneratedParam(settings.getRequestType(), clientId, "access-token"),
+                toGeneratedParam(settings.getRequestType(), clientId, "expires-in." + settings.getAuthBearerExpiresInTimeUnit()),
+                toGeneratedParam(settings.getRequestType(), clientId, "expiration-date"));
         }
 
         return Optional.of(instanceTokenRequest(settings, request.getName(), request.getTokenAuth()));
@@ -291,6 +301,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         authRequest.setMethod(settings.getAuthBearerRequestMethod());
         authRequest.setUrl(authEntry.getTokenUrl());
         authRequest.getHeaders().put("Content-Type", settings.getAuthBearerContentType());
+        authRequest.setTokenAuth(authEntry);
 
         Map<String, String> bodyParams = new HashMap<>();
         bodyParams.put("grantTypeFieldName", settings.getAuthBearerGrantTypeFieldName());

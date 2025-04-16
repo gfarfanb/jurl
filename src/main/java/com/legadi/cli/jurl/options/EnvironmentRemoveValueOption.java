@@ -1,9 +1,6 @@
 package com.legadi.cli.jurl.options;
 
-import static com.legadi.cli.jurl.common.JsonUtils.loadJsonProperties;
-import static com.legadi.cli.jurl.common.JsonUtils.writeJsonFile;
-
-import java.util.Map;
+import static com.legadi.cli.jurl.common.JsonUtils.removeJsonProperties;
 
 import com.legadi.cli.jurl.common.Settings;
 
@@ -34,13 +31,8 @@ public class EnvironmentRemoveValueOption extends Option {
         Settings envSettings = new Settings();
         envSettings.setEnvironment(args[0]);
 
-        Map<String, String> envProperties = loadJsonProperties(envSettings.getConfigFilePath());
-
-        envProperties.remove(args[1]);
-
-        writeJsonFile(envSettings.getConfigFilePath(), envProperties);
+        removeJsonProperties(envSettings.getConfigFilePath(), args[1]);
 
         return false;
     }
-
 }

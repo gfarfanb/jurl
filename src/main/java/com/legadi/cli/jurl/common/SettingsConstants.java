@@ -41,6 +41,7 @@ public class SettingsConstants {
     public static final String PROP_SETTINGS_PARAM_REGEX = "settingsParamRegex";
     public static final String PROP_SETTINGS_PARAM_REGEX_BEGIN = "settingsParamRegexBegin";
     public static final String PROP_SETTINGS_PARAM_REGEX_END = "settingsParamRegexEnd";
+    public static final String PROP_EXECUTE_AUTHENTICATION = "executeAuthentication";
     public static final String PROP_SKIP_AUTHENTICATION = "skipAuthentication";
     public static final String PROP_SKIP_CONDITIONS = "skipConditions";
     public static final String PROP_SKIP_ASSERTIONS = "skipAssertions";

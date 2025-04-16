@@ -83,6 +83,16 @@ public class JsonUtils {
         }
     }
 
+    public static void removeJsonProperties(Path filePath, String... properties) {
+        Map<String, String> envProperties = loadJsonProperties(filePath);
+
+        for(String property : properties) {
+            envProperties.remove(property);
+        }
+
+        writeJsonFile(filePath, envProperties);
+    }
+
     private static Map<String, String> readJsonProperties(Path jsonPath, InputStream jsonInputStream) {
         try(Reader reader = new InputStreamReader(jsonInputStream)) {
             Map<String, String> jsonProperties = GSON.fromJson(reader, new TypeToken<Map<String, String>>() {});

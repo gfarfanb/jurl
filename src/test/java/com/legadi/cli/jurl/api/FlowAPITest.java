@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.embedded.EmbeddedAPIAbstractTest;
+import com.legadi.cli.jurl.embedded.util.AuthenticationCleaner;
 import com.legadi.cli.jurl.exception.RecursiveCommandException;
 import com.legadi.cli.jurl.model.AssertionResult;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
@@ -50,6 +51,8 @@ public class FlowAPITest extends EmbeddedAPIAbstractTest {
             () -> authSettings.get(expirationDateParam));
         Assertions.assertDoesNotThrow(
             () -> authSettings.get(expirationTimeUnitParam));
+
+        AuthenticationCleaner.cleanup(requestCatcher, authCorrelationId);
     }
 
     @Test
@@ -79,6 +82,8 @@ public class FlowAPITest extends EmbeddedAPIAbstractTest {
             Assertions.assertEquals(0, assertionRecord.getRight().get().getFailures());
             Assertions.assertTrue(assertionRecord.getRight().get().isPassed());
         }
+
+        AuthenticationCleaner.cleanup(requestCatcher, commonCorrelationId);
     }
 
     @Test

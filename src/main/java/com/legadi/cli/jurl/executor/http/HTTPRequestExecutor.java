@@ -265,15 +265,15 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         String token = settings.getOrDefault(tokenParam, "");
 
         if(isBlank(token)) {
-            LOGGER.warning("Bearer token was not generated for client ID:" + authEntry.getClientId());
+            LOGGER.fine("Bearer token was not generated for client ID: " + authEntry.getClientId());
         } else {
             LOGGER.fine("Adding token authorization - clientId=" + authEntry.getClientId()
                 + " token=" + token + " param=" + tokenParam);
-        }
 
-        connection.setRequestProperty("Authorization", "Bearer " + token);
-        curlBuilder.addHeader("Authorization", "Bearer " + token);
-        printableHeaders.append("Authorization").append(": Bearer ").append(token).append("\n");
+            connection.setRequestProperty("Authorization", "Bearer " + token);
+            curlBuilder.addHeader("Authorization", "Bearer " + token);
+            printableHeaders.append("Authorization").append(": Bearer ").append(token).append("\n");
+        }
     }
 
     private Path sendBody(HttpURLConnection connection, Settings settings, 

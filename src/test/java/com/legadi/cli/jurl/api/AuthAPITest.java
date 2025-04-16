@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.legadi.cli.jurl.embedded.EmbeddedAPIAbstractTest;
+import com.legadi.cli.jurl.embedded.util.AuthenticationCleaner;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 
 public class AuthAPITest extends EmbeddedAPIAbstractTest {
@@ -37,5 +38,7 @@ public class AuthAPITest extends EmbeddedAPIAbstractTest {
         for(HTTPRequestEntry request : createRequests) {
             Assertions.assertEquals("create", request.getName());
         }
+
+        AuthenticationCleaner.cleanup(requestCatcher, correlationId);
     }
 }

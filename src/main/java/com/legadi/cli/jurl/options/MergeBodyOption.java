@@ -31,5 +31,4 @@ public class MergeBodyOption extends Option {
         settings.putOverride(PROP_MERGE_BODY_USING_TYPE, args[0]);
         return true;
     }
-    
 }

@@ -31,5 +31,4 @@ public class RequestTypeOption extends Option {
         settings.putOverride(PROP_REQUEST_TYPE, args[0]);
         return true;
     }
-    
 }

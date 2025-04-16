@@ -116,6 +116,5 @@ public class OptionsReader {
         public int compare(OptionEntry o1, OptionEntry o2) {
             return o1.getLeft().getPriority() - o2.getLeft().getPriority();
         }
-        
     }
 }

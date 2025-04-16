@@ -35,6 +35,7 @@ import static com.legadi.cli.jurl.common.SettingsConstants.PROP_PRINTABLE_MIME_T
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_REQUEST_BEHAVIOUR;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_REQUEST_TYPE;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SAVE_OUTPUT_IN_LOCATION;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTE_AUTHENTICATION;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX_BEGIN;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX_END;
@@ -171,6 +172,10 @@ public interface SettingsDefaults {
 
     default String getSettingsParamRegexEnd() {
         return get(PROP_SETTINGS_PARAM_REGEX_END);
+    }
+
+    default boolean isExecuteAuthentication() {
+        return get(PROP_EXECUTE_AUTHENTICATION, Boolean::valueOf);
     }
 
     default boolean isSkipAuthentication() {

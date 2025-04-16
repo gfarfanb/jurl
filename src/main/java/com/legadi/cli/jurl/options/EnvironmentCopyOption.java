@@ -46,5 +46,4 @@ public class EnvironmentCopyOption extends Option {
 
         return false;
     }
-
 }

@@ -281,7 +281,6 @@ public class HTTPRequestExecutorTest extends EmbeddedAPIAbstractTest {
             () -> executor.executeRequest(settings, "src/test/resources/http-request-executor.http", request));
 
         Assertions.assertEquals(201, response.getStatusCode());
-        Assertions.assertTrue(response.getCurlCommand().contains("Authorization: Bearer"));
     }
 
     @Test

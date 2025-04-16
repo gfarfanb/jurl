@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.legadi.cli.jurl.embedded.util.AuthenticationCleaner;
 import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
@@ -39,6 +40,8 @@ public class StartInStepOptionTest extends OptionAbstractTest<StartInStepOption>
         Assertions.assertEquals("obtain", requests.get(2).getName());
         Assertions.assertEquals("update", requests.get(3).getName());
         Assertions.assertEquals("remove", requests.get(4).getName());
+
+        AuthenticationCleaner.cleanup(requestCatcher, correlationId);
     }
 
     @Test

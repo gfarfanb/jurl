@@ -49,6 +49,7 @@ public class SettingsTest {
         Assertions.assertEquals("(?:\\{\\{([\\w.,\\-:\\'@~|\\[\\]/\\\\]+)\\}\\})", settings.getSettingsParamRegex());
         Assertions.assertEquals("\\{\\{", settings.getSettingsParamRegexBegin());
         Assertions.assertEquals("\\}\\}", settings.getSettingsParamRegexEnd());
+        Assertions.assertFalse(settings.isExecuteAuthentication());
         Assertions.assertFalse(settings.isSkipAuthentication());
         Assertions.assertFalse(settings.isSkipConditions());
         Assertions.assertFalse(settings.isSkipAssertions());

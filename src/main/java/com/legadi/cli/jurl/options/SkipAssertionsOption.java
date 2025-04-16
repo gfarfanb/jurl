@@ -31,5 +31,4 @@ public class SkipAssertionsOption extends Option {
         settings.putOverride(PROP_SKIP_ASSERTIONS, Boolean.TRUE.toString());
         return true;
     }
-
 }

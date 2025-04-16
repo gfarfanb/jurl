@@ -1,19 +1,19 @@
 package com.legadi.cli.jurl.options;
 
-import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_AUTHENTICATION;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTE_AUTHENTICATION;
 
 import com.legadi.cli.jurl.common.Settings;
 
-public class SkipAuthenticationOption extends Option {
+public class ExecuteAuthenticationOption extends Option {
 
     @Override
     public String name() {
-        return "--not-auth";
+        return "--exec-auth";
     }
 
     @Override
     public String alias() {
-        return "-na";
+        return "-ea";
     }
 
     @Override
@@ -23,12 +23,12 @@ public class SkipAuthenticationOption extends Option {
 
     @Override
     public String getDescription() {
-        return "Tells request to skip the authentication request.";
+        return "Tells request to execute the authentication request.";
     }
 
     @Override
     public boolean execute(Settings settings, String[] args) {
-        settings.putOverride(PROP_SKIP_AUTHENTICATION, Boolean.TRUE.toString());
+        settings.putOverride(PROP_EXECUTE_AUTHENTICATION, Boolean.TRUE.toString());
         return true;
     }
 }

@@ -31,5 +31,4 @@ public class SkipConditionsOption extends Option {
         settings.putOverride(PROP_SKIP_CONDITIONS, Boolean.TRUE.toString());
         return true;
     }
-
 }
