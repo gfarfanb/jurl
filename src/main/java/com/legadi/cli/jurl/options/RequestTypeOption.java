@@ -27,11 +27,6 @@ public class RequestTypeOption extends Option {
     }
 
     @Override
-    public boolean allowedForRequestAuth() {
-        return true;
-    }
-
-    @Override
     public boolean execute(Settings settings, String[] args) {
         settings.putOverride(PROP_REQUEST_TYPE, args[0]);
         return true;

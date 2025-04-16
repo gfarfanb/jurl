@@ -3,7 +3,10 @@ package com.legadi.cli.jurl.common;
 import static com.legadi.cli.jurl.common.SettingsConstants.JURL_CONSOLE_WIDTH;
 import static com.legadi.cli.jurl.common.SettingsConstants.JURL_FILE_SEPARATOR;
 import static com.legadi.cli.jurl.common.SettingsConstants.JURL_OS_NAME;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_ACCESS_TOKEN_FIELD_NAME;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_ADD_ON_OPTION_CLASSES;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CLIENT_ID_FIELD_NAME;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CLIENT_SECRET_FIELD_NAME;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_OUTPUT_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONSOLE_TAB_LENGTH;
@@ -11,7 +14,11 @@ import static com.legadi.cli.jurl.common.SettingsConstants.PROP_DEFAULT_CONSOLE_
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_DOWNLOADS_LOCATION;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTION_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTION_TIMES;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXPIRES_IN_FIELD_NAME;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXPIRES_IN_TIME_UNIT;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_FILTER_NAME;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_GRANT_TYPE_FIELD_NAME;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_GRAN_TYPE;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_HISTORY_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_INPUT_NAME;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_MERGE_BODY_USING_TYPE;
@@ -23,6 +30,7 @@ import static com.legadi.cli.jurl.common.SettingsConstants.PROP_PRINTABLE_MIME_T
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_REQUEST_BEHAVIOUR;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_REQUEST_TYPE;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SAVE_OUTPUT_IN_LOCATION;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SCOPE_FIELD_NAME;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX_BEGIN;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX_END;
@@ -31,6 +39,9 @@ import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_AUTHENTICAT
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_CONDITIONS;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_USER_INPUT;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_START_IN_STEP_INDEX;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_TOKEN_BODY_TEMPLATE;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_TOKEN_REQUEST_METHOD;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_TOKEN_TYPE_FIELD_NAME;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_WORKSPACE_PATH;
 import static com.legadi.cli.jurl.common.WriterUtils.createDirectories;
 
@@ -195,5 +206,49 @@ public interface SettingsDefaults {
 
     default String getTab() {
         return String.format("%-" + getConsoleTabLength() + "s", "");
+    }
+
+    default String getGranType() {
+        return get(PROP_GRAN_TYPE);
+    }
+
+    default String getGrantTypeFieldName() {
+        return get(PROP_GRANT_TYPE_FIELD_NAME);
+    }
+
+    default String getClientIdFieldName() {
+        return get(PROP_CLIENT_ID_FIELD_NAME);
+    }
+
+    default String getClientSecretFieldName() {
+        return get(PROP_CLIENT_SECRET_FIELD_NAME);
+    }
+
+    default String getScopeFieldName() {
+        return get(PROP_SCOPE_FIELD_NAME);
+    }
+
+    default String getAccessTokenFieldName() {
+        return get(PROP_ACCESS_TOKEN_FIELD_NAME);
+    }
+
+    default String getExpiresInFieldName() {
+        return get(PROP_EXPIRES_IN_FIELD_NAME);
+    }
+
+    default String getExpiresInTimeUnit() {
+        return get(PROP_EXPIRES_IN_TIME_UNIT);
+    }
+
+    default String getTokenTypeFieldName() {
+        return get(PROP_TOKEN_TYPE_FIELD_NAME);
+    }
+
+    default String getTokenRequestMethod() {
+        return get(PROP_TOKEN_REQUEST_METHOD);
+    }
+
+    default String getTokenBodyTemplate() {
+        return get(PROP_TOKEN_BODY_TEMPLATE);
     }
 }

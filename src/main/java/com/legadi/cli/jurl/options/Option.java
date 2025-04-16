@@ -20,10 +20,6 @@ public abstract class Option implements Named {
 
     public abstract String getDescription();
 
-    public boolean allowedForRequestAuth() {
-        return false;
-    }
-
     public int getPriority() {
         return 0;
     }

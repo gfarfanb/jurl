@@ -17,8 +17,8 @@ import com.legadi.cli.jurl.model.FlowEntry;
 import com.legadi.cli.jurl.model.RequestInput;
 import com.legadi.cli.jurl.model.StepEntry;
 import com.legadi.cli.jurl.model.http.HTTPMockEntry;
-import com.legadi.cli.jurl.model.http.HTTPRequestAuthEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
+import com.legadi.cli.jurl.model.http.auth.HTTPTokenAuthEntry;
 
 public class HTTPRequestParserTest {
 
@@ -67,7 +67,7 @@ public class HTTPRequestParserTest {
         Assertions.assertEquals(1, mock.getResponseHeaders().size());
         Assertions.assertEquals("application/json", mock.getResponseHeaders().get("Accept"));
 
-        HTTPRequestAuthEntry auth = api.getRequestAuth();
+        HTTPTokenAuthEntry auth = api.getRequestAuth();
 
         Assertions.assertNotNull(auth);
         Assertions.assertEquals("TOKEN", auth.getAuthType());
@@ -132,7 +132,7 @@ public class HTTPRequestParserTest {
         Assertions.assertEquals(1, mock.getResponseHeaders().size());
         Assertions.assertEquals("application/json", mock.getResponseHeaders().get("Accept"));
 
-        HTTPRequestAuthEntry auth = request.getRequestAuth();
+        HTTPTokenAuthEntry auth = request.getRequestAuth();
 
         Assertions.assertNotNull(auth);
         Assertions.assertEquals("TOKEN", auth.getAuthType());
@@ -307,7 +307,7 @@ public class HTTPRequestParserTest {
         Assertions.assertEquals(1, mock.getResponseHeaders().size());
         Assertions.assertEquals("application/json", mock.getResponseHeaders().get("Accept"));
 
-        HTTPRequestAuthEntry auth = request.getRequestAuth();
+        HTTPTokenAuthEntry auth = request.getRequestAuth();
 
         Assertions.assertNotNull(auth);
         Assertions.assertEquals("TOKEN", auth.getAuthType());

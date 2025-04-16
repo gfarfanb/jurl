@@ -17,6 +17,7 @@ public class CommonUtils {
 
     private static final Pattern NUMBER_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
     private static final String DEFAULT_FIELD_INDEX_FORMAT = "%s-default-index";
+    private static final String GENERATED_PARAM_FORMAT = "__generated-for-request.%s.with-context.%s.field.%s__";
 
     public static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvxyz0123456789";
     public static final String NUMERIC_STRING = "0123456789";
@@ -277,5 +278,9 @@ public class CommonUtils {
         if(!newLine) {
             menu.append("\n");
         }
+    }
+
+    public static String toGeneratedParam(String requestType, String context, String field) {
+        return String.format(GENERATED_PARAM_FORMAT, requestType, context, field);
     }
 }

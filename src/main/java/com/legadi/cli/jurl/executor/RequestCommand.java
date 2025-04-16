@@ -18,10 +18,8 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -42,7 +40,6 @@ import com.legadi.cli.jurl.exception.RecursiveCommandException;
 import com.legadi.cli.jurl.exception.RequestException;
 import com.legadi.cli.jurl.exception.SkipExecutionException;
 import com.legadi.cli.jurl.model.AssertionResult;
-import com.legadi.cli.jurl.model.AuthenticationRequest;
 import com.legadi.cli.jurl.model.ExecutionIndex;
 import com.legadi.cli.jurl.model.ExecutionStatus;
 import com.legadi.cli.jurl.model.FlowEntry;
@@ -64,7 +61,6 @@ public class RequestCommand {
     private static final int AUTH_AND_REQUEST_EXECUTIONS = 2;
     private static final int ONLY_REQUEST_EXECUTIONS = 1;
 
-    private final Set<AuthenticationRequest<?>> executedAuthRequests = new HashSet<>();
     private final OptionsReader optionsReader;
     private final Lock lock;
 
@@ -321,40 +317,30 @@ public class RequestCommand {
 
             RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, settings.getRequestType());
             Optional<?> authRequestCarrier = modifier.getAuthenticationIfExists(requestName,
-                requestInputPath, requestInput, settings, optionsReader.getOptionEntries());
+                requestInput, settings);
 
             if(!authRequestCarrier.isPresent()) {
                 return Optional.empty();
             }
 
-            AuthenticationRequest<? extends RequestEntry<? extends MockEntry>> authRequest =
-                (AuthenticationRequest<? extends RequestEntry<? extends MockEntry>>) authRequestCarrier.get();
-
-            if(executedAuthRequests.contains(authRequest)) {
-                return Optional.empty();
-            } else {
-                executedAuthRequests.add(authRequest);
-            }
-
+            RequestEntry<? extends MockEntry> authRequest =
+                (RequestEntry<? extends MockEntry>) authRequestCarrier.get();
             ExecutionIndex index = new ExecutionIndex(0, 1, 1);
 
             LOGGER.fine("Executing authentication request"
                 + "\n  index=" + index
-                + "\n  authName=" + authRequest.getAuthRequestName()
-                + "\n  requestInputPath=" + authRequest.getAuthRequestInputPath()
+                + "\n  authName=" + authRequest.getName()
+                + "\n  requestInputPath=" + requestInputPath
                 + (stepTag != null ? "\n  flow=" + stepTag.getFlowLabel() : "")
                 + (stepTag != null ? "\n  step=" + stepTag.getStepLabel() : ""));
 
-            executeOptions(settings, authRequest.getAuthOptions());
-            modifier.mergeHeader(authRequest.getAuthApi(), authRequest.getAuthRequest());
-
             try {
                 return Optional.of(executeRequest(index, new StringExpander(settings),
-                    authRequest.getAuthRequestInputPath(), authRequest.getAuthApi(), authRequest.getAuthRequest(),
+                    requestInputPath, null, authRequest,
                     stepTag));
             } catch(CommandException | RequestException ex) {
                 throw new CommandException(
-                    "[" + authRequest.getAuthRequestInputPath() + "/" + authRequest.getAuthRequestName() + "] "
+                    "[" + requestInputPath+ "/" + authRequest.getName() + "] "
                     + " index=" + index
                     + (stepTag != null ? " flow=" + stepTag.getFlowLabel() : "")
                     + (stepTag != null ? " step=" + stepTag.getStepLabel() : "")

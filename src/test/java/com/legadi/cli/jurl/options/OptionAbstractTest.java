@@ -23,7 +23,6 @@ public abstract class OptionAbstractTest<T extends Option> extends EmbeddedAPIAb
     @Test
     public void validateDefinitionMethods() {
         Assertions.assertNotNull(option.getDescription());
-        Assertions.assertDoesNotThrow(() -> Boolean.valueOf(option.allowedForRequestAuth()));
         Assertions.assertDoesNotThrow(() -> Integer.valueOf(option.getPriority()));
         Assertions.assertEquals(Objects.hash(option.name(), option.alias()), option.hashCode());
         Assertions.assertTrue(option.equals(option));

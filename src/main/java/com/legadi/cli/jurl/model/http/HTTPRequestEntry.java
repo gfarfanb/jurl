@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.legadi.cli.jurl.model.RequestEntry;
+import com.legadi.cli.jurl.model.http.auth.HTTPBasicAuthEntry;
+import com.legadi.cli.jurl.model.http.auth.HTTPTokenAuthEntry;
 
 public class HTTPRequestEntry extends RequestEntry<HTTPMockEntry> {
 
@@ -17,7 +19,8 @@ public class HTTPRequestEntry extends RequestEntry<HTTPMockEntry> {
     private String bodyFilePath;
     private List<HTTPRequestFileEntry> requestFiles = new ArrayList<>();
     private Map<String, String> formData = new HashMap<>();
-    private HTTPRequestAuthEntry requestAuth;
+    private HTTPBasicAuthEntry basicAuth;
+    private HTTPTokenAuthEntry tokenAuth;
 
     public String getMethod() {
         return method;
@@ -83,11 +86,19 @@ public class HTTPRequestEntry extends RequestEntry<HTTPMockEntry> {
         this.formData = formData;
     }
 
-    public HTTPRequestAuthEntry getRequestAuth() {
-        return requestAuth;
+    public HTTPBasicAuthEntry getBasicAuth() {
+        return basicAuth;
     }
 
-    public void setRequestAuth(HTTPRequestAuthEntry requestAuth) {
-        this.requestAuth = requestAuth;
+    public void setBasicAuth(HTTPBasicAuthEntry basicAuth) {
+        this.basicAuth = basicAuth;
+    }
+
+    public HTTPTokenAuthEntry getTokenAuth() {
+        return tokenAuth;
+    }
+
+    public void setTokenAuth(HTTPTokenAuthEntry tokenAuth) {
+        this.tokenAuth = tokenAuth;
     }
 }
