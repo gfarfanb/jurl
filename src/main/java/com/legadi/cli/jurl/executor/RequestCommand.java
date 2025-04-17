@@ -321,36 +321,44 @@ public class RequestCommand {
             }
 
             RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, settings.getRequestType());
-            Optional<?> authRequestCarrier = modifier.getAuthenticationIfExists(requestName,
+            List<?> authRequests = modifier.getAuthenticationIfExists(requestName,
                 requestInput, settings);
 
-            if(!authRequestCarrier.isPresent()) {
+            if(authRequests.isEmpty()) {
                 return Optional.empty();
             }
 
-            RequestEntry<? extends MockEntry> authRequest =
-                (RequestEntry<? extends MockEntry>) authRequestCarrier.get();
-            ExecutionIndex index = new ExecutionIndex(0, 1, 1);
+            ExecutionStats stats = new ExecutionStats(authRequests.size());
 
-            LOGGER.fine("Executing authentication request"
-                + "\n  index=" + index
-                + "\n  authName=" + authRequest.getName()
-                + "\n  requestInputPath=" + requestInputPath
-                + (stepTag != null ? "\n  flow=" + stepTag.getFlowLabel() : "")
-                + (stepTag != null ? "\n  step=" + stepTag.getStepLabel() : ""));
+            for(Object authRequestRaw : authRequests) {
+                RequestEntry<? extends MockEntry> authRequest =
+                    (RequestEntry<? extends MockEntry>) authRequestRaw;
+                ExecutionIndex index = new ExecutionIndex(0, 1, 1);
 
-            try {
-                return Optional.of(executeRequest(index, new StringExpander(settings.createForStep()),
-                    requestInputPath, null, authRequest,
-                    stepTag));
-            } catch(CommandException | RequestException ex) {
-                throw new CommandException(
-                    "[" + requestInputPath+ "/" + authRequest.getName() + "] "
-                    + " index=" + index
-                    + (stepTag != null ? " flow=" + stepTag.getFlowLabel() : "")
-                    + (stepTag != null ? " step=" + stepTag.getStepLabel() : "")
-                    + " - " + ex.getMessage());
+                LOGGER.fine("Executing authentication request"
+                    + "\n  index=" + index
+                    + "\n  authName=" + authRequest.getName()
+                    + "\n  requestInputPath=" + requestInputPath
+                    + (stepTag != null ? "\n  flow=" + stepTag.getFlowLabel() : "")
+                    + (stepTag != null ? "\n  step=" + stepTag.getStepLabel() : ""));
+
+                try {
+                    ExecutionStatus status = executeRequest(index, new StringExpander(settings.createForStep()),
+                        requestInputPath, null, authRequest,
+                        stepTag);
+
+                    stats.count(status);
+                } catch(CommandException | RequestException ex) {
+                    throw new CommandException(
+                        "[" + requestInputPath+ "/" + authRequest.getName() + "] "
+                        + " index=" + index
+                        + (stepTag != null ? " flow=" + stepTag.getFlowLabel() : "")
+                        + (stepTag != null ? " step=" + stepTag.getStepLabel() : "")
+                        + " - " + ex.getMessage());
+                }
             }
+
+            return Optional.of(stats.computeStatus());
         } finally {
             lock.unlock();
         }

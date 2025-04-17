@@ -30,6 +30,7 @@ import com.legadi.cli.jurl.embedded.EmbeddedAPIAbstractTest;
 import com.legadi.cli.jurl.embedded.executor.HTTPRequestTestExecutor;
 import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.exception.RequestException;
+import com.legadi.cli.jurl.executor.HeaderAuthenticator;
 import com.legadi.cli.jurl.executor.RequestExecutor;
 import com.legadi.cli.jurl.model.AssertionEntry;
 import com.legadi.cli.jurl.model.AssertionResult;
@@ -245,7 +246,7 @@ public class HTTPRequestExecutorTest extends EmbeddedAPIAbstractTest {
         HTTPBasicAuthEntry auth = new HTTPBasicAuthEntry();
         auth.setUsername("test");
         auth.setPassword("73st");
-        request.setBasicAuth(auth);
+        request.getAuthEntries().add(auth);
 
         HTTPResponseEntry response = Assertions.assertDoesNotThrow(
             () -> executor.executeRequest(settings, "src/test/resources/http-request-executor.http", request));
@@ -259,9 +260,13 @@ public class HTTPRequestExecutorTest extends EmbeddedAPIAbstractTest {
     @Test
     public void executeRequestBearerToken() {
         HTTPRequestExecutor executor = findByNameOrFail(RequestExecutor.class, "http");
+        HeaderAuthenticator<?, ?> tokenAuthenticator = ObjectsRegistry.<HeaderAuthenticator<?, ?>>findAll(HeaderAuthenticator.class, "http")
+            .stream()
+            .filter(auth -> auth.getParserElement().equalsIgnoreCase("token"))
+            .findFirst()
+            .get();
         HTTPRequestEntry request = new HTTPRequestEntry();
         Settings settings = new Settings();
-        HTTPAuthEntryFactory authEntryFactory = new HTTPAuthEntryFactory(settings);
 
         request.setName("basic-post");
         request.setUrl("http://localhost:" + port + "/basic/body");
@@ -270,12 +275,12 @@ public class HTTPRequestExecutorTest extends EmbeddedAPIAbstractTest {
         request.getHeaders().put("Request-Catcher", requestCatcherId);
         request.setBodyContent("{}");
 
-        HTTPTokenAuthEntry auth = authEntryFactory.instanceTokenAuth();
+        HTTPTokenAuthEntry auth = (HTTPTokenAuthEntry) tokenAuthenticator.instanceAuthEntry(settings);
         auth.setTokenUrl("http://localhost:" + port + "/oauth/token");
         auth.setClientId(UUID.randomUUID().toString());
         auth.setClientSecret(UUID.randomUUID().toString());
         auth.setScope("test");
-        request.setTokenAuth(auth);
+        request.getAuthEntries().add(auth);
 
         HTTPResponseEntry response = Assertions.assertDoesNotThrow(
             () -> executor.executeRequest(settings, "src/test/resources/http-request-executor.http", request));

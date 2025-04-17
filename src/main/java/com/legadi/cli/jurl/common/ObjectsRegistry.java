@@ -39,14 +39,17 @@ import com.legadi.cli.jurl.assertions.MatchesAssertionFunction;
 import com.legadi.cli.jurl.assertions.NotEqualsToAssertionFunction;
 import com.legadi.cli.jurl.assertions.StartsWithAssertionFunction;
 import com.legadi.cli.jurl.exception.CommandException;
+import com.legadi.cli.jurl.executor.HeaderAuthenticator;
 import com.legadi.cli.jurl.executor.RequestExecutor;
 import com.legadi.cli.jurl.executor.RequestModifier;
 import com.legadi.cli.jurl.executor.ResponseProcessor;
 import com.legadi.cli.jurl.executor.decoder.GzipOutputDecoder;
 import com.legadi.cli.jurl.executor.decoder.OutputDecoder;
+import com.legadi.cli.jurl.executor.http.HTTPBasicHeaderAuthenticator;
 import com.legadi.cli.jurl.executor.http.HTTPRequestExecutor;
 import com.legadi.cli.jurl.executor.http.HTTPRequestModifier;
 import com.legadi.cli.jurl.executor.http.HTTPResponseProcessor;
+import com.legadi.cli.jurl.executor.http.HTTPTokenHeaderAuthenticator;
 import com.legadi.cli.jurl.executor.mixer.BodyMixer;
 import com.legadi.cli.jurl.executor.mixer.JsonBodyMixer;
 import com.legadi.cli.jurl.executor.reader.JsonOutputReader;
@@ -180,6 +183,9 @@ public class ObjectsRegistry {
         register(RequestExecutor.class, HTTPRequestExecutor.class);
         register(ResponseProcessor.class, HTTPResponseProcessor.class);
 
+        register(HeaderAuthenticator.class, HTTPTokenHeaderAuthenticator.class);
+        register(HeaderAuthenticator.class, HTTPBasicHeaderAuthenticator.class);
+
         register(OutputReader.class, JsonOutputReader.class);
         register(OutputDecoder.class, GzipOutputDecoder.class);
 
@@ -273,6 +279,15 @@ public class ObjectsRegistry {
     public static <T extends Evaluable> Optional<T> find(Class<? extends Evaluable> typeClass, String input) {
         return Optional.ofNullable(queryLastEvaluable(typeClass, input))
             .map(spec -> instantiate(spec.getTypeClass(), spec.getArgs()));
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends Evaluable> List<T> findAll(Class<? extends Evaluable> typeClass, String input) {
+        return queryAllEvaluable(typeClass, input)
+            .stream()
+            .map(spec -> instantiate(spec.getTypeClass(), spec.getArgs()))
+            .map(spec -> (T) spec)
+            .collect(Collectors.toCollection(ArrayList::new));
     }
 
     public static <T extends Evaluable> T findOrFail(Class<? extends Evaluable> typeClass, String input) {
@@ -373,17 +388,21 @@ public class ObjectsRegistry {
     }
 
     private static <T extends Evaluable> Spec queryLastEvaluable(Class<T> typeClass, String input) {
-        List<Spec> result = EVALUABLES.getOrDefault(typeClass, EMTPY_EVALUABLES)
-            .stream()
-            .filter(p -> p.getLeft().accepts(input))
-            .map(Pair::getRight)
-            .collect(Collectors.toCollection(ArrayList::new));
+        List<Spec> result = queryAllEvaluable(typeClass, input);
 
         if(result.isEmpty()) {
             return null;
         }
 
         return result.get(result.size() - 1);
+    }
+
+    private static <T extends Evaluable> List<Spec> queryAllEvaluable(Class<T> typeClass, String input) {
+        return EVALUABLES.getOrDefault(typeClass, EMTPY_EVALUABLES)
+            .stream()
+            .filter(p -> p.getLeft().accepts(input))
+            .map(Pair::getRight)
+            .collect(Collectors.toCollection(ArrayList::new));
     }
 
     private static <T extends Named> Spec queryLastNamed(Class<T> typeClass, String name) {

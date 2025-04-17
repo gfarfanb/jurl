@@ -27,11 +27,15 @@ public class FlowAPITest extends EmbeddedAPIAbstractTest {
     public void authorization() {
         UUID authCorrelationId = jurl("-n", "basicWithAuthorization", "src/test/resources/flow.spec.http");
         Settings authSettings = requestCatcher.getLast(authCorrelationId, SETTINGS);
-        HTTPTokenAuthEntry authEntry = requestCatcher.<HTTPRequestEntry>getAll(authCorrelationId, REQUEST)
+        List<HTTPRequestEntry> requests = requestCatcher.getAll(authCorrelationId, REQUEST);
+        HTTPTokenAuthEntry authEntry = requests
             .stream()
             .filter(r -> !r.getName().contains("authorization"))
-            .findAny()
-            .map(HTTPRequestEntry::getTokenAuth)
+            .map(HTTPRequestEntry::getAuthEntries)
+            .flatMap(List::stream)
+            .filter(auth -> HTTPTokenAuthEntry.class.isAssignableFrom(auth.getClass()))
+            .map(auth -> (HTTPTokenAuthEntry) auth)
+            .findFirst()
             .get();
 
         String tokenParam = toGeneratedParam(authSettings.getRequestType(),

@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Assertions;
@@ -22,10 +21,12 @@ import org.junit.jupiter.api.Test;
 
 import com.google.gson.reflect.TypeToken;
 import com.legadi.cli.jurl.assertions.EqualsToAssertionFunction;
+import com.legadi.cli.jurl.common.ObjectsRegistry;
 import com.legadi.cli.jurl.common.OutputPathBuilder;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.exception.RequestException;
+import com.legadi.cli.jurl.executor.HeaderAuthenticator;
 import com.legadi.cli.jurl.executor.RequestModifier;
 import com.legadi.cli.jurl.model.AssertionEntry;
 import com.legadi.cli.jurl.model.FlowEntry;
@@ -56,22 +57,26 @@ public class HTTPRequestModifierTest {
         requestInput.getRequests().put(requestName, request);
 
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
-        Optional<?> authRequestCarrier = modifier.getAuthenticationIfExists(requestName,
+        List<?> authRequests = modifier.getAuthenticationIfExists(requestName,
             requestInput, settings);
 
-        Assertions.assertFalse(authRequestCarrier.isPresent());
+        Assertions.assertTrue(authRequests.isEmpty());
     }
 
     @Test
     public void getAuthenticationDefinitionRequestAuth() {
         Settings settings = new Settings();
-        HTTPAuthEntryFactory authEntryFactory = new HTTPAuthEntryFactory(settings);
+        HeaderAuthenticator<?, ?> tokenAuthenticator = ObjectsRegistry.<HeaderAuthenticator<?, ?>>findAll(HeaderAuthenticator.class, "http")
+            .stream()
+            .filter(auth -> auth.getParserElement().equalsIgnoreCase("token"))
+            .findFirst()
+            .get();
         String requestName = UUID.randomUUID().toString();
         String secret = UUID.randomUUID().toString();
 
         RequestInput<HTTPRequestEntry> requestInput = new RequestInput<>();
         HTTPRequestEntry request = new HTTPRequestEntry();
-        HTTPTokenAuthEntry requestAuth = authEntryFactory.instanceTokenAuth();
+        HTTPTokenAuthEntry requestAuth = (HTTPTokenAuthEntry) tokenAuthenticator.instanceAuthEntry(settings);
 
         requestAuth.setTokenUrl("http://localhost:555555/oauth/token");
         requestAuth.setClientId("flow-spec-client-id");
@@ -79,18 +84,18 @@ public class HTTPRequestModifierTest {
         requestAuth.setScope("test");
 
         request.setName(requestName);
-        request.setTokenAuth(requestAuth);
+        request.getAuthEntries().add(requestAuth);
 
         requestInput.setApi(new HTTPRequestEntry());
         requestInput.getRequests().put(requestName, request);
 
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
-        Optional<?> authRequestCarrier = modifier.getAuthenticationIfExists(requestName,
+        List<?> authRequests = modifier.getAuthenticationIfExists(requestName,
             requestInput, settings);
 
-        Assertions.assertTrue(authRequestCarrier.isPresent());
+        Assertions.assertFalse(authRequests.isEmpty());
 
-        HTTPRequestEntry authRequest = (HTTPRequestEntry) authRequestCarrier.get();
+        HTTPRequestEntry authRequest = (HTTPRequestEntry) authRequests.get(0);
 
         Assertions.assertEquals(requestName + "/token-authorization", authRequest.getName());
         Assertions.assertEquals("POST", authRequest.getMethod());
@@ -112,13 +117,17 @@ public class HTTPRequestModifierTest {
     @Test
     public void getAuthenticationDefinitionMergeAuth() {
         Settings settings = new Settings();
-        HTTPAuthEntryFactory authEntryFactory = new HTTPAuthEntryFactory(settings);
+        HeaderAuthenticator<?, ?> tokenAuthenticator = ObjectsRegistry.<HeaderAuthenticator<?, ?>>findAll(HeaderAuthenticator.class, "http")
+            .stream()
+            .filter(auth -> auth.getParserElement().equalsIgnoreCase("token"))
+            .findFirst()
+            .get();
         String requestName = UUID.randomUUID().toString();
         String secret = UUID.randomUUID().toString();
 
         RequestInput<HTTPRequestEntry> requestInput = new RequestInput<>();
         HTTPRequestEntry request = new HTTPRequestEntry();
-        HTTPTokenAuthEntry requestAuth = authEntryFactory.instanceTokenAuth();
+        HTTPTokenAuthEntry requestAuth = (HTTPTokenAuthEntry) tokenAuthenticator.instanceAuthEntry(settings);
 
         requestAuth.setTokenUrl("http://localhost:555555/oauth/token");
         requestAuth.setClientId("flow-spec-client-id");
@@ -126,19 +135,19 @@ public class HTTPRequestModifierTest {
         requestAuth.setScope("test");
 
         request.setName(requestName);
-        request.setTokenAuth(new HTTPTokenAuthEntry());
+        request.getAuthEntries().add(new HTTPTokenAuthEntry());
 
         requestInput.setApi(new HTTPRequestEntry());
-        requestInput.getApi().setTokenAuth(requestAuth);
+        requestInput.getApi().getAuthEntries().add(requestAuth);
         requestInput.getRequests().put(requestName, request);
 
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
-        Optional<?> authRequestCarrier = modifier.getAuthenticationIfExists(requestName,
+        List<?> authRequests = modifier.getAuthenticationIfExists(requestName,
             requestInput, settings);
 
-        Assertions.assertTrue(authRequestCarrier.isPresent());
+        Assertions.assertFalse(authRequests.isEmpty());
 
-        HTTPRequestEntry authRequest = (HTTPRequestEntry) authRequestCarrier.get();
+        HTTPRequestEntry authRequest = (HTTPRequestEntry) authRequests.get(0);
 
         Assertions.assertEquals(requestName + "/token-authorization", authRequest.getName());
         Assertions.assertEquals("POST", authRequest.getMethod());
@@ -160,13 +169,17 @@ public class HTTPRequestModifierTest {
     @Test
     public void getAuthenticationDefinitionMergeAuthRequestPriority() {
         Settings settings = new Settings();
-        HTTPAuthEntryFactory authEntryFactory = new HTTPAuthEntryFactory(settings);
+        HeaderAuthenticator<?, ?> tokenAuthenticator = ObjectsRegistry.<HeaderAuthenticator<?, ?>>findAll(HeaderAuthenticator.class, "http")
+            .stream()
+            .filter(auth -> auth.getParserElement().equalsIgnoreCase("token"))
+            .findFirst()
+            .get();
         String requestName = UUID.randomUUID().toString();
         String secret = UUID.randomUUID().toString();
 
         RequestInput<HTTPRequestEntry> requestInput = new RequestInput<>();
         HTTPRequestEntry request = new HTTPRequestEntry();
-        HTTPTokenAuthEntry requestAuth = authEntryFactory.instanceTokenAuth();
+        HTTPTokenAuthEntry requestAuth = (HTTPTokenAuthEntry) tokenAuthenticator.instanceAuthEntry(settings);
 
         requestAuth.setTokenUrl("http://localhost:555555/oauth/token");
         requestAuth.setClientId("flow-spec-client-id");
@@ -174,9 +187,9 @@ public class HTTPRequestModifierTest {
         requestAuth.setScope("test");
 
         request.setName(requestName);
-        request.setTokenAuth(requestAuth);
+        request.getAuthEntries().add(requestAuth);
 
-        HTTPTokenAuthEntry apiAuth = authEntryFactory.instanceTokenAuth();
+        HTTPTokenAuthEntry apiAuth = (HTTPTokenAuthEntry) tokenAuthenticator.instanceAuthEntry(settings);
 
         apiAuth.setTokenUrl("http://api:555555/oauth/token");
         apiAuth.setClientId("api-flow-spec-client-id");
@@ -184,16 +197,16 @@ public class HTTPRequestModifierTest {
         apiAuth.setScope("api-test");
 
         requestInput.setApi(new HTTPRequestEntry());
-        requestInput.getApi().setTokenAuth(apiAuth);
+        requestInput.getApi().getAuthEntries().add(apiAuth);
         requestInput.getRequests().put(requestName, request);
 
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
-        Optional<?> authRequestCarrier = modifier.getAuthenticationIfExists(requestName,
+        List<?> authRequests = modifier.getAuthenticationIfExists(requestName,
             requestInput, settings);
 
-        Assertions.assertTrue(authRequestCarrier.isPresent());
+        Assertions.assertFalse(authRequests.isEmpty());
 
-        HTTPRequestEntry authRequest = (HTTPRequestEntry) authRequestCarrier.get();
+        HTTPRequestEntry authRequest = (HTTPRequestEntry) authRequests.get(0);
 
         Assertions.assertEquals(requestName + "/token-authorization", authRequest.getName());
         Assertions.assertEquals("POST", authRequest.getMethod());
@@ -215,16 +228,20 @@ public class HTTPRequestModifierTest {
     @Test
     public void getAuthenticationDefinitionWithEmptySpec() {
         Settings settings = new Settings();
-        HTTPAuthEntryFactory authEntryFactory = new HTTPAuthEntryFactory(settings);
+        HeaderAuthenticator<?, ?> tokenAuthenticator = ObjectsRegistry.<HeaderAuthenticator<?, ?>>findAll(HeaderAuthenticator.class, "http")
+            .stream()
+            .filter(auth -> auth.getParserElement().equalsIgnoreCase("token"))
+            .findFirst()
+            .get();
         String requestName = UUID.randomUUID().toString();
         String secret = UUID.randomUUID().toString();
 
         RequestInput<HTTPRequestEntry> requestInput = new RequestInput<>();
         HTTPRequestEntry request = new HTTPRequestEntry();
-        HTTPTokenAuthEntry requestAuth = authEntryFactory.instanceTokenAuth();
+        HTTPTokenAuthEntry requestAuth = (HTTPTokenAuthEntry) tokenAuthenticator.instanceAuthEntry(settings);
 
         request.setName(requestName);
-        request.setTokenAuth(requestAuth);
+        request.getAuthEntries().add(requestAuth);
 
         requestInput.setApi(new HTTPRequestEntry());
         requestInput.getRequests().put(requestName, request);
@@ -248,10 +265,10 @@ public class HTTPRequestModifierTest {
 
         requestAuth.setScope("test");
 
-        Optional<?> authRequestCarrier = modifier.getAuthenticationIfExists(requestName,
+        List<?> authRequests = modifier.getAuthenticationIfExists(requestName,
             requestInput, settings);
 
-        Assertions.assertTrue(authRequestCarrier.isPresent());
+        Assertions.assertFalse(authRequests.isEmpty());
     }
 
     @Test
@@ -539,12 +556,14 @@ public class HTTPRequestModifierTest {
         apiBasicAuth = new HTTPBasicAuthEntry();
         apiBasicAuth.setUsername("api-username");
         apiBasicAuth.setPassword("api-password");
-        api.setBasicAuth(apiBasicAuth);
+        api.getAuthEntries().add(apiBasicAuth);
 
         modifier.mergeAPI(settings, api, request);
 
-        Assertions.assertEquals("api-username", request.getBasicAuth().getUsername());
-        Assertions.assertEquals("api-password", request.getBasicAuth().getPassword());
+        requestBasicAuth = (HTTPBasicAuthEntry) request.getAuthEntries().get(0);
+
+        Assertions.assertEquals("api-username", requestBasicAuth.getUsername());
+        Assertions.assertEquals("api-password", requestBasicAuth.getPassword());
 
         api = new HTTPRequestEntry();
         request = new HTTPRequestEntry();
@@ -552,12 +571,14 @@ public class HTTPRequestModifierTest {
         requestBasicAuth = new HTTPBasicAuthEntry();
         requestBasicAuth.setUsername("request-username");
         requestBasicAuth.setPassword("request-password");
-        request.setBasicAuth(requestBasicAuth);
+        request.getAuthEntries().add(requestBasicAuth);
 
         modifier.mergeAPI(settings, api, request);
 
-        Assertions.assertEquals("request-username", request.getBasicAuth().getUsername());
-        Assertions.assertEquals("request-password", request.getBasicAuth().getPassword());
+        requestBasicAuth = (HTTPBasicAuthEntry) request.getAuthEntries().get(0);
+
+        Assertions.assertEquals("request-username", requestBasicAuth.getUsername());
+        Assertions.assertEquals("request-password", requestBasicAuth.getPassword());
 
         api = new HTTPRequestEntry();
         request = new HTTPRequestEntry();
@@ -565,17 +586,19 @@ public class HTTPRequestModifierTest {
         apiBasicAuth = new HTTPBasicAuthEntry();
         apiBasicAuth.setUsername("api-username");
         apiBasicAuth.setPassword("api-password");
-        api.setBasicAuth(apiBasicAuth);
+        api.getAuthEntries().add(apiBasicAuth);
 
         requestBasicAuth = new HTTPBasicAuthEntry();
         requestBasicAuth.setUsername("request-username");
         requestBasicAuth.setPassword("request-password");
-        request.setBasicAuth(requestBasicAuth);
+        request.getAuthEntries().add(requestBasicAuth);
 
         modifier.mergeAPI(settings, api, request);
 
-        Assertions.assertEquals("request-username", request.getBasicAuth().getUsername());
-        Assertions.assertEquals("request-password", request.getBasicAuth().getPassword());
+        requestBasicAuth = (HTTPBasicAuthEntry) request.getAuthEntries().get(0);
+
+        Assertions.assertEquals("request-username", requestBasicAuth.getUsername());
+        Assertions.assertEquals("request-password", requestBasicAuth.getPassword());
 
         api = new HTTPRequestEntry();
         request = new HTTPRequestEntry();
@@ -583,15 +606,17 @@ public class HTTPRequestModifierTest {
         apiBasicAuth = new HTTPBasicAuthEntry();
         apiBasicAuth.setUsername("api-username");
         apiBasicAuth.setPassword("api-password");
-        api.setBasicAuth(apiBasicAuth);
+        api.getAuthEntries().add(apiBasicAuth);
 
         requestBasicAuth = new HTTPBasicAuthEntry();
-        request.setBasicAuth(requestBasicAuth);
+        request.getAuthEntries().add(requestBasicAuth);
 
         modifier.mergeAPI(settings, api, request);
 
-        Assertions.assertEquals("api-username", request.getBasicAuth().getUsername());
-        Assertions.assertEquals("api-password", request.getBasicAuth().getPassword());
+        requestBasicAuth = (HTTPBasicAuthEntry) request.getAuthEntries().get(0);
+
+        Assertions.assertEquals("api-username", requestBasicAuth.getUsername());
+        Assertions.assertEquals("api-password", requestBasicAuth.getPassword());
     }
 
     @Test
@@ -610,12 +635,14 @@ public class HTTPRequestModifierTest {
         apiTokenAuth = new HTTPTokenAuthEntry();
         apiTokenAuth.setClientId("api-client-id");
         apiTokenAuth.setClientSecret("api-client-secret");
-        api.setTokenAuth(apiTokenAuth);
+        api.getAuthEntries().add(apiTokenAuth);
 
         modifier.mergeAPI(settings, api, request);
 
-        Assertions.assertEquals("api-client-id", request.getTokenAuth().getClientId());
-        Assertions.assertEquals("api-client-secret", request.getTokenAuth().getClientSecret());
+        requestTokenAuth = (HTTPTokenAuthEntry) request.getAuthEntries().get(0);
+
+        Assertions.assertEquals("api-client-id", requestTokenAuth.getClientId());
+        Assertions.assertEquals("api-client-secret", requestTokenAuth.getClientSecret());
 
         api = new HTTPRequestEntry();
         request = new HTTPRequestEntry();
@@ -623,12 +650,14 @@ public class HTTPRequestModifierTest {
         requestTokenAuth = new HTTPTokenAuthEntry();
         requestTokenAuth.setClientId("request-client-id");
         requestTokenAuth.setClientSecret("request-client-secret");
-        request.setTokenAuth(requestTokenAuth);
+        request.getAuthEntries().add(requestTokenAuth);
 
         modifier.mergeAPI(settings, api, request);
 
-        Assertions.assertEquals("request-client-id", request.getTokenAuth().getClientId());
-        Assertions.assertEquals("request-client-secret", request.getTokenAuth().getClientSecret());
+        requestTokenAuth = (HTTPTokenAuthEntry) request.getAuthEntries().get(0);
+
+        Assertions.assertEquals("request-client-id", requestTokenAuth.getClientId());
+        Assertions.assertEquals("request-client-secret", requestTokenAuth.getClientSecret());
 
         api = new HTTPRequestEntry();
         request = new HTTPRequestEntry();
@@ -636,17 +665,19 @@ public class HTTPRequestModifierTest {
         apiTokenAuth = new HTTPTokenAuthEntry();
         apiTokenAuth.setClientId("api-client-id");
         apiTokenAuth.setClientSecret("api-client-id");
-        api.setTokenAuth(apiTokenAuth);
+        api.getAuthEntries().add(apiTokenAuth);
 
         requestTokenAuth = new HTTPTokenAuthEntry();
         requestTokenAuth.setClientId("request-client-id");
         requestTokenAuth.setClientSecret("request-client-secret");
-        request.setTokenAuth(requestTokenAuth);
+        request.getAuthEntries().add(requestTokenAuth);
 
         modifier.mergeAPI(settings, api, request);
 
-        Assertions.assertEquals("request-client-id", request.getTokenAuth().getClientId());
-        Assertions.assertEquals("request-client-secret", request.getTokenAuth().getClientSecret());
+        requestTokenAuth = (HTTPTokenAuthEntry) request.getAuthEntries().get(0);
+
+        Assertions.assertEquals("request-client-id", requestTokenAuth.getClientId());
+        Assertions.assertEquals("request-client-secret", requestTokenAuth.getClientSecret());
 
         api = new HTTPRequestEntry();
         request = new HTTPRequestEntry();
@@ -654,15 +685,17 @@ public class HTTPRequestModifierTest {
         apiTokenAuth = new HTTPTokenAuthEntry();
         apiTokenAuth.setClientId("api-client-id");
         apiTokenAuth.setClientSecret("api-client-secret");
-        api.setTokenAuth(apiTokenAuth);
+        api.getAuthEntries().add(apiTokenAuth);
 
         requestTokenAuth = new HTTPTokenAuthEntry();
-        request.setTokenAuth(requestTokenAuth);
+        request.getAuthEntries().add(requestTokenAuth);
 
         modifier.mergeAPI(settings, api, request);
 
-        Assertions.assertEquals("api-client-id", request.getTokenAuth().getClientId());
-        Assertions.assertEquals("api-client-secret", request.getTokenAuth().getClientSecret());
+        requestTokenAuth = (HTTPTokenAuthEntry) request.getAuthEntries().get(0);
+
+        Assertions.assertEquals("api-client-id", requestTokenAuth.getClientId());
+        Assertions.assertEquals("api-client-secret", requestTokenAuth.getClientSecret());
     }
 
     @Test

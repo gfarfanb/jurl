@@ -1,12 +1,19 @@
 package com.legadi.cli.jurl.model.http.auth;
 
-public class HTTPTokenAuthEntry {
+import com.legadi.cli.jurl.model.AuthenticationEntry;
+
+public class HTTPTokenAuthEntry implements AuthenticationEntry {
 
     private String tokenUrl;
     private String grantType;
     private String clientId;
     private String clientSecret;
     private String scope;
+
+    @Override
+    public String getParserElement() {
+        return "token";
+    }
 
     public String getTokenUrl() {
         return tokenUrl;

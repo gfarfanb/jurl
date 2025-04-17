@@ -5,7 +5,7 @@ import static com.legadi.cli.jurl.common.JsonUtils.removeJsonProperties;
 import static com.legadi.cli.jurl.embedded.util.ObjectName.REQUEST;
 import static com.legadi.cli.jurl.embedded.util.ObjectName.SETTINGS;
 
-import java.util.Objects;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -22,8 +22,10 @@ public class AuthenticationCleaner {
         Settings settings = requestCatcher.getLast(correlationId, SETTINGS);
         Set<String> clientIds = requestCatcher.<HTTPRequestEntry>getAll(correlationId, REQUEST)
             .stream()
-            .map(HTTPRequestEntry::getTokenAuth)
-            .filter(Objects::nonNull)
+            .map(HTTPRequestEntry::getAuthEntries)
+            .flatMap(List::stream)
+            .filter(auth -> HTTPTokenAuthEntry.class.isAssignableFrom(auth.getClass()))
+            .map(auth -> (HTTPTokenAuthEntry) auth)
             .map(HTTPTokenAuthEntry::getClientId)
             .collect(Collectors.toSet());
 
