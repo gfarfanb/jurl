@@ -1,6 +1,6 @@
 package com.legadi.cli.jurl.executor;
 
-import java.util.Optional;
+import java.util.List;
 
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.model.FlowEntry;
@@ -12,12 +12,12 @@ import com.legadi.cli.jurl.model.ResponseEntry;
 public interface RequestModifier<T extends RequestEntry<? extends MockEntry>, R extends ResponseEntry>
         extends RequestType<T, R> {
 
-    default Optional<T> getAuthenticationIfExists(String requestName,
+    default List<T> getAuthenticationIfExists(String requestName,
             RequestInput<?> requestInput, Settings settings) {
         return getAuthenticationDefinition(requestName, cast(requestInput), settings);
     }
 
-    Optional<T> getAuthenticationDefinition(String requestName,
+    List<T> getAuthenticationDefinition(String requestName,
         RequestInput<T> requestInput, Settings settings);
 
     default void mergeHeader(RequestEntry<? extends MockEntry> api,

@@ -37,8 +37,8 @@ public class HTTPRequestEntryTest {
         requestFiles.add(new HTTPRequestFileEntry());
         model.setRequestFiles(requestFiles);
 
-        model.setBasicAuth(new HTTPBasicAuthEntry());
-        model.setTokenAuth(new HTTPTokenAuthEntry());
+        model.getAuthEntries().add(new HTTPBasicAuthEntry());
+        model.getAuthEntries().add(new HTTPTokenAuthEntry());
 
         Map<String, String> formData = new HashMap<>();
         formData.put("identifier", UUID.randomUUID().toString());
@@ -53,8 +53,7 @@ public class HTTPRequestEntryTest {
         Assertions.assertEquals("{\"name\": \"test\"}", model.getBodyContent());
         Assertions.assertEquals("src/test/resources/basic-functions.body.json", model.getBodyFilePath());
         Assertions.assertFalse(model.getRequestFiles().isEmpty());
-        Assertions.assertNotNull(model.getBasicAuth());
-        Assertions.assertNotNull(model.getTokenAuth());
+        Assertions.assertEquals(2, model.getAuthEntries().size());
         Assertions.assertEquals(1, model.getFormData().size());
         Assertions.assertDoesNotThrow(() -> UUID.fromString(model.getFormData().get("identifier")));
     }

@@ -1,9 +1,8 @@
 package com.legadi.cli.jurl.executor.http;
 
-import static com.legadi.cli.jurl.common.JsonUtils.removeJsonProperties;
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
-import static com.legadi.cli.jurl.common.CommonUtils.toGeneratedParam;
+import static com.legadi.cli.jurl.common.ObjectsRegistry.findAll;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findOrFail;
 
 import java.nio.file.Path;
@@ -19,13 +18,12 @@ import java.util.stream.Collectors;
 import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.common.StringExpander;
-import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.exception.RequestException;
+import com.legadi.cli.jurl.executor.HeaderAuthenticator;
 import com.legadi.cli.jurl.executor.RequestModifier;
 import com.legadi.cli.jurl.executor.mixer.BodyMixer;
 import com.legadi.cli.jurl.executor.mixer.BodyMixer.MixerEntry;
 import com.legadi.cli.jurl.model.AssertionEntry;
-import com.legadi.cli.jurl.model.AssertionType;
 import com.legadi.cli.jurl.model.FlowEntry;
 import com.legadi.cli.jurl.model.RequestInput;
 import com.legadi.cli.jurl.model.StepEntry;
@@ -33,8 +31,6 @@ import com.legadi.cli.jurl.model.http.HTTPMockEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestFileEntry;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
-import com.legadi.cli.jurl.model.http.auth.HTTPBasicAuthEntry;
-import com.legadi.cli.jurl.model.http.auth.HTTPTokenAuthEntry;
 import com.legadi.cli.jurl.options.OptionsReader.OptionEntry;
 import com.legadi.cli.jurl.options.SkipAuthenticationOption;
 import com.legadi.cli.jurl.parser.HTTPRequestParser;
@@ -50,26 +46,18 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
     }
 
     @Override
-    public Optional<HTTPRequestEntry> getAuthenticationDefinition(
+    public List<HTTPRequestEntry> getAuthenticationDefinition(
             String requestName, RequestInput<HTTPRequestEntry> requestInput,
             Settings settings) {
         HTTPRequestEntry request = requestInput.getRequests().get(requestName);
 
         if(containsSkipAuth(request)) {
-            return Optional.empty();
+            return new ArrayList<>();
         }
 
+        List<HeaderAuthenticator<HTTPRequestEntry, ?>> headerAuthenticators = findAll(HeaderAuthenticator.class, name());
+        List<HTTPRequestEntry> authRequests = new ArrayList<>();
         HTTPRequestEntry api = requestInput.getApi();
-
-        if(request.getTokenAuth() == null) {
-            request.setTokenAuth(api.getTokenAuth());
-        } else if(api.getTokenAuth() != null) {
-            mergeTokenAuth(api.getTokenAuth(), request.getTokenAuth());
-        }
-
-        if(request.getTokenAuth() == null) {
-            return Optional.empty();
-        }
 
         Map<String, Object> defaults = Optional.ofNullable(api)
             .map(HTTPRequestEntry::getDefaults)
@@ -77,31 +65,23 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
             .orElse(new HashMap<>());
         defaults.putAll(request.getDefaults());
 
-        expandTokenAuth(settings, request.getTokenAuth(), defaults);
+        StringExpander stringExpander = new StringExpander(settings, defaults);
+        expandDefaults(stringExpander, defaults);
 
-        if(isBlank(request.getTokenAuth().getTokenUrl())) {
-            throw new CommandException("'tokenUrl' is required for token authorization");
-        }
-        if(isBlank(request.getTokenAuth().getClientId())) {
-            throw new CommandException("'clientId' is required for token authorization");
-        }
-        if(isBlank(request.getTokenAuth().getClientSecret())) {
-            throw new CommandException("'clientSecret' is required for token authorization");
-        }
-        if(isBlank(request.getTokenAuth().getScope())) {
-            throw new CommandException("'scope' is required for token authorization");
-        }
+        for(HeaderAuthenticator<HTTPRequestEntry, ?> headerAuthenticator : headerAuthenticators) {
+            if(!headerAuthenticator.requiresExecution()) {
+                continue;
+            }
 
-        if(settings.isExecuteAuthentication()) {
-            String clientId = request.getTokenAuth().getClientId();
-            removeJsonProperties(settings.getOverrideFilePath(),
-                toGeneratedParam(settings.getRequestType(), clientId, "expiration-millis"),
-                toGeneratedParam(settings.getRequestType(), clientId, "access-token"),
-                toGeneratedParam(settings.getRequestType(), clientId, "expires-in." + settings.getAuthBearerExpiresInTimeUnit()),
-                toGeneratedParam(settings.getRequestType(), clientId, "expiration-date"));
+            if(settings.isExecuteAuthentication()) {
+                headerAuthenticator.cleanupAuth(settings, api, request);
+            }
+
+            headerAuthenticator.createAuthRequest(settings, api, request, defaults)
+                .ifPresent(authRequests::add);
         }
 
-        return Optional.of(instanceTokenRequest(settings, request.getName(), request.getTokenAuth()));
+        return authRequests;
     }
 
     @Override
@@ -188,16 +168,11 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         defaults.putAll(request.getDefaults());
         request.setDefaults(defaults);
 
-        if(request.getBasicAuth() == null) {
-            request.setBasicAuth(api.getBasicAuth());
-        } else if(api.getBasicAuth() != null) {
-            mergeBasicAuth(api.getBasicAuth(), request.getBasicAuth());
-        }
+        // TODO: Merge auth entries for API and requests
+        List<HeaderAuthenticator<HTTPRequestEntry, ?>> headerAuthenticators = findAll(HeaderAuthenticator.class, name());
 
-        if(request.getTokenAuth() == null) {
-            request.setTokenAuth(api.getTokenAuth());
-        } else if(api.getTokenAuth() != null) {
-            mergeTokenAuth(api.getTokenAuth(), request.getTokenAuth());
+        for(HeaderAuthenticator<HTTPRequestEntry, ?> headerAuthenticator : headerAuthenticators) {
+            headerAuthenticator.mergeAuthEntry(api, request);
         }
     }
 
@@ -293,84 +268,12 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         expandMap(stringExpander, request.getFormData());
     }
 
-    private HTTPRequestEntry instanceTokenRequest(Settings settings, String requestName,
-            HTTPTokenAuthEntry authEntry) {
-        HTTPRequestEntry authRequest = new HTTPRequestEntry();
-
-        authRequest.setName(requestName + "/token-authorization");
-        authRequest.setMethod(settings.getAuthBearerRequestMethod());
-        authRequest.setUrl(authEntry.getTokenUrl());
-        authRequest.getHeaders().put("Content-Type", settings.getAuthBearerContentType());
-        authRequest.setTokenAuth(authEntry);
-
-        Map<String, String> bodyParams = new HashMap<>();
-        bodyParams.put("grantTypeFieldName", settings.getAuthBearerGrantTypeFieldName());
-        bodyParams.put("grantType", authEntry.getGrantType());
-        bodyParams.put("clientIdFieldName", settings.getAuthBearerClientIdFieldName());
-        bodyParams.put("clientId", authEntry.getClientId());
-        bodyParams.put("clientSecretFieldName", settings.getAuthBearerClientSecretFieldName());
-        bodyParams.put("clientSecret", authEntry.getClientSecret());
-        bodyParams.put("scopeFieldName", settings.getAuthBearerScopeFieldName());
-        bodyParams.put("scope", authEntry.getScope());
-
-        StringExpander stringExpander = new StringExpander(new Settings());
-        authRequest.setBodyContent(stringExpander.replaceAllInContent(bodyParams, settings.getAuthBearerBodyTemplate()));
-
-        String expirationMillisParam = toGeneratedParam(settings.getRequestType(),
-            authEntry.getClientId(), "expiration-millis");
-        String tokenParam = toGeneratedParam(settings.getRequestType(),
-            authEntry.getClientId(), "access-token");
-        String expiresInUnitParam = toGeneratedParam(settings.getRequestType(),
-            authEntry.getClientId(), "expires-in." + settings.getAuthBearerExpiresInTimeUnit());
-        String expirationDateParam = toGeneratedParam(settings.getRequestType(),
-            authEntry.getClientId(), "expiration-date");
-
-        AssertionEntry expirationCondition = new AssertionEntry();
-        expirationCondition.setName("LESS_THAN");
-        expirationCondition.setArgs(new String[] {
-            "{{:default:0:" + expirationMillisParam + "}}",
-            "{{DATE-TIME:date-epoch:ISO_LOCAL_DATE_TIME:MILLIS:}}"
-        });
-        expirationCondition.setType(AssertionType.CONDITION);
-        authRequest.getConditions().add(expirationCondition);
-
-        authRequest.getOutputMappings().put(tokenParam, "{{OUT/" + settings.getAuthBearerAccessTokenFieldName() + "}}");
-        authRequest.getOutputMappings().put(expiresInUnitParam, "{{OUT/" + settings.getAuthBearerExpiresInFieldName() + "}}");
-        authRequest.getOutputMappings().put(expirationDateParam, "{{DATE-TIME:date-plus:yyyy-MM-dd'T'HH\\:mm\\:ss.n:"
-            + settings.getAuthBearerExpiresInTimeUnit() + ":" + expiresInUnitParam + ":}}");
-        authRequest.getOutputMappings().put(expirationMillisParam, "{{:date-epoch:ISO_LOCAL_DATE_TIME:MILLIS:" + expirationDateParam +"}}");
-
-        AssertionEntry http200Assertion = new AssertionEntry();
-        http200Assertion.setName("EQUALS_TO");
-        http200Assertion.setArgs(new String[] {
-            "200",
-            "{{HTTP/status}}"
-        });
-        http200Assertion.setType(AssertionType.ASSERTION);
-        authRequest.getAssertions().add(http200Assertion);
-
-        return authRequest;
-    }
-
     private boolean containsSkipAuth(HTTPRequestEntry request) {
         return request.getOptions()
             .stream()
             .map(Pair::getLeft)
             .map(Object::getClass)
             .anyMatch(SkipAuthenticationOption.class::isAssignableFrom);
-    }
-
-    private void expandTokenAuth(Settings settings, HTTPTokenAuthEntry authEntry,
-            Map<String, Object> authDefaults) {
-        StringExpander stringExpander = new StringExpander(settings, authDefaults);
-
-        expandDefaults(stringExpander, authDefaults);
-
-        authEntry.setTokenUrl(stringExpander.replaceAllInContent(authEntry.getTokenUrl()));
-        authEntry.setGrantType(stringExpander.replaceAllInContent(authEntry.getGrantType()));
-        authEntry.setClientId(stringExpander.replaceAllInContent(authEntry.getClientId()));
-        authEntry.setClientSecret(stringExpander.replaceAllInContent(authEntry.getClientSecret()));
-        authEntry.setScope(stringExpander.replaceAllInContent(authEntry.getScope()));
     }
 
     private void expandAssertion(StringExpander stringExpander, AssertionEntry assertionEntry) {
@@ -470,34 +373,6 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
             if(isBlank(requestFile.getMineType())) {
                 requestFile.setMineType(apiFile.getMineType());
             }
-        }
-    }
-
-    private void mergeBasicAuth(HTTPBasicAuthEntry api, HTTPBasicAuthEntry request) {
-        if(isBlank(request.getUsername())) {
-            request.setUsername(api.getUsername());
-        }
-        if(isBlank(request.getPassword())) {
-            request.setPassword(api.getPassword());
-        }
-    }
-
-    private void mergeTokenAuth(HTTPTokenAuthEntry api, HTTPTokenAuthEntry request) {
-        if(isBlank(request.getTokenUrl())) {
-            request.setTokenUrl(api.getTokenUrl());
-        }
-
-        if(isBlank(request.getGrantType())) {
-            request.setGrantType(api.getGrantType());
-        }
-        if(isBlank(request.getClientId())) {
-            request.setClientId(api.getClientId());
-        }
-        if(isBlank(request.getClientSecret())) {
-            request.setClientSecret(api.getClientSecret());
-        }
-        if(isBlank(request.getScope())) {
-            request.setScope(api.getScope());
         }
     }
 }

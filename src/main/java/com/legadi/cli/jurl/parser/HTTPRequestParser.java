@@ -4,9 +4,11 @@ import static com.legadi.cli.jurl.common.CommonUtils.getAllFields;
 import static com.legadi.cli.jurl.common.CommonUtils.getDefaultFieldIndex;
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
+import static com.legadi.cli.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.cli.jurl.common.CommonUtils.strip;
 import static com.legadi.cli.jurl.common.CommonUtils.trim;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.containsName;
+import static com.legadi.cli.jurl.common.ObjectsRegistry.findAll;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findByNameOrFail;
 
 import java.io.IOException;
@@ -19,19 +21,21 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.legadi.cli.jurl.assertions.AssertionFunction;
 import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.exception.RequestException;
-import com.legadi.cli.jurl.executor.http.HTTPAuthEntryFactory;
+import com.legadi.cli.jurl.executor.HeaderAuthenticator;
 import com.legadi.cli.jurl.model.AssertionEntry;
 import com.legadi.cli.jurl.model.AssertionType;
 import com.legadi.cli.jurl.model.FlowEntry;
@@ -40,8 +44,6 @@ import com.legadi.cli.jurl.model.StepEntry;
 import com.legadi.cli.jurl.model.http.HTTPMockEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestFileEntry;
-import com.legadi.cli.jurl.model.http.auth.HTTPBasicAuthEntry;
-import com.legadi.cli.jurl.model.http.auth.HTTPTokenAuthEntry;
 import com.legadi.cli.jurl.options.Option;
 import com.legadi.cli.jurl.options.OptionsReader;
 import com.legadi.cli.jurl.options.OptionsReader.OptionEntry;
@@ -54,8 +56,6 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     private static final Map<String, Field> REQUEST_FILE_FIELDS = getAllFields(HTTPRequestFileEntry.class);
     private static final String REQUEST_FILE_FIELD_PATH = "path";
     private static final String REQUEST_FILE_FIELD_FIELD = "field";
-    private static final Map<String, Field> BASIC_AUTH_FIELDS = getAllFields(HTTPBasicAuthEntry.class);
-    private static final Map<String, Field> TOKEN_AUTH_FIELDS = getAllFields(HTTPTokenAuthEntry.class);
     private static final Map<String, Field> MOCK_FIELDS = getAllFields(HTTPMockEntry.class);
 
     private static final Pattern NAME_DESCRIPTION_PATTERN = Pattern.compile("^(?i)(.*)[ ]*:(.*)");
@@ -70,7 +70,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         SOURCE("^(?i)source (.*)"),
         REQUEST_FIELD("^(?i)@([\\w:.\\-_@~]+)[ ]*=(.*)"),
         SET_DEFAULT("^(?i)@(set|list|list\\*)-([\\w:.\\-_@~]+)[ ]*=(.*)"),
-        FIELD_VARIABLE("^(?i)(file|basic|token|mock|form|output)[ ]*[@]?([\\w:.\\-_@~]+)[ ]*=(.*)"),
+        FIELD_VARIABLE("^(?i)(file|%s|mock|form|output)[ ]*[@]?([\\w:.\\-_@~]+)[ ]*=(.*)"),
         URL("^(?i)http.*"),
         URL_METHOD("^(?i)(get|head|post|put|delete|connect|options|trace|patch)[ ]+(.*)"),
         HEADER("^(?i)(mock)?[ ]*([\\w\\-]+): (.*)"),
@@ -80,10 +80,16 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         COMMENT("^#(.*)"),
         ENV_LABEL("^:(.*)");
 
+        private final String regex;
         private final Pattern pattern;
 
-        private LinePattern(String pattern) {
-            this.pattern = Pattern.compile(pattern);
+        private LinePattern(String regex) {
+            this.regex = regex;
+            this.pattern = Pattern.compile(regex);
+        }
+
+        public String getRegex() {
+            return regex;
         }
 
         public Pattern getPattern() {
@@ -215,19 +221,6 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             String line) {
         HTTPRequestEntry request = requestCarrier.get().getLeft();
         RequestFileSupplier fileSupplier = requestCarrier.get().getRight();
-        HTTPAuthEntryFactory authEntryFactory = new HTTPAuthEntryFactory(settings);
-        Supplier<HTTPBasicAuthEntry> basicAuthSupplier = () -> {
-            if(request.getBasicAuth() == null) {
-                request.setBasicAuth(new HTTPBasicAuthEntry());
-            }
-            return request.getBasicAuth();
-        };
-        Supplier<HTTPTokenAuthEntry> tokenAuthSupplier = () -> {
-            if(request.getTokenAuth() == null) {
-                request.setTokenAuth(authEntryFactory.instanceTokenAuth());
-            }
-            return request.getTokenAuth();
-        };
         Supplier<HTTPMockEntry> mockSupplier = () -> {
             if(request.getMockDefinition() == null) {
                 request.setMockDefinition(new HTTPMockEntry());
@@ -241,8 +234,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         addHeader(request, mockSupplier, line);
         addDefault(request.getDefaults(), line);
         addRequestField(request, line);
-        addFieldOrVariable(request, fileSupplier,
-            basicAuthSupplier, tokenAuthSupplier, mockSupplier, line);
+        addFieldOrVariable(settings, request, fileSupplier, mockSupplier, line);
         addConditionOrAssertion(request, line);
 
         String body = request.getBodyContent();
@@ -461,12 +453,18 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             });
     }
 
-    private void addFieldOrVariable(HTTPRequestEntry request,
+    private void addFieldOrVariable(Settings settings, HTTPRequestEntry request,
             RequestFileSupplier fileSupplier,
-            Supplier<HTTPBasicAuthEntry> basicAuthSupplier,
-            Supplier<HTTPTokenAuthEntry> tokenAuthSupplier,
             Supplier<HTTPMockEntry> mockSupplier,
             String line) {
+        List<HeaderAuthenticator<?, ?>> headerAuthenticators = findAll(HeaderAuthenticator.class, type());
+        Set<String> authElements = headerAuthenticators.stream()
+            .map(HeaderAuthenticator::getParserElement)
+            .map(String::toLowerCase)
+            .collect(Collectors.toSet());
+        String regexElementsPart = authElements.stream()
+            .collect(Collectors.joining("|"));
+
         applyLine(LinePattern.FIELD_VARIABLE, line,
             matcher -> {
                 String type = trim(matcher.group(1));
@@ -478,13 +476,17 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                     if(isFieldRequired) {
                         addFileField(fileSupplier, fieldName, value);
                     }
-                } else if("basic".equalsIgnoreCase(type)) {
+                } else if(authElements.contains(type.toLowerCase())) {
                     if(isFieldRequired) {
-                        addField(BASIC_AUTH_FIELDS, basicAuthSupplier.get(), fieldName, value);
-                    }
-                } else if("token".equalsIgnoreCase(type)) {
-                    if(isFieldRequired) {
-                        addField(TOKEN_AUTH_FIELDS, tokenAuthSupplier.get(), fieldName, value);
+                        Optional<HeaderAuthenticator<?, ?>> auth = headerAuthenticators.stream()
+                            .filter(a -> a.getParserElement().equalsIgnoreCase(type))
+                            .findFirst();
+
+                        if(auth.isPresent()) {
+                            addField(auth.get().getObjectFields(),
+                                auth.get().getAuthEntrySupplier(settings, request).get(),
+                                fieldName, value);
+                        }
                     }
                 } else if("mock".equalsIgnoreCase(type)) {
                     if(isFieldRequired) {
@@ -498,7 +500,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                 }
 
                 return null;
-            });
+            }, regexElementsPart);
     }
 
     private void addDefault(Map<String, Object> defaults, String line) {
@@ -637,8 +639,15 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     }
 
     private static void applyLine(LinePattern linePattern, String line,
-            MatcherTransformer<Matcher> matcherConsumer) {
-        Matcher matcher = linePattern.getPattern().matcher(line);
+            MatcherTransformer<Matcher> matcherConsumer, Object... regexParts) {
+        Matcher matcher;
+
+        if(isNotEmpty(regexParts)) {
+            String regex = String.format(linePattern.getRegex(), regexParts);
+            matcher = Pattern.compile(regex).matcher(line);
+        } else {
+            matcher = linePattern.getPattern().matcher(line);
+        }
 
         if(matcher.find()) {
             Section section = null;
