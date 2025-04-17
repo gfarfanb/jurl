@@ -60,8 +60,8 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
     @Override
     public Optional<HTTPRequestEntry> createAuthRequest(Settings settings,
             HTTPRequestEntry api, HTTPRequestEntry request, Map<String, Object> defaults) {
-        Optional<HTTPTokenAuthEntry> apiAuthEntry = getAuthEntry(api);
-        Optional<HTTPTokenAuthEntry> requestAuthEntry = getAuthEntry(request);
+        Optional<HTTPTokenAuthEntry> apiAuthEntry = findAuthEntry(api);
+        Optional<HTTPTokenAuthEntry> requestAuthEntry = findAuthEntry(request);
 
         if(!requestAuthEntry.isPresent()) {
             apiAuthEntry.ifPresent(auth -> request.getAuthEntries().add(auth));
@@ -69,7 +69,7 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
             mergeAuthEntry(apiAuthEntry.get(), requestAuthEntry.get());
         }
 
-        requestAuthEntry = getAuthEntry(request);
+        requestAuthEntry = findAuthEntry(request);
 
         if(!requestAuthEntry.isPresent()) {
             return Optional.empty();
@@ -95,7 +95,7 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
 
     @Override
     public void cleanupAuth(Settings settings, HTTPRequestEntry api, HTTPRequestEntry request) {
-        Optional<HTTPTokenAuthEntry> requestAuthEntry = getAuthEntry(request);
+        Optional<HTTPTokenAuthEntry> requestAuthEntry = findAuthEntry(request);
 
         if(!requestAuthEntry.isPresent()) {
             return;
@@ -111,8 +111,8 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
 
     @Override
     public void mergeAuthEntry(HTTPRequestEntry api, HTTPRequestEntry request) {
-        Optional<HTTPTokenAuthEntry> apiAuthEntry = getAuthEntry(api);
-        Optional<HTTPTokenAuthEntry> requestAuthEntry = getAuthEntry(request);
+        Optional<HTTPTokenAuthEntry> apiAuthEntry = findAuthEntry(api);
+        Optional<HTTPTokenAuthEntry> requestAuthEntry = findAuthEntry(request);
 
         if(!apiAuthEntry.isPresent() || !requestAuthEntry.isPresent()) {
             return;
@@ -123,7 +123,7 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
 
     @Override
     public List<Pair<String, String>> getAuthHeaders(Settings settings, HTTPRequestEntry request) {
-        Optional<HTTPTokenAuthEntry> authEntry = getAuthEntry(request);
+        Optional<HTTPTokenAuthEntry> authEntry = findAuthEntry(request);
         List<Pair<String, String>> headers = new ArrayList<>();
 
         if(!authEntry.isPresent()) {
@@ -142,6 +142,17 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
         }
 
         return headers;
+    }
+
+    @Override
+    public Optional<HTTPTokenAuthEntry> findAuthEntry(HTTPRequestEntry request) {
+        return Optional.ofNullable(request)
+            .map(HTTPRequestEntry::getAuthEntries)
+            .map(List::stream)
+            .orElse(Stream.empty())
+            .filter(a -> HTTPTokenAuthEntry.class.isAssignableFrom(a.getClass()))
+            .map(a -> (HTTPTokenAuthEntry) a)
+            .findFirst();
     }
 
     private void expandAuthEntry(Settings settings, HTTPTokenAuthEntry authEntry,
@@ -230,15 +241,5 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
         if(isBlank(request.getScope())) {
             request.setScope(api.getScope());
         }
-    }
-
-    private Optional<HTTPTokenAuthEntry> getAuthEntry(HTTPRequestEntry request) {
-        return Optional.ofNullable(request)
-            .map(HTTPRequestEntry::getAuthEntries)
-            .map(List::stream)
-            .orElse(Stream.empty())
-            .filter(a -> HTTPTokenAuthEntry.class.isAssignableFrom(a.getClass()))
-            .map(a -> (HTTPTokenAuthEntry) a)
-            .findFirst();
     }
 }

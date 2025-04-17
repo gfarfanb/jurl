@@ -24,6 +24,7 @@ import com.legadi.cli.jurl.executor.RequestModifier;
 import com.legadi.cli.jurl.executor.mixer.BodyMixer;
 import com.legadi.cli.jurl.executor.mixer.BodyMixer.MixerEntry;
 import com.legadi.cli.jurl.model.AssertionEntry;
+import com.legadi.cli.jurl.model.AuthenticationEntry;
 import com.legadi.cli.jurl.model.FlowEntry;
 import com.legadi.cli.jurl.model.RequestInput;
 import com.legadi.cli.jurl.model.StepEntry;
@@ -73,12 +74,12 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
                 continue;
             }
 
+            headerAuthenticator.createAuthRequest(settings, api, request, defaults)
+                .ifPresent(authRequests::add);
+
             if(settings.isExecuteAuthentication()) {
                 headerAuthenticator.cleanupAuth(settings, api, request);
             }
-
-            headerAuthenticator.createAuthRequest(settings, api, request, defaults)
-                .ifPresent(authRequests::add);
         }
 
         return authRequests;
@@ -168,11 +169,17 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         defaults.putAll(request.getDefaults());
         request.setDefaults(defaults);
 
-        // TODO: Merge auth entries for API and requests
         List<HeaderAuthenticator<HTTPRequestEntry, ?>> headerAuthenticators = findAll(HeaderAuthenticator.class, name());
 
         for(HeaderAuthenticator<HTTPRequestEntry, ?> headerAuthenticator : headerAuthenticators) {
-            headerAuthenticator.mergeAuthEntry(api, request);
+            Optional<? extends AuthenticationEntry> apiAuth = headerAuthenticator.findAuthEntry(api);
+            Optional<? extends AuthenticationEntry> requestAuth = headerAuthenticator.findAuthEntry(request);
+
+            if(!requestAuth.isPresent()) {
+                apiAuth.ifPresent(auth -> request.getAuthEntries().add(auth));
+            } else if(apiAuth.isPresent()) {
+                headerAuthenticator.mergeAuthEntry(api, request);
+            }
         }
     }
 

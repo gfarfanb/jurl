@@ -59,4 +59,6 @@ public interface HeaderAuthenticator<T extends RequestEntry<? extends MockEntry>
     void mergeAuthEntry(T api, T request);
 
     List<Pair<String, String>> getAuthHeaders(Settings settings, T request);
+
+    Optional<E> findAuthEntry(T request);
 }

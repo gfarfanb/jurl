@@ -61,8 +61,8 @@ public class HTTPBasicHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
 
     @Override
     public void mergeAuthEntry(HTTPRequestEntry api, HTTPRequestEntry request) {
-        Optional<HTTPBasicAuthEntry> apiAuthEntry = getAuthEntry(api);
-        Optional<HTTPBasicAuthEntry> requestAuthEntry = getAuthEntry(request);
+        Optional<HTTPBasicAuthEntry> apiAuthEntry = findAuthEntry(api);
+        Optional<HTTPBasicAuthEntry> requestAuthEntry = findAuthEntry(request);
 
         if(!apiAuthEntry.isPresent() || !requestAuthEntry.isPresent()) {
             return;
@@ -73,7 +73,7 @@ public class HTTPBasicHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
 
     @Override
     public List<Pair<String, String>> getAuthHeaders(Settings settings, HTTPRequestEntry request) {
-        Optional<HTTPBasicAuthEntry> authEntry = getAuthEntry(request);
+        Optional<HTTPBasicAuthEntry> authEntry = findAuthEntry(request);
         List<Pair<String, String>> headers = new ArrayList<>();
 
         if(!authEntry.isPresent()) {
@@ -93,16 +93,8 @@ public class HTTPBasicHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
         return headers;
     }
 
-    private void mergeAuthEntry(HTTPBasicAuthEntry api, HTTPBasicAuthEntry request) {
-        if(isBlank(request.getUsername())) {
-            request.setUsername(api.getUsername());
-        }
-        if(isBlank(request.getPassword())) {
-            request.setPassword(api.getPassword());
-        }
-    }
-
-    private Optional<HTTPBasicAuthEntry> getAuthEntry(HTTPRequestEntry request) {
+    @Override
+    public Optional<HTTPBasicAuthEntry> findAuthEntry(HTTPRequestEntry request) {
         return Optional.ofNullable(request)
             .map(HTTPRequestEntry::getAuthEntries)
             .map(List::stream)
@@ -110,5 +102,14 @@ public class HTTPBasicHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
             .filter(a -> HTTPBasicAuthEntry.class.isAssignableFrom(a.getClass()))
             .map(a -> (HTTPBasicAuthEntry) a)
             .findFirst();
+    }
+
+    private void mergeAuthEntry(HTTPBasicAuthEntry api, HTTPBasicAuthEntry request) {
+        if(isBlank(request.getUsername())) {
+            request.setUsername(api.getUsername());
+        }
+        if(isBlank(request.getPassword())) {
+            request.setPassword(api.getPassword());
+        }
     }
 }

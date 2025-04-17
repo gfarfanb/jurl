@@ -324,7 +324,7 @@ public class RequestCommand {
             List<?> authRequests = modifier.getAuthenticationIfExists(requestName,
                 requestInput, settings);
 
-            if(!authRequests.isEmpty()) {
+            if(authRequests.isEmpty()) {
                 return Optional.empty();
             }
 
