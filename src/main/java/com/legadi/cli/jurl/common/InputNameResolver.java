@@ -84,7 +84,8 @@ public class InputNameResolver {
 
     public String appendType(String requestName) {
         return requestInput.getFlows().get(requestName) != null
-            ? requestName + " " + FLOW_TAG : requestName + " " + REQUEST_TAG;
+            ? requestName + " " + FLOW_TAG
+            : requestInput.getRequests().get(requestName).menuName() + " " + REQUEST_TAG;
     }
 
     private String getType(String requestName) {

@@ -32,9 +32,9 @@ public class CommonUtils {
     public static final String RSQUARE_REGEX = "\\" + RSQUARE_SEPARATOR;
     public static final String RSQUARE_ESCAPED = "\\\\" + RSQUARE_SEPARATOR;
 
-    public static final String REQUEST_TAG = "[rq]";
+    public static final String REQUEST_TAG = "<rq>";
     public static final String REQUEST_NAME = "request";
-    public static final String FLOW_TAG = "[fl]";
+    public static final String FLOW_TAG = "<fl>";
     public static final String FLOW_NAME = "flow";
 
     public static final int TABS_FOR_MARGIN = 2;

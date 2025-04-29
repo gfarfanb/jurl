@@ -27,6 +27,10 @@ public class RequestEntry<T extends MockEntry> {
     protected Map<String, Object> defaults = new LinkedHashMap<>();
     protected Map<String, AuthenticationEntry> authEntries = new HashMap<>();
 
+    public String menuName() {
+        return name;
+    }
+
     public String getName() {
         return name;
     }

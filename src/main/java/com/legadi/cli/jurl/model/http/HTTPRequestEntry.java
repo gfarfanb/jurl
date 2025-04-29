@@ -18,6 +18,11 @@ public class HTTPRequestEntry extends RequestEntry<HTTPMockEntry> {
     private List<HTTPRequestFileEntry> requestFiles = new ArrayList<>();
     private Map<String, String> formData = new HashMap<>();
 
+    @Override
+    public String menuName() {
+        return method != null ? method + " " + name : super.menuName();
+    }
+
     public String getMethod() {
         return method;
     }
