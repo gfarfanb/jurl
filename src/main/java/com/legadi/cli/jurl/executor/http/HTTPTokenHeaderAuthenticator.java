@@ -162,7 +162,6 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
         authRequest.setMethod(settings.getAuthBearerRequestMethod());
         authRequest.setUrl(authEntry.getTokenUrl());
         authRequest.getHeaders().put("Content-Type", settings.getAuthBearerContentType());
-        authRequest.getAuthEntries().put(authEntry.getParserElement(), authEntry);
 
         Map<String, String> bodyParams = new HashMap<>();
         bodyParams.put("grantTypeFieldName", settings.getAuthBearerGrantTypeFieldName());
