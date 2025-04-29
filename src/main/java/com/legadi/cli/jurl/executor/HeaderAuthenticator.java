@@ -12,7 +12,6 @@ import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.model.AuthenticationEntry;
 import com.legadi.cli.jurl.model.MockEntry;
 import com.legadi.cli.jurl.model.RequestEntry;
-import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 
 public interface HeaderAuthenticator<T extends RequestEntry<? extends MockEntry>, E extends AuthenticationEntry>
         extends Evaluable {
@@ -34,16 +33,15 @@ public interface HeaderAuthenticator<T extends RequestEntry<? extends MockEntry>
     default <R extends RequestEntry<? extends MockEntry>> Supplier<E> getAuthEntrySupplier(
             Settings settings, R request) {
         return () -> {
-            Optional<E> currentAuthEntry = request.getAuthEntries()
-                .stream()
-                .filter(auth -> auth.getParserElement().equalsIgnoreCase(getParserElement()))
-                .map(auth -> (E) auth)
-                .findFirst();
+            Optional<E> currentAuthEntry = Optional.ofNullable(request)
+                .map(RequestEntry::getAuthEntries)
+                .map(entries -> entries.get(getParserElement()))
+                .map(auth -> (E) auth);
             if(currentAuthEntry.isPresent()) {
                 return currentAuthEntry.get();
             } else {
                 E authEntry = instanceAuthEntry(settings);
-                request.getAuthEntries().add(authEntry);
+                request.getAuthEntries().put(authEntry.getParserElement(), authEntry);
                 return authEntry;
             }
         };
@@ -51,7 +49,7 @@ public interface HeaderAuthenticator<T extends RequestEntry<? extends MockEntry>
 
     E instanceAuthEntry(Settings settings);
 
-    Optional<HTTPRequestEntry> createAuthRequest(Settings settings, T api, T request,
+    Optional<T> createAuthRequest(Settings settings, T api, T request,
         Map<String, Object> defaults);
 
     void cleanupAuth(Settings settings, T api, T request);
@@ -60,5 +58,11 @@ public interface HeaderAuthenticator<T extends RequestEntry<? extends MockEntry>
 
     List<Pair<String, String>> getAuthHeaders(Settings settings, T request);
 
-    Optional<E> findAuthEntry(T request);
+    @SuppressWarnings("unchecked")
+    default Optional<E> findAuthEntry(T request) {
+        return Optional.ofNullable(request)
+            .map(RequestEntry::getAuthEntries)
+            .map(entries -> entries.get(getParserElement()))
+            .map(a -> (E) a);
+    }
 }

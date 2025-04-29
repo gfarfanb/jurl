@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
@@ -64,7 +63,7 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
         Optional<HTTPTokenAuthEntry> requestAuthEntry = findAuthEntry(request);
 
         if(!requestAuthEntry.isPresent()) {
-            apiAuthEntry.ifPresent(auth -> request.getAuthEntries().add(auth));
+            apiAuthEntry.ifPresent(auth -> request.getAuthEntries().put(auth.getParserElement(), auth));
         } else if(apiAuthEntry.isPresent()) {
             mergeAuthEntry(apiAuthEntry.get(), requestAuthEntry.get());
         }
@@ -144,17 +143,6 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
         return headers;
     }
 
-    @Override
-    public Optional<HTTPTokenAuthEntry> findAuthEntry(HTTPRequestEntry request) {
-        return Optional.ofNullable(request)
-            .map(HTTPRequestEntry::getAuthEntries)
-            .map(List::stream)
-            .orElse(Stream.empty())
-            .filter(a -> HTTPTokenAuthEntry.class.isAssignableFrom(a.getClass()))
-            .map(a -> (HTTPTokenAuthEntry) a)
-            .findFirst();
-    }
-
     private void expandAuthEntry(Settings settings, HTTPTokenAuthEntry authEntry,
             Map<String, Object> authDefaults) {
         StringExpander stringExpander = new StringExpander(settings, authDefaults);
@@ -174,7 +162,7 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
         authRequest.setMethod(settings.getAuthBearerRequestMethod());
         authRequest.setUrl(authEntry.getTokenUrl());
         authRequest.getHeaders().put("Content-Type", settings.getAuthBearerContentType());
-        authRequest.getAuthEntries().add(authEntry);
+        authRequest.getAuthEntries().put(authEntry.getParserElement(), authEntry);
 
         Map<String, String> bodyParams = new HashMap<>();
         bodyParams.put("grantTypeFieldName", settings.getAuthBearerGrantTypeFieldName());

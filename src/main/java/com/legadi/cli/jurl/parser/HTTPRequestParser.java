@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
@@ -478,15 +477,14 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
                     }
                 } else if(authElements.contains(type.toLowerCase())) {
                     if(isFieldRequired) {
-                        Optional<HeaderAuthenticator<?, ?>> auth = headerAuthenticators.stream()
+                        HeaderAuthenticator<?, ?> auth = headerAuthenticators.stream()
                             .filter(a -> a.getParserElement().equalsIgnoreCase(type))
-                            .findFirst();
+                            .findFirst()
+                            .get();
 
-                        if(auth.isPresent()) {
-                            addField(auth.get().getObjectFields(),
-                                auth.get().getAuthEntrySupplier(settings, request).get(),
-                                fieldName, value);
-                        }
+                        addField(auth.getObjectFields(),
+                            auth.getAuthEntrySupplier(settings, request).get(),
+                            fieldName, value);
                     }
                 } else if("mock".equalsIgnoreCase(type)) {
                     if(isFieldRequired) {
@@ -664,7 +662,7 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             } catch(CommandException ex) {
                 throw ex;
             } catch(Exception ex) {
-                throw new IllegalArgumentException(ex);
+                throw new IllegalArgumentException("Error processing line: '" + line + "'", ex);
             }
 
             throw new ParsedLineException(linePattern, section, sourcePath);

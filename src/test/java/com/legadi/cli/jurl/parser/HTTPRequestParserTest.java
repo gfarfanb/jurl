@@ -68,23 +68,13 @@ public class HTTPRequestParserTest {
         Assertions.assertEquals(1, mock.getResponseHeaders().size());
         Assertions.assertEquals("application/json", mock.getResponseHeaders().get("Accept"));
 
-        HTTPBasicAuthEntry basicAuth = api.getAuthEntries()
-            .stream()
-            .filter(auth -> HTTPBasicAuthEntry.class.isAssignableFrom(auth.getClass()))
-            .map(auth -> (HTTPBasicAuthEntry) auth)
-            .findFirst()
-            .get();
+        HTTPBasicAuthEntry basicAuth = (HTTPBasicAuthEntry) api.getAuthEntries().get("basic");
 
         Assertions.assertNotNull(basicAuth);
         Assertions.assertEquals("http-api-username", basicAuth.getUsername());
         Assertions.assertEquals("http-api-password", basicAuth.getPassword());
 
-        HTTPTokenAuthEntry tokenAuth = api.getAuthEntries()
-            .stream()
-            .filter(auth -> HTTPTokenAuthEntry.class.isAssignableFrom(auth.getClass()))
-            .map(auth -> (HTTPTokenAuthEntry) auth)
-            .findFirst()
-            .get();
+        HTTPTokenAuthEntry tokenAuth = (HTTPTokenAuthEntry) api.getAuthEntries().get("token");
 
         Assertions.assertNotNull(tokenAuth);
         Assertions.assertEquals("http://localhost:5555/oauth/token", tokenAuth.getTokenUrl());
@@ -151,12 +141,7 @@ public class HTTPRequestParserTest {
         Assertions.assertEquals(1, mock.getResponseHeaders().size());
         Assertions.assertEquals("application/json", mock.getResponseHeaders().get("Accept"));
 
-        HTTPTokenAuthEntry tokenAuth = request.getAuthEntries()
-            .stream()
-            .filter(auth -> HTTPTokenAuthEntry.class.isAssignableFrom(auth.getClass()))
-            .map(auth -> (HTTPTokenAuthEntry) auth)
-            .findFirst()
-            .get();
+        HTTPTokenAuthEntry tokenAuth = (HTTPTokenAuthEntry) request.getAuthEntries().get("token");
 
         Assertions.assertNotNull(tokenAuth);
         Assertions.assertEquals("http://localhost:5555/oauth/token", tokenAuth.getTokenUrl());
@@ -333,12 +318,7 @@ public class HTTPRequestParserTest {
         Assertions.assertEquals(1, mock.getResponseHeaders().size());
         Assertions.assertEquals("application/json", mock.getResponseHeaders().get("Accept"));
 
-        HTTPTokenAuthEntry tokenAuth = request.getAuthEntries()
-            .stream()
-            .filter(auth -> HTTPTokenAuthEntry.class.isAssignableFrom(auth.getClass()))
-            .map(auth -> (HTTPTokenAuthEntry) auth)
-            .findFirst()
-            .get();
+        HTTPTokenAuthEntry tokenAuth = (HTTPTokenAuthEntry) request.getAuthEntries().get("token");
 
         Assertions.assertNotNull(tokenAuth);
         Assertions.assertEquals("http://localhost:5555/oauth/token", tokenAuth.getTokenUrl());

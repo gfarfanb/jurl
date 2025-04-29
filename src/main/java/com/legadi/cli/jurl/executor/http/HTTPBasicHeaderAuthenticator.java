@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
@@ -91,17 +90,6 @@ public class HTTPBasicHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
         headers.add(new Pair<>("Authorization", "Basic " + basicValue));
 
         return headers;
-    }
-
-    @Override
-    public Optional<HTTPBasicAuthEntry> findAuthEntry(HTTPRequestEntry request) {
-        return Optional.ofNullable(request)
-            .map(HTTPRequestEntry::getAuthEntries)
-            .map(List::stream)
-            .orElse(Stream.empty())
-            .filter(a -> HTTPBasicAuthEntry.class.isAssignableFrom(a.getClass()))
-            .map(a -> (HTTPBasicAuthEntry) a)
-            .findFirst();
     }
 
     private void mergeAuthEntry(HTTPBasicAuthEntry api, HTTPBasicAuthEntry request) {

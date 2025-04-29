@@ -5,20 +5,20 @@ source src/test/resources/parser/http-request.part.http
 
 ### [request] request: Request specification
 
+mock field = discarded
 mock @statusCode = 201
 mock @responseContent = {}
 mock Accept: application/json
-mock field = discarded
 
+token field = discarded
 token @tokenUrl = http://localhost:5555/oauth/token
 token @clientId = http-request-client-id
 token @clientSecret = http-request-client-secret
 token @scope = test
-token field = discarded
 
+file field = discarded
 file @path = src/test/resources/file.csv
 file @mineType = text/csv
-file field = discarded
 
 form identifier = {{UUID:}}
 

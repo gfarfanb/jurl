@@ -84,7 +84,7 @@ public class HTTPRequestModifierTest {
         requestAuth.setScope("test");
 
         request.setName(requestName);
-        request.getAuthEntries().add(requestAuth);
+        request.getAuthEntries().put(requestAuth.getParserElement(), requestAuth);
 
         requestInput.setApi(new HTTPRequestEntry());
         requestInput.getRequests().put(requestName, request);
@@ -135,10 +135,10 @@ public class HTTPRequestModifierTest {
         requestAuth.setScope("test");
 
         request.setName(requestName);
-        request.getAuthEntries().add(new HTTPTokenAuthEntry());
+        request.getAuthEntries().put("token", new HTTPTokenAuthEntry());
 
         requestInput.setApi(new HTTPRequestEntry());
-        requestInput.getApi().getAuthEntries().add(requestAuth);
+        requestInput.getApi().getAuthEntries().put(requestAuth.getParserElement(), requestAuth);
         requestInput.getRequests().put(requestName, request);
 
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
@@ -187,7 +187,7 @@ public class HTTPRequestModifierTest {
         requestAuth.setScope("test");
 
         request.setName(requestName);
-        request.getAuthEntries().add(requestAuth);
+        request.getAuthEntries().put(requestAuth.getParserElement(), requestAuth);
 
         HTTPTokenAuthEntry apiAuth = (HTTPTokenAuthEntry) tokenAuthenticator.instanceAuthEntry(settings);
 
@@ -197,7 +197,7 @@ public class HTTPRequestModifierTest {
         apiAuth.setScope("api-test");
 
         requestInput.setApi(new HTTPRequestEntry());
-        requestInput.getApi().getAuthEntries().add(apiAuth);
+        requestInput.getApi().getAuthEntries().put(apiAuth.getParserElement(), apiAuth);
         requestInput.getRequests().put(requestName, request);
 
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
@@ -241,7 +241,7 @@ public class HTTPRequestModifierTest {
         HTTPTokenAuthEntry requestAuth = (HTTPTokenAuthEntry) tokenAuthenticator.instanceAuthEntry(settings);
 
         request.setName(requestName);
-        request.getAuthEntries().add(requestAuth);
+        request.getAuthEntries().put(requestAuth.getParserElement(), requestAuth);
 
         requestInput.setApi(new HTTPRequestEntry());
         requestInput.getRequests().put(requestName, request);
@@ -556,11 +556,11 @@ public class HTTPRequestModifierTest {
         apiBasicAuth = new HTTPBasicAuthEntry();
         apiBasicAuth.setUsername("api-username");
         apiBasicAuth.setPassword("api-password");
-        api.getAuthEntries().add(apiBasicAuth);
+        api.getAuthEntries().put(apiBasicAuth.getParserElement(), apiBasicAuth);
 
         modifier.mergeAPI(settings, api, request);
 
-        requestBasicAuth = (HTTPBasicAuthEntry) request.getAuthEntries().get(0);
+        requestBasicAuth = (HTTPBasicAuthEntry) request.getAuthEntries().get("basic");
 
         Assertions.assertEquals("api-username", requestBasicAuth.getUsername());
         Assertions.assertEquals("api-password", requestBasicAuth.getPassword());
@@ -571,11 +571,11 @@ public class HTTPRequestModifierTest {
         requestBasicAuth = new HTTPBasicAuthEntry();
         requestBasicAuth.setUsername("request-username");
         requestBasicAuth.setPassword("request-password");
-        request.getAuthEntries().add(requestBasicAuth);
+        request.getAuthEntries().put(requestBasicAuth.getParserElement(), requestBasicAuth);
 
         modifier.mergeAPI(settings, api, request);
 
-        requestBasicAuth = (HTTPBasicAuthEntry) request.getAuthEntries().get(0);
+        requestBasicAuth = (HTTPBasicAuthEntry) request.getAuthEntries().get("basic");
 
         Assertions.assertEquals("request-username", requestBasicAuth.getUsername());
         Assertions.assertEquals("request-password", requestBasicAuth.getPassword());
@@ -586,16 +586,16 @@ public class HTTPRequestModifierTest {
         apiBasicAuth = new HTTPBasicAuthEntry();
         apiBasicAuth.setUsername("api-username");
         apiBasicAuth.setPassword("api-password");
-        api.getAuthEntries().add(apiBasicAuth);
+        api.getAuthEntries().put(apiBasicAuth.getParserElement(), apiBasicAuth);
 
         requestBasicAuth = new HTTPBasicAuthEntry();
         requestBasicAuth.setUsername("request-username");
         requestBasicAuth.setPassword("request-password");
-        request.getAuthEntries().add(requestBasicAuth);
+        request.getAuthEntries().put(requestBasicAuth.getParserElement(), requestBasicAuth);
 
         modifier.mergeAPI(settings, api, request);
 
-        requestBasicAuth = (HTTPBasicAuthEntry) request.getAuthEntries().get(0);
+        requestBasicAuth = (HTTPBasicAuthEntry) request.getAuthEntries().get("basic");
 
         Assertions.assertEquals("request-username", requestBasicAuth.getUsername());
         Assertions.assertEquals("request-password", requestBasicAuth.getPassword());
@@ -606,14 +606,14 @@ public class HTTPRequestModifierTest {
         apiBasicAuth = new HTTPBasicAuthEntry();
         apiBasicAuth.setUsername("api-username");
         apiBasicAuth.setPassword("api-password");
-        api.getAuthEntries().add(apiBasicAuth);
+        api.getAuthEntries().put(apiBasicAuth.getParserElement(), apiBasicAuth);
 
         requestBasicAuth = new HTTPBasicAuthEntry();
-        request.getAuthEntries().add(requestBasicAuth);
+        request.getAuthEntries().put(requestBasicAuth.getParserElement(), requestBasicAuth);
 
         modifier.mergeAPI(settings, api, request);
 
-        requestBasicAuth = (HTTPBasicAuthEntry) request.getAuthEntries().get(0);
+        requestBasicAuth = (HTTPBasicAuthEntry) request.getAuthEntries().get("basic");
 
         Assertions.assertEquals("api-username", requestBasicAuth.getUsername());
         Assertions.assertEquals("api-password", requestBasicAuth.getPassword());
@@ -635,11 +635,11 @@ public class HTTPRequestModifierTest {
         apiTokenAuth = new HTTPTokenAuthEntry();
         apiTokenAuth.setClientId("api-client-id");
         apiTokenAuth.setClientSecret("api-client-secret");
-        api.getAuthEntries().add(apiTokenAuth);
+        api.getAuthEntries().put(apiTokenAuth.getParserElement(), apiTokenAuth);
 
         modifier.mergeAPI(settings, api, request);
 
-        requestTokenAuth = (HTTPTokenAuthEntry) request.getAuthEntries().get(0);
+        requestTokenAuth = (HTTPTokenAuthEntry) request.getAuthEntries().get("token");
 
         Assertions.assertEquals("api-client-id", requestTokenAuth.getClientId());
         Assertions.assertEquals("api-client-secret", requestTokenAuth.getClientSecret());
@@ -650,11 +650,11 @@ public class HTTPRequestModifierTest {
         requestTokenAuth = new HTTPTokenAuthEntry();
         requestTokenAuth.setClientId("request-client-id");
         requestTokenAuth.setClientSecret("request-client-secret");
-        request.getAuthEntries().add(requestTokenAuth);
+        request.getAuthEntries().put(requestTokenAuth.getParserElement(), requestTokenAuth);
 
         modifier.mergeAPI(settings, api, request);
 
-        requestTokenAuth = (HTTPTokenAuthEntry) request.getAuthEntries().get(0);
+        requestTokenAuth = (HTTPTokenAuthEntry) request.getAuthEntries().get("token");
 
         Assertions.assertEquals("request-client-id", requestTokenAuth.getClientId());
         Assertions.assertEquals("request-client-secret", requestTokenAuth.getClientSecret());
@@ -665,16 +665,16 @@ public class HTTPRequestModifierTest {
         apiTokenAuth = new HTTPTokenAuthEntry();
         apiTokenAuth.setClientId("api-client-id");
         apiTokenAuth.setClientSecret("api-client-id");
-        api.getAuthEntries().add(apiTokenAuth);
+        api.getAuthEntries().put(apiTokenAuth.getParserElement(), apiTokenAuth);
 
         requestTokenAuth = new HTTPTokenAuthEntry();
         requestTokenAuth.setClientId("request-client-id");
         requestTokenAuth.setClientSecret("request-client-secret");
-        request.getAuthEntries().add(requestTokenAuth);
+        request.getAuthEntries().put(requestTokenAuth.getParserElement(), requestTokenAuth);
 
         modifier.mergeAPI(settings, api, request);
 
-        requestTokenAuth = (HTTPTokenAuthEntry) request.getAuthEntries().get(0);
+        requestTokenAuth = (HTTPTokenAuthEntry) request.getAuthEntries().get("token");
 
         Assertions.assertEquals("request-client-id", requestTokenAuth.getClientId());
         Assertions.assertEquals("request-client-secret", requestTokenAuth.getClientSecret());
@@ -685,14 +685,14 @@ public class HTTPRequestModifierTest {
         apiTokenAuth = new HTTPTokenAuthEntry();
         apiTokenAuth.setClientId("api-client-id");
         apiTokenAuth.setClientSecret("api-client-secret");
-        api.getAuthEntries().add(apiTokenAuth);
+        api.getAuthEntries().put(apiTokenAuth.getParserElement(), apiTokenAuth);
 
         requestTokenAuth = new HTTPTokenAuthEntry();
-        request.getAuthEntries().add(requestTokenAuth);
+        request.getAuthEntries().put(requestTokenAuth.getParserElement(), requestTokenAuth);
 
         modifier.mergeAPI(settings, api, request);
 
-        requestTokenAuth = (HTTPTokenAuthEntry) request.getAuthEntries().get(0);
+        requestTokenAuth = (HTTPTokenAuthEntry) request.getAuthEntries().get("token");
 
         Assertions.assertEquals("api-client-id", requestTokenAuth.getClientId());
         Assertions.assertEquals("api-client-secret", requestTokenAuth.getClientSecret());

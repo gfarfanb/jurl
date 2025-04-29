@@ -49,7 +49,6 @@ import com.legadi.cli.jurl.exception.RequestException;
 import com.legadi.cli.jurl.executor.HeaderAuthenticator;
 import com.legadi.cli.jurl.executor.RequestExecutor;
 import com.legadi.cli.jurl.model.AssertionResult;
-import com.legadi.cli.jurl.model.AuthenticationEntry;
 import com.legadi.cli.jurl.model.RequestBehaviour;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestFileEntry;
@@ -223,20 +222,17 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
         StringBuilder printableHeaders = new StringBuilder();
         List<HeaderAuthenticator<HTTPRequestEntry, ?>> headerAuthenticators = findAll(HeaderAuthenticator.class, name());
 
-        for(AuthenticationEntry authEntry : request.getAuthEntries()) {
-            headerAuthenticators.stream()
-                .filter(auth -> auth.getParserElement().equalsIgnoreCase(authEntry.getParserElement()))
-                .map(auth -> auth.getAuthHeaders(settings, request))
-                .flatMap(List::stream)
-                .forEach(header -> {
-                    connection.setRequestProperty(header.getLeft(), header.getRight());
-                    curlBuilder.addHeader(header.getLeft(), header.getRight());
-                    printableHeaders.append(header.getLeft())
-                        .append(": ")
-                        .append(header.getRight())
-                        .append("\n");
-                });
-        }
+        headerAuthenticators.stream()
+            .map(auth -> auth.getAuthHeaders(settings, request))
+            .flatMap(List::stream)
+            .forEach(header -> {
+                connection.setRequestProperty(header.getLeft(), header.getRight());
+                curlBuilder.addHeader(header.getLeft(), header.getRight());
+                printableHeaders.append(header.getLeft())
+                    .append(": ")
+                    .append(header.getRight())
+                    .append("\n");
+            });
 
         request.getHeaders()
             .entrySet()

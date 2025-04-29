@@ -246,7 +246,7 @@ public class HTTPRequestExecutorTest extends EmbeddedAPIAbstractTest {
         HTTPBasicAuthEntry auth = new HTTPBasicAuthEntry();
         auth.setUsername("test");
         auth.setPassword("73st");
-        request.getAuthEntries().add(auth);
+        request.getAuthEntries().put(auth.getParserElement(), auth);
 
         HTTPResponseEntry response = Assertions.assertDoesNotThrow(
             () -> executor.executeRequest(settings, "src/test/resources/http-request-executor.http", request));
@@ -280,7 +280,7 @@ public class HTTPRequestExecutorTest extends EmbeddedAPIAbstractTest {
         auth.setClientId(UUID.randomUUID().toString());
         auth.setClientSecret(UUID.randomUUID().toString());
         auth.setScope("test");
-        request.getAuthEntries().add(auth);
+        request.getAuthEntries().put(auth.getParserElement(), auth);
 
         HTTPResponseEntry response = Assertions.assertDoesNotThrow(
             () -> executor.executeRequest(settings, "src/test/resources/http-request-executor.http", request));

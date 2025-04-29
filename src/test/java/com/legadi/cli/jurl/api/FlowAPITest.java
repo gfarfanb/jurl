@@ -32,8 +32,7 @@ public class FlowAPITest extends EmbeddedAPIAbstractTest {
             .stream()
             .filter(r -> !r.getName().contains("authorization"))
             .map(HTTPRequestEntry::getAuthEntries)
-            .flatMap(List::stream)
-            .filter(auth -> HTTPTokenAuthEntry.class.isAssignableFrom(auth.getClass()))
+            .map(entries -> entries.get("token"))
             .map(auth -> (HTTPTokenAuthEntry) auth)
             .findFirst()
             .get();

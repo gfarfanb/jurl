@@ -1,6 +1,7 @@
 package com.legadi.cli.jurl.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,7 @@ public class RequestEntry<T extends MockEntry> {
     protected List<AssertionEntry> assertions = new ArrayList<>();
     protected List<OptionEntry> options = new ArrayList<>();
     protected Map<String, Object> defaults = new LinkedHashMap<>();
-    protected List<AuthenticationEntry> authEntries = new ArrayList<>();
+    protected Map<String, AuthenticationEntry> authEntries = new HashMap<>();
 
     public String getName() {
         return name;
@@ -138,11 +139,11 @@ public class RequestEntry<T extends MockEntry> {
         this.defaults = defaults;
     }
 
-    public List<AuthenticationEntry> getAuthEntries() {
+    public Map<String, AuthenticationEntry> getAuthEntries() {
         return authEntries;
     }
 
-    public void setAuthEntries(List<AuthenticationEntry> authEntries) {
+    public void setAuthEntries(Map<String, AuthenticationEntry> authEntries) {
         this.authEntries = authEntries;
     }
 }

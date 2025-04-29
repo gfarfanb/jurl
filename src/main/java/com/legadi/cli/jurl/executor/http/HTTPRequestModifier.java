@@ -176,7 +176,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
             Optional<? extends AuthenticationEntry> requestAuth = headerAuthenticator.findAuthEntry(request);
 
             if(!requestAuth.isPresent()) {
-                apiAuth.ifPresent(auth -> request.getAuthEntries().add(auth));
+                apiAuth.ifPresent(auth -> request.getAuthEntries().put(auth.getParserElement(), auth));
             } else if(apiAuth.isPresent()) {
                 headerAuthenticator.mergeAuthEntry(api, request);
             }

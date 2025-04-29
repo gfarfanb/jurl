@@ -37,8 +37,8 @@ public class HTTPRequestEntryTest {
         requestFiles.add(new HTTPRequestFileEntry());
         model.setRequestFiles(requestFiles);
 
-        model.getAuthEntries().add(new HTTPBasicAuthEntry());
-        model.getAuthEntries().add(new HTTPTokenAuthEntry());
+        model.getAuthEntries().put("basic", new HTTPBasicAuthEntry());
+        model.getAuthEntries().put("token", new HTTPTokenAuthEntry());
 
         Map<String, String> formData = new HashMap<>();
         formData.put("identifier", UUID.randomUUID().toString());
