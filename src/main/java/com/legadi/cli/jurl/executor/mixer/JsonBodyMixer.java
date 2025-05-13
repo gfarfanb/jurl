@@ -9,6 +9,8 @@ import static com.legadi.cli.jurl.common.JsonUtils.writeJsonFile;
 import static com.legadi.cli.jurl.common.WriterUtils.expandFile;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -45,12 +47,14 @@ public class JsonBodyMixer implements BodyMixer {
 
             json = mergeList(
                 ruleEntry,
-                loadJsonFile(temporalBodyPath.toString(), new TypeToken<List<Object>>() {}),
+                loadJsonFile(temporalBodyPath.toString(),
+                    new TypeToken<List<Object>>() {}, new ArrayList<>()),
                 list
             );
         } else {
             json = mergeObject(
-                loadJsonFile(temporalBodyPath.toString(), new TypeToken<Map<String, Object>>() {}),
+                loadJsonFile(temporalBodyPath.toString(),
+                    new TypeToken<Map<String, Object>>() {}, new HashMap<>()),
                 jsonToObject(entry.getBodyContent(), new TypeToken<Map<String, Object>>() {})
             );
         }

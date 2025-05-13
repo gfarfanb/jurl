@@ -1,6 +1,7 @@
 package com.legadi.cli.jurl.common;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -12,6 +13,8 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import com.legadi.cli.jurl.model.GroupConfig;
 
 public class CommonUtils {
 
@@ -40,6 +43,10 @@ public class CommonUtils {
     public static final int TABS_FOR_MARGIN = 2;
     public static final int START_INDEX = 1;
     public static final int INVALID_INDEX = -1;
+
+    public static final String ACTIVE_FIRST = "first";
+    public static final String ACTIVE_LAST = "last";
+    public static final String ACTIVE_ANY = "any";
 
     public static final Map<String, String> EMPTY_MAP = new HashMap<>();
 
@@ -204,6 +211,17 @@ public class CommonUtils {
         return (int) (length * Math.random());
     }
 
+    public static int toIndex(int length, int number) {
+        if(number >= length) {
+            return Math.abs(number % length);
+        } else if(number < 0) {
+            int index = length - Math.abs(number % length);
+            return index == length ? 0 : index;
+        } else {
+            return number; 
+        }
+    }
+
     public static Map<String, Field> getAllFields(Class<?> type) {
         Map<String, Field> fields = new HashMap<>();
 
@@ -216,8 +234,6 @@ public class CommonUtils {
 
         return fields;
     }
-
-
 
     public static List<String> formatAsOrderedList(List<String> entries,
             BiPredicate<Integer, String> isDefault,
@@ -282,5 +298,39 @@ public class CommonUtils {
 
     public static String toGeneratedParam(String requestType, String context, String field) {
         return String.format(GENERATED_PARAM_FORMAT, requestType, context, field);
+    }
+
+    public static Map<String, String> selectActive(String groupName, GroupConfig group) {
+        return selectActive(group)
+            .entrySet()
+            .stream()
+            .collect(Collectors.toMap(
+                e -> groupName + "." + e.getKey(),
+                Map.Entry::getValue));
+    }
+
+    private static Map<String, String> selectActive(GroupConfig groupConfig) {
+        if(isNumeric(groupConfig.getActive())) {
+            return isNotEmpty(groupConfig.getCollection())
+                ? groupConfig.getCollection().get(
+                    toIndex(
+                        groupConfig.getCollection().size(),
+                        new BigDecimal(groupConfig.getActive()).intValue()))
+                : EMPTY_MAP;
+        } else if(ACTIVE_FIRST.equalsIgnoreCase(groupConfig.getActive())) {
+            return groupConfig.getCollection().stream().findFirst().orElse(EMPTY_MAP);
+        } else if(ACTIVE_LAST.equalsIgnoreCase(groupConfig.getActive())) {
+            return groupConfig.getCollection().stream().reduce((a, b) -> b).orElse(EMPTY_MAP);
+        } else if(ACTIVE_ANY.equalsIgnoreCase(groupConfig.getActive())) {
+            return isNotEmpty(groupConfig.getCollection())
+                ? groupConfig.getCollection().get(nextIndex(groupConfig.getCollection().size()))
+                : EMPTY_MAP;
+        } else {
+            throw new IllegalStateException("Invalid active value: [" + groupConfig.getActive()
+                + "] - required (" + ACTIVE_FIRST
+                    + "|" + ACTIVE_LAST
+                    + "|" + ACTIVE_ANY
+                    + "|<index>)");
+        }
     }
 }

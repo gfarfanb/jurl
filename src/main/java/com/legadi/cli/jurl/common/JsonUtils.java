@@ -19,7 +19,6 @@ import com.google.gson.JsonParseException;
 import com.google.gson.ToNumberPolicy;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
-import com.legadi.cli.jurl.exception.CommandException;
 
 public class JsonUtils {
 
@@ -40,20 +39,23 @@ public class JsonUtils {
         }
     }
 
-    public static <T> T loadJsonFile(String filePath, TypeToken<T> type) {
-        File jsonFile = new File(filePath);
+    public static <T> T loadJsonFile(String filePath, TypeToken<T> type, T defaultValue) {
+        return loadJsonFile(Paths.get(filePath), type, defaultValue);
+    }
+
+    public static <T> T loadJsonFile(Path jsonPath, TypeToken<T> type, T defaultValue) {
+        File jsonFile = jsonPath.toFile();
 
         if(jsonFile.exists()) {
             try(Reader reader = Files.newBufferedReader(jsonFile.toPath())) {
-                T input = GSON.fromJson(reader, type.getType());
-
-                LOGGER.fine("Loaded JSON file: " + filePath);
-                return input;
+                LOGGER.fine("Loading JSON file: " + jsonPath);
+                return GSON.fromJson(reader, type.getType());
             } catch(Exception ex) {
-                throw new IllegalStateException("Unable to read JSON file: " + filePath, ex);
+                throw new IllegalStateException("Unable to read JSON file: " + jsonPath, ex);
             }
         } else {
-            throw new CommandException("JSON file not found: " + filePath);
+            LOGGER.fine("JSON file not found: " + jsonPath);
+            return defaultValue;
         }
     }
 
@@ -62,25 +64,18 @@ public class JsonUtils {
             ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
             InputStream jsonInputStream = classLoader.getResource(internalFilePath).openStream();
 
-            return readJsonProperties(Paths.get(internalFilePath), jsonInputStream);
+            try(Reader reader = new InputStreamReader(jsonInputStream)) {
+                LOGGER.fine("Loading internal file: " + internalFilePath);
+                return GSON.fromJson(reader, new TypeToken<Map<String, String>>() {});
+            }
         } catch(Exception ex) {
             throw new IllegalStateException("Unable to obtain internal file: " + internalFilePath, ex);
         }
     }
 
     public static Map<String, String> loadJsonProperties(Path filePath) {
-        File jsonFile = filePath.toFile();
-
-        if(jsonFile.exists()) {
-            try {
-                return readJsonProperties(filePath, Files.newInputStream(filePath));
-            } catch(Exception ex) {
-                throw new IllegalStateException("Unable to obtain file: " + filePath, ex);
-            }
-        } else {
-            LOGGER.fine("JSON properties file not found: " + filePath);
-            return new HashMap<>();
-        }
+        return loadJsonFile(filePath, new TypeToken<Map<String, String>>() {},
+            new HashMap<>());
     }
 
     public static void removeJsonProperties(Path filePath, String... properties) {
@@ -91,18 +86,6 @@ public class JsonUtils {
         }
 
         writeJsonFile(filePath, envProperties);
-    }
-
-    private static Map<String, String> readJsonProperties(Path jsonPath, InputStream jsonInputStream) {
-        try(Reader reader = new InputStreamReader(jsonInputStream)) {
-            Map<String, String> jsonProperties = GSON.fromJson(reader, new TypeToken<Map<String, String>>() {});
-
-            LOGGER.fine("Loaded JSON properties file: " + jsonPath);
-
-            return jsonProperties;
-        } catch(Exception ex) {
-            throw new IllegalStateException("Unable to read JSON properties: " + jsonPath, ex);
-        }
     }
 
     public static <T> T jsonToObject(String json, TypeToken<T> type) {

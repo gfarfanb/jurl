@@ -18,24 +18,35 @@ import static com.legadi.cli.jurl.common.CommonUtils.isNumeric;
 import static com.legadi.cli.jurl.common.CommonUtils.nextIndex;
 import static com.legadi.cli.jurl.common.CommonUtils.nextNumber;
 import static com.legadi.cli.jurl.common.CommonUtils.nextString;
+import static com.legadi.cli.jurl.common.CommonUtils.selectActive;
 import static com.legadi.cli.jurl.common.CommonUtils.strip;
 import static com.legadi.cli.jurl.common.CommonUtils.stripEnd;
 import static com.legadi.cli.jurl.common.CommonUtils.stripStart;
+import static com.legadi.cli.jurl.common.CommonUtils.toIndex;
 import static com.legadi.cli.jurl.common.CommonUtils.trim;
 import static com.legadi.cli.jurl.common.SettingsConstants.JURL_FILE_SEPARATOR;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import com.legadi.cli.jurl.model.GroupConfig;
 
 public class CommonUtilsTest {
 
@@ -288,6 +299,38 @@ public class CommonUtilsTest {
         }
     }
 
+    @ParameterizedTest
+    @MethodSource("toIndexValidationArgs")
+    public void toIndexValidation(int length, int number, int expected) {
+        Assertions.assertEquals(expected, toIndex(length, number));
+    }
+
+    private static Stream<Arguments> toIndexValidationArgs() {
+        return Stream.of(
+            Arguments.of(5, -10, 0),
+            Arguments.of(5, -9, 1),
+            Arguments.of(5, -8, 2),
+            Arguments.of(5, -7, 3),
+            Arguments.of(5, -6, 4),
+            Arguments.of(5, -5, 0),
+            Arguments.of(5, -4, 1),
+            Arguments.of(5, -3, 2),
+            Arguments.of(5, -2, 3),
+            Arguments.of(5, -1, 4),
+            Arguments.of(5, 0, 0),
+            Arguments.of(5, 1, 1),
+            Arguments.of(5, 2, 2),
+            Arguments.of(5, 3, 3),
+            Arguments.of(5, 4, 4),
+            Arguments.of(5, 5, 0),
+            Arguments.of(5, 6, 1),
+            Arguments.of(5, 7, 2),
+            Arguments.of(5, 8, 3),
+            Arguments.of(5, 9, 4),
+            Arguments.of(5, 10, 0)
+        );
+    }
+
     @Test
     public void getAllFieldsValidation() {
         Map<String, Field> fields = getAllFields(Pair.class);
@@ -369,5 +412,84 @@ public class CommonUtilsTest {
         Assertions.assertTrue(lines[0].contains("Entry 2"));
     }
 
+    @ParameterizedTest
+    @MethodSource("selectActiveValidationArgs")
+    public void selectActiveValidation(String groupName, String active, int expectedIndex) {
+        GroupConfig groupNegative = createGroupConfig(active, 3, "a", "b", "c");
+        Map<String, String> propsIndexNegative = Assertions.assertDoesNotThrow(
+            () -> selectActive(groupName, groupNegative));
 
+        Assertions.assertTrue(propsIndexNegative.keySet()
+            .stream()
+            .allMatch(k -> k.startsWith(groupName + "." + expectedIndex + "-")));
+    }
+
+    private static Stream<Arguments> selectActiveValidationArgs() {
+        return Stream.of(
+            Arguments.of("index-negative", "-1", 2),
+            Arguments.of("index-0", "0", 0),
+            Arguments.of("index-1", "1", 1),
+            Arguments.of("index-2", "2", 2),
+            Arguments.of("index-exceeded", "3", 0),
+            Arguments.of("index-first", "FIRST", 0),
+            Arguments.of("index-lasr", "LAST", 2)
+        );
+    }
+
+    @Test
+    public void selectActiveIndexEmpty() {
+        GroupConfig emptyGroup = createGroupConfig("0", 0);
+        Map<String, String> emptyProps = Assertions.assertDoesNotThrow(
+            () -> selectActive("empty", emptyGroup));
+
+        Assertions.assertNotNull(emptyProps);
+        Assertions.assertTrue(emptyProps.isEmpty());
+    }
+
+    @Test
+    public void selectActiveRandom() {
+        GroupConfig group = createGroupConfig("ANY", 3, "a", "b", "c");
+        Map<String, String> props = Assertions.assertDoesNotThrow(
+            () -> selectActive("random", group));
+
+        Pattern pattern = Pattern.compile("random\\.\\d-");
+        Assertions.assertTrue(props.keySet()
+            .stream()
+            .map(k -> pattern.matcher(k))
+            .allMatch(Matcher::find));
+
+        GroupConfig emptyGroup = createGroupConfig("ANY", 0);
+        Map<String, String> emptyProps = Assertions.assertDoesNotThrow(
+            () -> selectActive("empty", emptyGroup));
+
+        Assertions.assertNotNull(emptyProps);
+        Assertions.assertTrue(emptyProps.isEmpty());
+    }
+
+    @Test
+    public void selectActiveInvalid() {
+        GroupConfig group = createGroupConfig("INVALID", 3, "a", "b", "c");
+        
+        Assertions.assertThrows(IllegalStateException.class,
+            () -> selectActive("invalid", group));
+    }
+
+    private GroupConfig createGroupConfig(String active, int collections, String... properties) {
+        GroupConfig group = new GroupConfig();
+        group.setActive(active);
+        group.setCollection(new ArrayList<>());
+
+        for(int i = 0; i < collections; i++) {
+            Map<String, String> props = new HashMap<>();
+
+            for(String property : properties) {
+                String value = i + "-" + property;
+                props.put(value, value);
+            }
+
+            group.getCollection().add(props);
+        }
+
+        return group;
+    }
 }

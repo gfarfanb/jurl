@@ -21,7 +21,7 @@ public class GzipOutputDecoderTest {
         Path outputPath = Assertions.assertDoesNotThrow(
             () -> decoder.apply(Paths.get("src/test/resources/json-decoder.output.gz")));
 
-        Map<String, String> output = loadJsonFile(outputPath.toString() , new TypeToken<Map<String, String>>() {});
+        Map<String, String> output = loadJsonFile(outputPath.toString() , new TypeToken<Map<String, String>>() {}, null);
 
         Assertions.assertEquals("Successful", output.get("status"));
     }

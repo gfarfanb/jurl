@@ -11,6 +11,7 @@ import static com.legadi.cli.jurl.common.JsonUtils.loadJsonFile;
 import static com.legadi.cli.jurl.common.JsonUtils.writeJsonFile;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,8 +45,8 @@ public class JsonOutputReader implements OutputReader {
     public Map<String, String> apply(Path sourcePath, Path outputPath, Set<String> params, String paramPrefix) {
         Map<String, String> output = new HashMap<>();
         Object jsonContent = isArrayFile(sourcePath)
-            ? loadJsonFile(sourcePath.toString(), new TypeToken<List<Object>>() {})
-            : loadJsonFile(sourcePath.toString(), new TypeToken<Map<String, Object>>() {});
+            ? loadJsonFile(sourcePath.toString(), new TypeToken<List<Object>>() {}, new ArrayList<>())
+            : loadJsonFile(sourcePath.toString(), new TypeToken<Map<String, Object>>() {}, new HashMap<>());
 
         for(String param : params) {
             String elementCall = param.substring(paramPrefix.length(), param.length());

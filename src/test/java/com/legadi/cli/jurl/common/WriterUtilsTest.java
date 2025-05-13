@@ -166,7 +166,7 @@ public class WriterUtilsTest {
 
         expandFile(settings, input, output, new HashMap<>());
 
-        BasicFunctionsEntity entity = loadJsonFile(output.toString(), new TypeToken<BasicFunctionsEntity>() {});
+        BasicFunctionsEntity entity = loadJsonFile(output.toString(), new TypeToken<BasicFunctionsEntity>() {}, null);
 
         Assertions.assertNotNull(entity);
         Assertions.assertNotNull(entity.getAccess());
@@ -193,7 +193,7 @@ public class WriterUtilsTest {
         expandFile(settings, input, output, new HashMap<>(), line -> json.append(line));
 
         BasicFunctionsEntity jsonEntity = jsonToObject(json.toString(), new TypeToken<BasicFunctionsEntity>() {});
-        BasicFunctionsEntity fileEntity = loadJsonFile(output.toString(), new TypeToken<BasicFunctionsEntity>() {});
+        BasicFunctionsEntity fileEntity = loadJsonFile(output.toString(), new TypeToken<BasicFunctionsEntity>() {}, null);
 
         Assertions.assertNotNull(jsonEntity);
         Assertions.assertNotNull(fileEntity);

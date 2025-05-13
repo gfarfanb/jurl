@@ -39,7 +39,7 @@ public class JsonBodyMixerTest {
             .setRequestPath("src/test/resources/json-body-mixer.json")
             .setRequestName("mixer-object"));
 
-        ObjectInput input = loadJsonFile(mergedPath.toString(), new TypeToken<ObjectInput>() {});
+        ObjectInput input = loadJsonFile(mergedPath.toString(), new TypeToken<ObjectInput>() {}, null);
 
         Assertions.assertEquals("Json Input", input.getName());
         Assertions.assertEquals("NEW", input.getType());
@@ -72,7 +72,7 @@ public class JsonBodyMixerTest {
             .setRequestPath("src/test/resources/json-body-mixer.json")
             .setRequestName("mixer-object"));
 
-        ObjectInput input = loadJsonFile(mergedPath.toString(), new TypeToken<ObjectInput>() {});
+        ObjectInput input = loadJsonFile(mergedPath.toString(), new TypeToken<ObjectInput>() {}, null);
 
         Assertions.assertEquals("Json Input", input.getName());
         Assertions.assertEquals("NEW", input.getType());
@@ -109,7 +109,7 @@ public class JsonBodyMixerTest {
             .setRequestPath("src/test/resources/json-body-mixer.json")
             .setRequestName("mixer-list"));
 
-        List<ListInputEntry> entries = loadJsonFile(mergedPath.toString(), new TypeToken<List<ListInputEntry>>() {});
+        List<ListInputEntry> entries = loadJsonFile(mergedPath.toString(), new TypeToken<List<ListInputEntry>>() {}, null);
 
         Assertions.assertEquals(1, entries.size());
 
@@ -143,7 +143,7 @@ public class JsonBodyMixerTest {
             .setRequestPath("src/test/resources/json-body-mixer.json")
             .setRequestName("mixer-list"));
 
-        List<ListInputEntry> entries = loadJsonFile(mergedPath.toString(), new TypeToken<List<ListInputEntry>>() {});
+        List<ListInputEntry> entries = loadJsonFile(mergedPath.toString(), new TypeToken<List<ListInputEntry>>() {}, null);
 
         Assertions.assertEquals(1, entries.size());
 
@@ -164,7 +164,7 @@ public class JsonBodyMixerTest {
             .setRequestPath("src/test/resources/json-body-mixer.json")
             .setRequestName("mixer-list"));
 
-        List<ListInputEntry> entries = loadJsonFile(mergedPath.toString(), new TypeToken<List<ListInputEntry>>() {});
+        List<ListInputEntry> entries = loadJsonFile(mergedPath.toString(), new TypeToken<List<ListInputEntry>>() {}, null);
 
         Assertions.assertEquals(0, entries.size());
     }
@@ -192,7 +192,7 @@ public class JsonBodyMixerTest {
             .setRequestPath("src/test/resources/json-body-mixer.json")
             .setRequestName("mixer-list"));
 
-        List<ListInputEntry> entries = loadJsonFile(mergedPath.toString(), new TypeToken<List<ListInputEntry>>() {});
+        List<ListInputEntry> entries = loadJsonFile(mergedPath.toString(), new TypeToken<List<ListInputEntry>>() {}, null);
 
         Assertions.assertEquals(4, entries.size());
 
@@ -232,7 +232,7 @@ public class JsonBodyMixerTest {
             .setRequestPath("src/test/resources/json-body-mixer.json")
             .setRequestName("mixer-list"));
 
-        List<ListInputEntry> entries = loadJsonFile(mergedPath.toString(), new TypeToken<List<ListInputEntry>>() {});
+        List<ListInputEntry> entries = loadJsonFile(mergedPath.toString(), new TypeToken<List<ListInputEntry>>() {}, null);
 
         Assertions.assertEquals(4, entries.size());
 
@@ -271,7 +271,7 @@ public class JsonBodyMixerTest {
             .setRequestPath("src/test/resources/json-body-mixer.json")
             .setRequestName("mixer-list"));
 
-        List<ListInputEntry> entries = loadJsonFile(mergedPath.toString(), new TypeToken<List<ListInputEntry>>() {});
+        List<ListInputEntry> entries = loadJsonFile(mergedPath.toString(), new TypeToken<List<ListInputEntry>>() {}, null);
 
         Assertions.assertEquals(3, entries.size());
 
@@ -304,7 +304,7 @@ public class JsonBodyMixerTest {
             .setRequestPath("src/test/resources/json-body-mixer.json")
             .setRequestName("mixer-list"));
 
-        List<ListInputEntry> entries = loadJsonFile(mergedPath.toString(), new TypeToken<List<ListInputEntry>>() {});
+        List<ListInputEntry> entries = loadJsonFile(mergedPath.toString(), new TypeToken<List<ListInputEntry>>() {}, null);
 
         Assertions.assertEquals(3, entries.size());
 
@@ -372,7 +372,7 @@ public class JsonBodyMixerTest {
             .setRequestPath("src/test/resources/json-body-mixer.json")
             .setRequestName("mixer-list"));
 
-        List<ListInputEntry> entries = loadJsonFile(mergedPath.toString(), new TypeToken<List<ListInputEntry>>() {});
+        List<ListInputEntry> entries = loadJsonFile(mergedPath.toString(), new TypeToken<List<ListInputEntry>>() {}, null);
 
         Assertions.assertEquals(2, entries.size());
 
@@ -435,7 +435,7 @@ public class JsonBodyMixerTest {
             .setRequestPath("src/test/resources/json-body-mixer.json")
             .setRequestName("mixer-list"));
 
-        List<ListInputEntry> entries = loadJsonFile(mergedPath.toString(), new TypeToken<List<ListInputEntry>>() {});
+        List<ListInputEntry> entries = loadJsonFile(mergedPath.toString(), new TypeToken<List<ListInputEntry>>() {}, null);
 
         Assertions.assertEquals(4, entries.size());
 
@@ -462,7 +462,7 @@ public class JsonBodyMixerTest {
             .setRequestPath("src/test/resources/json-body-mixer.json")
             .setRequestName("mixer-list"));
 
-        List<String> entries = loadJsonFile(mergedPath.toString(), new TypeToken<List<String>>() {});
+        List<String> entries = loadJsonFile(mergedPath.toString(), new TypeToken<List<String>>() {}, null);
 
         Assertions.assertEquals(4, entries.size());
         Assertions.assertTrue(entries.contains("ANOTHER"));

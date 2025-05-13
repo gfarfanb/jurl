@@ -146,6 +146,19 @@ public class SettingsTest {
     }
 
     @Test
+    public void getGroupsFilePathValidation() {
+        Settings settings = new Settings();
+        String configPath = settings.get(PROP_CONFIG_PATH);
+
+        Assertions.assertEquals(Paths.get("./config/groups.json"), settings.getGroupsFilePath());
+
+        settings.setEnvironment("test");
+        settings.putOverride(PROP_CONFIG_PATH, configPath);
+        
+        Assertions.assertEquals(Paths.get("./config/groups.test.json"), settings.getGroupsFilePath());
+    }
+
+    @Test
     public void getOverrideFilePathValidation() {
         Settings settings = new Settings();
         String configOutputPath = settings.get(PROP_CONFIG_OUTPUT_PATH);

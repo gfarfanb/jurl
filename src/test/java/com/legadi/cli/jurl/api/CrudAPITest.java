@@ -132,7 +132,7 @@ public class CrudAPITest extends EmbeddedAPIAbstractTest {
         Assertions.assertEquals("application/json", obtainResponse.getResponseHeaders().get("Content-Type"));
 
         BasicFunctionsEntity obtainEntity = requestCatcher.getLast(id, BODY);
-        Map<String, Object> obtainInputBody = loadJsonFile(obtainSettings.get("basic.functions.entity"), new TypeToken<Map<String, Object>>() {});
+        Map<String, Object> obtainInputBody = loadJsonFile(obtainSettings.get("basic.functions.entity"), new TypeToken<Map<String, Object>>() {}, null);
 
         Assertions.assertEquals(obtainEntity.getAccess().toString(), obtainInputBody.get("access"));
         Assertions.assertEquals(obtainEntity.getName(), obtainInputBody.get("name"));
@@ -201,7 +201,7 @@ public class CrudAPITest extends EmbeddedAPIAbstractTest {
         BasicFunctionsEntity updateEntity = requestCatcher
             .<BasicFunctionsEntity>getLastSaved(BODY)
             .getRight();
-        BasicFunctionsEntity updateBody = loadJsonFile(updateSettings.get(BODY_TEMPORAL_PATH), new TypeToken<BasicFunctionsEntity>() {});
+        BasicFunctionsEntity updateBody = loadJsonFile(updateSettings.get(BODY_TEMPORAL_PATH), new TypeToken<BasicFunctionsEntity>() {}, null);
 
         Assertions.assertEquals(updateEntity.getAccess(), updateBody.getAccess());
         Assertions.assertEquals(updateEntity.getName(), updateBody.getName());

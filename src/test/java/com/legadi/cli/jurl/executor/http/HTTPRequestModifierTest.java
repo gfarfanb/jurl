@@ -727,7 +727,7 @@ public class HTTPRequestModifierTest {
 
         Assertions.assertDoesNotThrow(() -> Paths.get(bodyTemporalPath));
 
-        Map<String, Object> merged = loadJsonFile(bodyTemporalPath, new TypeToken<Map<String, Object>>() {});
+        Map<String, Object> merged = loadJsonFile(bodyTemporalPath, new TypeToken<Map<String, Object>>() {}, null);
 
         Assertions.assertTrue(merged.containsKey("name"));
         Assertions.assertEquals("body-content", merged.get("name"));

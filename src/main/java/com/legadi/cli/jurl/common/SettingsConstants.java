@@ -8,8 +8,10 @@ public class SettingsConstants {
     public static final String DEFAULT_ENVIRONMENT = "default";
 
     public static final String DEFAULT_SETTINGS_FILE = "settings.default.json";
+    public static final String DEFAULT_GROUPS_FILE = "groups.json";
     public static final String DEFAULT_CONFIG_FILE = "config.json";
     public static final String DEFAULT_OVERRIDE_FILE = "override.json";
+    public static final String FORMAT_GROUPS_FILE = "groups.%s.json";
     public static final String FORMAT_CONFIG_FILE = "config.%s.json";
     public static final String FORMAT_OVERRIDE_FILE = "override.%s.json";
 

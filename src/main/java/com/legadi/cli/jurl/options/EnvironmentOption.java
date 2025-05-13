@@ -1,6 +1,7 @@
 package com.legadi.cli.jurl.options;
 
 import static com.legadi.cli.jurl.common.JsonUtils.loadJsonProperties;
+import static com.legadi.cli.jurl.common.Settings.loadPropertiesFromGroupsFile;
 
 import java.nio.file.Path;
 
@@ -34,11 +35,13 @@ public class EnvironmentOption extends Option {
 
         settings.setEnvironment(environment);
 
-        Path configPath = settings.getConfigFilePath();
         Path overridePath = settings.getOverrideFilePath();
+        Path groupsPath = settings.getGroupsFilePath();
+        Path configPath = settings.getConfigFilePath();
 
-        Settings.mergeProperties(environment, loadJsonProperties(configPath));
         Settings.mergeProperties(environment, loadJsonProperties(overridePath));
+        Settings.mergeProperties(environment, loadPropertiesFromGroupsFile(groupsPath));
+        Settings.mergeProperties(environment, loadJsonProperties(configPath));
 
         return true;
     }

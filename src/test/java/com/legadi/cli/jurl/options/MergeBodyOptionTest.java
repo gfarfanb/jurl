@@ -41,7 +41,7 @@ public class MergeBodyOptionTest extends OptionAbstractTest<MergeBodyOption> {
         Assertions.assertEquals("json", settings.get(PROP_MERGE_BODY_USING_TYPE));
         Assertions.assertEquals(404, response.getStatusCode());
 
-        Map<String, Object> body = loadJsonFile(settings.get(BODY_TEMPORAL_PATH), new TypeToken<Map<String, Object>>() {});
+        Map<String, Object> body = loadJsonFile(settings.get(BODY_TEMPORAL_PATH), new TypeToken<Map<String, Object>>() {}, null);
 
         Assertions.assertEquals("187b03f1-55d5-4d6b-954d-51cf5f20c952", body.get("access"));
         Assertions.assertEquals("Basic Functions", body.get("name"));

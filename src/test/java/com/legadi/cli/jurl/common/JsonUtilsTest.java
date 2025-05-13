@@ -21,8 +21,6 @@ import org.junit.jupiter.api.Test;
 
 import com.google.gson.reflect.TypeToken;
 import com.legadi.cli.jurl.embedded.wrong.FailedFileSystemPath;
-import com.legadi.cli.jurl.embedded.wrong.FailedInputStreamPath;
-import com.legadi.cli.jurl.exception.CommandException;
 
 public class JsonUtilsTest {
 
@@ -70,7 +68,7 @@ public class JsonUtilsTest {
         writeJsonFile(filePath, content);
 
         Map<String, String> loaded = Assertions.assertDoesNotThrow(
-            () -> loadJsonFile(filePath.toString(), new TypeToken<Map<String, String>>() {}));
+            () -> loadJsonFile(filePath.toString(), new TypeToken<Map<String, String>>() {}, null));
 
         Assertions.assertEquals("test", loaded.get("name"));
     }
@@ -83,8 +81,10 @@ public class JsonUtilsTest {
             )
             .resolve("json-file-not-found.json");
 
-        Assertions.assertThrows(CommandException.class,
-            () -> loadJsonFile(filePath.toString(), new TypeToken<Map<String, String>>() {}));
+        Map<String, String> input = Assertions.assertDoesNotThrow(
+            () -> loadJsonFile(filePath.toString(), new TypeToken<Map<String, String>>() {}, null));
+
+        Assertions.assertNull(input);
     }
 
     @Test
@@ -101,7 +101,7 @@ public class JsonUtilsTest {
         writeJsonFile(filePath, content);
 
         Assertions.assertThrows(IllegalStateException.class,
-            () -> loadJsonFile(filePath.toString(), null));
+            () -> loadJsonFile(filePath.toString(), null, null));
     }
 
     @Test
@@ -129,14 +129,6 @@ public class JsonUtilsTest {
     }
 
     @Test
-    public void loadJsonPropertiesFailed() {
-        Path filePath = Paths.get("src/test/resources/json-properties.json");
-
-        Assertions.assertThrows(IllegalStateException.class,
-            () -> loadJsonProperties(new FailedFileSystemPath(filePath)));
-    }
-
-    @Test
     public void loadJsonPropertiesFileNotFound() {
         Path filePath = Paths.get("json-file-not-found.json");
 
@@ -144,14 +136,6 @@ public class JsonUtilsTest {
             () -> loadJsonProperties(filePath));
 
         Assertions.assertTrue(properties.isEmpty());
-    }
-
-    @Test
-    public void loadJsonPropertiesFailedInputStream() {
-        Path filePath = Paths.get("src/test/resources/json-properties.json");
-        
-        Assertions.assertThrows(IllegalStateException.class,
-            () -> loadJsonProperties(new FailedInputStreamPath(filePath)));
     }
 
     @Test

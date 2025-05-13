@@ -88,16 +88,16 @@ public class JsonOutputReaderTest {
         OutputReader outputReader = findOrFail(OutputReader.class, "application/json");
         Map<String, String> output = outputReader.apply(sourcePath, outputPath, outputParams, "OUT/");
 
-        Map<String, Object> element0 = loadJsonFile(output.get("OUT/elements[0]"), new TypeToken<Map<String, Object>>() {});
+        Map<String, Object> element0 = loadJsonFile(output.get("OUT/elements[0]"), new TypeToken<Map<String, Object>>() {}, null);
         Assertions.assertEquals("Alpha", element0.get("record"));
         Assertions.assertEquals(BigDecimal.valueOf(234.2), (BigDecimal) element0.get("value"));
         Assertions.assertEquals(2, ((List<Object>) element0.get("history")).size());
 
-        Map<String, Object> history3 = loadJsonFile(output.get("OUT/elements[1].history[3]").toString(), new TypeToken<Map<String, Object>>() {});
+        Map<String, Object> history3 = loadJsonFile(output.get("OUT/elements[1].history[3]").toString(), new TypeToken<Map<String, Object>>() {}, null);
         Assertions.assertEquals("2023-09-30T15:40:30.02", history3.get("timestamp"));
         Assertions.assertFalse((Boolean) history3.get("completed"));
 
-        List<Object> history = loadJsonFile(output.get("OUT/elements[2].history").toString(), new TypeToken<List<Object>>() {});
+        List<Object> history = loadJsonFile(output.get("OUT/elements[2].history").toString(), new TypeToken<List<Object>>() {}, null);
         Assertions.assertEquals(3, history.size());
     }
 
@@ -118,20 +118,20 @@ public class JsonOutputReaderTest {
         OutputReader outputReader = findOrFail(OutputReader.class, "application/json");
         Map<String, String> output = outputReader.apply(sourcePath, outputPath, outputParams, "OUT/");
 
-        Map<String, Object> first = loadJsonFile(output.get("OUT/[first]").toString(), new TypeToken<Map<String, Object>>() {});
+        Map<String, Object> first = loadJsonFile(output.get("OUT/[first]").toString(), new TypeToken<Map<String, Object>>() {}, null);
         Assertions.assertEquals("2023-09-27T07:49:30.02", first.get("timestamp"));
         Assertions.assertEquals("Begin", first.get("message"));
 
-        Map<String, Object> element0 = loadJsonFile(output.get("OUT/[0]").toString(), new TypeToken<Map<String, Object>>() {});
+        Map<String, Object> element0 = loadJsonFile(output.get("OUT/[0]").toString(), new TypeToken<Map<String, Object>>() {}, null);
         Assertions.assertEquals("2023-09-27T07:49:30.02", element0.get("timestamp"));
         Assertions.assertEquals("Begin", element0.get("message"));
 
-        Map<String, Object> element2 = loadJsonFile(output.get("OUT/[2]").toString(), new TypeToken<Map<String, Object>>() {});
+        Map<String, Object> element2 = loadJsonFile(output.get("OUT/[2]").toString(), new TypeToken<Map<String, Object>>() {}, null);
         Assertions.assertEquals("2023-09-29T07:49:30.02", element2.get("timestamp"));
         Assertions.assertEquals("Transaction B", element2.get("message"));
 
-        Map<String, Object> any_1 = loadJsonFile(output.get("OUT/[]").toString(), new TypeToken<Map<String, Object>>() {});
-        Map<String, Object> any_2 = loadJsonFile(output.get("OUT/[any]").toString(), new TypeToken<Map<String, Object>>() {});
+        Map<String, Object> any_1 = loadJsonFile(output.get("OUT/[]").toString(), new TypeToken<Map<String, Object>>() {}, null);
+        Map<String, Object> any_2 = loadJsonFile(output.get("OUT/[any]").toString(), new TypeToken<Map<String, Object>>() {}, null);
         Set<Object> timestamps = new HashSet<>(Arrays.asList(
             any_1.get("timestamp"), any_2.get("timestamp")
         ));
@@ -141,11 +141,11 @@ public class JsonOutputReaderTest {
         Assertions.assertEquals(1, timestamps.size());
         Assertions.assertEquals(1, messages.size());
 
-        Map<String, Object> last = loadJsonFile(output.get("OUT/[last]").toString(), new TypeToken<Map<String, Object>>() {});
+        Map<String, Object> last = loadJsonFile(output.get("OUT/[last]").toString(), new TypeToken<Map<String, Object>>() {}, null);
         Assertions.assertEquals("2023-10-01T15:39:30.02", last.get("timestamp"));
         Assertions.assertEquals("End", last.get("message"));
 
-        Map<String, Object> element4 = loadJsonFile(output.get("OUT/[4]").toString(), new TypeToken<Map<String, Object>>() {});
+        Map<String, Object> element4 = loadJsonFile(output.get("OUT/[4]").toString(), new TypeToken<Map<String, Object>>() {}, null);
         Assertions.assertEquals("2023-10-01T15:39:30.02", element4.get("timestamp"));
         Assertions.assertEquals("End", element4.get("message"));
     }
