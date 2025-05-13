@@ -35,13 +35,13 @@ public class EnvironmentOption extends Option {
 
         settings.setEnvironment(environment);
 
-        Path overridePath = settings.getOverrideFilePath();
-        Path groupsPath = settings.getGroupsFilePath();
         Path configPath = settings.getConfigFilePath();
+        Path groupsPath = settings.getGroupsFilePath();
+        Path overridePath = settings.getOverrideFilePath();
 
-        Settings.mergeProperties(environment, loadJsonProperties(overridePath));
-        Settings.mergeProperties(environment, loadPropertiesFromGroupsFile(groupsPath));
         Settings.mergeProperties(environment, loadJsonProperties(configPath));
+        Settings.mergeProperties(environment, loadPropertiesFromGroupsFile(groupsPath));
+        Settings.mergeProperties(environment, loadJsonProperties(overridePath));
 
         return true;
     }

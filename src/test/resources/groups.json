@@ -1,0 +1,32 @@
+{
+    "group.a": {
+        "active": "FIRST",
+        "collection": [
+            {
+                "property.a": "a",
+                "property.b": "b",
+                "property.c": "c"
+            },
+            {
+                "property.a": "a:1",
+                "property.b": "b:1",
+                "property.c": "c:1"
+            }
+        ]
+    },
+    "group.b": {
+        "active": "LAST",
+        "collection": [
+            {
+                "property.a": "a",
+                "property.b": "b",
+                "property.c": "c"
+            },
+            {
+                "property.a": "a:1",
+                "property.b": "b:1",
+                "property.c": "c:1"
+            }
+        ]
+    }
+}

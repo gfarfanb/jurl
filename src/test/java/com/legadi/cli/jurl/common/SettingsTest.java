@@ -1,12 +1,14 @@
 package com.legadi.cli.jurl.common;
 
 import static com.legadi.cli.jurl.common.Settings.mergeProperties;
+import static com.legadi.cli.jurl.common.Settings.loadPropertiesFromGroupsFile;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_OUTPUT_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTION_TIMES;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_REQUEST_BEHAVIOUR;
 import static com.legadi.cli.jurl.common.SettingsConstants.TAG_FORMATTER;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -252,5 +254,22 @@ public class SettingsTest {
         Assertions.assertEquals("1", settings.get("property.1"));
         Assertions.assertEquals("2", settings.get("property.2"));
         Assertions.assertEquals("3", settings.get("property.3"));
+    }
+
+    @Test
+    public void loadPropertiesFromGroupsFileValidation() {
+        Path groupsPath = Paths.get("src/test/resources/groups.json");
+        Map<String, String> properties = Assertions.assertDoesNotThrow(
+            () -> loadPropertiesFromGroupsFile(groupsPath));
+
+        Assertions.assertFalse(properties.isEmpty());
+
+        Assertions.assertEquals("a", properties.get("group.a.property.a"));
+        Assertions.assertEquals("b", properties.get("group.a.property.b"));
+        Assertions.assertEquals("c", properties.get("group.a.property.c"));
+
+        Assertions.assertEquals("a:1", properties.get("group.b.property.a"));
+        Assertions.assertEquals("b:1", properties.get("group.b.property.b"));
+        Assertions.assertEquals("c:1", properties.get("group.b.property.c"));
     }
 }

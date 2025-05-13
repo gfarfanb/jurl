@@ -51,8 +51,8 @@ public class Settings implements SettingsDefaults {
 
         SETTINGS.putAllInCommon(loadJsonProperties(
             createDirectories(
-                Paths.get(SETTINGS.get(null, PROP_CONFIG_OUTPUT_PATH)))
-                    .resolve(DEFAULT_OVERRIDE_FILE)));
+                Paths.get(SETTINGS.get(null, PROP_CONFIG_PATH)))
+                    .resolve(DEFAULT_CONFIG_FILE)));
 
         SETTINGS.putAllInCommon(loadPropertiesFromGroupsFile(
             createDirectories(
@@ -61,8 +61,8 @@ public class Settings implements SettingsDefaults {
 
         SETTINGS.putAllInCommon(loadJsonProperties(
             createDirectories(
-                Paths.get(SETTINGS.get(null, PROP_CONFIG_PATH)))
-                    .resolve(DEFAULT_CONFIG_FILE)));
+                Paths.get(SETTINGS.get(null, PROP_CONFIG_OUTPUT_PATH)))
+                    .resolve(DEFAULT_OVERRIDE_FILE)));
     }
 
     private final Map<String, String> commandProperties;
