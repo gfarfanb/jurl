@@ -91,6 +91,7 @@ import com.legadi.cli.jurl.options.DownloadInOption;
 import com.legadi.cli.jurl.options.EnvironmentCopyOption;
 import com.legadi.cli.jurl.options.EnvironmentOption;
 import com.legadi.cli.jurl.options.ExecuteAuthenticationOption;
+import com.legadi.cli.jurl.options.GroupCollectionOption;
 import com.legadi.cli.jurl.options.HelpOption;
 import com.legadi.cli.jurl.options.ListRequestsOption;
 import com.legadi.cli.jurl.options.MergeBodyOption;
@@ -133,6 +134,7 @@ public class ObjectsRegistry {
         register(Option.class, EnvironmentCopyOption.class);
         register(Option.class, EnvironmentOption.class);
         register(Option.class, ExecuteAuthenticationOption.class);
+        register(Option.class, GroupCollectionOption.class);
         register(Option.class, HelpOption.class);
         register(Option.class, ListRequestsOption.class);
         register(Option.class, MergeBodyOption.class);

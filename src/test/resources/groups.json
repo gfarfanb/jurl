@@ -3,14 +3,14 @@
         "active": "FIRST",
         "collection": [
             {
-                "property.a": "a",
-                "property.b": "b",
-                "property.c": "c"
+                "property.a": "first/a",
+                "property.b": "first/b",
+                "property.c": "first/c"
             },
             {
-                "property.a": "a:1",
-                "property.b": "b:1",
-                "property.c": "c:1"
+                "property.a": "last/a",
+                "property.b": "last/b",
+                "property.c": "last/c"
             }
         ]
     },
@@ -18,14 +18,14 @@
         "active": "LAST",
         "collection": [
             {
-                "property.a": "a",
-                "property.b": "b",
-                "property.c": "c"
+                "property.a": "first/a",
+                "property.b": "first/b",
+                "property.c": "first/c"
             },
             {
-                "property.a": "a:1",
-                "property.b": "b:1",
-                "property.c": "c:1"
+                "property.a": "last/a",
+                "property.b": "last/b",
+                "property.c": "last/c"
             }
         ]
     }

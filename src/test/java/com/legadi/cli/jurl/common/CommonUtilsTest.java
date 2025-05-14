@@ -13,6 +13,7 @@ import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotEmpty;
+import static com.legadi.cli.jurl.common.CommonUtils.toGroupParam;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotNumeric;
 import static com.legadi.cli.jurl.common.CommonUtils.isNumeric;
 import static com.legadi.cli.jurl.common.CommonUtils.nextIndex;
@@ -35,6 +36,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -417,7 +419,7 @@ public class CommonUtilsTest {
     public void selectActiveValidation(String groupName, String active, int expectedIndex) {
         GroupConfig groupNegative = createGroupConfig(active, 3, "a", "b", "c");
         Map<String, String> propsIndexNegative = Assertions.assertDoesNotThrow(
-            () -> selectActive(groupName, groupNegative));
+            () -> selectActive(Optional.empty(), groupName, groupNegative));
 
         Assertions.assertTrue(propsIndexNegative.keySet()
             .stream()
@@ -440,7 +442,7 @@ public class CommonUtilsTest {
     public void selectActiveIndexEmpty() {
         GroupConfig emptyGroup = createGroupConfig("0", 0);
         Map<String, String> emptyProps = Assertions.assertDoesNotThrow(
-            () -> selectActive("empty", emptyGroup));
+            () -> selectActive(Optional.empty(), "empty", emptyGroup));
 
         Assertions.assertNotNull(emptyProps);
         Assertions.assertTrue(emptyProps.isEmpty());
@@ -450,7 +452,7 @@ public class CommonUtilsTest {
     public void selectActiveRandom() {
         GroupConfig group = createGroupConfig("ANY", 3, "a", "b", "c");
         Map<String, String> props = Assertions.assertDoesNotThrow(
-            () -> selectActive("random", group));
+            () -> selectActive(Optional.empty(), "random", group));
 
         Pattern pattern = Pattern.compile("random\\.\\d-");
         Assertions.assertTrue(props.keySet()
@@ -460,10 +462,27 @@ public class CommonUtilsTest {
 
         GroupConfig emptyGroup = createGroupConfig("ANY", 0);
         Map<String, String> emptyProps = Assertions.assertDoesNotThrow(
-            () -> selectActive("empty", emptyGroup));
+            () -> selectActive(Optional.empty(), "empty", emptyGroup));
 
         Assertions.assertNotNull(emptyProps);
         Assertions.assertTrue(emptyProps.isEmpty());
+    }
+
+    @Test
+    public void selectActiveConfig() {
+        GroupConfig emptyGroup = createGroupConfig("FIRST", 3, "a", "b", "c");
+        Optional<Settings> settings = Optional.of(new Settings());
+        String groupParam = toGroupParam(settings, "config");
+
+        settings.get().putOverride(groupParam, "LAST");
+
+        Map<String, String> properties = Assertions.assertDoesNotThrow(
+            () -> selectActive(settings, "config", emptyGroup));
+
+        Assertions.assertNotNull(properties);
+        Assertions.assertEquals("2-a", properties.get("config.2-a"));
+        Assertions.assertEquals("2-b", properties.get("config.2-b"));
+        Assertions.assertEquals("2-c", properties.get("config.2-c"));
     }
 
     @Test
@@ -471,7 +490,7 @@ public class CommonUtilsTest {
         GroupConfig group = createGroupConfig("INVALID", 3, "a", "b", "c");
         
         Assertions.assertThrows(IllegalStateException.class,
-            () -> selectActive("invalid", group));
+            () -> selectActive(Optional.empty(), "invalid", group));
     }
 
     private GroupConfig createGroupConfig(String active, int collections, String... properties) {

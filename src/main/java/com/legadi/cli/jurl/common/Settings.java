@@ -55,6 +55,7 @@ public class Settings implements SettingsDefaults {
                     .resolve(DEFAULT_CONFIG_FILE)));
 
         SETTINGS.putAllInCommon(loadPropertiesFromGroupsFile(
+            Optional.empty(),
             createDirectories(
                 Paths.get(SETTINGS.get(null, PROP_CONFIG_PATH)))
                     .resolve(DEFAULT_GROUPS_FILE)));
@@ -204,12 +205,13 @@ public class Settings implements SettingsDefaults {
         SETTINGS.putAll(environment, properties);
     }
 
-    public static Map<String, String> loadPropertiesFromGroupsFile(Path filePath) {
+    public static Map<String, String> loadPropertiesFromGroupsFile(
+            Optional<Settings> settings, Path filePath) {
         return loadJsonFile(filePath,
             new TypeToken<Map<String, GroupConfig>>() {}, new HashMap<>())
             .entrySet()
             .stream()
-            .map(e -> selectActive(e.getKey(), e.getValue()))
+            .map(e -> selectActive(settings, e.getKey(), e.getValue()))
             .reduce((a, b) -> {
                 a.putAll(b);
                 return a;

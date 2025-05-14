@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -260,16 +261,16 @@ public class SettingsTest {
     public void loadPropertiesFromGroupsFileValidation() {
         Path groupsPath = Paths.get("src/test/resources/groups.json");
         Map<String, String> properties = Assertions.assertDoesNotThrow(
-            () -> loadPropertiesFromGroupsFile(groupsPath));
+            () -> loadPropertiesFromGroupsFile(Optional.empty(), groupsPath));
 
         Assertions.assertFalse(properties.isEmpty());
 
-        Assertions.assertEquals("a", properties.get("group.a.property.a"));
-        Assertions.assertEquals("b", properties.get("group.a.property.b"));
-        Assertions.assertEquals("c", properties.get("group.a.property.c"));
+        Assertions.assertEquals("first/a", properties.get("group.a.property.a"));
+        Assertions.assertEquals("first/b", properties.get("group.a.property.b"));
+        Assertions.assertEquals("first/c", properties.get("group.a.property.c"));
 
-        Assertions.assertEquals("a:1", properties.get("group.b.property.a"));
-        Assertions.assertEquals("b:1", properties.get("group.b.property.b"));
-        Assertions.assertEquals("c:1", properties.get("group.b.property.c"));
+        Assertions.assertEquals("last/a", properties.get("group.b.property.a"));
+        Assertions.assertEquals("last/b", properties.get("group.b.property.b"));
+        Assertions.assertEquals("last/c", properties.get("group.b.property.c"));
     }
 }
