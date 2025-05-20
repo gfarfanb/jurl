@@ -40,6 +40,7 @@ import com.legadi.cli.jurl.model.AssertionType;
 import com.legadi.cli.jurl.model.FlowEntry;
 import com.legadi.cli.jurl.model.RequestInput;
 import com.legadi.cli.jurl.model.StepEntry;
+import com.legadi.cli.jurl.model.StringFieldEntry;
 import com.legadi.cli.jurl.model.http.HTTPMockEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestFileEntry;
@@ -539,12 +540,18 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
     private void addField(Map<String, Field> fields, Object target, String fieldName,
             String value) throws IllegalAccessException {
         Field field = fields.get(fieldName);
-        if(field == null) {
-            throw new CommandException("Field not defined in " + target.getClass()
-                + ": " + fieldName);
+        if(field != null) {
+            field.setAccessible(true);
+            field.set(target, value);
+            return;
         }
-        field.setAccessible(true);
-        field.set(target, value);
+        if(StringFieldEntry.class.isAssignableFrom(target.getClass())) {
+            StringFieldEntry stringFieldObject = (StringFieldEntry) target;
+            stringFieldObject.putField(fieldName, value);
+            return;
+        }
+        throw new CommandException("Field not defined in " + target.getClass()
+            + ": " + fieldName);
     }
 
     private void addConditionOrAssertion(HTTPRequestEntry request, String line) {

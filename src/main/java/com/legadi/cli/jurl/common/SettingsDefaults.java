@@ -5,7 +5,6 @@ import static com.legadi.cli.jurl.common.SettingsConstants.JURL_FILE_SEPARATOR;
 import static com.legadi.cli.jurl.common.SettingsConstants.JURL_OS_NAME;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_ADD_ON_OPTION_CLASSES;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_ACCESS_TOKEN_FIELD_NAME;
-import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_BODY_TEMPLATE;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_CLIENT_ID_FIELD_NAME;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_CLIENT_SECRET_FIELD_NAME;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_CONTENT_TYPE;
@@ -256,9 +255,5 @@ public interface SettingsDefaults {
 
     default String getAuthBearerContentType() {
         return get(PROP_AUTH_BEARER_CONTENT_TYPE);
-    }
-
-    default String getAuthBearerBodyTemplate() {
-        return get(PROP_AUTH_BEARER_BODY_TEMPLATE);
     }
 }

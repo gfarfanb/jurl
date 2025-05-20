@@ -110,20 +110,42 @@ public class RequestCatcher {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> Pair<UUID, T> getLastSaved(ObjectName name) {
+    public List<Pair<UUID, Object>> getSaved(ObjectName name) {
         lock.lock();
 
         try {
             List<Pair<UUID, Object>> records = getHistoryRecords(name);
-            return (Pair<UUID, T>) records.get(records.size() - 1);
+            return records
+                .stream()
+                .collect(Collectors.toList());
         } finally {
             lock.unlock();
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> List<Pair<UUID, T>> getLastSaved(ObjectName name, int elements) {
+    public Pair<UUID, Object> getFirstSaved(ObjectName name) {
+        lock.lock();
+
+        try {
+            List<Pair<UUID, Object>> records = getHistoryRecords(name);
+            return records.get(0);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public Pair<UUID, Object> getLastSaved(ObjectName name) {
+        lock.lock();
+
+        try {
+            List<Pair<UUID, Object>> records = getHistoryRecords(name);
+            return records.get(records.size() - 1);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public List<Pair<UUID, Object>> getLastSaved(ObjectName name, int elements) {
         lock.lock();
 
         try {
@@ -134,7 +156,6 @@ public class RequestCatcher {
             }
             return records.subList(records.size() - elements, records.size())
                 .stream()
-                .map(r -> (Pair<UUID, T>) r)
                 .collect(Collectors.toList());
         } finally {
             lock.unlock();

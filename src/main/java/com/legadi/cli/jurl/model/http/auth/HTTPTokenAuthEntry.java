@@ -1,14 +1,21 @@
 package com.legadi.cli.jurl.model.http.auth;
 
-import com.legadi.cli.jurl.model.AuthenticationEntry;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
-public class HTTPTokenAuthEntry implements AuthenticationEntry {
+import com.legadi.cli.jurl.model.AuthenticationEntry;
+import com.legadi.cli.jurl.model.StringFieldEntry;
+
+public class HTTPTokenAuthEntry implements AuthenticationEntry, StringFieldEntry {
 
     private String tokenUrl;
     private String grantType;
     private String clientId;
     private String clientSecret;
     private String scope;
+
+    private Map<String, String> otherFields = new HashMap<>();
 
     @Override
     public String getParserElement() {
@@ -53,5 +60,28 @@ public class HTTPTokenAuthEntry implements AuthenticationEntry {
 
     public void setScope(String scope) {
         this.scope = scope;
+    }
+
+    public Map<String, String> getOtherFields() {
+        return otherFields;
+    }
+
+    public void setOtherFields(Map<String, String> otherFields) {
+        this.otherFields = otherFields;
+    }
+
+    @Override
+    public void putField(String fieldName, String value) {
+        otherFields.put(fieldName, value);
+    }
+
+    @Override
+    public String getField(String fieldName) {
+        return otherFields.get(fieldName);
+    }
+
+    @Override
+    public Set<String> getFieldNames() {
+        return otherFields.keySet();
     }
 }

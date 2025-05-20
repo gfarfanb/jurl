@@ -39,6 +39,5 @@
     "authBearerExpiresInTimeUnit": "SECONDS",
     "authBearerTokenTypeFieldName": "token_type",
     "authBearerRequestMethod": "POST",
-    "authBearerContentType": "application/x-www-form-urlencoded",
-    "authBearerBodyTemplate": "{{grantTypeFieldName}}={{grantType}}&{{clientIdFieldName}}={{clientId}}&{{clientSecretFieldName}}={{clientSecret}}&{{scopeFieldName}}={{scope}}"
+    "authBearerContentType": "application/x-www-form-urlencoded"
 }

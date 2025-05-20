@@ -59,6 +59,7 @@ public class FlowAPITest extends EmbeddedAPIAbstractTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void authorizationAndCRUDFlow() {
         String basicWithAuthorizationTag = UUID.randomUUID().toString();
         UUID commonCorrelationId = UUID.randomUUID();
@@ -67,23 +68,25 @@ public class FlowAPITest extends EmbeddedAPIAbstractTest {
             "-s", "basic.with.authorization.tag", basicWithAuthorizationTag,
             "src/test/resources/flow.spec.http");
 
-        List<Pair<UUID, Settings>> settingsRecords = requestCatcher
+        List<Pair<UUID, Object>> settingsRecords = requestCatcher
             .getLastSaved(SETTINGS, 5);
 
-        for(Pair<UUID, Settings> settingsRecord : settingsRecords) {
+        for(Pair<UUID, Object> settingsRecord : settingsRecords) {
+            Settings settings = (Settings) settingsRecord.getRight();
             Assertions.assertEquals(commonCorrelationId, settingsRecord.getLeft());
-            Assertions.assertEquals(basicWithAuthorizationTag, settingsRecord.getRight().get("flow.tag"));
+            Assertions.assertEquals(basicWithAuthorizationTag, settings.get("flow.tag"));
         }
 
-        List<Pair<UUID, Optional<AssertionResult>>> assertionRecords = requestCatcher
+        List<Pair<UUID, Object>> assertionRecords = requestCatcher
             .getLastSaved(ASSERTIONS_RESULT, 5);
 
-        for(Pair<UUID, Optional<AssertionResult>> assertionRecord : assertionRecords) {
+        for(Pair<UUID, Object> assertionRecord : assertionRecords) {
+            Optional<AssertionResult> assertion = (Optional<AssertionResult>) assertionRecord.getRight();
             Assertions.assertEquals(commonCorrelationId, assertionRecord.getLeft());
-            Assertions.assertTrue(assertionRecord.getRight().isPresent());
-            Assertions.assertEquals(1, assertionRecord.getRight().get().getAssertions());
-            Assertions.assertEquals(0, assertionRecord.getRight().get().getFailures());
-            Assertions.assertTrue(assertionRecord.getRight().get().isPassed());
+            Assertions.assertTrue(assertion.isPresent());
+            Assertions.assertEquals(1, assertion.get().getAssertions());
+            Assertions.assertEquals(0, assertion.get().getFailures());
+            Assertions.assertTrue(assertion.get().isPassed());
         }
 
         AuthenticationCleaner.cleanup(requestCatcher, commonCorrelationId);

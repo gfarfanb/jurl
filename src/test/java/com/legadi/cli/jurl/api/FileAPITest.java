@@ -62,8 +62,8 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
         Assertions.assertEquals(1, uploadRequest.getAssertions().size());
 
         HTTPResponseEntry uploadResponse = requestCatcher.getLast(uploadCorrelationId, RESPONSE);
-        FileFormEntity uploadEntity = requestCatcher
-            .<FileFormEntity>getLastSaved(BODY)
+        FileFormEntity uploadEntity = (FileFormEntity) requestCatcher
+            .getLastSaved(BODY)
             .getRight();
 
         Assertions.assertEquals("http://localhost:" + port + "/file", uploadResponse.getRequestUrl());
@@ -131,8 +131,8 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
         Assertions.assertEquals(1, uploadRequest.getAssertions().size());
 
         HTTPResponseEntry uploadResponse = requestCatcher.getLast(uploadCorrelationId, RESPONSE);
-        FileFormEntity uploadEntity = requestCatcher
-            .<FileFormEntity>getLastSaved(BODY)
+        FileFormEntity uploadEntity = (FileFormEntity) requestCatcher
+            .getLastSaved(BODY)
             .getRight();
 
         Assertions.assertEquals("http://localhost:" + port + "/file", uploadResponse.getRequestUrl());

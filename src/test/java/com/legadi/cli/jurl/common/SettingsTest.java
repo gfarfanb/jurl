@@ -86,8 +86,6 @@ public class SettingsTest {
         Assertions.assertEquals("token_type", settings.getAuthBearerTokenTypeFieldName());
         Assertions.assertEquals("POST", settings.getAuthBearerRequestMethod());
         Assertions.assertEquals("application/x-www-form-urlencoded", settings.getAuthBearerContentType());
-        Assertions.assertEquals("{{grantTypeFieldName}}={{grantType}}&{{clientIdFieldName}}={{clientId}}&{{clientSecretFieldName}}={{clientSecret}}&{{scopeFieldName}}={{scope}}",
-            settings.getAuthBearerBodyTemplate());
     }
 
     @Test

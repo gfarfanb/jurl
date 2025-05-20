@@ -63,7 +63,6 @@ public class SettingsConstants {
     public static final String PROP_AUTH_BEARER_TOKEN_TYPE_FIELD_NAME = "authBearerTokenTypeFieldName";
     public static final String PROP_AUTH_BEARER_REQUEST_METHOD = "authBearerRequestMethod";
     public static final String PROP_AUTH_BEARER_CONTENT_TYPE = "authBearerContentType";
-    public static final String PROP_AUTH_BEARER_BODY_TEMPLATE = "authBearerBodyTemplate";
 
     private SettingsConstants() {}
 }

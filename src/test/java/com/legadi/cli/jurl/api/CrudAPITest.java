@@ -198,8 +198,8 @@ public class CrudAPITest extends EmbeddedAPIAbstractTest {
         Assertions.assertEquals(0, updateAssertionResult.get().getFailures());
         Assertions.assertTrue(updateAssertionResult.get().isPassed());
 
-        BasicFunctionsEntity updateEntity = requestCatcher
-            .<BasicFunctionsEntity>getLastSaved(BODY)
+        BasicFunctionsEntity updateEntity = (BasicFunctionsEntity) requestCatcher
+            .getLastSaved(BODY)
             .getRight();
         BasicFunctionsEntity updateBody = loadJsonFile(updateSettings.get(BODY_TEMPORAL_PATH), new TypeToken<BasicFunctionsEntity>() {}, null);
 

@@ -8,10 +8,12 @@ import static com.legadi.cli.jurl.common.JsonUtils.removeJsonProperties;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
@@ -152,6 +154,10 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
         authEntry.setClientId(stringExpander.replaceAllInContent(authEntry.getClientId()));
         authEntry.setClientSecret(stringExpander.replaceAllInContent(authEntry.getClientSecret()));
         authEntry.setScope(stringExpander.replaceAllInContent(authEntry.getScope()));
+
+        for(Map.Entry<String, String> fieldEntry : authEntry.getOtherFields().entrySet()) {
+            authEntry.putField(fieldEntry.getKey(), stringExpander.replaceAllInContent(fieldEntry.getValue()));
+        }
     }
 
     private HTTPRequestEntry instanceRequest(Settings settings, String requestName,
@@ -162,19 +168,7 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
         authRequest.setMethod(settings.getAuthBearerRequestMethod());
         authRequest.setUrl(authEntry.getTokenUrl());
         authRequest.getHeaders().put("Content-Type", settings.getAuthBearerContentType());
-
-        Map<String, String> bodyParams = new HashMap<>();
-        bodyParams.put("grantTypeFieldName", settings.getAuthBearerGrantTypeFieldName());
-        bodyParams.put("grantType", authEntry.getGrantType());
-        bodyParams.put("clientIdFieldName", settings.getAuthBearerClientIdFieldName());
-        bodyParams.put("clientId", authEntry.getClientId());
-        bodyParams.put("clientSecretFieldName", settings.getAuthBearerClientSecretFieldName());
-        bodyParams.put("clientSecret", authEntry.getClientSecret());
-        bodyParams.put("scopeFieldName", settings.getAuthBearerScopeFieldName());
-        bodyParams.put("scope", authEntry.getScope());
-
-        StringExpander stringExpander = new StringExpander(new Settings());
-        authRequest.setBodyContent(stringExpander.replaceAllInContent(bodyParams, settings.getAuthBearerBodyTemplate()));
+        authRequest.setBodyContent(buildBodyContent(settings, authEntry));
 
         String expirationMillisParam = toGeneratedParam(settings.getRequestType(),
             authEntry.getClientId(), "expiration-millis");
@@ -212,6 +206,23 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
         return authRequest;
     }
 
+    private String buildBodyContent(Settings settings, HTTPTokenAuthEntry authEntry) {
+        Map<String, String> bodyParams = new LinkedHashMap<>();
+        bodyParams.put(settings.getAuthBearerGrantTypeFieldName(), authEntry.getGrantType());
+        bodyParams.put(settings.getAuthBearerClientIdFieldName(), authEntry.getClientId());
+        bodyParams.put(settings.getAuthBearerClientSecretFieldName(), authEntry.getClientSecret());
+        bodyParams.put(settings.getAuthBearerScopeFieldName(), authEntry.getScope());
+
+        for(String fieldName : authEntry.getFieldNames()) {
+            bodyParams.put(fieldName, authEntry.getField(fieldName));
+        }
+
+        return bodyParams.entrySet()
+            .stream()
+            .map(e -> e.getKey() + "=" + e.getValue())
+            .collect(Collectors.joining("&"));
+    }
+
     private void mergeAuthEntry(HTTPTokenAuthEntry api, HTTPTokenAuthEntry request) {
         if(isBlank(request.getTokenUrl())) {
             request.setTokenUrl(api.getTokenUrl());
@@ -228,5 +239,8 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
         if(isBlank(request.getScope())) {
             request.setScope(api.getScope());
         }
+        Map<String, String> otherFields = new HashMap<>(api.getOtherFields());
+        otherFields.putAll(request.getOtherFields());
+        request.setOtherFields(otherFields);
     }
 }

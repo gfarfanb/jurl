@@ -148,6 +148,8 @@ public class HTTPRequestParserTest {
         Assertions.assertEquals("http-request-client-id", tokenAuth.getClientId());
         Assertions.assertEquals("http-request-client-secret", tokenAuth.getClientSecret());
         Assertions.assertEquals("test", tokenAuth.getScope());
+        Assertions.assertEquals("child-key", tokenAuth.getField("childKey"));
+        Assertions.assertEquals("child-secret", tokenAuth.getField("childSecret"));
     }
 
     @Test
@@ -325,6 +327,8 @@ public class HTTPRequestParserTest {
         Assertions.assertEquals("http-request-client-id", tokenAuth.getClientId());
         Assertions.assertEquals("http-request-client-secret", tokenAuth.getClientSecret());
         Assertions.assertEquals("test", tokenAuth.getScope());
+        Assertions.assertEquals("child-key", tokenAuth.getField("childKey"));
+        Assertions.assertEquals("child-secret", tokenAuth.getField("childSecret"));
     }
 
     @Test

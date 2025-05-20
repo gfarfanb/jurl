@@ -9,6 +9,8 @@ token @tokenUrl = http://localhost:{{local.server.port}}/oauth/token
 token @clientId = {{UUID:}}
 token @clientSecret = {{UUID:}}
 token @scope = test
+token @child_key = {{UUID:}}
+token @child_secret = {{UUID:}}
 
 opt -s clientId {{UUID:}}
 opt -s clientSecret {{UUID:}}
