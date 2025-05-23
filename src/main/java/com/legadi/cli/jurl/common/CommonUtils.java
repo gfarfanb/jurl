@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.StringTokenizer;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -26,6 +27,8 @@ public class CommonUtils {
 
     public static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvxyz0123456789";
     public static final String NUMERIC_STRING = "0123456789";
+
+    public static final int TABS_FOR_COMPLEMENT = 3;
 
     public static final String ARGS_SEPARATOR = ":";
     public static final String ARGS_REGEX = "\\" + ARGS_SEPARATOR;
@@ -348,5 +351,34 @@ public class CommonUtils {
             .map(Settings::getEnvironment)
             .orElse("-"),
             groupName);
+    }
+
+    public static List<String> splitInLinesByLength(Settings settings, String line, int maxLength) {
+        int length = settings.getConsoleWidth() - maxLength
+            - settings.getConsoleTabLength() * TABS_FOR_COMPLEMENT;
+        return Arrays.stream(line.split("\\r?\\n"))
+            .map(l -> splitIntoLinesByLength(l, length))
+            .flatMap(List::stream)
+            .collect(Collectors.toList());
+    }
+
+    private static List<String> splitIntoLinesByLength(String input, int lineLength){
+        StringTokenizer tok = new StringTokenizer(input, " ");
+        StringBuilder output = new StringBuilder(input.length());
+        int lengthCount = 0;
+        while (tok.hasMoreTokens()) {
+            String word = tok.nextToken();
+
+            if (lengthCount + word.length() > lineLength) {
+                output.append("\n");
+                lengthCount = 0;
+            }
+            output.append(word + " ");
+
+            lengthCount += word.length() + 1;
+        }
+        return Arrays.stream(output.toString().split("\n"))
+            .filter(CommonUtils::isNotBlank)
+            .collect(Collectors.toList());
     }
 }

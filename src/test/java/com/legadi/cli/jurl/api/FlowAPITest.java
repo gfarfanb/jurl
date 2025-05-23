@@ -39,6 +39,8 @@ public class FlowAPITest extends EmbeddedAPIAbstractTest {
 
         String tokenParam = toGeneratedParam(authSettings.getRequestType(),
             authEntry.getClientId(), "access-token");
+        String typeParam = toGeneratedParam(authSettings.getRequestType(),
+            authEntry.getClientId(), "token-type");
         String expirationMillisParam = toGeneratedParam(authSettings.getRequestType(),
             authEntry.getClientId(), "expiration-millis");
         String expirationDateParam = toGeneratedParam(authSettings.getRequestType(),
@@ -48,6 +50,8 @@ public class FlowAPITest extends EmbeddedAPIAbstractTest {
 
         Assertions.assertDoesNotThrow(
             () -> authSettings.get(tokenParam));
+        Assertions.assertDoesNotThrow(
+            () -> authSettings.get(typeParam));
         Assertions.assertDoesNotThrow(
             () -> authSettings.get(expirationMillisParam));
         Assertions.assertDoesNotThrow(

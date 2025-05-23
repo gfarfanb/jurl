@@ -20,7 +20,7 @@ public class HTTPRequestEntry extends RequestEntry<HTTPMockEntry> {
 
     @Override
     public String menuName() {
-        return method != null ? method + " " + name : super.menuName();
+        return method != null ? "[" + method + "] " + name : super.menuName();
     }
 
     public String getMethod() {

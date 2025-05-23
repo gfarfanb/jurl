@@ -4,10 +4,13 @@ import static com.legadi.cli.jurl.common.CommonUtils.toGeneratedParam;
 import static com.legadi.cli.jurl.common.JsonUtils.loadJsonProperties;
 import static com.legadi.cli.jurl.common.JsonUtils.writeJsonFile;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Assertions;
@@ -24,12 +27,43 @@ public class HTTPTokenHeaderAuthenticatorTest {
     @Test
     public void definitionValidation() {
         HTTPTokenHeaderAuthenticator authenticator = new HTTPTokenHeaderAuthenticator();
+        Set<String> properties = new HashSet<>(Arrays.asList(authenticator.registeredProperties()));
+
+        Assertions.assertTrue(properties.contains(HTTPTokenHeaderAuthenticator.PROP_GRANT_TYPE));
+        Assertions.assertTrue(properties.contains(HTTPTokenHeaderAuthenticator.PROP_GRANT_TYPE_FIELD_NAME));
+        Assertions.assertTrue(properties.contains(HTTPTokenHeaderAuthenticator.PROP_CLIENT_ID_FIELD_NAME));
+        Assertions.assertTrue(properties.contains(HTTPTokenHeaderAuthenticator.PROP_CLIENT_SECRET_FIELD_NAME));
+        Assertions.assertTrue(properties.contains(HTTPTokenHeaderAuthenticator.PROP_SCOPE_FIELD_NAME));
+        Assertions.assertTrue(properties.contains(HTTPTokenHeaderAuthenticator.PROP_ACCESS_TOKEN_FIELD_NAME));
+        Assertions.assertTrue(properties.contains(HTTPTokenHeaderAuthenticator.PROP_EXPIRES_IN_FIELD_NAME));
+        Assertions.assertTrue(properties.contains(HTTPTokenHeaderAuthenticator.PROP_EXPIRES_IN_TIME_UNIT));
+        Assertions.assertTrue(properties.contains(HTTPTokenHeaderAuthenticator.PROP_TOKEN_TYPE_FIELD_NAME));
+        Assertions.assertTrue(properties.contains(HTTPTokenHeaderAuthenticator.PROP_REQUEST_METHOD));
+        Assertions.assertTrue(properties.contains(HTTPTokenHeaderAuthenticator.PROP_CONTENT_TYPE));
 
         Assertions.assertEquals(authenticator.type(), authenticator.type());
         Assertions.assertTrue(authenticator.requiresExecution());
         Assertions.assertNotNull(authenticator.getObjectFields());
         Assertions.assertFalse(authenticator.getObjectFields().isEmpty());
         Assertions.assertEquals("token", authenticator.getParserElement());
+    }
+
+    @Test
+    public void fieldsAndDefaultsValidation() {
+        HTTPTokenHeaderAuthenticator authenticator = new HTTPTokenHeaderAuthenticator();
+        Settings settings = new Settings();
+
+        Assertions.assertEquals("client_credentials", authenticator.getGrantType(settings));
+        Assertions.assertEquals("grant_type", authenticator.getGrantTypeFieldName(settings));
+        Assertions.assertEquals("client_id", authenticator.getClientIdFieldName(settings));
+        Assertions.assertEquals("client_secret", authenticator.getClientSecretFieldName(settings));
+        Assertions.assertEquals("scope", authenticator.getScopeFieldName(settings));
+        Assertions.assertEquals("access_token", authenticator.getAccessTokenFieldName(settings));
+        Assertions.assertEquals("expires_in", authenticator.getExpiresInFieldName(settings));
+        Assertions.assertEquals("SECONDS", authenticator.getExpiresInTimeUnit(settings));
+        Assertions.assertEquals("token_type", authenticator.getTokenTypeFieldName(settings));
+        Assertions.assertEquals("POST", authenticator.getRequestMethod(settings));
+        Assertions.assertEquals("application/x-www-form-urlencoded", authenticator.getContentType(settings));
     }
 
     @Test
@@ -41,7 +75,7 @@ public class HTTPTokenHeaderAuthenticatorTest {
             () -> authenticator.instanceAuthEntry(settings));
 
         Assertions.assertEquals("token", authEntry.getParserElement());
-        Assertions.assertEquals(settings.getAuthBearerGrantType(), authEntry.getGrantType());
+        Assertions.assertEquals("client_credentials", authEntry.getGrantType());
         Assertions.assertNull(authEntry.getTokenUrl());
         Assertions.assertNull(authEntry.getClientId());
         Assertions.assertNull(authEntry.getClientSecret());
@@ -166,7 +200,8 @@ public class HTTPTokenHeaderAuthenticatorTest {
 
         properties.put(toGeneratedParam(authenticator.type(), clientId, "expiration-millis"), "5000");
         properties.put(toGeneratedParam(authenticator.type(), clientId, "access-token"), UUID.randomUUID().toString());
-        properties.put(toGeneratedParam(authenticator.type(), clientId, "expires-in." + settings.getAuthBearerExpiresInTimeUnit()), "5");
+        properties.put(toGeneratedParam(authenticator.type(), clientId, "token-type"), "bearer");
+        properties.put(toGeneratedParam(authenticator.type(), clientId, "expires-in." + authenticator.getExpiresInTimeUnit(settings)), "5");
         properties.put(toGeneratedParam(authenticator.type(), clientId, "expiration-date"), settings.getTimestamp().toString());
 
         writeJsonFile(settings.getOverrideFilePath(), properties);
@@ -184,7 +219,8 @@ public class HTTPTokenHeaderAuthenticatorTest {
 
         Assertions.assertNull(properties.get(toGeneratedParam(authenticator.type(), clientId, "expiration-millis")));
         Assertions.assertNull(properties.get(toGeneratedParam(authenticator.type(), clientId, "access-token")));
-        Assertions.assertNull(properties.get(toGeneratedParam(authenticator.type(), clientId, "expires-in." + settings.getAuthBearerExpiresInTimeUnit())));
+        Assertions.assertNull(properties.get(toGeneratedParam(authenticator.type(), clientId, "token-type")));
+        Assertions.assertNull(properties.get(toGeneratedParam(authenticator.type(), clientId, "expires-in." + authenticator.getExpiresInTimeUnit(settings))));
         Assertions.assertNull(properties.get(toGeneratedParam(authenticator.type(), clientId, "expiration-date")));
     }
 
@@ -274,9 +310,12 @@ public class HTTPTokenHeaderAuthenticatorTest {
         Assertions.assertTrue(headers.isEmpty());
 
         String tokenParam = toGeneratedParam(authenticator.type(), authEntry.getClientId(), "access-token");
+        String typeParam = toGeneratedParam(authenticator.type(), authEntry.getClientId(), "token-type");
         String token = UUID.randomUUID().toString();
+        String type = "bearer";
 
         settings.putOverride(tokenParam, token);
+        settings.putOverride(typeParam, type);
 
         headers = Assertions.assertDoesNotThrow(
             () -> authenticator.getAuthHeaders(settings, request));
@@ -284,6 +323,6 @@ public class HTTPTokenHeaderAuthenticatorTest {
         Pair<String, String> authorization = headers.get(0);
 
         Assertions.assertEquals("Authorization", authorization.getLeft());
-        Assertions.assertEquals("Bearer " + token, authorization.getRight());
+        Assertions.assertEquals("bearer " + token, authorization.getRight());
     }
 }

@@ -4,17 +4,6 @@ import static com.legadi.cli.jurl.common.SettingsConstants.JURL_CONSOLE_WIDTH;
 import static com.legadi.cli.jurl.common.SettingsConstants.JURL_FILE_SEPARATOR;
 import static com.legadi.cli.jurl.common.SettingsConstants.JURL_OS_NAME;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_ADD_ON_OPTION_CLASSES;
-import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_ACCESS_TOKEN_FIELD_NAME;
-import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_CLIENT_ID_FIELD_NAME;
-import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_CLIENT_SECRET_FIELD_NAME;
-import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_CONTENT_TYPE;
-import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_EXPIRES_IN_FIELD_NAME;
-import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_EXPIRES_IN_TIME_UNIT;
-import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_GRANT_TYPE;
-import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_GRANT_TYPE_FIELD_NAME;
-import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_REQUEST_METHOD;
-import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_SCOPE_FIELD_NAME;
-import static com.legadi.cli.jurl.common.SettingsConstants.PROP_AUTH_BEARER_TOKEN_TYPE_FIELD_NAME;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_OUTPUT_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONSOLE_TAB_LENGTH;
@@ -48,6 +37,7 @@ import static com.legadi.cli.jurl.common.WriterUtils.createDirectories;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -198,7 +188,10 @@ public interface SettingsDefaults {
     }
 
     default String[] getPrintableMimeTypes() {
-        return getOrDefault(PROP_PRINTABLE_MIME_TYPES, "").split(",");
+        return Arrays.asList(getOrDefault(PROP_PRINTABLE_MIME_TYPES, "").split(","))
+            .stream()
+            .map(String::trim)
+            .toArray(String[]::new);
     }
 
     default int getConsoleTabLength() {
@@ -211,49 +204,5 @@ public interface SettingsDefaults {
 
     default String getTab() {
         return String.format("%-" + getConsoleTabLength() + "s", "");
-    }
-
-    default String getAuthBearerGrantType() {
-        return get(PROP_AUTH_BEARER_GRANT_TYPE);
-    }
-
-    default String getAuthBearerGrantTypeFieldName() {
-        return get(PROP_AUTH_BEARER_GRANT_TYPE_FIELD_NAME);
-    }
-
-    default String getAuthBearerClientIdFieldName() {
-        return get(PROP_AUTH_BEARER_CLIENT_ID_FIELD_NAME);
-    }
-
-    default String getAuthBearerClientSecretFieldName() {
-        return get(PROP_AUTH_BEARER_CLIENT_SECRET_FIELD_NAME);
-    }
-
-    default String getAuthBearerScopeFieldName() {
-        return get(PROP_AUTH_BEARER_SCOPE_FIELD_NAME);
-    }
-
-    default String getAuthBearerAccessTokenFieldName() {
-        return get(PROP_AUTH_BEARER_ACCESS_TOKEN_FIELD_NAME);
-    }
-
-    default String getAuthBearerExpiresInFieldName() {
-        return get(PROP_AUTH_BEARER_EXPIRES_IN_FIELD_NAME);
-    }
-
-    default String getAuthBearerExpiresInTimeUnit() {
-        return get(PROP_AUTH_BEARER_EXPIRES_IN_TIME_UNIT);
-    }
-
-    default String getAuthBearerTokenTypeFieldName() {
-        return get(PROP_AUTH_BEARER_TOKEN_TYPE_FIELD_NAME);
-    }
-
-    default String getAuthBearerRequestMethod() {
-        return get(PROP_AUTH_BEARER_REQUEST_METHOD);
-    }
-
-    default String getAuthBearerContentType() {
-        return get(PROP_AUTH_BEARER_CONTENT_TYPE);
     }
 }

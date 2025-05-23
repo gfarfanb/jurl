@@ -110,7 +110,7 @@ public class HTTPRequestModifierTest {
         Assertions.assertTrue(authRequest.getBodyContent().contains("scope"));
         Assertions.assertTrue(authRequest.getBodyContent().contains("test"));
         Assertions.assertEquals(1, authRequest.getConditions().size());
-        Assertions.assertEquals(4, authRequest.getOutputMappings().size());
+        Assertions.assertEquals(5, authRequest.getOutputMappings().size());
         Assertions.assertEquals(1, authRequest.getAssertions().size());
     }
 
@@ -162,7 +162,7 @@ public class HTTPRequestModifierTest {
         Assertions.assertTrue(authRequest.getBodyContent().contains("scope"));
         Assertions.assertTrue(authRequest.getBodyContent().contains("test"));
         Assertions.assertEquals(1, authRequest.getConditions().size());
-        Assertions.assertEquals(4, authRequest.getOutputMappings().size());
+        Assertions.assertEquals(5, authRequest.getOutputMappings().size());
         Assertions.assertEquals(1, authRequest.getAssertions().size());
     }
 
@@ -221,7 +221,7 @@ public class HTTPRequestModifierTest {
         Assertions.assertTrue(authRequest.getBodyContent().contains("scope"));
         Assertions.assertTrue(authRequest.getBodyContent().contains("test"));
         Assertions.assertEquals(1, authRequest.getConditions().size());
-        Assertions.assertEquals(4, authRequest.getOutputMappings().size());
+        Assertions.assertEquals(5, authRequest.getOutputMappings().size());
         Assertions.assertEquals(1, authRequest.getAssertions().size());
     }
 

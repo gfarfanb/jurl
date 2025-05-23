@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import com.legadi.cli.jurl.common.ConfigReplaceable;
 import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.common.StringExpander;
@@ -25,11 +26,41 @@ import com.legadi.cli.jurl.model.AssertionType;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.auth.HTTPTokenAuthEntry;
 
-public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPRequestEntry, HTTPTokenAuthEntry> {
+public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPRequestEntry, HTTPTokenAuthEntry>,
+        ConfigReplaceable {
 
     private static final Logger LOGGER = Logger.getLogger(HTTPTokenHeaderAuthenticator.class.getName());
 
     private static final Map<String, Field> TOKEN_AUTH_FIELDS = getAllFields(HTTPTokenAuthEntry.class);
+
+    public static final String PROP_GRANT_TYPE = "httpTokenHeaderAuthGrantType";
+    public static final String PROP_GRANT_TYPE_FIELD_NAME = "httpTokenHeaderAuthGrantTypeFieldName";
+    public static final String PROP_CLIENT_ID_FIELD_NAME = "httpTokenHeaderAuthClientIdFieldName";
+    public static final String PROP_CLIENT_SECRET_FIELD_NAME = "httpTokenHeaderAuthClientSecretFieldName";
+    public static final String PROP_SCOPE_FIELD_NAME = "httpTokenHeaderAuthScopeFieldName";
+    public static final String PROP_ACCESS_TOKEN_FIELD_NAME = "httpTokenHeaderAuthAccessTokenFieldName";
+    public static final String PROP_EXPIRES_IN_FIELD_NAME = "httpTokenHeaderAuthExpiresInFieldName";
+    public static final String PROP_EXPIRES_IN_TIME_UNIT = "httpTokenHeaderAuthExpiresInTimeUnit";
+    public static final String PROP_TOKEN_TYPE_FIELD_NAME = "httpTokenHeaderAuthTokenTypeFieldName";
+    public static final String PROP_REQUEST_METHOD = "httpTokenHeaderAuthRequestMethod";
+    public static final String PROP_CONTENT_TYPE = "httpTokenHeaderAuthContentType";
+
+    @Override
+    public String[] registeredProperties() {
+        return new String[] {
+            PROP_GRANT_TYPE,
+            PROP_GRANT_TYPE_FIELD_NAME,
+            PROP_CLIENT_ID_FIELD_NAME,
+            PROP_CLIENT_SECRET_FIELD_NAME,
+            PROP_SCOPE_FIELD_NAME,
+            PROP_ACCESS_TOKEN_FIELD_NAME,
+            PROP_EXPIRES_IN_FIELD_NAME,
+            PROP_EXPIRES_IN_TIME_UNIT,
+            PROP_TOKEN_TYPE_FIELD_NAME,
+            PROP_REQUEST_METHOD,
+            PROP_CONTENT_TYPE
+        };
+    }
 
     @Override
     public String type() {
@@ -54,7 +85,7 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
     @Override
     public HTTPTokenAuthEntry instanceAuthEntry(Settings settings) {
         HTTPTokenAuthEntry authEntry = new HTTPTokenAuthEntry();
-        authEntry.setGrantType(settings.getAuthBearerGrantType());
+        authEntry.setGrantType(getGrantType(settings));
         return authEntry;
     }
 
@@ -106,7 +137,8 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
         removeJsonProperties(settings.getOverrideFilePath(),
             toGeneratedParam(type(), clientId, "expiration-millis"),
             toGeneratedParam(type(), clientId, "access-token"),
-            toGeneratedParam(type(), clientId, "expires-in." + settings.getAuthBearerExpiresInTimeUnit()),
+            toGeneratedParam(type(), clientId, "token-type"),
+            toGeneratedParam(type(), clientId, "expires-in." + getExpiresInTimeUnit(settings)),
             toGeneratedParam(type(), clientId, "expiration-date"));
 }
 
@@ -132,17 +164,63 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
         }
 
         String tokenParam = toGeneratedParam(type(), authEntry.get().getClientId(), "access-token");
+        String typeParam = toGeneratedParam(type(), authEntry.get().getClientId(), "token-type");
         String token = settings.getOrDefault(tokenParam, "");
+        String type = settings.getOrDefault(typeParam, "");
 
         if(isBlank(token)) {
-            LOGGER.fine("Bearer token was not generated for client ID: " + authEntry.get().getClientId());
+            LOGGER.fine("Token authorization was not generated for client ID: " + authEntry.get().getClientId());
         } else {
             LOGGER.fine("Found token authorization - clientId=" + authEntry.get().getClientId()
                 + " token=" + token + " param=" + tokenParam);
-            headers.add(new Pair<>("Authorization", "Bearer " + token));
+            headers.add(new Pair<>("Authorization", type + " " + token));
         }
 
         return headers;
+    }
+
+    public String getGrantTypeFieldName(Settings settings) {
+        return settings.getOrDefault(PROP_GRANT_TYPE_FIELD_NAME, "grant_type");
+    }
+
+    public String getClientIdFieldName(Settings settings) {
+        return settings.getOrDefault(PROP_CLIENT_ID_FIELD_NAME, "client_id");
+    }
+
+    public String getClientSecretFieldName(Settings settings) {
+        return settings.getOrDefault(PROP_CLIENT_SECRET_FIELD_NAME, "client_secret");
+    }
+
+    public String getScopeFieldName(Settings settings) {
+        return settings.getOrDefault(PROP_SCOPE_FIELD_NAME, "scope");
+    }
+
+    public String getAccessTokenFieldName(Settings settings) {
+        return settings.getOrDefault(PROP_ACCESS_TOKEN_FIELD_NAME, "access_token");
+    }
+
+    public String getExpiresInFieldName(Settings settings) {
+        return settings.getOrDefault(PROP_EXPIRES_IN_FIELD_NAME, "expires_in");
+    }
+
+    public String getTokenTypeFieldName(Settings settings) {
+        return settings.getOrDefault(PROP_TOKEN_TYPE_FIELD_NAME, "token_type");
+    }
+
+    public String getGrantType(Settings settings) {
+        return settings.getOrDefault(PROP_GRANT_TYPE, "client_credentials");
+    }
+
+    public String getExpiresInTimeUnit(Settings settings) {
+        return settings.getOrDefault(PROP_EXPIRES_IN_TIME_UNIT, "SECONDS");
+    }
+
+    public String getRequestMethod(Settings settings) {
+        return settings.getOrDefault(PROP_EXPIRES_IN_TIME_UNIT, "POST");
+    }
+
+    public String getContentType(Settings settings) {
+        return settings.getOrDefault(PROP_EXPIRES_IN_TIME_UNIT, "application/x-www-form-urlencoded");
     }
 
     private void expandAuthEntry(Settings settings, HTTPTokenAuthEntry authEntry,
@@ -165,17 +243,19 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
         HTTPRequestEntry authRequest = new HTTPRequestEntry();
 
         authRequest.setName(requestName + "/token-authorization");
-        authRequest.setMethod(settings.getAuthBearerRequestMethod());
+        authRequest.setMethod(getRequestMethod(settings));
         authRequest.setUrl(authEntry.getTokenUrl());
-        authRequest.getHeaders().put("Content-Type", settings.getAuthBearerContentType());
+        authRequest.getHeaders().put("Content-Type", getContentType(settings));
         authRequest.setBodyContent(buildBodyContent(settings, authEntry));
 
         String expirationMillisParam = toGeneratedParam(settings.getRequestType(),
             authEntry.getClientId(), "expiration-millis");
         String tokenParam = toGeneratedParam(settings.getRequestType(),
             authEntry.getClientId(), "access-token");
+        String typeParam = toGeneratedParam(settings.getRequestType(),
+            authEntry.getClientId(), "token-type");
         String expiresInUnitParam = toGeneratedParam(settings.getRequestType(),
-            authEntry.getClientId(), "expires-in." + settings.getAuthBearerExpiresInTimeUnit());
+            authEntry.getClientId(), "expires-in." + getExpiresInTimeUnit(settings));
         String expirationDateParam = toGeneratedParam(settings.getRequestType(),
             authEntry.getClientId(), "expiration-date");
 
@@ -188,10 +268,11 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
         expirationCondition.setType(AssertionType.CONDITION);
         authRequest.getConditions().add(expirationCondition);
 
-        authRequest.getOutputMappings().put(tokenParam, "{{OUT/" + settings.getAuthBearerAccessTokenFieldName() + "}}");
-        authRequest.getOutputMappings().put(expiresInUnitParam, "{{OUT/" + settings.getAuthBearerExpiresInFieldName() + "}}");
+        authRequest.getOutputMappings().put(tokenParam, "{{OUT/" + getAccessTokenFieldName(settings) + "}}");
+        authRequest.getOutputMappings().put(typeParam, "{{OUT/" + getTokenTypeFieldName(settings) + "}}");
+        authRequest.getOutputMappings().put(expiresInUnitParam, "{{OUT/" + getExpiresInFieldName(settings) + "}}");
         authRequest.getOutputMappings().put(expirationDateParam, "{{DATE-TIME:date-plus:yyyy-MM-dd'T'HH\\:mm\\:ss.n:"
-            + settings.getAuthBearerExpiresInTimeUnit() + ":" + expiresInUnitParam + ":}}");
+            + getExpiresInTimeUnit(settings) + ":" + expiresInUnitParam + ":}}");
         authRequest.getOutputMappings().put(expirationMillisParam, "{{:date-epoch:ISO_LOCAL_DATE_TIME:MILLIS:" + expirationDateParam +"}}");
 
         AssertionEntry http200Assertion = new AssertionEntry();
@@ -208,10 +289,10 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
 
     private String buildBodyContent(Settings settings, HTTPTokenAuthEntry authEntry) {
         Map<String, String> bodyParams = new LinkedHashMap<>();
-        bodyParams.put(settings.getAuthBearerGrantTypeFieldName(), authEntry.getGrantType());
-        bodyParams.put(settings.getAuthBearerClientIdFieldName(), authEntry.getClientId());
-        bodyParams.put(settings.getAuthBearerClientSecretFieldName(), authEntry.getClientSecret());
-        bodyParams.put(settings.getAuthBearerScopeFieldName(), authEntry.getScope());
+        bodyParams.put(getGrantTypeFieldName(settings), authEntry.getGrantType());
+        bodyParams.put(getClientIdFieldName(settings), authEntry.getClientId());
+        bodyParams.put(getClientSecretFieldName(settings), authEntry.getClientSecret());
+        bodyParams.put(getScopeFieldName(settings), authEntry.getScope());
 
         for(String fieldName : authEntry.getFieldNames()) {
             bodyParams.put(fieldName, authEntry.getField(fieldName));

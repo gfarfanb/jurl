@@ -1,24 +1,25 @@
 package com.legadi.cli.jurl.options;
 
+import static com.legadi.cli.jurl.common.CommonUtils.ARGS_SEPARATOR;
+import static com.legadi.cli.jurl.common.CommonUtils.TABS_FOR_COMPLEMENT;
+import static com.legadi.cli.jurl.common.CommonUtils.splitInLinesByLength;
+import static com.legadi.cli.jurl.common.JsonUtils.loadInternalJsonProperties;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.getAllRegisteredByClassOf;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.getAllRegisteredByNameOf;
+import static com.legadi.cli.jurl.common.ObjectsRegistry.getAllRegisteredConfigReplaceable;
+import static com.legadi.cli.jurl.common.SettingsConstants.DEFAULT_SETTINGS_FILE;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.StringTokenizer;
+import java.util.Map;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
-import com.legadi.cli.jurl.common.CommonUtils;
+import com.legadi.cli.jurl.common.ConfigReplaceable;
 import com.legadi.cli.jurl.common.Settings;
 
 public class HelpOption extends Option {
 
     private static final Logger LOGGER = Logger.getLogger(HelpOption.class.getName());
-
-    private static final String COLON = ":";
-    private static final int TABS_FOR_COMPLEMENT = 3;
 
     @Override
     public String name() {
@@ -63,6 +64,12 @@ public class HelpOption extends Option {
         helpMessage.append("\n");
         helpMessage.append("Add-on options:\n");
         appendOptions(settings, getAllRegisteredByNameOf(Option.class), helpMessage);
+        helpMessage.append("\n");
+        helpMessage.append("Setting properties (replaceable in './config[.<env>].json'):\n");
+        appendConfig(settings, helpMessage);
+        helpMessage.append("\n");
+        helpMessage.append("Extension properties (replaceable in './config[.<env>].json'):\n");
+        appendConfig(settings, getAllRegisteredConfigReplaceable(), helpMessage);
 
         LOGGER.info(helpMessage.toString());
 
@@ -75,20 +82,20 @@ public class HelpOption extends Option {
             .map(Option::toString)
             .mapToInt(String::length)
             .max()
-            .orElse(0) + COLON.length();
+            .orElse(0) + ARGS_SEPARATOR.length();
         int complementLength = maxLength
             + settings.getConsoleTabLength() * TABS_FOR_COMPLEMENT;
 
         opts.sort((o1, o2) -> o1.name().compareTo(o2.name()));
 
         for(Option option : opts) {
-            String optionLine = option.toString() + COLON;
+            String optionLine = option.toString() + ARGS_SEPARATOR;
 
             helpMessage.append(settings.getTab());
             helpMessage.append(String.format("%-" + maxLength + "s", optionLine));
 
+            List<String> lines = splitInLinesByLength(settings, option.getDescription(), maxLength);
             boolean firstLine = true;
-            List<String> lines = getDescriptionLines(settings, option, maxLength);
 
             for(String line : lines) {
 
@@ -105,32 +112,35 @@ public class HelpOption extends Option {
         }
     }
 
-    private List<String> getDescriptionLines(Settings settings, Option option, int maxLength) {
-        int length = settings.getConsoleWidth() - maxLength
-            - settings.getConsoleTabLength() * TABS_FOR_COMPLEMENT;
-        return Arrays.stream(option.getDescription().split("\\r?\\n"))
-            .map(line -> splitIntoLinesByLength(line, length))
-            .flatMap(List::stream)
-            .collect(Collectors.toList());
+    private void appendConfig(Settings settings, StringBuilder helpMessage) {
+        Map<String, String> defaultSettings = loadInternalJsonProperties(DEFAULT_SETTINGS_FILE);
+
+        String properties = String.join(", ", defaultSettings.keySet());
+        List<String> lines = splitInLinesByLength(settings, properties, TABS_FOR_COMPLEMENT);
+
+        for(String line : lines) {
+            helpMessage.append(settings.getTab());
+            helpMessage.append(line);
+            helpMessage.append("\n");
+        }
     }
 
-    private List<String> splitIntoLinesByLength(String input, int lineLength){
-        StringTokenizer tok = new StringTokenizer(input, " ");
-        StringBuilder output = new StringBuilder(input.length());
-        int lengthCount = 0;
-        while (tok.hasMoreTokens()) {
-            String word = tok.nextToken();
+    private void appendConfig(Settings settings, List<ConfigReplaceable> configs, StringBuilder helpMessage) {
+        int complementLength = settings.getConsoleTabLength() * TABS_FOR_COMPLEMENT;
 
-            if (lengthCount + word.length() > lineLength) {
-                output.append("\n");
-                lengthCount = 0;
+        for(ConfigReplaceable config : configs) {
+            helpMessage.append(settings.getTab());
+            helpMessage.append(config.getClass().getName() + ARGS_SEPARATOR);
+            helpMessage.append("\n");
+
+            String properties = String.join(", ", config.registeredProperties());
+            List<String> lines = splitInLinesByLength(settings, properties, TABS_FOR_COMPLEMENT);
+
+            for(String line : lines) {
+                helpMessage.append(String.format("%-" + complementLength + "s", ""));
+                helpMessage.append(line);
+                helpMessage.append("\n");
             }
-            output.append(word + " ");
-
-            lengthCount += word.length() + 1;
         }
-        return Arrays.stream(output.toString().split("\n"))
-            .filter(CommonUtils::isNotBlank)
-            .collect(Collectors.toList());
     }
 }

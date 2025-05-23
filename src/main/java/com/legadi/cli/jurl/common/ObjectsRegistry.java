@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.legadi.cli.jurl.assertions.AssertionFunction;
@@ -91,6 +92,7 @@ import com.legadi.cli.jurl.options.DownloadInOption;
 import com.legadi.cli.jurl.options.EnvironmentCopyOption;
 import com.legadi.cli.jurl.options.EnvironmentOption;
 import com.legadi.cli.jurl.options.ExecuteAuthenticationOption;
+import com.legadi.cli.jurl.options.GetValueOption;
 import com.legadi.cli.jurl.options.GroupCollectionOption;
 import com.legadi.cli.jurl.options.HelpOption;
 import com.legadi.cli.jurl.options.ListRequestsOption;
@@ -122,9 +124,10 @@ public class ObjectsRegistry {
     private static final Map<String, Spec> EMTPY_NAMED = new HashMap<>();
 
     private static final Set<Class<?>> GROUP_CLASSES = new HashSet<>();
+    private static final Set<Class<?>> CONFIG_REPLACEABLE_CLASSES = new HashSet<>();
     private static final Map<Class<?>, Spec> REGISTERED_CLASSES = new HashMap<>();
 
-    private static final Map<String, Spec> CLASS_NAMES = new HashMap<>();
+    private static final Map<String, Spec> REGISTERED_BY_CLASS_NAMES = new HashMap<>();
 
     static {
         register(Option.class, CleanOutputOption.class);
@@ -134,6 +137,7 @@ public class ObjectsRegistry {
         register(Option.class, EnvironmentCopyOption.class);
         register(Option.class, EnvironmentOption.class);
         register(Option.class, ExecuteAuthenticationOption.class);
+        register(Option.class, GetValueOption.class);
         register(Option.class, GroupCollectionOption.class);
         register(Option.class, HelpOption.class);
         register(Option.class, ListRequestsOption.class);
@@ -223,13 +227,13 @@ public class ObjectsRegistry {
     private ObjectsRegistry() {}
 
     public static <T> T register(Class<?> groupClass, String typeClass, Object... args) {
-        if(CLASS_NAMES.get(typeClass) != null) {
-            Spec entry = CLASS_NAMES.get(typeClass);
+        if(REGISTERED_BY_CLASS_NAMES.get(typeClass) != null) {
+            Spec entry = REGISTERED_BY_CLASS_NAMES.get(typeClass);
             return instantiate(entry.getTypeClass(), entry.getArgs());
         } else {
             Class<?> type = typeOf(typeClass);
             T instance = register(groupClass, type, args);
-            CLASS_NAMES.put(typeClass, new Spec(type, args));
+            REGISTERED_BY_CLASS_NAMES.put(typeClass, new Spec(type, args));
             return instance;
         }
     }
@@ -247,6 +251,10 @@ public class ObjectsRegistry {
         if(isSubClassOf(Named.class, typeClass)) {
             result = registerNamed(groupClass, typeClass, args);
             wasRegistered = true;
+        }
+
+        if(isSubClassOf(ConfigReplaceable.class, typeClass)) {
+            CONFIG_REPLACEABLE_CLASSES.add(typeClass);
         }
 
         if(!wasRegistered) {
@@ -314,21 +322,30 @@ public class ObjectsRegistry {
         return GROUP_CLASSES;
     }
 
-    @SuppressWarnings("unchecked")
     public static <T> List<T> getAllRegisteredByClassOf(Class<T> groupClass) {
-        return entriesByGroup(groupClass)
+        return getAllRegisteredPredicate(groupClass,
+            spec -> REGISTERED_BY_CLASS_NAMES.get(spec.getTypeClass().getName()) == null);
+    }
+
+    public static <T> List<T> getAllRegisteredByNameOf(Class<T> groupClass) {
+        return getAllRegisteredPredicate(groupClass,
+            spec -> REGISTERED_BY_CLASS_NAMES.get(spec.getTypeClass().getName()) != null);
+    }
+
+    public static List<ConfigReplaceable> getAllRegisteredConfigReplaceable() {
+        return CONFIG_REPLACEABLE_CLASSES
             .stream()
-            .filter(spec -> CLASS_NAMES.get(spec.getTypeClass().getName()) == null)
+            .map(type -> REGISTERED_CLASSES.get(type))
             .map(spec -> instantiate(spec.getTypeClass(), spec.getArgs()))
-            .map(object -> (T) object)
+            .map(object -> (ConfigReplaceable) object)
             .collect(Collectors.toList());
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> List<T> getAllRegisteredByNameOf(Class<T> groupClass) {
+    private static <T> List<T> getAllRegisteredPredicate(Class<T> groupClass, Predicate<Spec> filter) {
         return entriesByGroup(groupClass)
             .stream()
-            .filter(spec -> CLASS_NAMES.get(spec.getTypeClass().getName()) != null)
+            .filter(filter)
             .map(spec -> instantiate(spec.getTypeClass(), spec.getArgs()))
             .map(object -> (T) object)
             .collect(Collectors.toList());

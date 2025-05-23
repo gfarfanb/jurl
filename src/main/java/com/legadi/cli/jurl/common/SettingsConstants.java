@@ -52,17 +52,6 @@ public class SettingsConstants {
     public static final String PROP_PRINTABLE_MIME_TYPES = "printableMimeTypes";
     public static final String PROP_CONSOLE_TAB_LENGTH = "consoleTabLength";
     public static final String PROP_DEFAULT_CONSOLE_WIDTH = "defaultConsoleWidth";
-    public static final String PROP_AUTH_BEARER_GRANT_TYPE = "authBearerGrantType";
-    public static final String PROP_AUTH_BEARER_GRANT_TYPE_FIELD_NAME = "authBearerGrantTypeFieldName";
-    public static final String PROP_AUTH_BEARER_CLIENT_ID_FIELD_NAME = "authBearerClientIdFieldName";
-    public static final String PROP_AUTH_BEARER_CLIENT_SECRET_FIELD_NAME = "authBearerClientSecretFieldName";
-    public static final String PROP_AUTH_BEARER_SCOPE_FIELD_NAME = "authBearerScopeFieldName";
-    public static final String PROP_AUTH_BEARER_ACCESS_TOKEN_FIELD_NAME = "authBearerAccessTokenFieldName";
-    public static final String PROP_AUTH_BEARER_EXPIRES_IN_FIELD_NAME = "authBearerExpiresInFieldName";
-    public static final String PROP_AUTH_BEARER_EXPIRES_IN_TIME_UNIT = "authBearerExpiresInTimeUnit";
-    public static final String PROP_AUTH_BEARER_TOKEN_TYPE_FIELD_NAME = "authBearerTokenTypeFieldName";
-    public static final String PROP_AUTH_BEARER_REQUEST_METHOD = "authBearerRequestMethod";
-    public static final String PROP_AUTH_BEARER_CONTENT_TYPE = "authBearerContentType";
 
     private SettingsConstants() {}
 }
