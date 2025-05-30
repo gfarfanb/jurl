@@ -102,6 +102,17 @@ public class StringExpanderTest {
     }
 
     @Test
+    public void replaceAllInContentInDepth() {
+        Settings settings = new Settings();
+        StringExpander expander = new StringExpander(settings);
+        Map<String, String> values = new HashMap<>();
+
+        values.put("name", "{{FULL-NAME:}}");
+
+        Assertions.assertNotEquals("name: {{FULL-NAME:}}", expander.replaceAllInContent(values, "name: {{name}}"));
+    }
+
+    @Test
     public void scanParamsInContentValidation() {
         Settings settings = new Settings();
         StringExpander expander = new StringExpander(settings);

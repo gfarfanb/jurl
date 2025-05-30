@@ -68,9 +68,11 @@ public class StringExpander {
 
         Matcher paramMatcher = paramPattern.matcher(content);
         Set<String> paramTags = new HashSet<>();
+        int found = 0;
 
         while(paramMatcher.find()) {
             String paramTag = paramMatcher.group(1);
+            found++;
 
             if(!paramTags.contains(paramTag)) {
                 ParamTagDefinition paramTagDef = parseParamTag(paramTag);
@@ -103,7 +105,11 @@ public class StringExpander {
             }
         }
 
-        return content;
+        if(found > 0) {
+            return replaceAllInContent(values, content);
+        } else {
+            return content;
+        }
     }
 
     public ParamTagDefinition parseParamTag(String paramTag) {
