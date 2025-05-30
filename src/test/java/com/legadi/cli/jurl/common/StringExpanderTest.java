@@ -107,9 +107,17 @@ public class StringExpanderTest {
         StringExpander expander = new StringExpander(settings);
         Map<String, String> values = new HashMap<>();
 
-        values.put("name", "{{FULL-NAME:}}");
+        values.put("name", "{{lap-1}}");
+        values.put("lap-1", "{{lap-2}}");
+        values.put("lap-2", "{{lap-3}}");
+        values.put("lap-3", "{{FULL-NAME:}}");
 
-        Assertions.assertNotEquals("name: {{FULL-NAME:}}", expander.replaceAllInContent(values, "name: {{name}}"));
+        String expanded = expander.replaceAllInContent(values, "name: {{name}}");
+
+        Assertions.assertNotEquals("name: {{FULL-NAME:}}", expanded);
+        Assertions.assertNotEquals("name: {{lap-1}}", expanded);
+        Assertions.assertNotEquals("name: {{lap-2}}", expanded);
+        Assertions.assertNotEquals("name: {{lap-3}}", expanded);
     }
 
     @Test
