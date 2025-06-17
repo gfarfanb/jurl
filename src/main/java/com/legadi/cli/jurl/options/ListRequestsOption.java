@@ -3,6 +3,7 @@ package com.legadi.cli.jurl.options;
 import static com.legadi.cli.jurl.common.CommonUtils.formatAsOrderedList;
 import static com.legadi.cli.jurl.common.CommonUtils.formatInColumns;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findOrFail;
+import static java.util.logging.Level.FINE;
 
 import java.io.File;
 import java.util.List;
@@ -63,7 +64,7 @@ public class ListRequestsOption extends Option {
             LOGGER.info("Request-Input-Path: " + file);
             LOGGER.info(output.toString());
         } catch(Exception ex) {
-            LOGGER.fine("Invalid request input file: " + file);
+            LOGGER.log(FINE, "Invalid request input file: " + file, ex);
         }
     }
 }

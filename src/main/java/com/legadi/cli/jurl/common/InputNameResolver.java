@@ -38,7 +38,13 @@ public class InputNameResolver {
             return inputName;
         }
 
-        return resolve(listRequestNames());
+        List<String> requestNames = listRequestNames();
+
+        if(requestNames.size() == 1) {
+            return requestNames.get(0);
+        }
+
+        return resolve(requestNames);
     }
 
     public String filterAndResolve(String inputName, String filterName) {

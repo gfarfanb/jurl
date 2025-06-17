@@ -67,6 +67,20 @@ public class InputNameResolverTest {
     }
 
     @Test
+    public void resolveWithBlankAndDefault() {
+        Settings settings = new Settings();
+        RequestInput<HTTPRequestEntry> requestInput = new RequestInput<>();
+        InputNameResolver inputNameResolver = new InputNameResolver(settings,
+            "input-name-resolver.http", requestInput);
+
+        requestInput.getRequests().put("request", new HTTPRequestEntry());
+
+        String inputName = inputNameResolver.resolve(null);
+
+        Assertions.assertEquals("request", inputName);
+    }
+
+    @Test
     public void filterAndResolveInput() {
         Settings settings = new Settings();
         RequestInput<HTTPRequestEntry> requestInput = new RequestInput<>();

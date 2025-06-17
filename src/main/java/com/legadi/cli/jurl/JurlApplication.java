@@ -28,7 +28,8 @@ public class JurlApplication {
         } catch(CommandException | RequestException ex) {
             LOGGER.log(SEVERE, ex.getMessage());
         } catch(Exception ex) {
-            LOGGER.log(SEVERE, ex.getMessage(), ex);
+            LOGGER.log(SEVERE, "Unrecognized error: " + ex.getMessage());
+            LOGGER.log(FINE, ex.getMessage(), ex);
         }
     }
 }
