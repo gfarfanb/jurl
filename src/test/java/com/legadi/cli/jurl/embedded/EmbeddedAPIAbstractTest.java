@@ -2,10 +2,7 @@ package com.legadi.cli.jurl.embedded;
 
 import static com.legadi.cli.jurl.common.SettingsConstants.DEFAULT_ENVIRONMENT;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -46,9 +43,6 @@ public abstract class EmbeddedAPIAbstractTest {
     }
 
     public UUID jurl(UUID correlationId, String... args) {
-        List<String> arguments = new ArrayList<>();
-        arguments.addAll(Arrays.asList(args));
-
         Map<String, String> properties = new HashMap<>();
         properties.put("local.server.port", Integer.toString(port));
         properties.put("request.catcher.identifier", requestCatcherId);
@@ -59,7 +53,7 @@ public abstract class EmbeddedAPIAbstractTest {
         ObjectsRegistry.register(ResponseProcessor.class,
             HTTPResponseTestProcessor.class, correlationId, requestCatcher);
 
-        new RequestCommand(arguments.toArray(new String[arguments.size()])).execute();
+        new RequestCommand(args).execute();
 
         return correlationId;
     }

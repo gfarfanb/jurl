@@ -76,7 +76,7 @@ public class RequestCommand {
         executeInputPath(new ExecutionTrace(settings), settings, null, optionsReader.getRequestInputPath(), null);
     }
 
-    private void executeOptions(Settings settings, List<OptionEntry> optionEntries) {
+    public void executeOptions(Settings settings, List<OptionEntry> optionEntries) {
         for(OptionEntry optionEntry : optionEntries) {
             boolean canContinue = optionEntry.getLeft().execute(
                 settings, optionEntry.getRight()
@@ -88,7 +88,7 @@ public class RequestCommand {
         }
     }
 
-    private void executeOptionsNoSkip(Settings settings, List<OptionEntry> optionEntries) {
+    public void executeOptionsNoSkip(Settings settings, List<OptionEntry> optionEntries) {
         for(OptionEntry optionEntry : optionEntries) {
             optionEntry.getLeft().execute(
                 settings, optionEntry.getRight()

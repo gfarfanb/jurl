@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.embedded.EmbeddedAPIAbstractTest;
+import com.legadi.cli.jurl.executor.RequestCommand;
 
 public abstract class OptionAbstractTest<T extends Option> extends EmbeddedAPIAbstractTest {
 
@@ -18,6 +19,11 @@ public abstract class OptionAbstractTest<T extends Option> extends EmbeddedAPIAb
     @SuppressWarnings("unchecked")
     public OptionAbstractTest(String optionName) {
         this.option = (T) findByNameOrFail(Option.class, optionName);
+    }
+
+    public void jurlOpts(Settings settings, String... args) {
+        OptionsReader optionsReader = new OptionsReader(args);
+        new RequestCommand(args).executeOptions(settings, optionsReader.getOptionEntries());
     }
 
     @Test

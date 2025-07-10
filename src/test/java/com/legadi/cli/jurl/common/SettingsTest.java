@@ -228,6 +228,30 @@ public class SettingsTest {
     }
 
     @Test
+    public void removePropertiesValidation() {
+        Settings settings = new Settings();
+        
+        settings.putOverride("property.ready.to.remove", "remove");
+
+        Assertions.assertEquals("remove", settings.get("property.ready.to.remove"));
+
+        settings.removeProperties("property.ready.to.remove");
+
+        Assertions.assertThrows(CommandException.class,
+            () -> settings.get("property.ready.to.remove"));
+
+        settings.setEnvironment("test");
+        settings.putOverride("property.ready.to.remove", "remove");
+
+        Assertions.assertEquals("remove", settings.get("property.ready.to.remove"));
+
+        settings.removeProperties("property.ready.to.remove");
+
+        Assertions.assertThrows(CommandException.class,
+            () -> settings.get("property.ready.to.remove"));
+    }
+
+    @Test
     public void mergePropertiesValidation() {
         Map<String, String> properties = new HashMap<>();
 
