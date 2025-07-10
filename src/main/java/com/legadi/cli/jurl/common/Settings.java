@@ -28,9 +28,12 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 
 import com.google.gson.reflect.TypeToken;
@@ -191,6 +194,21 @@ public class Settings implements SettingsDefaults {
 
     public void putOverride(String propertyName, String propertyValue) {
         overrideProperties.put(propertyName, propertyValue);
+    }
+
+    public void removeProperties(String... properties) {
+        Set<String> keys = new HashSet<>(Arrays.asList(properties));
+        String env = getEnvironment();
+
+        commandProperties.keySet().removeAll(keys);
+        userInputProperties.keySet().removeAll(keys);
+        overrideProperties.keySet().removeAll(keys);
+
+        if(DEFAULT_ENVIRONMENT.equals(env)) {
+            SETTINGS.removeAllInCommon(keys);
+        } else {
+            SETTINGS.removeAll(environment, keys);
+        }
     }
 
     public Settings createForNextExecution() {

@@ -1,6 +1,7 @@
 package com.legadi.cli.jurl.executor;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.model.FlowEntry;
@@ -8,17 +9,18 @@ import com.legadi.cli.jurl.model.MockEntry;
 import com.legadi.cli.jurl.model.RequestEntry;
 import com.legadi.cli.jurl.model.RequestInput;
 import com.legadi.cli.jurl.model.ResponseEntry;
+import com.legadi.cli.jurl.options.OptionsReader.OptionEntry;
 
 public interface RequestModifier<T extends RequestEntry<? extends MockEntry>, R extends ResponseEntry>
         extends RequestType<T, R> {
 
     default List<T> getAuthenticationIfExists(String requestName,
-            RequestInput<?> requestInput, Settings settings) {
-        return getAuthenticationDefinition(requestName, cast(requestInput), settings);
+            RequestInput<?> requestInput, Settings settings, BiConsumer<Settings, List<OptionEntry>> optionsProcessor) {
+        return getAuthenticationDefinition(requestName, cast(requestInput), settings, optionsProcessor);
     }
 
     List<T> getAuthenticationDefinition(String requestName,
-        RequestInput<T> requestInput, Settings settings);
+        RequestInput<T> requestInput, Settings settings, BiConsumer<Settings, List<OptionEntry>> optionsProcessor);
 
     default void mergeHeader(RequestEntry<? extends MockEntry> api,
             RequestEntry<? extends MockEntry> request) {

@@ -2,6 +2,7 @@ package com.legadi.cli.jurl.common;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class EnvironmentResource<T> {
 
@@ -30,6 +31,14 @@ public class EnvironmentResource<T> {
             return;
         }
         commonData.putAll(resources);
+    }
+
+    public void removeAll(String environment, Set<String> properties) {
+        getResource(environment).keySet().removeAll(properties);
+    }
+
+    public void removeAllInCommon(Set<String> properties) {
+        commonData.keySet().removeAll(properties);
     }
 
     private Map<String, T> getResource(String environment) {

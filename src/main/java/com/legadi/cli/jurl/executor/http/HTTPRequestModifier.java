@@ -13,6 +13,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.legadi.cli.jurl.common.Pair;
@@ -32,6 +34,7 @@ import com.legadi.cli.jurl.model.http.HTTPMockEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestFileEntry;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
+import com.legadi.cli.jurl.options.ExecuteAuthenticationOption;
 import com.legadi.cli.jurl.options.OptionsReader.OptionEntry;
 import com.legadi.cli.jurl.options.SkipAuthenticationOption;
 import com.legadi.cli.jurl.parser.HTTPRequestParser;
@@ -49,10 +52,14 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
     @Override
     public List<HTTPRequestEntry> getAuthenticationDefinition(
             String requestName, RequestInput<HTTPRequestEntry> requestInput,
-            Settings settings) {
+            Settings settings, BiConsumer<Settings, List<OptionEntry>> optionsProcessor) {
         HTTPRequestEntry request = requestInput.getRequests().get(requestName);
+        
+        processOptionFlags(settings, request, optionsProcessor,
+            SkipAuthenticationOption.class,
+            ExecuteAuthenticationOption.class);
 
-        if(containsSkipAuth(request)) {
+        if(settings.isSkipAuthentication()) {
             return new ArrayList<>();
         }
 
@@ -275,12 +282,22 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         expandMap(stringExpander, request.getFormData());
     }
 
-    private boolean containsSkipAuth(HTTPRequestEntry request) {
-        return request.getOptions()
+    private void processOptionFlags(Settings settings, HTTPRequestEntry request,
+            BiConsumer<Settings, List<OptionEntry>> optionsProcessor,
+            Class<?>... optionClasses) {
+        Predicate<OptionEntry> isExpected = opt -> {
+            for(Class<?> optionClass : optionClasses) {
+                if(optionClass.isAssignableFrom(opt.getLeft().getClass())) {
+                    return true;
+                }
+            }
+            return false;
+        };
+        List<OptionEntry> optionEntries = request.getOptions()
             .stream()
-            .map(Pair::getLeft)
-            .map(Object::getClass)
-            .anyMatch(SkipAuthenticationOption.class::isAssignableFrom);
+            .filter(isExpected)
+            .collect(Collectors.toList());
+        Optional.ofNullable(optionsProcessor).ifPresent(p -> p.accept(settings, optionEntries));
     }
 
     private void expandAssertion(StringExpander stringExpander, AssertionEntry assertionEntry) {

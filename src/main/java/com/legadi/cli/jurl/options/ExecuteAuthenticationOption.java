@@ -1,6 +1,7 @@
 package com.legadi.cli.jurl.options;
 
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTE_AUTHENTICATION;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_AUTHENTICATION;
 
 import com.legadi.cli.jurl.common.Settings;
 
@@ -29,6 +30,7 @@ public class ExecuteAuthenticationOption extends Option {
     @Override
     public boolean execute(Settings settings, String[] args) {
         settings.putOverride(PROP_EXECUTE_AUTHENTICATION, Boolean.TRUE.toString());
+        settings.putOverride(PROP_SKIP_AUTHENTICATION, Boolean.FALSE.toString());
         return true;
     }
 }

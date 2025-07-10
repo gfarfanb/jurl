@@ -88,6 +88,14 @@ public class RequestCommand {
         }
     }
 
+    private void executeOptionsNoSkip(Settings settings, List<OptionEntry> optionEntries) {
+        for(OptionEntry optionEntry : optionEntries) {
+            optionEntry.getLeft().execute(
+                settings, optionEntry.getRight()
+            );
+        }
+    }
+
     private ExecutionStatus executeInputPath(ExecutionTrace trace, Settings settings,
             RequestInput<?> parentRequestInput, String requestInputPath, StepTag stepTag) {
         if(isBlank(requestInputPath)) {
@@ -316,13 +324,9 @@ public class RequestCommand {
         lock.lock();
 
         try {
-            if(settings.isSkipAuthentication()) {
-                return Optional.empty();
-            }
-
             RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, settings.getRequestType());
             List<?> authRequests = modifier.getAuthenticationIfExists(requestName,
-                requestInput, settings);
+                requestInput, settings, (s, o) -> executeOptionsNoSkip(s, o));
 
             if(authRequests.isEmpty()) {
                 return Optional.empty();

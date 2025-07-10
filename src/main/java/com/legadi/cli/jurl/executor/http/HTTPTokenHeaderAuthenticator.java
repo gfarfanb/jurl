@@ -134,12 +134,16 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
         }
 
         String clientId = requestAuthEntry.get().getClientId();
-        removeJsonProperties(settings.getOverrideFilePath(),
+        String[] properties = new String[] {
             toGeneratedParam(type(), clientId, "expiration-millis"),
             toGeneratedParam(type(), clientId, "access-token"),
             toGeneratedParam(type(), clientId, "token-type"),
             toGeneratedParam(type(), clientId, "expires-in." + getExpiresInTimeUnit(settings)),
-            toGeneratedParam(type(), clientId, "expiration-date"));
+            toGeneratedParam(type(), clientId, "expiration-date")
+        };
+
+        removeJsonProperties(settings.getOverrideFilePath(), properties);
+        settings.removeProperties(properties);
 }
 
     @Override
