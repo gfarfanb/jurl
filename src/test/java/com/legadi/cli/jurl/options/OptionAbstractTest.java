@@ -21,9 +21,11 @@ public abstract class OptionAbstractTest<T extends Option> extends EmbeddedAPIAb
         this.option = (T) findByNameOrFail(Option.class, optionName);
     }
 
-    public void jurlOpts(Settings settings, String... args) {
+    public Settings jurlOpts(String... args) {
+        Settings settings = new Settings();
         OptionsReader optionsReader = new OptionsReader(args);
         new RequestCommand(args).executeOptions(settings, optionsReader.getOptionEntries());
+        return settings;
     }
 
     @Test
