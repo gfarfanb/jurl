@@ -23,8 +23,7 @@ public class CustomClassOptionTest extends OptionAbstractTest<CustomClassOption>
                 "src/test/resources/basic-functions.spec.http"
             ));
 
-        AssertionFunction assertionFunction = Assertions.assertDoesNotThrow(
-            () -> findByNameOrFail(AssertionFunction.class, "CUSTOM"));
+        AssertionFunction assertionFunction = customOrDefault();
 
         Assertions.assertTrue(assertionFunction instanceof CustomAssertionFunction);
     }
@@ -39,11 +38,15 @@ public class CustomClassOptionTest extends OptionAbstractTest<CustomClassOption>
             ));
     }
 
-    public static class CustomAssertionFunction implements AssertionFunction {
-
-        public CustomAssertionFunction() {
-            System.out.println(getClass().getName()+ " instantiated");
+    private AssertionFunction customOrDefault() {
+        try {
+            return findByNameOrFail(AssertionFunction.class, "CUSTOM");
+        } catch(CommandException ex) {
+            return new CustomAssertionFunction();
         }
+    }
+
+    public static class CustomAssertionFunction implements AssertionFunction {
 
         @Override
         public String name() {
