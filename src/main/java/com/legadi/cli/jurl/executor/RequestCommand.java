@@ -4,6 +4,7 @@ import static com.legadi.cli.jurl.common.Command.exec;
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
+import static com.legadi.cli.jurl.common.CommonUtils.isNumeric;
 import static com.legadi.cli.jurl.common.JsonUtils.toJsonString;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findByNameOrFail;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findOrFail;
@@ -19,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
@@ -114,6 +116,11 @@ public class RequestCommand {
         InputNameResolver inputNameResolver = new InputNameResolver(settings,
             requestInputPath, requestInput);
         String inputName = inputNameResolver.filterAndResolve(settings.getInputName(), settings.getFilterName());
+
+        if(!validateStepAndContinue(settings, inputName, stepTag)) {
+            return ExecutionStatus.SKIPPED;
+        }
+
         boolean isExecutionAsFlow = requestInput.getFlows().get(inputName) != null;
         ExecutionStats stats = new ExecutionStats(times);
         AtomicReference<String> inputNameCarrier = new AtomicReference<>();
@@ -159,6 +166,52 @@ public class RequestCommand {
         }
     }
 
+    private boolean validateStepAndContinue(Settings settings, String inputName, StepTag stepTag) {
+        if(stepTag == null) {
+            return true;
+        }
+
+        updateStep(settings, inputName, stepTag);
+
+        if(!stepTag.isSemaphore()) {
+            LOGGER.info("Step skipped - "
+                + "[" + stepTag.getFlowLabel() + "]"
+                + " index=" + stepTag.getExecutionIndex()
+                + " step="+ stepTag.getStepLabel());
+            LOGGER.info("");
+            return false;
+        }
+
+        if(settings.getRequestBehaviour().isPrintBehaviour()) {
+            LOGGER.info("Step: "+ stepTag.getStepLabel());
+        } else {
+            LOGGER.info("Executing step - "
+                + "[" + stepTag.getFlowLabel() + "]"
+                + " index=" + stepTag.getExecutionIndex()
+                + " step="+ stepTag.getStepLabel());
+            LOGGER.info("");
+        }
+
+        return true;
+    }
+
+    public static void updateStep(Settings settings, String inputName, StepTag stepTag) {
+        String stepIndex = settings.getStartInStepIndexOrName();
+
+        stepTag.setStepName(inputName);
+
+        if(stepTag.isSemaphore()) {
+            return;
+        }
+
+        if(isNumeric(stepIndex)) {
+            int index = Integer.parseInt(stepIndex);
+            stepTag.setSemaphore(stepTag.getStepIndex() >= index);
+        } else {
+            stepTag.setSemaphore(Objects.equals(stepTag.getStepName(), stepIndex));
+        }
+    }
+
     private Pair<String, ExecutionStats> processFlow(ExecutionIndex index, ExecutionTrace trace,
             String flowName, String requestInputPath, RequestInput<?> requestInput, Settings settings,
             StepTag stepTagParent) {
@@ -187,46 +240,26 @@ public class RequestCommand {
         }
 
         ExecutionStats stats = new ExecutionStats(flow.getSteps().size());
+        boolean semaphore = false;
         int stepIndex = 1;
 
         for(StepEntry step : flow.getSteps()) {
-            StepTag stepTag = new StepTag(requestInputPath, flowName, stepIndex, flow.getSteps().size());
-
-            if(stepIndex < settings.getStartInStepIndex()) {
-                LOGGER.info("Step skipped - "
-                    + "[" + stepTag.getFlowLabel() + "]"
-                    + " index=" + index
-                    + " step="+ stepTag.getStepLabel());
-                LOGGER.info("");
-
-                stats.count(ExecutionStatus.SKIPPED);
-                stepIndex++;
-
-                continue;
-            }
-
+            StepTag stepTag = new StepTag(requestInputPath, flowName, index, stepIndex,
+                flow.getSteps().size(), semaphore);
             Settings stepSettings = settings.createForStep();
 
             try {
-                if(settings.getRequestBehaviour().isPrintBehaviour()) {
-                    LOGGER.info("Step: "+ stepTag.getStepLabel());
-                } else {
-                    LOGGER.info("Executing step - "
-                        + "[" + stepTag.getFlowLabel() + "]"
-                        + " index=" + index
-                        + " step="+ stepTag.getStepLabel());
-                    LOGGER.info("");
-                }
-
                 ExecutionStatus status = executeStep(stepSettings, trace, step, requestInput, requestInputPath, stepTag);
+                semaphore = stepTag.isSemaphore();
+
                 stats.count(status);
             } catch(RecursiveCommandException ex) {
                 throw ex;
             } catch(CommandException | RequestException ex) {
                 throw new CommandException(
-                    "[" + requestInputPath + "/" + flowName + "]"
+                    "[" + stepTag.getFlowLabel() + "]"
                     + " index=" + index
-                    + " step="+ stepTag
+                    + " step="+ stepTag.getStepLabel()
                     + " - " + ex.getMessage());
             }
 
@@ -317,7 +350,6 @@ public class RequestCommand {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private Optional<ExecutionStatus> processAuthentication(String requestName,
             String requestInputPath, RequestInput<?> requestInput, Settings settings,
             StepTag stepTag) {

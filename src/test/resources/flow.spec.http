@@ -35,6 +35,7 @@ step -n remove src/test/resources/basic-functions.spec.http
 
 @set-spec.path = {{workspacePath}}/src/test/resources
 
+# First time this fails since 'basic.functions.id' has no value, it is set after 'create' step
 step -s flow.tag {{basic.with.authorization.tag}} -n obtain {{spec.path}}/basic-functions.spec.http
 step -s flow.tag {{basic.with.authorization.tag}} -n create {{spec.path}}/basic-functions.spec.http
 step -s flow.tag {{basic.with.authorization.tag}} -n obtain {{spec.path}}/basic-functions.spec.http

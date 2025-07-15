@@ -9,6 +9,7 @@ import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONSOLE_TAB_LENGTH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_DEFAULT_CONSOLE_WIDTH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_DOWNLOADS_LOCATION;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTE_AUTHENTICATION;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTION_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTION_TIMES;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_FILTER_NAME;
@@ -23,7 +24,6 @@ import static com.legadi.cli.jurl.common.SettingsConstants.PROP_PRINTABLE_MIME_T
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_REQUEST_BEHAVIOUR;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_REQUEST_TYPE;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SAVE_OUTPUT_IN_LOCATION;
-import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTE_AUTHENTICATION;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX_BEGIN;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SETTINGS_PARAM_REGEX_END;
@@ -31,7 +31,7 @@ import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_ASSERTIONS;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_AUTHENTICATION;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_CONDITIONS;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_USER_INPUT;
-import static com.legadi.cli.jurl.common.SettingsConstants.PROP_START_IN_STEP_INDEX;
+import static com.legadi.cli.jurl.common.SettingsConstants.PROP_START_IN_STEP_INDEX_OR_NAME;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_WORKSPACE_PATH;
 import static com.legadi.cli.jurl.common.WriterUtils.createDirectories;
 
@@ -143,8 +143,8 @@ public interface SettingsDefaults {
         return get(PROP_FILTER_NAME);
     }
 
-    default int getStartInStepIndex() {
-        return get(PROP_START_IN_STEP_INDEX, Integer::parseInt);
+    default String getStartInStepIndexOrName() {
+        return get(PROP_START_IN_STEP_INDEX_OR_NAME);
     }
 
     default boolean isSkipUserInput() {
