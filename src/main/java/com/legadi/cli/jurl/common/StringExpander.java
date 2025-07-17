@@ -243,7 +243,7 @@ public class StringExpander {
             }
 
             try {
-                String value = consoleInput.selectOption(defaultValues, defaultValue)
+                String value = consoleInput.selectOption(defaultValues, defaultValue, property)
                     .orElse("");
 
                 LOGGER.info("");

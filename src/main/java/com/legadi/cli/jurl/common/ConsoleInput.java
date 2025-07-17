@@ -23,6 +23,7 @@ public class ConsoleInput {
     public static final String INPUT_DEFAULT_FORMAT = "input: %s [default: %s]> ";
     public static final String PASSWORD_FORMAT = "pswrd: %s> ";
     public static final String OPTION_INPUT = "Select an option> ";
+    public static final String OPTION_INPUT_NAME = "Select an option [input: %s]> ";
 
     private final Settings settings;
     private final Function<String, String> optionDecorator;
@@ -64,7 +65,8 @@ public class ConsoleInput {
             .orElse(defaultValue);
     }
 
-    public Optional<String> selectOption(List<String> options, String defaultOption) {
+    public Optional<String> selectOption(List<String> options, String defaultOption,
+            String namedInput) {
         if(settings.isSkipUserInput()) {
             return Optional.ofNullable(defaultOption);
         }
@@ -75,7 +77,7 @@ public class ConsoleInput {
             .collect(Collectors.toList());
 
         int defaultIndex = getDefaultIndex(options, defaultOption);
-        Optional<String> menu = toMenu(options, defaultIndex);
+        Optional<String> menu = toMenu(options, defaultIndex, namedInput);
 
         if(!menu.isPresent()) {
             return Optional.ofNullable(defaultOption);
@@ -114,7 +116,7 @@ public class ConsoleInput {
         return INVALID_INDEX;
     }
 
-    private Optional<String> toMenu(List<String> options, int defaultIndex) {
+    private Optional<String> toMenu(List<String> options, int defaultIndex, String namedInput) {
         if(isEmpty(options)) {
             return Optional.empty();
         }
@@ -123,7 +125,11 @@ public class ConsoleInput {
             (i, opt) -> i == defaultIndex, optionDecorator);
         StringBuilder menu = formatInColumns(settings, formattedOptions);
 
-        menu.append(OPTION_INPUT);
+        String optionMessage = isNotBlank(namedInput)
+            ? String.format(OPTION_INPUT_NAME, namedInput)
+            : OPTION_INPUT;
+
+        menu.append(optionMessage);
 
         return Optional.of(menu.toString());
     }

@@ -68,7 +68,8 @@ public class InputNameResolver {
         ConsoleInput consoleInput = new ConsoleInput(settings, this::appendType);
 
         try {
-            Optional<String> requestName = consoleInput.selectOption(requestNames, requestInput.getDefaultRequest());
+            Optional<String> requestName = consoleInput.selectOption(requestNames,
+                requestInput.getDefaultRequest(), null);
 
             LOGGER.info("Selected: [" + getType(requestName.orElse(null))  +  "] "
                 + requestInputPath + "/" + requestName.orElse(null));
