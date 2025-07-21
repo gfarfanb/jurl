@@ -28,12 +28,9 @@ step -n encounters
 ### [request] dummy
 POST https://pokeapi.co/api/v2/dummy
 
-@list*-value = old-chateau-2f-right-room
-
 opt --mock
 mock @statusCode = 201
-# mock @responseFilePath = examples/data/encounters.response
-mock @responseContent = [{"location_area":{"name":"{{value}}"}}]
+mock @responseFilePath = examples/data/encounters.response
 mock Content-Type: application/json
 
 {

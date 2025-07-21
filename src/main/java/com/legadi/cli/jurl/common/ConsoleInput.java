@@ -19,11 +19,11 @@ import com.legadi.cli.jurl.exception.ConsoleInputException;
 
 public class ConsoleInput {
 
-    public static final String INPUT_FORMAT = "input: %s> ";
-    public static final String INPUT_DEFAULT_FORMAT = "input: %s [default: %s]> ";
-    public static final String PASSWORD_FORMAT = "pswrd: %s> ";
+    public static final String INPUT_FORMAT = "Enter input: '%s'> ";
+    public static final String INPUT_DEFAULT_FORMAT = "Enter input: '%s' [default: '%s']> ";
+    public static final String PASSWORD_FORMAT = "Enter pswrd: '%s'> ";
     public static final String OPTION_INPUT = "Select an option> ";
-    public static final String OPTION_INPUT_NAME = "Select an option [input: %s]> ";
+    public static final String OPTION_INPUT_NAME = "Select an option for input: '%s'> ";
 
     private final Settings settings;
     private final Function<String, String> optionDecorator;
