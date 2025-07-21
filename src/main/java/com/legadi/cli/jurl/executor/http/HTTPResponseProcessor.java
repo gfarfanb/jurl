@@ -3,7 +3,6 @@ package com.legadi.cli.jurl.executor.http;
 import static com.legadi.cli.jurl.assertions.AssertionsResolver.evaluate;
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isEmpty;
-import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.cli.jurl.common.JsonUtils.loadJsonProperties;
 import static com.legadi.cli.jurl.common.JsonUtils.writeJsonFile;
@@ -243,20 +242,19 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
             return new HashMap<>();
         }
 
-        String contentType = response.getResponseHeaders()
+        Set<String> outputTypes = response.getResponseHeaders()
             .entrySet()
             .stream()
-            .filter(e -> "Content-Type".equalsIgnoreCase(e.getKey()))
+            .filter(e -> "Content-Type".equalsIgnoreCase(e.getKey())
+                || "Accept".equalsIgnoreCase(e.getKey()))
             .map(Map.Entry::getValue)
+            .collect(Collectors.toSet());
+        Optional<OutputReader> outputReader = outputTypes
+            .stream()
+            .map(o -> find(OutputReader.class, o))
+            .filter(Optional::isPresent)
             .findFirst()
-            .orElse("");
-        Optional<OutputReader> outputReader;
-
-        if(isNotBlank(contentType)) {
-            outputReader = find(OutputReader.class, contentType);
-        } else {
-            outputReader = Optional.empty();
-        }
+            .map(r -> (OutputReader) r.get());
 
         Map<String, String> outputValues;
         boolean isPrintable;
@@ -267,7 +265,7 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
                 settings.getOutputObjectPath(), outputParams, OUTPUT_PREFIX);
         } else {
             isPrintable = Arrays.stream(settings.getPrintableMimeTypes())
-                .anyMatch(type -> type.equalsIgnoreCase(contentType));
+                .anyMatch(type -> outputTypes.stream().anyMatch(o -> type.equalsIgnoreCase(o)));
             outputValues = new HashMap<>();
         }
 
@@ -285,7 +283,7 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
                 .append(value));
 
             LOGGER.fine("");
-            LOGGER.fine("Processed output [" + contentType + "]: " + responsePath);
+            LOGGER.fine("Processed output [" + outputTypes + "]: " + responsePath);
             LOGGER.fine(printableOutput.toString());
         }
 

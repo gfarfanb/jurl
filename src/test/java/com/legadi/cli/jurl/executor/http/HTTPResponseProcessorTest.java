@@ -59,6 +59,7 @@ public class HTTPResponseProcessorTest {
         response.setCurlCommand("curl http://localhost/path");
         response.setResponsePath(Paths.get("src/test/resources/json-response.output.gz.out"));
         response.getResponseHeaders().put("Content-Type", "application/json");
+        response.getResponseHeaders().put("Accept", "application/json");
 
         HTTPResponseProcessor processor = findByNameOrFail(ResponseProcessor.class, "http");
         Optional<AssertionResult> assertionResult = Assertions.assertDoesNotThrow(

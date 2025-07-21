@@ -259,16 +259,6 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         request.setBasePath(stringExpander.replaceAllInContent(request.getBasePath()));
         request.setEndpoint(stringExpander.replaceAllInContent(request.getEndpoint()));
 
-        if(request.getMockDefinition() != null) {
-            HTTPMockEntry mock = request.getMockDefinition();
-
-            expandMap(stringExpander, mock.getResponseHeaders());
-            mock.setResponseContent(stringExpander.replaceAllInContent(mock.getResponseContent()));
-            mock.setResponseFilePath(stringExpander.replaceAllInContent(mock.getResponseFilePath()));
-            mock.setExceptionClassOnOutputStream(stringExpander.replaceAllInContent(mock.getExceptionClassOnOutputStream()));
-            mock.setExceptionClassOnResponseCode(stringExpander.replaceAllInContent(mock.getExceptionClassOnResponseCode()));
-        }
-
         request.getConditions().forEach(condition -> expandAssertion(stringExpander, condition));
         request.getOptions().stream().map(Pair::getRight).forEach(args -> expandArray(stringExpander, args));
 

@@ -880,12 +880,6 @@ public class HTTPRequestModifierTest {
         settings.putUserInput("requestFileField", "file");
         settings.putUserInput("requestFileMineType", "text/csv");
         settings.putUserInput("formValue", "5");
-        
-        settings.putUserInput("mockHeaderAccept", "application/json");
-        settings.putUserInput("mockResponseContent", "{}");
-        settings.putUserInput("mockResponseFilePath", "/response.json");
-        settings.putUserInput("mockExceptionClassOnOutputStream", RuntimeException.class.getName());
-        settings.putUserInput("mockExceptionClassOnResponseCode", Exception.class.getName());
 
         request.setUrl("{{url}}");
         request.setProtocol("{{protocol}}");
@@ -964,10 +958,10 @@ public class HTTPRequestModifierTest {
         Assertions.assertEquals("file", request.getRequestFiles().get(0).getField());
         Assertions.assertEquals("text/csv", request.getRequestFiles().get(0).getMineType());
         Assertions.assertEquals("5", request.getFormData().get("field"));
-        Assertions.assertEquals("application/json", request.getMockDefinition().getResponseHeaders().get("Accept"));
-        Assertions.assertEquals("{}", request.getMockDefinition().getResponseContent());
-        Assertions.assertEquals("/response.json", request.getMockDefinition().getResponseFilePath());
-        Assertions.assertEquals(RuntimeException.class.getName(), request.getMockDefinition().getExceptionClassOnOutputStream());
-        Assertions.assertEquals(Exception.class.getName(), request.getMockDefinition().getExceptionClassOnResponseCode());
+        Assertions.assertEquals("{{mockHeaderAccept}}", request.getMockDefinition().getResponseHeaders().get("Accept"));
+        Assertions.assertEquals("{{mockResponseContent}}", request.getMockDefinition().getResponseContent());
+        Assertions.assertEquals("{{mockResponseFilePath}}", request.getMockDefinition().getResponseFilePath());
+        Assertions.assertEquals("{{mockExceptionClassOnOutputStream}}", request.getMockDefinition().getExceptionClassOnOutputStream());
+        Assertions.assertEquals("{{mockExceptionClassOnResponseCode}}", request.getMockDefinition().getExceptionClassOnResponseCode());
     }
 }

@@ -24,12 +24,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import com.legadi.cli.jurl.common.OutputPathBuilder;
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.StringExpander;
 import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.model.http.HTTPMockEntry;
 
@@ -39,6 +41,7 @@ public class HTTPMockConnection extends HttpURLConnection {
 
     private final URL url;
     private final Settings settings;
+    private final StringExpander stringExpander;
     private final String requestFilePath;
     private final String inputName;
     private final Map<String, Object> defaults;
@@ -47,9 +50,9 @@ public class HTTPMockConnection extends HttpURLConnection {
     private Long secondsDelay;
     private String responseContent;
     private String responseFilePath;
-    private Map<String, List<String>> responseHeaders = new HashMap<>();
-    private Class<? extends IOException> exceptionClassOnOutputStream;
-    private Class<? extends IOException> exceptionClassOnResponseCode;
+    private Map<String, String> responseHeaders;
+    private String exceptionClassOnOutputStream;
+    private String exceptionClassOnResponseCode;
     private boolean doOutput;
 
     public HTTPMockConnection(URL url, Settings settings,
@@ -60,6 +63,7 @@ public class HTTPMockConnection extends HttpURLConnection {
 
         this.url = url;
         this.settings = settings;
+        this.stringExpander = new StringExpander(settings, defaults);
         this.requestFilePath = requestFilePath;
         this.inputName = inputName;
         this.defaults = defaults;
@@ -72,31 +76,25 @@ public class HTTPMockConnection extends HttpURLConnection {
             return;
         }
 
-        if(isNotBlank(mockEntry.getStatusCode()) && isNotNumeric(mockEntry.getStatusCode())) {
-            throw new CommandException("Mock 'statusCode' must be numeric: " + mockEntry.getStatusCode());
+        String statusCode = stringExpander.replaceAllInContent(mockEntry.getStatusCode());
+        if(isNotBlank(statusCode) && isNotNumeric(statusCode)) {
+            throw new CommandException("Mock 'statusCode' must be numeric: " + statusCode);
         }
-        if(isNotBlank(mockEntry.getSecondsDelay()) && isNotNumeric(mockEntry.getSecondsDelay())) {
-            throw new CommandException("Mock 'secondsDelay' must be numeric: " + mockEntry.getSecondsDelay());
+        String secondsDelay = stringExpander.replaceAllInContent(mockEntry.getSecondsDelay());
+        if(isNotBlank(secondsDelay) && isNotNumeric(secondsDelay)) {
+            throw new CommandException("Mock 'secondsDelay' must be numeric: " + secondsDelay);
         }
 
-        this.responseCode = isNotBlank(mockEntry.getStatusCode())
-            ? Integer.parseInt(mockEntry.getStatusCode()) : 0;
-        this.secondsDelay = isNotBlank(mockEntry.getSecondsDelay())
-            ? Long.parseLong(mockEntry.getSecondsDelay()) : null;
+        this.responseCode = isNotBlank(statusCode) ? Integer.parseInt(statusCode) : 0;
+        this.secondsDelay = isNotBlank(secondsDelay) ? Long.parseLong(secondsDelay) : null;
         this.responseContent = mockEntry.getResponseContent();
         this.responseFilePath = mockEntry.getResponseFilePath();
 
-        this.responseHeaders.putAll(mockEntry.getResponseHeaders()
-            .entrySet()
-            .stream()
-            .collect(Collectors.toMap(
-                e -> e.getKey(),
-                e -> Arrays.asList(e.getValue()))
-            ));
-        this.responseHeaders.put(null, Arrays.asList("HTTP/1.1 " + responseCode));
+        this.responseHeaders = mockEntry.getResponseHeaders();
+        this.responseHeaders.put(null, "HTTP/1.1 " + responseCode);
 
-        this.exceptionClassOnOutputStream = toIOExceptionClass(mockEntry.getExceptionClassOnOutputStream());
-        this.exceptionClassOnResponseCode = toIOExceptionClass(mockEntry.getExceptionClassOnResponseCode());
+        this.exceptionClassOnOutputStream = mockEntry.getExceptionClassOnOutputStream();
+        this.exceptionClassOnResponseCode = mockEntry.getExceptionClassOnResponseCode();
     }
 
     @Override
@@ -144,9 +142,12 @@ public class HTTPMockConnection extends HttpURLConnection {
 
     @Override
     public OutputStream getOutputStream() throws IOException {
-        if(exceptionClassOnOutputStream != null) {
-            LOGGER.fine("[mock-connection] Calling getOutputStream():ByteArrayOutputStream - throwing " + exceptionClassOnOutputStream);
-            IOException exception = instantiate(exceptionClassOnOutputStream);
+        exceptionClassOnOutputStream = stringExpander.replaceAllInContent(exceptionClassOnOutputStream);
+        Class<? extends IOException> exceptionClass = toIOExceptionClass(exceptionClassOnOutputStream);
+
+        if(exceptionClass != null) {
+            LOGGER.fine("[mock-connection] Calling getOutputStream():ByteArrayOutputStream - throwing " + exceptionClass);
+            IOException exception = instantiate(exceptionClass);
             throw exception;
         } else {
             LOGGER.fine("[mock-connection] Calling getOutputStream():ByteArrayOutputStream");
@@ -167,10 +168,13 @@ public class HTTPMockConnection extends HttpURLConnection {
             LOGGER.log(FINE, "Error on sleeping mock - secondsDelay=" + secondsDelay, ex);
         }
 
+        responseContent = stringExpander.replaceAllInContent(responseContent);
         if(isNotBlank(responseContent)) {
             LOGGER.fine("[mock-connection] Calling getInputStream():ByteArrayInputStream - " + responseContent);
             return new ByteArrayInputStream(responseContent.getBytes());
         }
+
+        responseFilePath = stringExpander.replaceAllInContent(responseFilePath);
         if(isNotBlank(responseFilePath)) {
             OutputPathBuilder pathBuilder = new OutputPathBuilder(settings)
                 .setRequestPath(requestFilePath)
@@ -191,9 +195,12 @@ public class HTTPMockConnection extends HttpURLConnection {
 
     @Override
     public int getResponseCode() throws IOException {
-        if(exceptionClassOnResponseCode != null) {
-            LOGGER.fine("[mock-connection] Calling getResponseCode():int - throwing " + exceptionClassOnResponseCode);
-            IOException exception = instantiate(exceptionClassOnResponseCode);
+        exceptionClassOnResponseCode = stringExpander.replaceAllInContent(exceptionClassOnResponseCode);
+        Class<? extends IOException> exceptionClass = toIOExceptionClass(exceptionClassOnResponseCode);
+
+        if(exceptionClass != null) {
+            LOGGER.fine("[mock-connection] Calling getResponseCode():int - throwing " + exceptionClass);
+            IOException exception = instantiate(exceptionClass);
             throw exception;
         } else {
             LOGGER.fine("[mock-connection] Calling getResponseCode():" + responseCode);
@@ -203,9 +210,18 @@ public class HTTPMockConnection extends HttpURLConnection {
 
     @Override
     public Map<String, List<String>> getHeaderFields() {
-        LOGGER.fine("[mock-connection] Calling getHeaderFields():" + responseHeaders.getClass().getSimpleName()
-            + "-" + toJsonString(responseHeaders));
-        return responseHeaders;
+        Map<String, List<String>> headerFields = Optional.ofNullable(responseHeaders)
+            .orElse(new HashMap<>())
+            .entrySet()
+            .stream()
+            .collect(Collectors.toMap(
+                e -> e.getKey(),
+                e -> Arrays.asList(stringExpander.replaceAllInContent(e.getValue())))
+            );
+
+        LOGGER.fine("[mock-connection] Calling getHeaderFields():" + headerFields.getClass().getSimpleName()
+            + "-" + toJsonString(headerFields));
+        return headerFields;
     }
 
     @Override
