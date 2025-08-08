@@ -73,6 +73,7 @@ import com.legadi.cli.jurl.generators.PickAnyGenerator;
 import com.legadi.cli.jurl.generators.UUIDGenerator;
 import com.legadi.cli.jurl.generators.UserInputGenerator;
 import com.legadi.cli.jurl.modifiers.AddValueModifier;
+import com.legadi.cli.jurl.modifiers.Base64ValueModifier;
 import com.legadi.cli.jurl.modifiers.DateEpochValueModifier;
 import com.legadi.cli.jurl.modifiers.DateMinusValueModifier;
 import com.legadi.cli.jurl.modifiers.DatePlusValueModifier;
@@ -209,6 +210,7 @@ public class ObjectsRegistry {
         register(Generator.class, UUIDGenerator.class);
 
         register(ValueModifier.class, AddValueModifier.class);
+        register(ValueModifier.class, Base64ValueModifier.class);
         register(ValueModifier.class, DateEpochValueModifier.class);
         register(ValueModifier.class, DateMinusValueModifier.class);
         register(ValueModifier.class, DatePlusValueModifier.class);
