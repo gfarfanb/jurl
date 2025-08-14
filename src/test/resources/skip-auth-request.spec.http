@@ -17,6 +17,8 @@ Content-Type: application/json
 @method = POST
 @endpoint = /body
 
+opt -ni
+
 {
     "access": "{{UUID:}}",
     "name": "{{FULL-NAME:}}",

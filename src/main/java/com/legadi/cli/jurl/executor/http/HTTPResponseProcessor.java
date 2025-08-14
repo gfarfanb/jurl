@@ -265,7 +265,11 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
                 settings.getOutputObjectPath(), outputParams, OUTPUT_PREFIX);
         } else {
             isPrintable = Arrays.stream(settings.getPrintableMimeTypes())
-                .anyMatch(type -> outputTypes.stream().anyMatch(o -> type.equalsIgnoreCase(o)));
+                .map(String::toLowerCase)
+                .anyMatch(type -> outputTypes.stream()
+                    .map(String::toLowerCase)
+                    .anyMatch(o -> o.contains(type))
+                );
             outputValues = new HashMap<>();
         }
 

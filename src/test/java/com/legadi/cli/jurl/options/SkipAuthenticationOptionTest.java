@@ -72,4 +72,23 @@ public class SkipAuthenticationOptionTest extends OptionAbstractTest<SkipAuthent
 
         AuthenticationCleaner.cleanup(requestCatcher, authCorrelationId);
     }
+
+    @Test
+    public void skipAuthenticationBySetValueOpt() {
+        UUID authCorrelationId = Assertions.assertDoesNotThrow(
+            () -> jurl(
+                "-s", "skipAuthentication", "true",
+                "-n", "create",
+                "src/test/resources/skip-auth-request.spec.http"
+            ));
+
+        Settings authSettings = requestCatcher.getLast(authCorrelationId, SETTINGS);
+        List<HTTPResponseEntry> authResponses = requestCatcher.getAll(authCorrelationId, RESPONSE);
+
+        Assertions.assertEquals(Boolean.TRUE.toString(), authSettings.get(PROP_SKIP_AUTHENTICATION));
+        Assertions.assertEquals(1, authResponses.size());
+        Assertions.assertEquals(201, authResponses.get(0).getStatusCode());
+
+        AuthenticationCleaner.cleanup(requestCatcher, authCorrelationId);
+    }
 }

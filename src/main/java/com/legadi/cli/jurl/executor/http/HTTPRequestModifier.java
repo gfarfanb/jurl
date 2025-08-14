@@ -35,6 +35,7 @@ import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestFileEntry;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 import com.legadi.cli.jurl.options.ExecuteAuthenticationOption;
+import com.legadi.cli.jurl.options.SetValueOption;
 import com.legadi.cli.jurl.options.OptionsReader.OptionEntry;
 import com.legadi.cli.jurl.options.SkipAuthenticationOption;
 import com.legadi.cli.jurl.parser.HTTPRequestParser;
@@ -56,6 +57,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         HTTPRequestEntry request = requestInput.getRequests().get(requestName);
         
         processOptionFlags(settings, request, optionsProcessor,
+            SetValueOption.class,
             SkipAuthenticationOption.class,
             ExecuteAuthenticationOption.class);
 
