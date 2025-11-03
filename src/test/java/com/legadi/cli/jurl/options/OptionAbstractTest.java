@@ -15,10 +15,12 @@ import com.legadi.cli.jurl.executor.RequestCommand;
 public abstract class OptionAbstractTest<T extends Option> extends EmbeddedAPIAbstractTest {
 
     protected final T option;
+    protected final boolean requiredForAuth;
 
     @SuppressWarnings("unchecked")
-    public OptionAbstractTest(String optionName) {
+    public OptionAbstractTest(String optionName, boolean requiredForAuth) {
         this.option = (T) findByNameOrFail(Option.class, optionName);
+        this.requiredForAuth = requiredForAuth;
     }
 
     public Settings jurlOpts(String... args) {
@@ -39,6 +41,7 @@ public abstract class OptionAbstractTest<T extends Option> extends EmbeddedAPIAb
         Assertions.assertFalse(option.equals(new NamedOption(UUID.randomUUID().toString(), null)));
         Assertions.assertFalse(option.equals(new NamedOption(option.name(), UUID.randomUUID().toString())));
         Assertions.assertTrue(option.toString().startsWith(option.name() + ", " + option.alias()));
+        Assertions.assertEquals(requiredForAuth, option.requiredForAuth());
     }
 
     public static class NamedOption extends Option {

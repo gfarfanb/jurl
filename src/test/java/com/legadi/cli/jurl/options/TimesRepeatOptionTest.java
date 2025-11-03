@@ -14,7 +14,7 @@ import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 public class TimesRepeatOptionTest extends OptionAbstractTest<TimesRepeatOption> {
 
     public TimesRepeatOptionTest() {
-        super("--times");
+        super("--times", false);
     }
 
     @Test

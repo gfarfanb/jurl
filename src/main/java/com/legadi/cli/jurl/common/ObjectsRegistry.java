@@ -113,6 +113,7 @@ import com.legadi.cli.jurl.options.SkipConditionsOption;
 import com.legadi.cli.jurl.options.SkipUserInputOption;
 import com.legadi.cli.jurl.options.StartInStepOption;
 import com.legadi.cli.jurl.options.TimesRepeatOption;
+import com.legadi.cli.jurl.options.UseAuthenticationOption;
 import com.legadi.cli.jurl.parser.HTTPRequestParser;
 import com.legadi.cli.jurl.parser.RequestParser;
 
@@ -157,6 +158,7 @@ public class ObjectsRegistry {
         register(Option.class, SkipUserInputOption.class);
         register(Option.class, StartInStepOption.class);
         register(Option.class, TimesRepeatOption.class);
+        register(Option.class, UseAuthenticationOption.class);
 
         register(AssertionFunction.class, ContainsAssertionFunction.class);
         register(AssertionFunction.class, DoesNotContainsAssertionFunction.class);

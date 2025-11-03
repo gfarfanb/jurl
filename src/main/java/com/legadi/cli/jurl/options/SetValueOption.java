@@ -25,6 +25,11 @@ public class SetValueOption extends Option {
     }
 
     @Override
+    public boolean requiredForAuth() {
+        return true;
+    }
+
+    @Override
     public boolean execute(Settings settings, String[] args) {
         settings.putUserInput(args[0], args[1]);
         return true;

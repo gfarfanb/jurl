@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.legadi.cli.jurl.common.Pair;
@@ -34,10 +33,7 @@ import com.legadi.cli.jurl.model.http.HTTPMockEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestFileEntry;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
-import com.legadi.cli.jurl.options.ExecuteAuthenticationOption;
-import com.legadi.cli.jurl.options.SetValueOption;
 import com.legadi.cli.jurl.options.OptionsReader.OptionEntry;
-import com.legadi.cli.jurl.options.SkipAuthenticationOption;
 import com.legadi.cli.jurl.parser.HTTPRequestParser;
 import com.legadi.cli.jurl.parser.RequestParser;
 
@@ -56,10 +52,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
             Settings settings, BiConsumer<Settings, List<OptionEntry>> optionsProcessor) {
         HTTPRequestEntry request = requestInput.getRequests().get(requestName);
         
-        processOptionFlags(settings, request, optionsProcessor,
-            SetValueOption.class,
-            SkipAuthenticationOption.class,
-            ExecuteAuthenticationOption.class);
+        processOptionFlags(settings, request, optionsProcessor);
 
         if(settings.isSkipAuthentication()) {
             return new ArrayList<>();
@@ -275,19 +268,10 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
     }
 
     private void processOptionFlags(Settings settings, HTTPRequestEntry request,
-            BiConsumer<Settings, List<OptionEntry>> optionsProcessor,
-            Class<?>... optionClasses) {
-        Predicate<OptionEntry> isExpected = opt -> {
-            for(Class<?> optionClass : optionClasses) {
-                if(optionClass.isAssignableFrom(opt.getLeft().getClass())) {
-                    return true;
-                }
-            }
-            return false;
-        };
+            BiConsumer<Settings, List<OptionEntry>> optionsProcessor) {
         List<OptionEntry> optionEntries = request.getOptions()
             .stream()
-            .filter(isExpected)
+            .filter(opt -> opt.getLeft().requiredForAuth())
             .collect(Collectors.toList());
         Optional.ofNullable(optionsProcessor).ifPresent(p -> p.accept(settings, optionEntries));
     }

@@ -11,7 +11,7 @@ import com.legadi.cli.jurl.exception.CommandException;
 public class CustomClassOptionTest extends OptionAbstractTest<CustomClassOption> {
 
     public CustomClassOptionTest() {
-        super("--custom-class");
+        super("--custom-class", false);
     }
 
     @Test

@@ -21,7 +21,7 @@ import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 public class OverrideRequestOptionTest extends OptionAbstractTest<OverrideRequestOption> {
 
     public OverrideRequestOptionTest() {
-        super("--override-request");
+        super("--override-request", false);
     }
 
     @Test

@@ -8,7 +8,7 @@ import com.legadi.cli.jurl.exception.SkipExecutionException;
 public class ListRequestsOptionTest extends OptionAbstractTest<ListRequestsOption> {
 
     public ListRequestsOptionTest() {
-        super("--list-all");
+        super("--list-all", false);
     }
 
     @Test

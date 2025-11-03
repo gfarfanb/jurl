@@ -28,6 +28,11 @@ public class ExecuteAuthenticationOption extends Option {
     }
 
     @Override
+    public boolean requiredForAuth() {
+        return true;
+    }
+
+    @Override
     public boolean execute(Settings settings, String[] args) {
         settings.putOverride(PROP_EXECUTE_AUTHENTICATION, Boolean.TRUE.toString());
         settings.putOverride(PROP_SKIP_AUTHENTICATION, Boolean.FALSE.toString());

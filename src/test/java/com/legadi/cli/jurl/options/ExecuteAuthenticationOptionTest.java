@@ -14,7 +14,7 @@ import com.legadi.cli.jurl.embedded.util.AuthenticationCleaner;
 public class ExecuteAuthenticationOptionTest extends OptionAbstractTest<ExecuteAuthenticationOption> {
 
     public ExecuteAuthenticationOptionTest() {
-        super("--exec-auth");
+        super("--exec-auth", true);
     }
 
     @Test

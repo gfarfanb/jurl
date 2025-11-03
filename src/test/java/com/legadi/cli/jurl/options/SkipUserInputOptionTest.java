@@ -17,7 +17,7 @@ import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 public class SkipUserInputOptionTest extends OptionAbstractTest<SkipUserInputOption> {
 
     public SkipUserInputOptionTest() {
-        super("--no-input");
+        super("--no-input", false);
     }
 
     @Test

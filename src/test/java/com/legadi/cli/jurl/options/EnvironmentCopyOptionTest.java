@@ -12,7 +12,7 @@ import com.legadi.cli.jurl.exception.SkipExecutionException;
 public class EnvironmentCopyOptionTest extends OptionAbstractTest<EnvironmentCopyOption> {
 
     public EnvironmentCopyOptionTest() {
-        super("--env-copy");
+        super("--env-copy", false);
     }
 
     @Test

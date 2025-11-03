@@ -1,0 +1,57 @@
+
+### [api]
+@protocol = http
+@host = localhost
+@port = {{local.server.port}}
+@basePath = basic
+
+token @tokenUrl = http://localhost:{{local.server.port}}/oauth/token
+token @clientId = {{UUID:}}
+token @clientSecret = {{UUID:}}
+token @scope = test
+
+Content-Type: application/json
+
+
+### [request] create
+@method = POST
+@endpoint = /body
+
+opt -ni
+
+{
+    "access": "{{UUID:}}",
+    "name": "{{FULL-NAME:}}",
+    "email": "{{EMAIL:}}",
+    "nickname": "{{ALPHA-NUMERIC:}}",
+    "amount": {{DECIMAL:}},
+    "active": {{BOOLEAN:}},
+    "coins": {{INTEGER:}},
+    "bio": "{{LOREM-IPSUM:}}",
+    "type": "{{PICK-ANY:A,B,C}}",
+    "timestamp": "{{DATE-TIME:}}"
+}
+
+output basic.functions.id = {{HTTP/header.Resource-ID}}
+
+assert EQUALS_TO 201 {{HTTP/status}}
+
+
+### [request] used-auth-by-opt
+@method = POST
+@endpoint = /body
+
+{
+    "access": "{{UUID:}}",
+    "name": "{{FULL-NAME:}}",
+    "email": "{{EMAIL:}}",
+    "nickname": "{{ALPHA-NUMERIC:}}",
+    "amount": {{DECIMAL:}},
+    "active": {{BOOLEAN:}},
+    "coins": {{INTEGER:}},
+    "bio": "{{LOREM-IPSUM:}}",
+    "type": "{{PICK-ANY:A,B,C}}",
+    "timestamp": "{{DATE-TIME:}}"
+}
+
+opt -ua

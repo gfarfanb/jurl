@@ -16,7 +16,7 @@ import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 public class StartInStepOptionTest extends OptionAbstractTest<StartInStepOption> {
 
     public StartInStepOptionTest() {
-        super("--start-in");
+        super("--start-in", false);
     }
 
     @Test

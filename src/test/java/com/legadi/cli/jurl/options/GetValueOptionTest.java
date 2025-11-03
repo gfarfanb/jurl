@@ -14,7 +14,7 @@ import com.legadi.cli.jurl.exception.SkipExecutionException;
 public class GetValueOptionTest extends OptionAbstractTest<GetValueOption> {
 
     public GetValueOptionTest() {
-        super("--get");
+        super("--get", false);
     }
 
     @Test

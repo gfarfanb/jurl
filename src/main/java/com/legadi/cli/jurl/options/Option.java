@@ -16,6 +16,10 @@ public abstract class Option implements Named {
         return false;
     }
 
+    public boolean requiredForAuth() {
+        return false;
+    }
+
     public abstract String[] getArgs();
 
     public abstract String getDescription();

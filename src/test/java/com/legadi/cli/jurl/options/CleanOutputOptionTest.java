@@ -16,7 +16,7 @@ import com.legadi.cli.jurl.exception.SkipExecutionException;
 public class CleanOutputOptionTest extends OptionAbstractTest<CleanOutputOption> {
 
     public CleanOutputOptionTest() {
-        super("--remove");
+        super("--remove", false);
     }
 
     @Test
