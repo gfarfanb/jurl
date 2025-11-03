@@ -2,10 +2,6 @@
 source src/test/resources/auth.part.http
 
 ### [api]
-@protocol = http
-@host = localhost
-@port = {{local.server.port}}
-@basePath = basic
 
 Content-Type: application/json
 
@@ -14,8 +10,7 @@ Content-Type: application/json
 
 
 ### [request] create
-@method = POST
-@endpoint = /body
+POST http://localhost:{{local.server.port}}/basic/body
 
 {
     "access": "{{UUID:}}",

@@ -8,8 +8,6 @@ import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.legadi.cli.jurl.exception.CommandException;
-
 public class URLBuilderTest {
 
     @Test
@@ -18,32 +16,6 @@ public class URLBuilderTest {
             .setUrl("http://localhost:1234/api/v1");
 
         Assertions.assertEquals("http://localhost:1234/api/v1", builder.build());
-        Assertions.assertDoesNotThrow(() -> new URL(builder.build()));
-    }
-
-    @Test
-    public void buildUrlAndBase() {
-        URLBuilder builder = new URLBuilder()
-            .setUrl("http://localhost:1234/api/v1")
-            .setBasePath("base")
-            .setEndpoint("endpoint");
-
-        Assertions.assertEquals("http://localhost:1234/api/v1/base/endpoint", builder.build());
-        Assertions.assertDoesNotThrow(() -> new URL(builder.build()));
-    }
-
-    @Test
-    public void buildUrlParts() {
-        Map<String, String> queryParams = new HashMap<>();
-        URLBuilder builder = new URLBuilder()
-            .setProtocol("http:://")
-            .setHost("/localhost:")
-            .setPort("1234")
-            .setBasePath("/api")
-            .setEndpoint("v1/")
-            .addAllQueryParams(queryParams);
-
-        Assertions.assertEquals("http://localhost:1234/api/v1/", builder.build());
         Assertions.assertDoesNotThrow(() -> new URL(builder.build()));
     }
 
@@ -88,25 +60,10 @@ public class URLBuilderTest {
     @Test
     public void buildWrongUrl() {
         URLBuilder builder = new URLBuilder()
-            .setProtocol("http:://")
-            .setHost("/localhost:1234")
-            .setPort("1234")
-            .setBasePath("/api")
-            .setEndpoint("v1/");
+            .setUrl("http-://localhost:1234:1234/api/v1/");
 
-        Assertions.assertEquals("http://localhost:1234:1234/api/v1/", builder.build());
+        Assertions.assertEquals("http-://localhost:1234:1234/api/v1/", builder.build());
         Assertions.assertThrows(MalformedURLException.class,
             () -> new URL(builder.build()));
-    }
-
-    @Test
-    public void buildWrongPort() {
-        Assertions.assertThrows(CommandException.class,
-            () -> new URLBuilder().setPort("port"));
-
-        URLBuilder builder = new URLBuilder()
-            .setPort("");
-
-        Assertions.assertTrue(builder.build().isEmpty());
     }
 }

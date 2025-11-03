@@ -121,11 +121,6 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             String requestInputPath, HTTPRequestEntry request, CurlBuilder curlBuilder) {
         URLBuilder urlBuilder = new URLBuilder()
             .setUrl(request.getUrl())
-            .setProtocol(request.getProtocol())
-            .setHost(request.getHost())
-            .setPort(request.getPort())
-            .setBasePath(request.getBasePath())
-            .setEndpoint(request.getEndpoint())
             .addAllQueryParams(request.getQueryParams());
         String generatedUrl = null;
 

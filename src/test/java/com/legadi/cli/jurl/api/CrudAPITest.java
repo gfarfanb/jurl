@@ -43,12 +43,7 @@ public class CrudAPITest extends EmbeddedAPIAbstractTest {
 
         Assertions.assertEquals("src/test/resources/basic-functions.spec.http", requestInputPath);
         Assertions.assertEquals("create", createRequest.getName());
-        Assertions.assertNull(createRequest.getUrl());
-        Assertions.assertEquals("http", createRequest.getProtocol());
-        Assertions.assertEquals("localhost", createRequest.getHost());
-        Assertions.assertEquals(Integer.toString(port), createRequest.getPort());
-        Assertions.assertEquals("basic", createRequest.getBasePath());
-        Assertions.assertEquals("/body", createRequest.getEndpoint());
+        Assertions.assertEquals("http://localhost:" + port + "/basic/body", createRequest.getUrl());
         Assertions.assertEquals("POST", createRequest.getMethod());
         Assertions.assertTrue(createRequest.getQueryParams().isEmpty());
         Assertions.assertEquals(2, createRequest.getHeaders().size());
@@ -97,12 +92,7 @@ public class CrudAPITest extends EmbeddedAPIAbstractTest {
 
         Assertions.assertEquals("src/test/resources/basic-functions.spec.http", requestInputPath);
         Assertions.assertEquals("obtain", obtainRequest.getName());
-        Assertions.assertNull(obtainRequest.getUrl());
-        Assertions.assertEquals("http", obtainRequest.getProtocol());
-        Assertions.assertEquals("localhost", obtainRequest.getHost());
-        Assertions.assertEquals(Integer.toString(port), obtainRequest.getPort());
-        Assertions.assertEquals("basic", obtainRequest.getBasePath());
-        Assertions.assertEquals("/body/" + id, obtainRequest.getEndpoint());
+        Assertions.assertEquals("http://localhost:" + port + "/basic/body/" + id, obtainRequest.getUrl());
         Assertions.assertEquals("GET", obtainRequest.getMethod());
         Assertions.assertTrue(obtainRequest.getQueryParams().isEmpty());
         Assertions.assertEquals(2, obtainRequest.getHeaders().size());
@@ -160,12 +150,7 @@ public class CrudAPITest extends EmbeddedAPIAbstractTest {
 
         Assertions.assertEquals("src/test/resources/basic-functions.spec.http", requestInputPath);
         Assertions.assertEquals("update", updateRequest.getName());
-        Assertions.assertNull(updateRequest.getUrl());
-        Assertions.assertEquals("http", updateRequest.getProtocol());
-        Assertions.assertEquals("localhost", updateRequest.getHost());
-        Assertions.assertEquals(Integer.toString(port), updateRequest.getPort());
-        Assertions.assertEquals("basic", updateRequest.getBasePath());
-        Assertions.assertEquals("/body/" + id, updateRequest.getEndpoint());
+        Assertions.assertEquals("http://localhost:" + port + "/basic/body/" + id, updateRequest.getUrl());
         Assertions.assertEquals("PUT", updateRequest.getMethod());
         Assertions.assertTrue(updateRequest.getQueryParams().isEmpty());
         Assertions.assertEquals(2, updateRequest.getHeaders().size());
@@ -222,12 +207,7 @@ public class CrudAPITest extends EmbeddedAPIAbstractTest {
 
         Assertions.assertEquals("src/test/resources/basic-functions.spec.http", requestInputPath);
         Assertions.assertEquals("remove", removeRequest.getName());
-        Assertions.assertNull(removeRequest.getUrl());
-        Assertions.assertEquals("http", removeRequest.getProtocol());
-        Assertions.assertEquals("localhost", removeRequest.getHost());
-        Assertions.assertEquals(Integer.toString(port), removeRequest.getPort());
-        Assertions.assertEquals("basic", removeRequest.getBasePath());
-        Assertions.assertEquals("/body/" + id, removeRequest.getEndpoint());
+        Assertions.assertEquals("http://localhost:" + port + "/basic/body/" + id, removeRequest.getUrl());
         Assertions.assertEquals("DELETE", removeRequest.getMethod());
         Assertions.assertTrue(removeRequest.getQueryParams().isEmpty());
         Assertions.assertEquals(2, removeRequest.getHeaders().size());

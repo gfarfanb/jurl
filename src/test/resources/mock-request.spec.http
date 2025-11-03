@@ -1,16 +1,11 @@
 
 ### [api]
-@protocol = http
-@host = localhost
-@port = {{local.server.port}}
-@basePath = basic
 
 Content-Type: application/json
 
 
 ### [request] obtain
-@method = GET
-@endpoint = /body/{{UUID:}}
+GET http://localhost:{{local.server.port}}/basic/body/{{UUID:}}
 
 mock @responseFilePath = src/test/resources/mock-response.output.json
 mock @statusCode = 200

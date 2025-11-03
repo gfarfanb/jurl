@@ -1,9 +1,5 @@
 
 ### [api]
-@protocol = http
-@host = localhost
-@port = {{local.server.port}}
-@basePath = basic
 
 token @tokenUrl = http://localhost:{{local.server.port}}/oauth/token
 token @clientId = {{UUID:}}
@@ -19,8 +15,7 @@ Content-Type: application/json
 
 
 ### [request] create: Create with authorization
-@method = POST
-@endpoint = /body
+POST http://localhost:{{local.server.port}}/basic/body
 
 {
     "access": "{{UUID:}}",

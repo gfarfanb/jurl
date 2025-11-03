@@ -1,16 +1,11 @@
 
 ### [api]
-@protocol = http
-@host = localhost
-@port = {{local.server.port}}
-@basePath = basic
-
 Content-Type: application/json
 
 
 ### [request] create
-@method = POST
-@endpoint = /body
+POST http://localhost:{{local.server.port}}/basic/body
+
 @bodyFilePath = src/test/resources/basic-functions.body.json
 
 {
@@ -32,8 +27,7 @@ assert EQUALS_TO 201 {{HTTP/status}}
 
 
 ### [request] obtain
-@method = GET
-@endpoint = /body/{{basic.functions.id}}
+GET http://localhost:{{local.server.port}}/basic/body/{{basic.functions.id}}
 
 output basic.functions.entity = {{HTTP/response.path}}
 
@@ -41,8 +35,7 @@ assert EQUALS_TO 200 {{HTTP/status}}
 
 
 ### [request] update
-@method = PUT
-@endpoint = /body/{{basic.functions.id}}
+PUT http://localhost:{{local.server.port}}/basic/body/{{basic.functions.id}}
 @bodyFilePath = {{basic.functions.entity}}
 
 {
@@ -53,7 +46,6 @@ assert EQUALS_TO 204 {{HTTP/status}}
 
 
 ### [request] remove
-@method = DELETE
-@endpoint = /body/{{basic.functions.id}}
+DELETE http://localhost:{{local.server.port}}/basic/body/{{basic.functions.id}}
 
 assert EQUALS_TO 204 {{HTTP/status}}

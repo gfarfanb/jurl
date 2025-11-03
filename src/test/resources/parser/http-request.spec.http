@@ -1,6 +1,4 @@
 
-source src/test/resources/parser/http-request.part.http
-
 @default-request=request
 
 ### [request] request: Request specification

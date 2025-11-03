@@ -105,10 +105,6 @@ public class HTTPRequestParserTest {
         HTTPRequestEntry api = requestInput.getApi();
 
         Assertions.assertNotNull(api);
-        Assertions.assertEquals("http", api.getProtocol());
-        Assertions.assertEquals("localhost", api.getHost());
-        Assertions.assertEquals("5555", api.getPort());
-        Assertions.assertEquals("basic", api.getBasePath());
 
         HTTPRequestEntry request = requestInput.getRequests().get("request");
 

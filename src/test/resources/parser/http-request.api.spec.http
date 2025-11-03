@@ -1,8 +1,0 @@
-
-### [api]
-@protocol = http
-@host = localhost
-@port = 8080
-@basePath = basic
-
-Content-Type: application/json

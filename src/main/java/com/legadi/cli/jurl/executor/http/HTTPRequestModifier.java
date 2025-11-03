@@ -92,21 +92,6 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         if(isBlank(request.getUrl())) {
             request.setUrl(api.getUrl());
         }
-        if(isBlank(request.getProtocol())) {
-            request.setProtocol(api.getProtocol());
-        }
-        if(isBlank(request.getHost())) {
-            request.setHost(api.getHost());
-        }
-        if(isBlank(request.getPort())) {
-            request.setPort(api.getPort());
-        }
-        if(isBlank(request.getBasePath())) {
-            request.setBasePath(api.getBasePath());
-        }
-        if(isBlank(request.getEndpoint())) {
-            request.setEndpoint(api.getEndpoint());
-        }
     }
 
     @Override
@@ -248,11 +233,6 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         expandDefaults(stringExpander, request.getDefaults());
 
         request.setUrl(stringExpander.replaceAllInContent(request.getUrl()));
-        request.setProtocol(stringExpander.replaceAllInContent(request.getProtocol()));
-        request.setHost(stringExpander.replaceAllInContent(request.getHost()));
-        request.setPort(stringExpander.replaceAllInContent(request.getPort()));
-        request.setBasePath(stringExpander.replaceAllInContent(request.getBasePath()));
-        request.setEndpoint(stringExpander.replaceAllInContent(request.getEndpoint()));
 
         request.getConditions().forEach(condition -> expandAssertion(stringExpander, condition));
         request.getOptions().stream().map(Pair::getRight).forEach(args -> expandArray(stringExpander, args));

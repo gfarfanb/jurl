@@ -25,11 +25,6 @@ public class RequestEntryTest {
         model.setName("request");
         model.setDescription("Request entry");
         model.setUrl("http://localhost:42121/basic/body");
-        model.setProtocol("http");
-        model.setHost("localhost");
-        model.setPort("42121");
-        model.setBasePath("basic");
-        model.setEndpoint("body");
         model.setMockDefinition(new HTTPMockEntry());
 
         List<AssertionEntry> conditions = new ArrayList<>();
@@ -51,11 +46,6 @@ public class RequestEntryTest {
         Assertions.assertEquals("request", model.getName());
         Assertions.assertEquals("Request entry", model.getDescription());
         Assertions.assertEquals("http://localhost:42121/basic/body", model.getUrl());
-        Assertions.assertEquals("http", model.getProtocol());
-        Assertions.assertEquals("localhost", model.getHost());
-        Assertions.assertEquals("42121", model.getPort());
-        Assertions.assertEquals("basic", model.getBasePath());
-        Assertions.assertEquals("body", model.getEndpoint());
         Assertions.assertNotNull(model.getMockDefinition());
         Assertions.assertEquals(1, model.getConditions().size());
         Assertions.assertEquals("{{OUT/name}}", model.getOutputMappings().get("property.name"));
