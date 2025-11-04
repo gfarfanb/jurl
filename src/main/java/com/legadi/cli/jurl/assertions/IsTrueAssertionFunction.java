@@ -1,11 +1,9 @@
 package com.legadi.cli.jurl.assertions;
 
-public class IsTrueAssertionFunction implements AssertionFunction {
+import com.legadi.cli.jurl.common.annotations.Named;
 
-    @Override
-    public String name() {
-        return "IS_TRUE";
-    }
+@Named(name = "IS_TRUE")
+public class IsTrueAssertionFunction implements AssertionFunction {
 
     @Override
     public String[] getArgs() {

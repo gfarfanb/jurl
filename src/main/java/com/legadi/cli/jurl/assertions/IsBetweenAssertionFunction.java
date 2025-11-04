@@ -4,12 +4,10 @@ import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 
 import java.math.BigDecimal;
 
-public class IsBetweenAssertionFunction implements AssertionFunction {
+import com.legadi.cli.jurl.common.annotations.Named;
 
-    @Override
-    public String name() {
-        return "IS_BETWEEN";
-    }
+@Named(name = "IS_BETWEEN")
+public class IsBetweenAssertionFunction implements AssertionFunction {
 
     @Override
     public String[] getArgs() {
@@ -24,5 +22,4 @@ public class IsBetweenAssertionFunction implements AssertionFunction {
             && new BigDecimal(args[1]).compareTo(new BigDecimal(args[0])) >= 0
             && new BigDecimal(args[1]).compareTo(new BigDecimal(args[2])) <= 0;
     }
-
 }

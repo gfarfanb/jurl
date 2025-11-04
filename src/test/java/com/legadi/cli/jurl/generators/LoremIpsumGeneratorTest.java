@@ -14,7 +14,7 @@ import com.legadi.cli.jurl.exception.CommandException;
 public class LoremIpsumGeneratorTest extends GeneratorAbstractTest {
 
     public LoremIpsumGeneratorTest() {
-        super("LOREM-IPSUM");
+        super("LOREM_IPSUM");
     }
 
     @Test

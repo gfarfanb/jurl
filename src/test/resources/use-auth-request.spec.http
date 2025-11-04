@@ -16,15 +16,15 @@ opt -ni
 
 {
     "access": "{{UUID:}}",
-    "name": "{{FULL-NAME:}}",
+    "name": "{{FULL_NAME:}}",
     "email": "{{EMAIL:}}",
-    "nickname": "{{ALPHA-NUMERIC:}}",
+    "nickname": "{{ALPHA_NUMERIC:}}",
     "amount": {{DECIMAL:}},
     "active": {{BOOLEAN:}},
     "coins": {{INTEGER:}},
-    "bio": "{{LOREM-IPSUM:}}",
-    "type": "{{PICK-ANY:A,B,C}}",
-    "timestamp": "{{DATE-TIME:}}"
+    "bio": "{{LOREM_IPSUM:}}",
+    "type": "{{PICK_ANY:A,B,C}}",
+    "timestamp": "{{DATE_TIME:}}"
 }
 
 output basic.functions.id = {{HTTP/header.Resource-ID}}
@@ -37,15 +37,15 @@ POST http://localhost:{{local.server.port}}/basic/body
 
 {
     "access": "{{UUID:}}",
-    "name": "{{FULL-NAME:}}",
+    "name": "{{FULL_NAME:}}",
     "email": "{{EMAIL:}}",
-    "nickname": "{{ALPHA-NUMERIC:}}",
+    "nickname": "{{ALPHA_NUMERIC:}}",
     "amount": {{DECIMAL:}},
     "active": {{BOOLEAN:}},
     "coins": {{INTEGER:}},
-    "bio": "{{LOREM-IPSUM:}}",
-    "type": "{{PICK-ANY:A,B,C}}",
-    "timestamp": "{{DATE-TIME:}}"
+    "bio": "{{LOREM_IPSUM:}}",
+    "type": "{{PICK_ANY:A,B,C}}",
+    "timestamp": "{{DATE_TIME:}}"
 }
 
 opt -ua

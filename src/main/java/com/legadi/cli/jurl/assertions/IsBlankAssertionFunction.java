@@ -2,12 +2,10 @@ package com.legadi.cli.jurl.assertions;
 
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 
-public class IsBlankAssertionFunction implements AssertionFunction {
+import com.legadi.cli.jurl.common.annotations.Named;
 
-    @Override
-    public String name() {
-        return "IS_BLANK";
-    }
+@Named(name = "IS_BLANK")
+public class IsBlankAssertionFunction implements AssertionFunction {
 
     @Override
     public String[] getArgs() {

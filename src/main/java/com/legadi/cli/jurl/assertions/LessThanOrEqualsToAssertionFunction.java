@@ -2,17 +2,10 @@ package com.legadi.cli.jurl.assertions;
 
 import java.math.BigDecimal;
 
+import com.legadi.cli.jurl.common.annotations.Named;
+
+@Named(name = "LESS_THAN_OR_EQUALS_TO", alias = "<=")
 public class LessThanOrEqualsToAssertionFunction extends OperatorAssertionFunction {
-
-    @Override
-    public String name() {
-        return "LESS_THAN_OR_EQUALS_TO";
-    }
-
-    @Override
-    public String alias() {
-        return "<=";
-    }
 
     @Override
     public String[] getArgs() {

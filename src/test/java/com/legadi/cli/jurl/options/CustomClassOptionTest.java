@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.legadi.cli.jurl.assertions.AssertionFunction;
+import com.legadi.cli.jurl.common.annotations.Named;
 import com.legadi.cli.jurl.exception.CommandException;
 
 public class CustomClassOptionTest extends OptionAbstractTest<CustomClassOption> {
@@ -46,12 +47,8 @@ public class CustomClassOptionTest extends OptionAbstractTest<CustomClassOption>
         }
     }
 
+    @Named(name = "CUSTOM")
     public static class CustomAssertionFunction implements AssertionFunction {
-
-        @Override
-        public String name() {
-            return "CUSTOM";
-        }
 
         @Override
         public String[] getArgs() {

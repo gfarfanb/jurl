@@ -1,5 +1,6 @@
 package com.legadi.cli.jurl.options;
 
+import static com.legadi.cli.jurl.common.AnnotationsUtils.extractNamedName;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_ADD_ON_OPTION_CLASSES;
 
 import java.time.Instant;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import com.legadi.cli.jurl.common.ObjectsRegistry;
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 import com.legadi.cli.jurl.exception.CommandException;
 
 public class OptionsReaderTest {
@@ -86,12 +88,8 @@ public class OptionsReaderTest {
         Assertions.assertTrue(reader.getOptionEntries().isEmpty());
     }
 
+    @Named(name = "++set+date")
     public static class SetDateOption extends Option {
-
-        @Override
-        public String name() {
-            return "++set+date";
-        }
 
         @Override
         public String[] getArgs() {
@@ -105,17 +103,13 @@ public class OptionsReaderTest {
 
         @Override
         public boolean execute(Settings settings, String[] args) {
-            settings.putOverride(name(), Instant.now().toString());
+            settings.putOverride(extractNamedName(this), Instant.now().toString());
             return true;
         }
     }
 
+    @Named(name = "++invalid")
     public static class InvalidOption extends Option {
-
-        @Override
-        public String name() {
-            return "++invalid";
-        }
 
         @Override
         public String[] getArgs() {

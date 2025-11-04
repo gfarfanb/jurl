@@ -11,22 +11,14 @@ import java.util.logging.Logger;
 
 import com.legadi.cli.jurl.common.InputNameResolver;
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 import com.legadi.cli.jurl.model.RequestInput;
 import com.legadi.cli.jurl.parser.RequestParser;
 
+@Named(name = "--list-all", alias = "-la")
 public class ListRequestsOption extends Option {
 
     private static final Logger LOGGER = Logger.getLogger(ListRequestsOption.class.getName());
-
-    @Override
-    public String name() {
-        return "--list-all";
-    }
-
-    @Override
-    public String alias() {
-        return "-la";
-    }
 
     @Override
     public String[] getArgs() {

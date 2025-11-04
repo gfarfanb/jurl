@@ -1,5 +1,7 @@
 package com.legadi.cli.jurl.executor.http;
 
+import static com.legadi.cli.jurl.common.AnnotationsUtils.extractConfigReplaceableProperties;
+import static com.legadi.cli.jurl.common.AnnotationsUtils.extractTypedType;
 import static com.legadi.cli.jurl.common.CommonUtils.toGeneratedParam;
 import static com.legadi.cli.jurl.common.JsonUtils.loadJsonProperties;
 import static com.legadi.cli.jurl.common.JsonUtils.writeJsonFile;
@@ -27,7 +29,8 @@ public class HTTPTokenHeaderAuthenticatorTest {
     @Test
     public void definitionValidation() {
         HTTPTokenHeaderAuthenticator authenticator = new HTTPTokenHeaderAuthenticator();
-        Set<String> properties = new HashSet<>(Arrays.asList(authenticator.registeredProperties()));
+        Set<String> properties = new HashSet<>(Arrays.asList(
+            extractConfigReplaceableProperties(authenticator)));
 
         Assertions.assertTrue(properties.contains(HTTPTokenHeaderAuthenticator.PROP_GRANT_TYPE));
         Assertions.assertTrue(properties.contains(HTTPTokenHeaderAuthenticator.PROP_GRANT_TYPE_FIELD_NAME));
@@ -41,7 +44,7 @@ public class HTTPTokenHeaderAuthenticatorTest {
         Assertions.assertTrue(properties.contains(HTTPTokenHeaderAuthenticator.PROP_REQUEST_METHOD));
         Assertions.assertTrue(properties.contains(HTTPTokenHeaderAuthenticator.PROP_CONTENT_TYPE));
 
-        Assertions.assertEquals(authenticator.type(), authenticator.type());
+        Assertions.assertEquals("http", extractTypedType(authenticator));
         Assertions.assertTrue(authenticator.requiresExecution());
         Assertions.assertNotNull(authenticator.getObjectFields());
         Assertions.assertFalse(authenticator.getObjectFields().isEmpty());
@@ -198,11 +201,11 @@ public class HTTPTokenHeaderAuthenticatorTest {
         Map<String, String> properties = loadJsonProperties(settings.getOverrideFilePath());
         String clientId = UUID.randomUUID().toString();
 
-        properties.put(toGeneratedParam(authenticator.type(), clientId, "expiration-millis"), "5000");
-        properties.put(toGeneratedParam(authenticator.type(), clientId, "access-token"), UUID.randomUUID().toString());
-        properties.put(toGeneratedParam(authenticator.type(), clientId, "token-type"), "bearer");
-        properties.put(toGeneratedParam(authenticator.type(), clientId, "expires-in." + authenticator.getExpiresInTimeUnit(settings)), "5");
-        properties.put(toGeneratedParam(authenticator.type(), clientId, "expiration-date"), settings.getTimestamp().toString());
+        properties.put(toGeneratedParam(extractTypedType(authenticator), clientId, "expiration-millis"), "5000");
+        properties.put(toGeneratedParam(extractTypedType(authenticator), clientId, "access-token"), UUID.randomUUID().toString());
+        properties.put(toGeneratedParam(extractTypedType(authenticator), clientId, "token-type"), "bearer");
+        properties.put(toGeneratedParam(extractTypedType(authenticator), clientId, "expires-in." + authenticator.getExpiresInTimeUnit(settings)), "5");
+        properties.put(toGeneratedParam(extractTypedType(authenticator), clientId, "expiration-date"), settings.getTimestamp().toString());
 
         writeJsonFile(settings.getOverrideFilePath(), properties);
 
@@ -217,11 +220,11 @@ public class HTTPTokenHeaderAuthenticatorTest {
 
         properties = loadJsonProperties(settings.getOverrideFilePath());
 
-        Assertions.assertNull(properties.get(toGeneratedParam(authenticator.type(), clientId, "expiration-millis")));
-        Assertions.assertNull(properties.get(toGeneratedParam(authenticator.type(), clientId, "access-token")));
-        Assertions.assertNull(properties.get(toGeneratedParam(authenticator.type(), clientId, "token-type")));
-        Assertions.assertNull(properties.get(toGeneratedParam(authenticator.type(), clientId, "expires-in." + authenticator.getExpiresInTimeUnit(settings))));
-        Assertions.assertNull(properties.get(toGeneratedParam(authenticator.type(), clientId, "expiration-date")));
+        Assertions.assertNull(properties.get(toGeneratedParam(extractTypedType(authenticator), clientId, "expiration-millis")));
+        Assertions.assertNull(properties.get(toGeneratedParam(extractTypedType(authenticator), clientId, "access-token")));
+        Assertions.assertNull(properties.get(toGeneratedParam(extractTypedType(authenticator), clientId, "token-type")));
+        Assertions.assertNull(properties.get(toGeneratedParam(extractTypedType(authenticator), clientId, "expires-in." + authenticator.getExpiresInTimeUnit(settings))));
+        Assertions.assertNull(properties.get(toGeneratedParam(extractTypedType(authenticator), clientId, "expiration-date")));
     }
 
     @Test
@@ -309,8 +312,8 @@ public class HTTPTokenHeaderAuthenticatorTest {
 
         Assertions.assertTrue(headers.isEmpty());
 
-        String tokenParam = toGeneratedParam(authenticator.type(), authEntry.getClientId(), "access-token");
-        String typeParam = toGeneratedParam(authenticator.type(), authEntry.getClientId(), "token-type");
+        String tokenParam = toGeneratedParam(extractTypedType(authenticator), authEntry.getClientId(), "access-token");
+        String typeParam = toGeneratedParam(extractTypedType(authenticator), authEntry.getClientId(), "token-type");
         String token = UUID.randomUUID().toString();
         String type = "bearer";
 

@@ -3,12 +3,10 @@ package com.legadi.cli.jurl.assertions;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-public class NotEqualsToAssertionFunction extends OperatorAssertionFunction {
+import com.legadi.cli.jurl.common.annotations.Named;
 
-    @Override
-    public String name() {
-        return "NOT_EQUALS_TO";
-    }
+@Named(name = "NOT_EQUALS_TO")
+public class NotEqualsToAssertionFunction extends OperatorAssertionFunction {
 
     @Override
     public String[] getArgs() {

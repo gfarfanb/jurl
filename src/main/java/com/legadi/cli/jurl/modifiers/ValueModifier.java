@@ -1,5 +1,6 @@
 package com.legadi.cli.jurl.modifiers;
 
+import static com.legadi.cli.jurl.common.AnnotationsUtils.extractNamedName;
 import static com.legadi.cli.jurl.common.CommonUtils.ARGS_ESCAPED;
 import static com.legadi.cli.jurl.common.CommonUtils.ARGS_SEPARATOR;
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
@@ -11,23 +12,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.legadi.cli.jurl.common.Evaluable;
-import com.legadi.cli.jurl.common.Named;
 import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.exception.ModifierException;
 
-public interface ValueModifier extends Evaluable, Named {
-
-    @Override
-    default boolean accepts(String definition) {
-        return definition.toLowerCase().startsWith(name().toLowerCase());
-    }
-
-    @Override
-    default boolean allowOverride() {
-        return false;
-    }
+public interface ValueModifier {
 
     String[] getArgs();
 
@@ -49,7 +38,8 @@ public interface ValueModifier extends Evaluable, Named {
         try {
             System.arraycopy(parts, 0, args, 0, args.length);
         } catch(IndexOutOfBoundsException ex) {
-            throw new ModifierException(name(), getArgs(), parts, null, "Invalid number of arguments for modifier");
+            throw new ModifierException(extractNamedName(this),
+                getArgs(), parts, null, "Invalid number of arguments for modifier");
         }
 
         String value = IntStream.range(args.length, parts.length)
@@ -67,7 +57,8 @@ public interface ValueModifier extends Evaluable, Named {
 
             return apply(propertyResolver, args, value);
         } catch(Exception ex) {
-            throw new ModifierException(name(), getArgs(), args, value, ex.getMessage());
+            throw new ModifierException(extractNamedName(this),
+                getArgs(), args, value, ex.getMessage());
         }
     }
 }

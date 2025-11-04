@@ -9,6 +9,7 @@ import static com.legadi.cli.jurl.common.CommonUtils.strip;
 import static com.legadi.cli.jurl.common.JsonUtils.isArrayFile;
 import static com.legadi.cli.jurl.common.JsonUtils.loadJsonFile;
 import static com.legadi.cli.jurl.common.JsonUtils.writeJsonFile;
+import static com.legadi.cli.jurl.common.annotations.Evaluable.Operation.CONTAINS;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -20,8 +21,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.gson.reflect.TypeToken;
+import com.legadi.cli.jurl.common.annotations.Evaluable;
 import com.legadi.cli.jurl.exception.CommandException;
 
+@Evaluable(values = { "application/json", "application/ld+json" }, op = CONTAINS)
 public class JsonOutputReader implements OutputReader {
 
     private static final Pattern ARRAY_CALL = Pattern.compile("(.*)(\\[.*\\])");
@@ -30,11 +33,6 @@ public class JsonOutputReader implements OutputReader {
     private static final int FIRST_ELEMENT = 0;
 
     private final Map<String, Integer> anyIndexes = new HashMap<>();
-
-    @Override
-    public String[] types() {
-        return new String[] { "application/json", "application/ld+json" };
-    }
 
     @Override
     public boolean isPrintable() {

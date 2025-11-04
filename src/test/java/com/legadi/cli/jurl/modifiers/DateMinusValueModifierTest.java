@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 public class DateMinusValueModifierTest extends ValueModifierAbstractTest<DateMinusValueModifier> {
 
     public DateMinusValueModifierTest() {
-        super("date-minus");
+        super("date_minus");
     }
 
     @Override

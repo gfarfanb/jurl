@@ -8,19 +8,11 @@ import static com.legadi.cli.jurl.common.ObjectsRegistry.register;
 import java.util.stream.Collectors;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 import com.legadi.cli.jurl.exception.CommandException;
 
+@Named(name = "--custom-class", alias = "-cc")
 public class CustomClassOption extends Option {
-
-    @Override
-    public String name() {
-        return "--custom-class";
-    }
-
-    @Override
-    public String alias() {
-        return "-cc";
-    }
 
     @Override
     public String[] getArgs() {

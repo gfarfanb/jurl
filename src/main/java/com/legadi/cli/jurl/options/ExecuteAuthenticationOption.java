@@ -4,18 +4,10 @@ import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTE_AUTHENTI
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_AUTHENTICATION;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 
+@Named(name = "--exec-auth", alias = "-ea")
 public class ExecuteAuthenticationOption extends Option {
-
-    @Override
-    public String name() {
-        return "--exec-auth";
-    }
-
-    @Override
-    public String alias() {
-        return "-ea";
-    }
 
     @Override
     public String[] getArgs() {

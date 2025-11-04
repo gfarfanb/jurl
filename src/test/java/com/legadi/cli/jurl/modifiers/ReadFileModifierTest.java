@@ -12,7 +12,7 @@ import com.google.gson.reflect.TypeToken;
 public class ReadFileModifierTest extends ValueModifierAbstractTest<ReadFileModifier> {
 
     public ReadFileModifierTest() {
-        super("read-file");
+        super("read_file");
     }
 
     @Override

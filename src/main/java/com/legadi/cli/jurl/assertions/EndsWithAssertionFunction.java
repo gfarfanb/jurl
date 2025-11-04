@@ -2,12 +2,10 @@ package com.legadi.cli.jurl.assertions;
 
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 
-public class EndsWithAssertionFunction implements AssertionFunction {
+import com.legadi.cli.jurl.common.annotations.Named;
 
-    @Override
-    public String name() {
-        return "END_WITH";
-    }
+@Named(name = "END_WITH")
+public class EndsWithAssertionFunction implements AssertionFunction {
 
     @Override
     public String[] getArgs() {
@@ -20,5 +18,4 @@ public class EndsWithAssertionFunction implements AssertionFunction {
             && isNotBlank(args[1])
             && args[0].endsWith(args[1]);
     }
-
 }

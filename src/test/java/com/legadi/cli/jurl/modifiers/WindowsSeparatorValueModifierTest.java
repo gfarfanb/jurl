@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 public class WindowsSeparatorValueModifierTest extends ValueModifierAbstractTest<WindowsSeparatorValueModifier> {
 
     public WindowsSeparatorValueModifierTest() {
-        super("win-separator");
+        super("win_separator");
     }
 
     @Override

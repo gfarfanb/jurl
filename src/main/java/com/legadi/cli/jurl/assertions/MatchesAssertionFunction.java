@@ -3,12 +3,10 @@ package com.legadi.cli.jurl.assertions;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MatchesAssertionFunction implements AssertionFunction {
+import com.legadi.cli.jurl.common.annotations.Named;
 
-    @Override
-    public String name() {
-        return "MATCHES";
-    }
+@Named(name = "MATCHES")
+public class MatchesAssertionFunction implements AssertionFunction {
 
     @Override
     public String[] getArgs() {

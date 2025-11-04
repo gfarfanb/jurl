@@ -1,5 +1,7 @@
 package com.legadi.cli.jurl.parser;
 
+import static com.legadi.cli.jurl.common.AnnotationsUtils.extractTypedType;
+import static com.legadi.cli.jurl.common.AnnotationsUtils.extractNamedName;
 import static com.legadi.cli.jurl.common.CommonUtils.getDefaultFieldIndex;
 
 import java.nio.file.Path;
@@ -27,7 +29,7 @@ public class HTTPRequestParserTest {
     public void typeValidation() {
         HTTPRequestParser parser = new HTTPRequestParser();
 
-        Assertions.assertEquals("http", parser.type());
+        Assertions.assertEquals("http", extractTypedType(parser));
     }
 
     @Test
@@ -57,8 +59,8 @@ public class HTTPRequestParserTest {
         Assertions.assertEquals("EQUALS_TO", api.getAssertions().get(0).getName());
         Assertions.assertEquals(EqualsToAssertionFunction.class.getName(), api.getAssertions().get(1).getAssertionClass());
         Assertions.assertEquals(2, api.getOptions().size());
-        Assertions.assertEquals("--set", api.getOptions().get(0).getLeft().name());
-        Assertions.assertEquals("--set", api.getOptions().get(1).getLeft().name());
+        Assertions.assertEquals("--set", extractNamedName(api.getOptions().get(0).getLeft()));
+        Assertions.assertEquals("--set", extractNamedName(api.getOptions().get(1).getLeft()));
 
         HTTPMockEntry mock = api.getMockDefinition();
 
@@ -126,8 +128,8 @@ public class HTTPRequestParserTest {
         Assertions.assertEquals("EQUALS_TO", request.getAssertions().get(0).getName());
         Assertions.assertEquals(EqualsToAssertionFunction.class.getName(), request.getAssertions().get(1).getAssertionClass());
         Assertions.assertEquals(2, request.getOptions().size());
-        Assertions.assertEquals("--set", request.getOptions().get(0).getLeft().name());
-        Assertions.assertEquals("--set", request.getOptions().get(1).getLeft().name());
+        Assertions.assertEquals("--set", extractNamedName(request.getOptions().get(0).getLeft()));
+        Assertions.assertEquals("--set", extractNamedName(request.getOptions().get(1).getLeft()));
 
         HTTPMockEntry mock = request.getMockDefinition();
 
@@ -258,7 +260,7 @@ public class HTTPRequestParserTest {
 
         Assertions.assertEquals("spec.http", step.getRequestInputPath());
         Assertions.assertEquals(1, step.getOptions().size());
-        Assertions.assertEquals("--set", step.getOptions().get(0).getLeft().name());
+        Assertions.assertEquals("--set", extractNamedName(step.getOptions().get(0).getLeft()));
     }
 
     @Test
@@ -305,8 +307,8 @@ public class HTTPRequestParserTest {
         Assertions.assertEquals("EQUALS_TO", request.getAssertions().get(0).getName());
         Assertions.assertEquals(EqualsToAssertionFunction.class.getName(), request.getAssertions().get(1).getAssertionClass());
         Assertions.assertEquals(2, request.getOptions().size());
-        Assertions.assertEquals("--set", request.getOptions().get(0).getLeft().name());
-        Assertions.assertEquals("--set", request.getOptions().get(1).getLeft().name());
+        Assertions.assertEquals("--set", extractNamedName(request.getOptions().get(0).getLeft()));
+        Assertions.assertEquals("--set", extractNamedName(request.getOptions().get(1).getLeft()));
 
         HTTPMockEntry mock = request.getMockDefinition();
 

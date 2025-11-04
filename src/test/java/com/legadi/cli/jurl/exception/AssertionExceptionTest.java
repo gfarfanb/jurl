@@ -1,5 +1,6 @@
 package com.legadi.cli.jurl.exception;
 
+import static com.legadi.cli.jurl.common.AnnotationsUtils.extractNamedName;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findByNameOrFail;
 import static com.legadi.cli.jurl.model.AssertionType.ASSERTION;
 
@@ -20,12 +21,12 @@ public class AssertionExceptionTest {
 
         AssertionEntry entry = new AssertionEntry();
         entry.setType(ASSERTION);
-        entry.setName(function.name());
+        entry.setName(extractNamedName(function));
 
         try {
             throw new AssertionException(entry, function.getArgs(), values, null);
         } catch(RuntimeException ex) {
-            String expected = ASSERTION.name().toLowerCase() + "=" + function.name()
+            String expected = ASSERTION.name().toLowerCase() + "=" + extractNamedName(function)
                 + " args=" + Arrays.toString(function.getArgs())
                 + " values=" + Arrays.toString(values);
 
@@ -41,13 +42,13 @@ public class AssertionExceptionTest {
 
         AssertionEntry entry = new AssertionEntry();
         entry.setType(ASSERTION);
-        entry.setName(function.name());
+        entry.setName(extractNamedName(function));
         entry.setAssertionClass(function.getClass().getName());
 
         try {
             throw new AssertionException(entry, function.getArgs(), values, "Invalid");
         } catch(AssertionException ex) {
-            String expected = ASSERTION.name().toLowerCase() + "=" + function.name()
+            String expected = ASSERTION.name().toLowerCase() + "=" + extractNamedName(function)
                 + "(" + function.getClass().getName() + ")"
                 + " args=" + Arrays.toString(function.getArgs())
                 + " values=" + Arrays.toString(values)

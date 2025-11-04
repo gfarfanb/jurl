@@ -3,12 +3,10 @@ package com.legadi.cli.jurl.assertions;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class DoesNotMatchAssertionFunction implements AssertionFunction {
+import com.legadi.cli.jurl.common.annotations.Named;
 
-    @Override
-    public String name() {
-        return "DOES_NOT_MATCH";
-    }
+@Named(name = "DOES_NOT_MATCH")
+public class DoesNotMatchAssertionFunction implements AssertionFunction {
 
     @Override
     public String[] getArgs() {
@@ -21,5 +19,4 @@ public class DoesNotMatchAssertionFunction implements AssertionFunction {
         Matcher matcher = pattern.matcher(args[1]);
         return !matcher.matches();
     }
-
 }

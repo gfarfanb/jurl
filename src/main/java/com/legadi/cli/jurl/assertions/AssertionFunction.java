@@ -1,15 +1,9 @@
 package com.legadi.cli.jurl.assertions;
 
-import com.legadi.cli.jurl.common.Named;
 import com.legadi.cli.jurl.exception.AssertionException;
 import com.legadi.cli.jurl.model.AssertionEntry;
 
-public interface AssertionFunction extends Named {
-
-    @Override
-    default boolean allowOverride() {
-        return false;
-    }
+public interface AssertionFunction {
 
     String[] getArgs();
 

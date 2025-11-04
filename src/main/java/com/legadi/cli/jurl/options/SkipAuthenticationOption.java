@@ -3,18 +3,10 @@ package com.legadi.cli.jurl.options;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_AUTHENTICATION;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 
+@Named(name = "--not-auth", alias = "-na")
 public class SkipAuthenticationOption extends Option {
-
-    @Override
-    public String name() {
-        return "--not-auth";
-    }
-
-    @Override
-    public String alias() {
-        return "-na";
-    }
 
     @Override
     public String[] getArgs() {

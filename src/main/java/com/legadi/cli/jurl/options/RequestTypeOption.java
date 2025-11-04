@@ -3,18 +3,10 @@ package com.legadi.cli.jurl.options;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_REQUEST_TYPE;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 
+@Named(name = "--request-type", alias = "-rt")
 public class RequestTypeOption extends Option {
-
-    @Override
-    public String name() {
-        return "--request-type";
-    }
-
-    @Override
-    public String alias() {
-        return "-rt";
-    }
 
     @Override
     public String[] getArgs() {

@@ -1,13 +1,15 @@
 package com.legadi.cli.jurl.modifiers;
 
+import static com.legadi.cli.jurl.common.annotations.Evaluable.Operation.STARTS_WITH;
+
 import java.util.function.Function;
 
-public class PrefixValueModifier implements ValueModifier {
+import com.legadi.cli.jurl.common.annotations.Evaluable;
+import com.legadi.cli.jurl.common.annotations.Named;
 
-    @Override
-    public String name() {
-        return "prefix";
-    }
+@Named(name = "prefix")
+@Evaluable(values = { "prefix" }, op = STARTS_WITH)
+public class PrefixValueModifier implements ValueModifier {
 
     @Override
     public String[] getArgs() {

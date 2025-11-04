@@ -5,18 +5,10 @@ import static com.legadi.cli.jurl.common.CommonUtils.toGroupParam;
 import java.util.Optional;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 
+@Named(name = "--group-coll", alias = "-gc")
 public class GroupCollectionOption extends Option {
-
-    @Override
-    public String name() {
-        return "--group-coll";
-    }
-
-    @Override
-    public String alias() {
-        return "-gc";
-    }
 
     @Override
     public String[] getArgs() {

@@ -3,18 +3,10 @@ package com.legadi.cli.jurl.options;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_ASSERTIONS;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 
+@Named(name = "--not-assert", alias = "-ns")
 public class SkipAssertionsOption extends Option {
-
-    @Override
-    public String name() {
-        return "--not-assert";
-    }
-
-    @Override
-    public String alias() {
-        return "-ns";
-    }
 
     @Override
     public String[] getArgs() {

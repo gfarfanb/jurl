@@ -1,5 +1,6 @@
 package com.legadi.cli.jurl.parser;
 
+import static com.legadi.cli.jurl.common.AnnotationsUtils.extractTypedType;
 import static com.legadi.cli.jurl.common.CommonUtils.getAllFields;
 import static com.legadi.cli.jurl.common.CommonUtils.getDefaultFieldIndex;
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
@@ -10,6 +11,7 @@ import static com.legadi.cli.jurl.common.CommonUtils.trim;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.containsName;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findAll;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findByNameOrFail;
+import static com.legadi.cli.jurl.common.annotations.Evaluable.Operation.EQUALS_IGNORE_CASE;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -32,6 +34,8 @@ import java.util.stream.Collectors;
 import com.legadi.cli.jurl.assertions.AssertionFunction;
 import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Evaluable;
+import com.legadi.cli.jurl.common.annotations.Typed;
 import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.exception.RequestException;
 import com.legadi.cli.jurl.executor.HeaderAuthenticator;
@@ -48,6 +52,8 @@ import com.legadi.cli.jurl.options.Option;
 import com.legadi.cli.jurl.options.OptionsReader;
 import com.legadi.cli.jurl.options.OptionsReader.OptionEntry;
 
+@Typed(type = "http")
+@Evaluable(values = { "http" }, op = EQUALS_IGNORE_CASE)
 public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
 
     private static final Logger LOGGER = Logger.getLogger(HTTPRequestParser.class.getName());
@@ -95,11 +101,6 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
         public Pattern getPattern() {
             return pattern;
         }
-    }
-
-    @Override
-    public String type() {
-        return "http";
     }
 
     @Override
@@ -457,7 +458,8 @@ public class HTTPRequestParser implements RequestParser<HTTPRequestEntry> {
             RequestFileSupplier fileSupplier,
             Supplier<HTTPMockEntry> mockSupplier,
             String line) {
-        List<HeaderAuthenticator<?, ?>> headerAuthenticators = findAll(HeaderAuthenticator.class, type());
+        List<HeaderAuthenticator<?, ?>> headerAuthenticators = findAll(HeaderAuthenticator.class,
+            extractTypedType(this));
         Set<String> authElements = headerAuthenticators.stream()
             .map(HeaderAuthenticator::getParserElement)
             .map(String::toLowerCase)

@@ -1,13 +1,15 @@
 package com.legadi.cli.jurl.modifiers;
 
+import static com.legadi.cli.jurl.common.annotations.Evaluable.Operation.STARTS_WITH;
+
 import java.math.BigDecimal;
 
-public class SubtractValueModifier extends NumberValueModifier {
+import com.legadi.cli.jurl.common.annotations.Evaluable;
+import com.legadi.cli.jurl.common.annotations.Named;
 
-    @Override
-    public String name() {
-        return "subtract";
-    }
+@Named(name = "subtract")
+@Evaluable(values = { "subtract" }, op = STARTS_WITH)
+public class SubtractValueModifier extends NumberValueModifier {
 
     @Override
     public BigDecimal apply(BigDecimal left, BigDecimal right) {

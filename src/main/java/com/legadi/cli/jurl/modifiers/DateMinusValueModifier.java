@@ -1,14 +1,16 @@
 package com.legadi.cli.jurl.modifiers;
 
+import static com.legadi.cli.jurl.common.annotations.Evaluable.Operation.STARTS_WITH;
+
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
-public class DateMinusValueModifier extends DateOperationValueModifier {
+import com.legadi.cli.jurl.common.annotations.Evaluable;
+import com.legadi.cli.jurl.common.annotations.Named;
 
-    @Override
-    public String name() {
-        return "date-minus";
-    }
+@Named(name = "date_minus")
+@Evaluable(values = { "date_minus" }, op = STARTS_WITH)
+public class DateMinusValueModifier extends DateOperationValueModifier {
 
     @Override
     protected LocalDateTime apply(LocalDateTime date, long input, ChronoUnit timeUnit) {

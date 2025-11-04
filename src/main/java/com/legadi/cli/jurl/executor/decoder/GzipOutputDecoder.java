@@ -1,5 +1,6 @@
 package com.legadi.cli.jurl.executor.decoder;
 
+import static com.legadi.cli.jurl.common.annotations.Evaluable.Operation.EQUALS_IGNORE_CASE;
 import static java.util.logging.Level.FINE;
 
 import java.io.FileInputStream;
@@ -9,14 +10,12 @@ import java.nio.file.Paths;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
+import com.legadi.cli.jurl.common.annotations.Evaluable;
+
+@Evaluable(values = { "gzip", "x-gzip" }, op = EQUALS_IGNORE_CASE)
 public class GzipOutputDecoder implements OutputDecoder {
 
     private static final Logger LOGGER = Logger.getLogger(GzipOutputDecoder.class.getName());
-
-    @Override
-    public String[] types() {
-        return new String[] { "gzip", "x-gzip" };
-    }
 
     @Override
     public Path apply(Path sourcePath) {

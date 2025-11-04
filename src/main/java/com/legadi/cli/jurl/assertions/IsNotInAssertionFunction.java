@@ -3,12 +3,10 @@ package com.legadi.cli.jurl.assertions;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class IsNotInAssertionFunction implements AssertionFunction {
+import com.legadi.cli.jurl.common.annotations.Named;
 
-    @Override
-    public String name() {
-        return "IS_NOT_IN";
-    }
+@Named(name = "IS_NOT_IN")
+public class IsNotInAssertionFunction implements AssertionFunction {
 
     @Override
     public String[] getArgs() {

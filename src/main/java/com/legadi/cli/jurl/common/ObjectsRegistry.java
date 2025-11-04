@@ -2,19 +2,22 @@ package com.legadi.cli.jurl.common;
 
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
+import static com.legadi.cli.jurl.common.CommonUtils.isNotEmpty;
 import static com.legadi.cli.jurl.common.LoaderUtils.instantiate;
 import static com.legadi.cli.jurl.common.LoaderUtils.typeOf;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.legadi.cli.jurl.assertions.AssertionFunction;
 import com.legadi.cli.jurl.assertions.ContainsAssertionFunction;
@@ -39,6 +42,9 @@ import com.legadi.cli.jurl.assertions.LessThanOrEqualsToAssertionFunction;
 import com.legadi.cli.jurl.assertions.MatchesAssertionFunction;
 import com.legadi.cli.jurl.assertions.NotEqualsToAssertionFunction;
 import com.legadi.cli.jurl.assertions.StartsWithAssertionFunction;
+import com.legadi.cli.jurl.common.annotations.ConfigReplaceable;
+import com.legadi.cli.jurl.common.annotations.Evaluable;
+import com.legadi.cli.jurl.common.annotations.Named;
 import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.executor.HeaderAuthenticator;
 import com.legadi.cli.jurl.executor.RequestExecutor;
@@ -119,17 +125,14 @@ import com.legadi.cli.jurl.parser.RequestParser;
 
 public class ObjectsRegistry {
 
-    private static final Map<Class<?>, List<Pair<Evaluable, Spec>>> EVALUABLES = new HashMap<>();
-    private static final Map<Class<?>, Map<String, Spec>> NAMED = new HashMap<>();
-
-    private static final List<Pair<Evaluable, Spec>> EMTPY_EVALUABLES = new ArrayList<>();
-    private static final Map<String, Spec> EMTPY_NAMED = new HashMap<>();
+    private static final Map<Class<?>, List<Pair<Predicate<String>, Class<?>>>> EVALUABLES = new HashMap<>();
+    private static final Map<Class<?>, Map<String, Class<?>>> NAMED = new HashMap<>();
+    private static final Map<Class<?>, Object[]> CLASSES_ARGS = new HashMap<>();
 
     private static final Set<Class<?>> GROUP_CLASSES = new HashSet<>();
+    private static final Set<Class<?>> REGISTERED_CLASSES = new HashSet<>();
+    private static final Set<Class<?>> REGISTERED_BY_CLASS_NAMES = new HashSet<>();
     private static final Set<Class<?>> CONFIG_REPLACEABLE_CLASSES = new HashSet<>();
-    private static final Map<Class<?>, Spec> REGISTERED_CLASSES = new HashMap<>();
-
-    private static final Map<String, Spec> REGISTERED_BY_CLASS_NAMES = new HashMap<>();
 
     static {
         register(Option.class, CleanOutputOption.class);
@@ -230,87 +233,85 @@ public class ObjectsRegistry {
 
     private ObjectsRegistry() {}
 
-    public static <T> T register(Class<?> groupClass, String typeClass, Object... args) {
-        if(REGISTERED_BY_CLASS_NAMES.get(typeClass) != null) {
-            Spec entry = REGISTERED_BY_CLASS_NAMES.get(typeClass);
-            return instantiate(entry.getTypeClass(), entry.getArgs());
-        } else {
-            Class<?> type = typeOf(typeClass);
-            T instance = register(groupClass, type, args);
-            REGISTERED_BY_CLASS_NAMES.put(typeClass, new Spec(type, args));
-            return instance;
-        }
+    public static void register(Class<?> groupClass, String typeClassName, Object... args) {
+        Class<?> typeClass = typeOf(typeClassName);
+        REGISTERED_BY_CLASS_NAMES.add(typeClass);
+        register(groupClass, typeClass, args);
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T> T register(Class<?> groupClass, Class<?> typeClass, Object... args) {
+    public static void register(Class<?> groupClass, Class<?> typeClass, Object... args) {
         boolean wasRegistered = false;
-        Object result = null;
 
-        if(isSubClassOf(Evaluable.class, typeClass)) {
-            result = registerEvaluable(groupClass, typeClass, args);
+        if(typeClass.isAnnotationPresent(Evaluable.class)) {
+            registerEvaluable(groupClass, typeClass, args);
             wasRegistered = true;
         }
 
-        if(isSubClassOf(Named.class, typeClass)) {
-            result = registerNamed(groupClass, typeClass, args);
+        if(typeClass.isAnnotationPresent(Named.class)) {
+            registerNamed(groupClass, typeClass, args);
             wasRegistered = true;
         }
 
-        if(isSubClassOf(ConfigReplaceable.class, typeClass)) {
+        if(typeClass.isAnnotationPresent(ConfigReplaceable.class)) {
             CONFIG_REPLACEABLE_CLASSES.add(typeClass);
         }
 
         if(!wasRegistered) {
             throw new IllegalStateException("Type was not registered: " + typeClass);
-        } else {
-            GROUP_CLASSES.add(groupClass);
-            REGISTERED_CLASSES.put(typeClass, new Spec(typeClass, args));
         }
 
-        return (T) result;
+        GROUP_CLASSES.add(groupClass);
+        REGISTERED_CLASSES.add(typeClass);
+
+        if(isNotEmpty(args)) {
+            CLASSES_ARGS.put(typeClass, args);
+        }
     }
 
-    public static boolean containsName(Class<? extends Named> groupClass, String name) {
-        Spec entry = queryLastNamed(groupClass, name);
-        return entry != null;
+    public static boolean containsName(Class<?> groupClass, String name) {
+        Class<?> typeClass = queryLastNamed(groupClass, name);
+        return typeClass != null;
     }
 
-    public static <T extends Named> Optional<T> findByName(Class<? extends Named> typeClass, String name) {
-        return Optional.ofNullable(queryLastNamed(typeClass, name))
-            .map(spec -> instantiate(spec.getTypeClass(), spec.getArgs()));
+    public static <T> Optional<T> findByName(Class<?> groupClass, String name) {
+        return Optional.ofNullable(queryLastNamed(groupClass, name))
+            .map(typeClass -> instantiate(typeClass, CLASSES_ARGS.get(typeClass)));
     }
 
-    public static <T extends Named> T findByNameOrFail(Class<? extends Named> typeClass, String name) {
-        Spec entry = queryLastNamed(typeClass, name);
-        return validateAndInstantiate(entry, typeClass, name);
+    public static <T> T findByNameOrFail(Class<?> groupClass, String name) {
+        Class<?> typeClass = queryLastNamed(groupClass, name);
+        return validateAndInstantiate(groupClass, typeClass, name);
     }
 
-    public static <T extends Evaluable> Optional<T> find(Class<? extends Evaluable> typeClass, String input) {
-        return Optional.ofNullable(queryLastEvaluable(typeClass, input))
-            .map(spec -> instantiate(spec.getTypeClass(), spec.getArgs()));
+    public static <T> Optional<T> find(Class<?> groupClass, String input) {
+        return Optional.ofNullable(queryLastEvaluable(groupClass, input))
+            .map(typeClass -> instantiate(typeClass, CLASSES_ARGS.get(typeClass)));
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends Evaluable> List<T> findAll(Class<? extends Evaluable> typeClass, String input) {
-        return queryAllEvaluable(typeClass, input)
+    public static <T> List<T> findAll(Class<?> groupClass, String input) {
+        return queryAllEvaluable(groupClass, input)
             .stream()
-            .map(spec -> instantiate(spec.getTypeClass(), spec.getArgs()))
-            .map(spec -> (T) spec)
+            .map(typeClass -> instantiate(typeClass, CLASSES_ARGS.get(typeClass)))
+            .map(instance -> (T) instance)
             .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    public static <T extends Evaluable> T findOrFail(Class<? extends Evaluable> typeClass, String input) {
-        Spec entry = queryLastEvaluable(typeClass, input);
-        return validateAndInstantiate(entry, typeClass, input);
+    public static <T> T findOrFail(Class<?> groupClass, String input) {
+        Class<?> typeClass = queryLastEvaluable(groupClass, input);
+        return validateAndInstantiate(groupClass, typeClass, input);
+    }
+
+    public static <T> T findByTypeName(String typeClassName) {
+        Class<?> typeClass = typeOf(typeClassName);
+        return findByType(typeClass);
     }
 
     public static <T> T findByType(Class<?> typeClass) {
-        Spec entry = REGISTERED_CLASSES.get(typeClass);
-        if(entry == null) {
+        if(!REGISTERED_CLASSES.contains(typeClass)) {
             throw new IllegalStateException("Unable to find type: " + typeClass);
         }
-        return instantiate(entry.getTypeClass(), entry.getArgs());
+        return instantiate(typeClass, CLASSES_ARGS.get(typeClass));
     }
 
     public static boolean isSubClassOf(Class<?> expectedClass, Class<?> typeClass) {
@@ -328,57 +329,80 @@ public class ObjectsRegistry {
 
     public static <T> List<T> getAllRegisteredByClassOf(Class<T> groupClass) {
         return getAllRegisteredPredicate(groupClass,
-            spec -> REGISTERED_BY_CLASS_NAMES.get(spec.getTypeClass().getName()) == null);
+            typeClass -> !REGISTERED_BY_CLASS_NAMES.contains(typeClass));
     }
 
     public static <T> List<T> getAllRegisteredByNameOf(Class<T> groupClass) {
         return getAllRegisteredPredicate(groupClass,
-            spec -> REGISTERED_BY_CLASS_NAMES.get(spec.getTypeClass().getName()) != null);
+            typeClass -> REGISTERED_BY_CLASS_NAMES.contains(typeClass));
     }
 
-    public static List<ConfigReplaceable> getAllRegisteredConfigReplaceable() {
+    public static List<Object> getAllRegisteredConfigReplaceable() {
         return CONFIG_REPLACEABLE_CLASSES
             .stream()
-            .map(type -> REGISTERED_CLASSES.get(type))
-            .map(spec -> instantiate(spec.getTypeClass(), spec.getArgs()))
-            .map(object -> (ConfigReplaceable) object)
+            .map(typeClass -> instantiate(typeClass, CLASSES_ARGS.get(typeClass)))
             .collect(Collectors.toList());
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> List<T> getAllRegisteredPredicate(Class<T> groupClass, Predicate<Spec> filter) {
+    private static <T> List<T> getAllRegisteredPredicate(Class<T> groupClass, Predicate<Class<?>> filter) {
         return entriesByGroup(groupClass)
             .stream()
             .filter(filter)
-            .map(spec -> instantiate(spec.getTypeClass(), spec.getArgs()))
-            .map(object -> (T) object)
+            .map(typeClass -> instantiate(typeClass, CLASSES_ARGS.get(typeClass)))
+            .map(instance -> (T) instance)
             .collect(Collectors.toList());
     }
 
-    private static Object registerEvaluable(Class<?> groupClass, Class<?> typeClass, Object... args) {
-        List<Pair<Evaluable, Spec>> entries = EVALUABLES.get(groupClass);
+    private static void registerEvaluable(Class<?> groupClass, Class<?> typeClass, Object... args) {
+        List<Pair<Predicate<String>, Class<?>>> entries = EVALUABLES.get(groupClass);
 
         if(entries == null) {
             entries = new ArrayList<>();
             EVALUABLES.put(groupClass, entries);
         }
 
-        Evaluable evaluable = instantiate(typeClass, args);
+        Evaluable evaluable = typeClass.getAnnotation(Evaluable.class);
+        Predicate<String> evaluation = null;
 
-        entries.add(new Pair<>(evaluable, new Spec(typeClass, args)));
+        switch(evaluable.op()) {
+            case CONTAINS:
+                evaluation = input -> Arrays.stream(evaluable.values())
+                    .anyMatch(v -> v.toLowerCase().contains(input.toLowerCase()));
+                break;
+            case ENDS_WITH:
+                evaluation = input -> Arrays.stream(evaluable.values())
+                    .anyMatch(v -> v.toLowerCase().endsWith(input.toLowerCase()));
+                break;
+            case EQUALS:
+                evaluation = input -> Arrays.stream(evaluable.values())
+                    .anyMatch(v -> v.toLowerCase().equals(input.toLowerCase()));
+                break;
+            case EQUALS_IGNORE_CASE:
+                evaluation = input -> Arrays.stream(evaluable.values())
+                    .anyMatch(v -> v.toLowerCase().equals(input.toLowerCase()));
+                break;
+            case STARTS_WITH:
+                evaluation = input -> Arrays.stream(evaluable.values())
+                    .anyMatch(v -> v.toLowerCase().startsWith(input.toLowerCase()));
+                break;
+            case ALWAYS_TRUE:
+                evaluation = input -> true;
+                break;
+        }
 
-        return evaluable;
+        entries.add(new Pair<>(evaluation, typeClass));
     }
 
-    private static Object registerNamed(Class<?> groupClass, Class<?> typeClass, Object... args) {
-        Map<String, Spec> entries = NAMED.get(groupClass);
+    private static void registerNamed(Class<?> groupClass, Class<?> typeClass, Object... args) {
+        Map<String, Class<?>> entries = NAMED.get(groupClass);
 
         if(entries == null) {
             entries = new HashMap<>();
             NAMED.put(groupClass, entries);
         }
 
-        Named named = instantiate(typeClass, args);
+        Named named = typeClass.getAnnotation(Named.class);
 
         if(!named.allowOverride()) {
             if(entries.get(named.name().toLowerCase()) != null) {
@@ -389,25 +413,23 @@ public class ObjectsRegistry {
             }
         }
 
-        entries.put(named.name().toLowerCase(), new Spec(typeClass, args));
+        entries.put(named.name().toLowerCase(), typeClass);
 
         if(isNotBlank(named.alias())) {
-            entries.put(named.alias().toLowerCase(), new Spec(typeClass, args));
+            entries.put(named.alias().toLowerCase(), typeClass);
         }
-
-        return named;
     }
 
-    private static <T> T validateAndInstantiate(Spec entry, Class<?> typeClass, String input) {
-        if(entry == null) {
-            throw new CommandException("Unable to obtain a registered class for:" + typeClass + ":" + input);
+    private static <T> T validateAndInstantiate(Class<?> groupClass, Class<?> typeClass, String input) {
+        if(typeClass == null) {
+            throw new CommandException("Unable to obtain a registered class for:" + groupClass + ":" + input);
         }
 
-        return instantiate(entry.getTypeClass(), entry.getArgs());
+        return instantiate(typeClass, CLASSES_ARGS.get(typeClass));
     }
 
-    private static <T extends Evaluable> Spec queryLastEvaluable(Class<T> typeClass, String input) {
-        List<Spec> result = queryAllEvaluable(typeClass, input);
+    private static Class<?> queryLastEvaluable(Class<?> groupClass, String input) {
+        List<Class<?>> result = queryAllEvaluable(groupClass, input);
 
         if(result.isEmpty()) {
             return null;
@@ -416,72 +438,38 @@ public class ObjectsRegistry {
         return result.get(result.size() - 1);
     }
 
-    private static <T extends Evaluable> List<Spec> queryAllEvaluable(Class<T> typeClass, String input) {
-        return EVALUABLES.getOrDefault(typeClass, EMTPY_EVALUABLES)
-            .stream()
-            .filter(p -> p.getLeft().accepts(input))
+    private static List<Class<?>> queryAllEvaluable(Class<?> groupClass, String input) {
+        return Optional.ofNullable(EVALUABLES.get(groupClass))
+            .map(List::stream)
+            .orElse(Stream.empty())
+            .filter(p -> p.getLeft().test(input))
             .map(Pair::getRight)
             .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    private static <T extends Named> Spec queryLastNamed(Class<T> typeClass, String name) {
+    private static Class<?> queryLastNamed(Class<?> groupClass, String name) {
         if(isBlank(name)) {
             return null;
         }
-        return NAMED.getOrDefault(typeClass, EMTPY_NAMED).get(name.toLowerCase());
+        return Optional.ofNullable(NAMED.get(groupClass))
+            .map(classes -> classes.get(name.toLowerCase()))
+            .orElse(null);
     }
 
-    private static Set<Spec> entriesByGroup(Class<?> groupClass) {
-        Set<Spec> entries = new HashSet<>();
-        entries.addAll(EVALUABLES.getOrDefault(groupClass, EMTPY_EVALUABLES)
-            .stream()
+    private static Set<Class<?>> entriesByGroup(Class<?> groupClass) {
+        Set<Class<?>> entries = new HashSet<>();
+        entries.addAll(Optional.ofNullable(EVALUABLES.get(groupClass))
+            .map(List::stream)
+            .orElse(Stream.empty())
             .map(Pair::getRight)
             .collect(Collectors.toSet())
         );
-        entries.addAll(NAMED.getOrDefault(groupClass, EMTPY_NAMED)
-            .values()
-            .stream()
+        entries.addAll(Optional.ofNullable(NAMED.get(groupClass))
+            .map(Map::values)
+            .map(Collection::stream)
+            .orElse(Stream.empty())
             .collect(Collectors.toSet())
         );
         return entries;
-    }
-
-    public static class Spec {
-
-        private final Class<?> typeClass;
-        private final Object[] args;
-
-        public Spec(Class<?> typeClass, Object[] args) {
-            this.typeClass = typeClass;
-            this.args = args;
-        }
-
-        public Class<?> getTypeClass() {
-            return typeClass;
-        }
-
-        public Object[] getArgs() {
-            return args;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(typeClass);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            Spec other = (Spec) obj;
-            return Objects.equals(typeClass, other.typeClass);
-        }
     }
 }

@@ -110,11 +110,11 @@ public class StringExpanderTest {
         values.put("name", "{{lap-1}}");
         values.put("lap-1", "{{lap-2}}");
         values.put("lap-2", "{{lap-3}}");
-        values.put("lap-3", "{{FULL-NAME:}}");
+        values.put("lap-3", "{{FULL_NAME:}}");
 
         String expanded = expander.replaceAllInContent(values, "name: {{name}}");
 
-        Assertions.assertNotEquals("name: {{FULL-NAME:}}", expanded);
+        Assertions.assertNotEquals("name: {{FULL_NAME:}}", expanded);
         Assertions.assertNotEquals("name: {{lap-1}}", expanded);
         Assertions.assertNotEquals("name: {{lap-2}}", expanded);
         Assertions.assertNotEquals("name: {{lap-3}}", expanded);

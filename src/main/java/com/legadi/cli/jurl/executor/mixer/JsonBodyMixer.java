@@ -7,6 +7,7 @@ import static com.legadi.cli.jurl.common.JsonUtils.loadJsonFile;
 import static com.legadi.cli.jurl.common.JsonUtils.toJsonString;
 import static com.legadi.cli.jurl.common.JsonUtils.writeJsonFile;
 import static com.legadi.cli.jurl.common.WriterUtils.expandFile;
+import static com.legadi.cli.jurl.common.annotations.Evaluable.Operation.EQUALS_IGNORE_CASE;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -22,18 +23,17 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.reflect.TypeToken;
 import com.legadi.cli.jurl.common.OutputPathBuilder;
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Evaluable;
+import com.legadi.cli.jurl.common.annotations.Typed;
 import com.legadi.cli.jurl.executor.mixer.adapter.RuleEntryDeserializer;
 
+@Typed(type = "json")
+@Evaluable(values = { "json" }, op = EQUALS_IGNORE_CASE)
 public class JsonBodyMixer implements BodyMixer {
 
     public enum ListRule {
 
         REPLACE, ADD_BEGIN, ADD_END, MERGE
-    }
-
-    @Override
-    public String type() {
-        return "json";
     }
 
     @Override

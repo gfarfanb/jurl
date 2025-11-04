@@ -2,12 +2,10 @@ package com.legadi.cli.jurl.assertions;
 
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 
-public class DoesNotContainsAssertionFunction implements AssertionFunction {
+import com.legadi.cli.jurl.common.annotations.Named;
 
-    @Override
-    public String name() {
-        return "DOES_NOT_CONTAINS";
-    }
+@Named(name = "DOES_NOT_CONTAINS")
+public class DoesNotContainsAssertionFunction implements AssertionFunction {
 
     @Override
     public String[] getArgs() {
@@ -20,5 +18,4 @@ public class DoesNotContainsAssertionFunction implements AssertionFunction {
             && isNotBlank(args[1])
             && !args[0].contains(args[1]);
     }
-
 }

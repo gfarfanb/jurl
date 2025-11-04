@@ -3,18 +3,10 @@ package com.legadi.cli.jurl.options;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_START_IN_STEP_INDEX_OR_NAME;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 
+@Named(name = "--start-in", alias = "-si")
 public class StartInStepOption extends Option {
-
-    @Override
-    public String name() {
-        return "--start-in";
-    }
-
-    @Override
-    public String alias() {
-        return "-si";
-    }
 
     @Override
     public String[] getArgs() {

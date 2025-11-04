@@ -3,18 +3,10 @@ package com.legadi.cli.jurl.options;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_USER_INPUT;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 
+@Named(name = "--no-input", alias = "-ni")
 public class SkipUserInputOption extends Option {
-
-    @Override
-    public String name() {
-        return "--no-input";
-    }
-
-    @Override
-    public String alias() {
-        return "-ni";
-    }
 
     @Override
     public String[] getArgs() {

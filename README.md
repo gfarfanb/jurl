@@ -120,7 +120,7 @@ Setup the main output variables
 
 **Windows**
 ```bat
-jurl -es default openEditorCommand "\"%PROGRAMFILES%\Sublime Text\subl.exe\" \"{{:win-separator:HTTP/response.path}}\""
+jurl -es default openEditorCommand "\"%PROGRAMFILES%\Sublime Text\subl.exe\" \"{{:win_separator:HTTP/response.path}}\""
 jurl -es default downloadsLocation "%USERPROFILE%\Downloads"
 ```
 
@@ -139,5 +139,5 @@ Follow this project's [Contribution guidelines](.github/CONTRIBUTING.md).
 
 ## License
 
-Copyright © 2023-2024, [Giovanni Farfán B.](https://github.com/gfarfanb). Released under the 
+Copyright © 2023-2025, [Giovanni Farfán B.](https://github.com/gfarfanb). Released under the 
 [MIT License](./LICENSE).

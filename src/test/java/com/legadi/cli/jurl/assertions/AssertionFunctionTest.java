@@ -1,5 +1,6 @@
 package com.legadi.cli.jurl.assertions;
 
+import static com.legadi.cli.jurl.common.AnnotationsUtils.extractNamedName;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findByNameOrFail;
 
 import org.junit.jupiter.api.Assertions;
@@ -18,7 +19,7 @@ public abstract class AssertionFunctionTest<T extends AssertionFunction> {
     public AssertionFunctionTest(String name) {
         this.function = (T) findByNameOrFail(AssertionFunction.class, name);
         this.assertionEntry = new AssertionEntry();
-        assertionEntry.setName(function.name());
+        assertionEntry.setName(extractNamedName(function));
         assertionEntry.setType(AssertionType.ASSERTION);
     }
 

@@ -10,6 +10,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Evaluable;
+import com.legadi.cli.jurl.common.annotations.Named;
+import com.legadi.cli.jurl.common.annotations.Typed;
 import com.legadi.cli.jurl.embedded.executor.HTTPRequestTestExecutor;
 import com.legadi.cli.jurl.embedded.executor.HTTPResponseTestProcessor;
 import com.legadi.cli.jurl.embedded.util.RequestCatcher;
@@ -61,43 +64,31 @@ public class RequestTypeOptionTest extends OptionAbstractTest<RequestTypeOption>
             ));
     }
 
+    @Typed(type = "https")
+    @Evaluable(values = { "https" }, op = Evaluable.Operation.EQUALS_IGNORE_CASE)
     public static class HTTPSParser extends HTTPRequestParser {
 
-        @Override
-        public String type() {
-            return "https";
-        }
     }
 
+    @Typed(type = "https")
+    @Named(name = "https", allowOverride = true)
     public static class HTTPSModifier extends HTTPRequestModifier {
 
-        @Override
-        public String name() {
-            return "https";
-        }
     }
 
+    @Named(name = "https", allowOverride = true)
     public static class HTTPSExecutor extends HTTPRequestTestExecutor {
 
         public HTTPSExecutor(UUID identifier, RequestCatcher requestCatcher) {
             super(identifier, requestCatcher);
         }
-
-        @Override
-        public String name() {
-            return "https";
-        }
     }
 
+    @Named(name = "https", allowOverride = true)
     public static class HTTPSProcessor extends HTTPResponseTestProcessor {
 
         public HTTPSProcessor(UUID identifier, RequestCatcher requestCatcher) {
             super(identifier, requestCatcher);
-        }
-
-        @Override
-        public String name() {
-            return "https";
         }
     }
 }

@@ -9,17 +9,14 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 
+@Named(name = "LOREM_IPSUM")
 public class LoremIpsumGenerator implements Generator {
 
     public static final int DEFAULT_WORDS = 100;
 
     private static final int RANGE_LENGTH = 10;
-
-    @Override
-    public String name() {
-        return "LOREM-IPSUM";
-    }
 
     @Override
     public String getValue(Settings settings, String param) {

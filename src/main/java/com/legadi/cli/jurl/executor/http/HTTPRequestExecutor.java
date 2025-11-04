@@ -1,6 +1,7 @@
 package com.legadi.cli.jurl.executor.http;
 
 import static com.legadi.cli.jurl.assertions.AssertionsResolver.evaluate;
+import static com.legadi.cli.jurl.common.AnnotationsUtils.extractNamedName;
 import static com.legadi.cli.jurl.common.Command.exec;
 import static com.legadi.cli.jurl.common.CommonUtils.getOrDefault;
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
@@ -45,6 +46,7 @@ import com.legadi.cli.jurl.common.CurlBuilder;
 import com.legadi.cli.jurl.common.OutputPathBuilder;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.common.URLBuilder;
+import com.legadi.cli.jurl.common.annotations.Named;
 import com.legadi.cli.jurl.exception.RequestException;
 import com.legadi.cli.jurl.executor.HeaderAuthenticator;
 import com.legadi.cli.jurl.executor.RequestExecutor;
@@ -54,6 +56,7 @@ import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.HTTPRequestFileEntry;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 
+@Named(name = "http", allowOverride = true)
 public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HTTPResponseEntry> {
 
     private static final Logger LOGGER = Logger.getLogger(HTTPRequestExecutor.class.getName());
@@ -64,11 +67,6 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     private static final String MULTIPART_TWO_HYPHENS = "--";
     private static final int MULTIPART_MAX_BUFFER_SIZE = 1 * 1024 * 1024;
     private static final Pattern FILENAME_PATTERN = Pattern.compile(".*filename=(.*)");
-
-    @Override
-    public String name() {
-        return "http";
-    }
 
     @Override
     public TypeToken<HTTPRequestEntry> requestType() {
@@ -217,7 +215,8 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
     private void addHeaders(HttpURLConnection connection, Settings settings,
             HTTPRequestEntry request, CurlBuilder curlBuilder) {
         StringBuilder printableHeaders = new StringBuilder();
-        List<HeaderAuthenticator<HTTPRequestEntry, ?>> headerAuthenticators = findAll(HeaderAuthenticator.class, name());
+        List<HeaderAuthenticator<HTTPRequestEntry, ?>> headerAuthenticators = findAll(
+            HeaderAuthenticator.class, extractNamedName(this));
 
         headerAuthenticators.stream()
             .map(auth -> auth.getAuthHeaders(settings, request))
@@ -536,6 +535,8 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
             Path responsePath = readOutput(connection, settings, requestInputPath, request, filename);
 
             response.setResponsePath(responsePath);
+
+            printableResponse.append("\n");
 
             if(isNotBlank(response.getResult())) {
                 printableResponse.append(response.getResult()).append("\n");

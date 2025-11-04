@@ -4,19 +4,11 @@ import static com.legadi.cli.jurl.common.CommonUtils.isNumeric;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTION_TIMES;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 import com.legadi.cli.jurl.exception.CommandException;
 
+@Named(name = "--times", alias = "-t")
 public class TimesRepeatOption extends Option {
-
-    @Override
-    public String name() {
-        return "--times";
-    }
-
-    @Override
-    public String alias() {
-        return "-t";
-    }
 
     @Override
     public String[] getArgs() {

@@ -2,12 +2,10 @@ package com.legadi.cli.jurl.assertions;
 
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 
-public class StartsWithAssertionFunction implements AssertionFunction {
+import com.legadi.cli.jurl.common.annotations.Named;
 
-    @Override
-    public String name() {
-        return "STARTS_WITH";
-    }
+@Named(name = "STARTS_WITH")
+public class StartsWithAssertionFunction implements AssertionFunction {
 
     @Override
     public String[] getArgs() {

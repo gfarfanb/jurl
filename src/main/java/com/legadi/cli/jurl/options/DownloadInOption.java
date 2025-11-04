@@ -3,18 +3,10 @@ package com.legadi.cli.jurl.options;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SAVE_OUTPUT_IN_LOCATION;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 
+@Named(name = "--download-in", alias = "-di")
 public class DownloadInOption extends Option {
-
-    @Override
-    public String name() {
-        return "--download-in";
-    }
-
-    @Override
-    public String alias() {
-        return "-di";
-    }
 
     @Override
     public String[] getArgs() {

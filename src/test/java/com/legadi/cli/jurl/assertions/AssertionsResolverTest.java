@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 import com.legadi.cli.jurl.exception.AssertionException;
 import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.model.AssertionEntry;
@@ -141,12 +142,8 @@ public class AssertionsResolverTest {
         return instance;
     }
 
+    @Named(name = "resolver")
     public static class ResolverAssertionFunction implements AssertionFunction {
-
-        @Override
-        public String name() {
-            return "resolver";
-        }
 
         @Override
         public String[] getArgs() {

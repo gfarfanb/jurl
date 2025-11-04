@@ -2,6 +2,7 @@ package com.legadi.cli.jurl.executor.http;
 
 import static com.legadi.cli.jurl.common.CommonUtils.getAllFields;
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
+import static com.legadi.cli.jurl.common.annotations.Evaluable.Operation.EQUALS_IGNORE_CASE;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -13,20 +14,19 @@ import java.util.logging.Logger;
 
 import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Evaluable;
+import com.legadi.cli.jurl.common.annotations.Typed;
 import com.legadi.cli.jurl.executor.HeaderAuthenticator;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.auth.HTTPBasicAuthEntry;
 
+@Typed(type = "http")
+@Evaluable(values = { "http" }, op = EQUALS_IGNORE_CASE)
 public class HTTPBasicHeaderAuthenticator implements HeaderAuthenticator<HTTPRequestEntry, HTTPBasicAuthEntry> {
 
     private static final Logger LOGGER = Logger.getLogger(HTTPBasicHeaderAuthenticator.class.getName());
 
     private static final Map<String, Field> BASIC_AUTH_FIELDS = getAllFields(HTTPBasicAuthEntry.class);
-
-    @Override
-    public String type() {
-        return "http";
-    }
 
     @Override
     public boolean requiresExecution() {

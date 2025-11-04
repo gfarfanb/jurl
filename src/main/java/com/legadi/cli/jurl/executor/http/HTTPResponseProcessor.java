@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.common.StringExpander;
+import com.legadi.cli.jurl.common.annotations.Named;
 import com.legadi.cli.jurl.exception.RequestException;
 import com.legadi.cli.jurl.executor.ResponseProcessor;
 import com.legadi.cli.jurl.executor.decoder.OutputDecoder;
@@ -36,6 +37,7 @@ import com.legadi.cli.jurl.model.RequestBehaviour;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 
+@Named(name = "http", allowOverride = true)
 public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry, HTTPResponseEntry> {
 
     private static final Logger LOGGER = Logger.getLogger(HTTPResponseProcessor.class.getName());
@@ -44,11 +46,6 @@ public class HTTPResponseProcessor implements ResponseProcessor<HTTPRequestEntry
     private static final String OUTPUT_PREFIX = "OUT/";
 
     private final Lock lock = new ReentrantLock();
-
-    @Override
-    public String name() {
-        return "http";
-    }
 
     @Override
     public Optional<AssertionResult> processResponse(Settings settings, HTTPRequestEntry request, HTTPResponseEntry response)

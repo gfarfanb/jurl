@@ -3,17 +3,10 @@ package com.legadi.cli.jurl.assertions;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+import com.legadi.cli.jurl.common.annotations.Named;
+
+@Named(name = "EQUALS_TO", alias = "==")
 public class EqualsToAssertionFunction extends OperatorAssertionFunction {
-
-    @Override
-    public String name() {
-        return "EQUALS_TO";
-    }
-
-    @Override
-    public String alias() {
-        return "==";
-    }
 
     @Override
     public String[] getArgs() {

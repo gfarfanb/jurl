@@ -1,5 +1,6 @@
 package com.legadi.cli.jurl.executor.http;
 
+import static com.legadi.cli.jurl.common.AnnotationsUtils.extractNamedName;
 import static com.legadi.cli.jurl.common.JsonUtils.loadJsonFile;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findByNameOrFail;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_MERGE_BODY_USING_TYPE;
@@ -340,7 +341,7 @@ public class HTTPRequestModifierTest {
         Assertions.assertFalse(request.getAssertions().isEmpty());
         Assertions.assertEquals("TEST", request.getAssertions().get(0).getName());
         Assertions.assertFalse(request.getOptions().isEmpty());
-        Assertions.assertEquals("--help", request.getOptions().get(0).getLeft().name());
+        Assertions.assertEquals("--help", extractNamedName(request.getOptions().get(0).getLeft()));
 
         Assertions.assertEquals("POST", request.getMethod());
         Assertions.assertFalse(request.getQueryParams().isEmpty());
@@ -786,7 +787,7 @@ public class HTTPRequestModifierTest {
 
         Assertions.assertEquals("5", flow.getDefaults().get("defaultInt"));
         Assertions.assertEquals("/path", flow.getSteps().get(0).getRequestInputPath());
-        Assertions.assertEquals("--set", flow.getSteps().get(0).getOptions().get(0).getLeft().name());
+        Assertions.assertEquals("--set", extractNamedName(flow.getSteps().get(0).getOptions().get(0).getLeft()));
         Assertions.assertEquals("field", flow.getSteps().get(0).getOptions().get(0).getRight()[0]);
         Assertions.assertEquals("5", flow.getSteps().get(0).getOptions().get(0).getRight()[1]);
     }

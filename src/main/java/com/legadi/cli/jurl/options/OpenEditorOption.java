@@ -3,18 +3,10 @@ package com.legadi.cli.jurl.options;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_OPEN_OUTPUT_IN_EDITOR;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 
+@Named(name = "--open-editor", alias = "-oe")
 public class OpenEditorOption extends Option {
-
-    @Override
-    public String name() {
-        return "--open-editor";
-    }
-
-    @Override
-    public String alias() {
-        return "-oe";
-    }
 
     @Override
     public String[] getArgs() {

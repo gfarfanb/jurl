@@ -1,13 +1,10 @@
 package com.legadi.cli.jurl.generators;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 
+@Named(name = "ESCAPED")
 public class EscapedGenerator implements Generator {
-
-    @Override
-    public String name() {
-        return "ESCAPED";
-    }
 
     @Override
     public String getValue(Settings settings, String param) {

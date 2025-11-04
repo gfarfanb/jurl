@@ -11,7 +11,7 @@ import com.legadi.cli.jurl.exception.CommandException;
 public class DateTimeGeneratorTest extends GeneratorAbstractTest {
 
     public DateTimeGeneratorTest() {
-        super("DATE-TIME");
+        super("DATE_TIME");
     }
 
     @Test

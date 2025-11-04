@@ -1,10 +1,13 @@
 package com.legadi.cli.jurl.options;
 
+import static com.legadi.cli.jurl.common.AnnotationsUtils.extractNamedAlias;
+import static com.legadi.cli.jurl.common.AnnotationsUtils.extractNamedName;
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.trim;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findByName;
+import static com.legadi.cli.jurl.common.ObjectsRegistry.findByTypeName;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.register;
 import static java.util.logging.Level.FINE;
 
@@ -40,10 +43,11 @@ public class OptionsReader {
                 continue;
             }
 
-            Option option = register(Option.class, trim(addOnOption));
+            register(Option.class, trim(addOnOption));
+            Option option = findByTypeName(addOnOption);
             LOGGER.info("Add-on registered: class=" + addOnOption
-                + " opt=" + option.name()
-                + " alias=" + option.alias());
+                + " opt=" + extractNamedName(option)
+                + " alias=" + extractNamedAlias(option));
         }
     }
 

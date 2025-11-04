@@ -5,13 +5,10 @@ import static com.legadi.cli.jurl.common.CommonUtils.nextIndex;
 import static com.legadi.cli.jurl.common.CommonUtils.trim;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 
+@Named(name = "PICK_ANY")
 public class PickAnyGenerator implements Generator {
-
-    @Override
-    public String name() {
-        return "PICK-ANY";
-    }
 
     @Override
     public String getValue(Settings settings, String param) {

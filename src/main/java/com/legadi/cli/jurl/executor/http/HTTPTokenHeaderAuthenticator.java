@@ -1,9 +1,11 @@
 package com.legadi.cli.jurl.executor.http;
 
+import static com.legadi.cli.jurl.common.AnnotationsUtils.extractTypedType;
 import static com.legadi.cli.jurl.common.CommonUtils.getAllFields;
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.toGeneratedParam;
 import static com.legadi.cli.jurl.common.JsonUtils.removeJsonProperties;
+import static com.legadi.cli.jurl.common.annotations.Evaluable.Operation.EQUALS_IGNORE_CASE;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -15,10 +17,12 @@ import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import com.legadi.cli.jurl.common.ConfigReplaceable;
 import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.common.StringExpander;
+import com.legadi.cli.jurl.common.annotations.ConfigReplaceable;
+import com.legadi.cli.jurl.common.annotations.Evaluable;
+import com.legadi.cli.jurl.common.annotations.Typed;
 import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.executor.HeaderAuthenticator;
 import com.legadi.cli.jurl.model.AssertionEntry;
@@ -26,8 +30,22 @@ import com.legadi.cli.jurl.model.AssertionType;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.auth.HTTPTokenAuthEntry;
 
-public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPRequestEntry, HTTPTokenAuthEntry>,
-        ConfigReplaceable {
+@Typed(type = "http")
+@Evaluable(values = { "http" }, op = EQUALS_IGNORE_CASE)
+@ConfigReplaceable(registeredProperties = {
+    HTTPTokenHeaderAuthenticator.PROP_GRANT_TYPE,
+    HTTPTokenHeaderAuthenticator.PROP_GRANT_TYPE_FIELD_NAME,
+    HTTPTokenHeaderAuthenticator.PROP_CLIENT_ID_FIELD_NAME,
+    HTTPTokenHeaderAuthenticator.PROP_CLIENT_SECRET_FIELD_NAME,
+    HTTPTokenHeaderAuthenticator.PROP_SCOPE_FIELD_NAME,
+    HTTPTokenHeaderAuthenticator.PROP_ACCESS_TOKEN_FIELD_NAME,
+    HTTPTokenHeaderAuthenticator.PROP_EXPIRES_IN_FIELD_NAME,
+    HTTPTokenHeaderAuthenticator.PROP_EXPIRES_IN_TIME_UNIT,
+    HTTPTokenHeaderAuthenticator.PROP_TOKEN_TYPE_FIELD_NAME,
+    HTTPTokenHeaderAuthenticator.PROP_REQUEST_METHOD,
+    HTTPTokenHeaderAuthenticator.PROP_CONTENT_TYPE
+})
+public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPRequestEntry, HTTPTokenAuthEntry> {
 
     private static final Logger LOGGER = Logger.getLogger(HTTPTokenHeaderAuthenticator.class.getName());
 
@@ -44,28 +62,6 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
     public static final String PROP_TOKEN_TYPE_FIELD_NAME = "httpTokenHeaderAuthTokenTypeFieldName";
     public static final String PROP_REQUEST_METHOD = "httpTokenHeaderAuthRequestMethod";
     public static final String PROP_CONTENT_TYPE = "httpTokenHeaderAuthContentType";
-
-    @Override
-    public String[] registeredProperties() {
-        return new String[] {
-            PROP_GRANT_TYPE,
-            PROP_GRANT_TYPE_FIELD_NAME,
-            PROP_CLIENT_ID_FIELD_NAME,
-            PROP_CLIENT_SECRET_FIELD_NAME,
-            PROP_SCOPE_FIELD_NAME,
-            PROP_ACCESS_TOKEN_FIELD_NAME,
-            PROP_EXPIRES_IN_FIELD_NAME,
-            PROP_EXPIRES_IN_TIME_UNIT,
-            PROP_TOKEN_TYPE_FIELD_NAME,
-            PROP_REQUEST_METHOD,
-            PROP_CONTENT_TYPE
-        };
-    }
-
-    @Override
-    public String type() {
-        return "http";
-    }
 
     @Override
     public boolean requiresExecution() {
@@ -135,11 +131,11 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
 
         String clientId = requestAuthEntry.get().getClientId();
         String[] properties = new String[] {
-            toGeneratedParam(type(), clientId, "expiration-millis"),
-            toGeneratedParam(type(), clientId, "access-token"),
-            toGeneratedParam(type(), clientId, "token-type"),
-            toGeneratedParam(type(), clientId, "expires-in." + getExpiresInTimeUnit(settings)),
-            toGeneratedParam(type(), clientId, "expiration-date")
+            toGeneratedParam(extractTypedType(this), clientId, "expiration-millis"),
+            toGeneratedParam(extractTypedType(this), clientId, "access-token"),
+            toGeneratedParam(extractTypedType(this), clientId, "token-type"),
+            toGeneratedParam(extractTypedType(this), clientId, "expires-in." + getExpiresInTimeUnit(settings)),
+            toGeneratedParam(extractTypedType(this), clientId, "expiration-date")
         };
 
         removeJsonProperties(settings.getOverrideFilePath(), properties);
@@ -167,8 +163,8 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
             return headers;
         }
 
-        String tokenParam = toGeneratedParam(type(), authEntry.get().getClientId(), "access-token");
-        String typeParam = toGeneratedParam(type(), authEntry.get().getClientId(), "token-type");
+        String tokenParam = toGeneratedParam(extractTypedType(this), authEntry.get().getClientId(), "access-token");
+        String typeParam = toGeneratedParam(extractTypedType(this), authEntry.get().getClientId(), "token-type");
         String token = settings.getOrDefault(tokenParam, "");
         String type = settings.getOrDefault(typeParam, "");
 
@@ -267,7 +263,7 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
         expirationCondition.setName("LESS_THAN");
         expirationCondition.setArgs(new String[] {
             "{{:default:0:" + expirationMillisParam + "}}",
-            "{{DATE-TIME:date-epoch:ISO_LOCAL_DATE_TIME:MILLIS:}}"
+            "{{DATE_TIME:date_epoch:ISO_LOCAL_DATE_TIME:MILLIS:}}"
         });
         expirationCondition.setType(AssertionType.CONDITION);
         authRequest.getConditions().add(expirationCondition);
@@ -275,9 +271,9 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
         authRequest.getOutputMappings().put(tokenParam, "{{OUT/" + getAccessTokenFieldName(settings) + "}}");
         authRequest.getOutputMappings().put(typeParam, "{{OUT/" + getTokenTypeFieldName(settings) + "}}");
         authRequest.getOutputMappings().put(expiresInUnitParam, "{{OUT/" + getExpiresInFieldName(settings) + "}}");
-        authRequest.getOutputMappings().put(expirationDateParam, "{{DATE-TIME:date-plus:yyyy-MM-dd'T'HH\\:mm\\:ss.n:"
+        authRequest.getOutputMappings().put(expirationDateParam, "{{DATE_TIME:date_plus:yyyy-MM-dd'T'HH\\:mm\\:ss.n:"
             + getExpiresInTimeUnit(settings) + ":" + expiresInUnitParam + ":}}");
-        authRequest.getOutputMappings().put(expirationMillisParam, "{{:date-epoch:ISO_LOCAL_DATE_TIME:MILLIS:" + expirationDateParam +"}}");
+        authRequest.getOutputMappings().put(expirationMillisParam, "{{:date_epoch:ISO_LOCAL_DATE_TIME:MILLIS:" + expirationDateParam +"}}");
 
         AssertionEntry http200Assertion = new AssertionEntry();
         http200Assertion.setName("EQUALS_TO");

@@ -1,11 +1,9 @@
 package com.legadi.cli.jurl.assertions;
 
-public class IsFalseAssertionFunction implements AssertionFunction {
+import com.legadi.cli.jurl.common.annotations.Named;
 
-    @Override
-    public String name() {
-        return "IS_FALSE";
-    }
+@Named(name = "IS_FALSE")
+public class IsFalseAssertionFunction implements AssertionFunction {
 
     @Override
     public String[] getArgs() {
@@ -16,5 +14,4 @@ public class IsFalseAssertionFunction implements AssertionFunction {
     public boolean apply(String[] args) {
         return !Boolean.valueOf(args[0]).booleanValue();
     }
-
 }

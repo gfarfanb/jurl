@@ -1,5 +1,6 @@
 package com.legadi.cli.jurl.common;
 
+import static com.legadi.cli.jurl.common.AnnotationsUtils.extractNamedName;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.containsName;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.find;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findByName;
@@ -22,7 +23,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.legadi.cli.jurl.assertions.AssertionFunction;
-import com.legadi.cli.jurl.common.ObjectsRegistry.Spec;
+import com.legadi.cli.jurl.common.annotations.Evaluable;
+import com.legadi.cli.jurl.common.annotations.Named;
+import com.legadi.cli.jurl.common.annotations.Typed;
 import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.executor.RequestExecutor;
 import com.legadi.cli.jurl.executor.RequestModifier;
@@ -41,34 +44,35 @@ public class ObjectsRegistryTest {
 
     @Test
     public void registerEvaluableByClassName() {
-        register(Evaluable.class, TestEvaluable.class.getName());
+        register(TestEvaluable.class, TestEvaluable.class.getName());
 
-        Evaluable evaluable = Assertions.assertDoesNotThrow(
-            () -> findOrFail(Evaluable.class, "test"));
+        TestEvaluable evaluable = Assertions.assertDoesNotThrow(
+            () -> findOrFail(TestEvaluable.class, "test"));
 
         Assertions.assertNotNull(evaluable);
 
-        Optional<Evaluable> evaluableOptional = Assertions.assertDoesNotThrow(
-            () -> find(Evaluable.class, "test"));
+        Optional<TestEvaluable> evaluableOptional = Assertions.assertDoesNotThrow(
+            () -> find(TestEvaluable.class, "test"));
 
         Assertions.assertNotNull(evaluableOptional.isPresent());
 
-        TestEvaluable testEvaluable = register(Evaluable.class, TestEvaluable.class.getName());
+        register(TestEvaluable.class, TestEvaluable.class.getName());
+        TestEvaluable testEvaluable = findByNameOrFail(TestEvaluable.class, extractNamedName(evaluable));
 
         Assertions.assertNotNull(testEvaluable);
     }
 
     @Test
     public void registerEvaluableByClass() {
-        register(Evaluable.class, TestEvaluable.class);
+        register(TestEvaluable.class, TestEvaluable.class);
 
-        Evaluable evaluable = Assertions.assertDoesNotThrow(
-            () -> findOrFail(Evaluable.class, "test"));
+        TestEvaluable evaluable = Assertions.assertDoesNotThrow(
+            () -> findOrFail(TestEvaluable.class, "test"));
 
         Assertions.assertNotNull(evaluable);
 
         Optional<Evaluable> evaluableOptional = Assertions.assertDoesNotThrow(
-            () -> find(Evaluable.class, "test"));
+            () -> find(TestEvaluable.class, "test"));
 
         Assertions.assertNotNull(evaluableOptional.isPresent());
     }
@@ -181,90 +185,41 @@ public class ObjectsRegistryTest {
         Assertions.assertFalse(mixersByName.stream().anyMatch(instance -> instance.getClass() == JsonBodyMixer.class));
     }
 
-    @Test
-    public void specEqualsValidation() {
-        Spec leftSpec = new Spec(RegistryClass.class, new Object[0]);
-        Spec rightSpec = new Spec(NotRegistered.class, new Object[0]);
-
-        Assertions.assertNotEquals(leftSpec, null);
-        Assertions.assertNotEquals(leftSpec, new Object());
-        Assertions.assertNotEquals(leftSpec, rightSpec);
-        Assertions.assertEquals(leftSpec, leftSpec);
-        Assertions.assertEquals(new Spec(RegistryClass.class, new Object[0]), leftSpec);
-    }
-
     public static interface Registry {
     }
 
     public static class RegistryClass implements Registry {
     }
 
-    public static class NotRegistered implements Evaluable {
+    @Evaluable(values = {}, op = Evaluable.Operation.ALWAYS_TRUE)
+    public static class NotRegistered {
 
-        @Override
-        public boolean accepts(String input) {
-            return true;
-        }
     }
 
-    public static class TestEvaluable implements Evaluable {
+    @Named(name = "test-evaluable", allowOverride = true)
+    @Evaluable(values = { "test" }, op = Evaluable.Operation.EQUALS)
+    public static class TestEvaluable {
 
-        @Override
-        public boolean accepts(String input) {
-            return "test".equals(input);
-        }
     }
 
-    public static class TestNamed implements Named {
+    @Named(name = "test-named-entry")
+    public static class TestNamed {
 
-        @Override
-        public String name() {
-            return "test-named-entry";
-        }
-
-        @Override
-        public boolean allowOverride() {
-            return false;
-        }
     }
 
-    public static class TestNameDuplication implements Named {
+    @Named(name = "test-name-duplication")
+    public static class TestNameDuplication{
 
-        @Override
-        public String name() {
-            return "test-name-duplication";
-        }
-
-        @Override
-        public boolean allowOverride() {
-            return false;
-        }
     }
 
-    public static class TestAliasDuplication implements Named {
+    @Named(name = "test-alias-duplication", alias = "-t")
+    public static class TestAliasDuplication {
 
-        @Override
-        public String name() {
-            return "test-alias-duplication";
-        }
-
-        @Override
-        public String alias() {
-            return "-t";
-        }
-
-        @Override
-        public boolean allowOverride() {
-            return false;
-        }
     }
 
+    @Typed(type = "test")
+    @Evaluable(values = { "body" }, op = Evaluable.Operation.EQUALS_IGNORE_CASE)
     public static class TestBodyMixer implements BodyMixer {
-
-        @Override
-        public String type() {
-            return "test";
-        }
 
         @Override
         public Path apply(Settings settings, Map<String, Object> defaults, MixerEntry entry) {

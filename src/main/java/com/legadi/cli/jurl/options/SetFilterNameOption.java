@@ -3,18 +3,10 @@ package com.legadi.cli.jurl.options;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_FILTER_NAME;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 
+@Named(name = "--filter", alias = "-f")
 public class SetFilterNameOption extends Option {
-
-    @Override
-    public String name() {
-        return "--filter";
-    }
-
-    @Override
-    public String alias() {
-        return "-f";
-    }
 
     @Override
     public String[] getArgs() {

@@ -7,15 +7,12 @@ import static com.legadi.cli.jurl.common.LoaderUtils.loadAndCacheInternalLines;
 import java.util.List;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 
+@Named(name = "EMAIL")
 public class EmailGenerator implements Generator {
 
     public static final int RANGE_LENGTH = 10;
-
-    @Override
-    public String name() {
-        return "EMAIL";
-    }
 
     @Override
     public String getValue(Settings settings, String param) {

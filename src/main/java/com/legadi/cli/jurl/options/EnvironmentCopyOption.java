@@ -9,19 +9,11 @@ import java.util.Map;
 
 import com.google.gson.reflect.TypeToken;
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 import com.legadi.cli.jurl.model.GroupConfig;
 
+@Named(name = "--env-copy", alias = "-ec")
 public class EnvironmentCopyOption extends Option {
-
-    @Override
-    public String name() {
-        return "--env-copy";
-    }
-
-    @Override
-    public String alias() {
-        return "-ec";
-    }
 
     @Override
     public String[] getArgs() {

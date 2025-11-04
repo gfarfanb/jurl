@@ -10,20 +10,12 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 
+@Named(name = "--get", alias = "-g")
 public class GetValueOption extends Option {
 
     private static final Logger LOGGER = Logger.getLogger(GetValueOption.class.getName());
-
-    @Override
-    public String name() {
-        return "--get";
-    }
-
-    @Override
-    public String alias() {
-        return "-g";
-    }
 
     @Override
     public String[] getArgs() {

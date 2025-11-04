@@ -1,15 +1,16 @@
 package com.legadi.cli.jurl.modifiers;
 
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
+import static com.legadi.cli.jurl.common.annotations.Evaluable.Operation.STARTS_WITH;
 
 import java.util.function.Function;
 
-public class DefaultValueModifier implements ValueModifier {
+import com.legadi.cli.jurl.common.annotations.Evaluable;
+import com.legadi.cli.jurl.common.annotations.Named;
 
-    @Override
-    public String name() {
-        return "default";
-    }
+@Named(name = "default")
+@Evaluable(values = { "default" }, op = STARTS_WITH)
+public class DefaultValueModifier implements ValueModifier {
 
     @Override
     public String[] getArgs() {

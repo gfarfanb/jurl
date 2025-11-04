@@ -6,18 +6,10 @@ import static com.legadi.cli.jurl.common.Settings.loadPropertiesFromGroupsFile;
 import java.util.Optional;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 
+@Named(name = "--env", alias = "-e")
 public class EnvironmentOption extends Option {
-
-    @Override
-    public String name() {
-        return "--env";
-    }
-
-    @Override
-    public String alias() {
-        return "-e";
-    }
 
     @Override
     public String[] getArgs() {

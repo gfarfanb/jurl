@@ -4,17 +4,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
-import com.legadi.cli.jurl.common.Evaluable;
 import com.legadi.cli.jurl.common.Settings;
 
-public interface BodyMixer extends Evaluable {
 
-    @Override
-    default boolean accepts(String bodyType) {
-        return type().equalsIgnoreCase(bodyType);
-    }
-
-    String type();
+public interface BodyMixer {
 
     Path apply(Settings settings, Map<String, Object> defaults, MixerEntry entry);
 

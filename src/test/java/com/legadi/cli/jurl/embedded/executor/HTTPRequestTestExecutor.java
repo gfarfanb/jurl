@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 import com.legadi.cli.jurl.embedded.util.RequestCatcher;
 import com.legadi.cli.jurl.exception.RequestException;
 import com.legadi.cli.jurl.executor.http.HTTPRequestExecutor;
@@ -18,6 +19,7 @@ import com.legadi.cli.jurl.model.AssertionResult;
 import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 
+@Named(name = "http", allowOverride = true)
 public class HTTPRequestTestExecutor extends HTTPRequestExecutor {
 
     private final UUID identifier;

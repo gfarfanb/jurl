@@ -2,17 +2,10 @@ package com.legadi.cli.jurl.assertions;
 
 import java.math.BigDecimal;
 
+import com.legadi.cli.jurl.common.annotations.Named;
+
+@Named(name = "GREATER_THAN", alias = ">")
 public class GreaterThanAssertionFunction extends OperatorAssertionFunction {
-
-    @Override
-    public String name() {
-        return "GREATER_THAN";
-    }
-
-    @Override
-    public String alias() {
-        return ">";
-    }
 
     @Override
     public String[] getArgs() {

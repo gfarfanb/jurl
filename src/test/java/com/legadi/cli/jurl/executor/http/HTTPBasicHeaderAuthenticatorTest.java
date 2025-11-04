@@ -1,5 +1,7 @@
 package com.legadi.cli.jurl.executor.http;
 
+import static com.legadi.cli.jurl.common.AnnotationsUtils.extractTypedType;
+
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +21,7 @@ public class HTTPBasicHeaderAuthenticatorTest {
     public void definitionValidation() {
         HTTPBasicHeaderAuthenticator authenticator = new HTTPBasicHeaderAuthenticator();
 
-        Assertions.assertEquals("http", authenticator.type());
+        Assertions.assertEquals("http", extractTypedType(authenticator));
         Assertions.assertFalse(authenticator.requiresExecution());
         Assertions.assertNotNull(authenticator.getObjectFields());
         Assertions.assertFalse(authenticator.getObjectFields().isEmpty());

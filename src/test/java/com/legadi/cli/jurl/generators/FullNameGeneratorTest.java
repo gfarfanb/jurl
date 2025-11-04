@@ -13,7 +13,7 @@ public class FullNameGeneratorTest extends GeneratorAbstractTest {
     private static final int WHITESPACE_LENGTH = 1;
 
     public FullNameGeneratorTest() {
-        super("FULL-NAME");
+        super("FULL_NAME");
     }
 
     @Test

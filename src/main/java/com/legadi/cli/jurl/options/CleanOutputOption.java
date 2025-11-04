@@ -7,20 +7,12 @@ import java.time.format.DateTimeFormatter;
 
 import com.legadi.cli.jurl.common.DeleteFileVisitor;
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 
+@Named(name = "--remove", alias = "-rm")
 public class CleanOutputOption extends Option {
 
     public static final String ALL_FILES = "all";
-
-    @Override
-    public String name() {
-        return "--remove";
-    }
-
-    @Override
-    public String alias() {
-        return "-rm";
-    }
 
     @Override
     public String[] getArgs() {
@@ -29,7 +21,7 @@ public class CleanOutputOption extends Option {
 
     @Override
     public String getDescription() {
-        return "Remove all the execution outputs and history files from the specified date (inclusive): 'yyyy-MM-dd'. If 'all' is received in the argument all output files will be deleted.";
+        return "Remove all the execution outputs and history files from the specified date (inclusive): 'yyyy-MM-dd'. If '" + ALL_FILES + "' is received in the argument all output files will be deleted.";
     }
 
     @Override

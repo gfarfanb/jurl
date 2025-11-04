@@ -1,16 +1,17 @@
 package com.legadi.cli.jurl.modifiers;
 
+import static com.legadi.cli.jurl.common.annotations.Evaluable.Operation.STARTS_WITH;
+
 import java.util.Base64;
 import java.util.function.Function;
 
+import com.legadi.cli.jurl.common.annotations.Evaluable;
+import com.legadi.cli.jurl.common.annotations.Named;
 import com.legadi.cli.jurl.exception.CommandException;
 
+@Named(name = "base64")
+@Evaluable(values = { "base64" }, op = STARTS_WITH)
 public class Base64ValueModifier implements ValueModifier {
-
-    @Override
-    public String name() {
-        return "base64";
-    }
 
     @Override
     public String[] getArgs() {

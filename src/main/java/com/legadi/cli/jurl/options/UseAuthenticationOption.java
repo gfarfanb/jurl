@@ -3,18 +3,10 @@ package com.legadi.cli.jurl.options;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_AUTHENTICATION;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 
+@Named(name = "--use-auth", alias = "-ua")
 public class UseAuthenticationOption extends Option {
-
-    @Override
-    public String name() {
-        return "--use-auth";
-    }
-
-    @Override
-    public String alias() {
-        return "-ua";
-    }
 
     @Override
     public String[] getArgs() {

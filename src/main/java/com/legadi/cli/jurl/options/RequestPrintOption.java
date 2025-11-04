@@ -3,19 +3,11 @@ package com.legadi.cli.jurl.options;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_REQUEST_BEHAVIOUR;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 import com.legadi.cli.jurl.model.RequestBehaviour;
 
+@Named(name = "--print", alias = "-p")
 public class RequestPrintOption extends Option {
-
-    @Override
-    public String name() {
-        return "--print";
-    }
-
-    @Override
-    public String alias() {
-        return "-p";
-    }
 
     @Override
     public String[] getArgs() {

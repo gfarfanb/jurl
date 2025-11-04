@@ -1,18 +1,10 @@
 package com.legadi.cli.jurl.options;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 
+@Named(name = "--set", alias = "-s")
 public class SetValueOption extends Option {
-
-    @Override
-    public String name() {
-        return "--set";
-    }
-
-    @Override
-    public String alias() {
-        return "-s";
-    }
 
     @Override
     public String[] getArgs() {

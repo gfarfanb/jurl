@@ -6,22 +6,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import com.legadi.cli.jurl.common.Evaluable;
 import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.model.AuthenticationEntry;
 import com.legadi.cli.jurl.model.MockEntry;
 import com.legadi.cli.jurl.model.RequestEntry;
 
-public interface HeaderAuthenticator<T extends RequestEntry<? extends MockEntry>, E extends AuthenticationEntry>
-        extends Evaluable {
-
-    @Override
-    default boolean accepts(String name) {
-        return type().equalsIgnoreCase(name);
-    }
-
-    String type();
+public interface HeaderAuthenticator<T extends RequestEntry<? extends MockEntry>, E extends AuthenticationEntry> {
 
     boolean requiresExecution();
 

@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 public class LastNameGeneratorTest extends GeneratorAbstractTest {
 
     public LastNameGeneratorTest() {
-        super("LAST-NAME");
+        super("LAST_NAME");
     }
 
     @Test

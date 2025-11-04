@@ -2,12 +2,10 @@ package com.legadi.cli.jurl.assertions;
 
 import java.util.Objects;
 
-public class IsNullAssertionFunction implements AssertionFunction {
+import com.legadi.cli.jurl.common.annotations.Named;
 
-    @Override
-    public String name() {
-        return "IS_NULL";
-    }
+@Named(name = "IS_NULL")
+public class IsNullAssertionFunction implements AssertionFunction {
 
     @Override
     public String[] getArgs() {

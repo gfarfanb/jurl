@@ -1,5 +1,6 @@
 package com.legadi.cli.jurl.executor.http;
 
+import static com.legadi.cli.jurl.common.AnnotationsUtils.extractNamedName;
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findAll;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.common.StringExpander;
+import com.legadi.cli.jurl.common.annotations.Named;
 import com.legadi.cli.jurl.exception.RequestException;
 import com.legadi.cli.jurl.executor.HeaderAuthenticator;
 import com.legadi.cli.jurl.executor.RequestModifier;
@@ -37,14 +39,10 @@ import com.legadi.cli.jurl.options.OptionsReader.OptionEntry;
 import com.legadi.cli.jurl.parser.HTTPRequestParser;
 import com.legadi.cli.jurl.parser.RequestParser;
 
+@Named(name = "http", allowOverride = true)
 public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HTTPResponseEntry> {
 
     public static final String BODY_TEMPORAL_PATH = "http.request.executor/body.temporal.path";
-
-    @Override
-    public String name() {
-        return "http";
-    }
 
     @Override
     public List<HTTPRequestEntry> getAuthenticationDefinition(
@@ -58,7 +56,8 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
             return new ArrayList<>();
         }
 
-        List<HeaderAuthenticator<HTTPRequestEntry, ?>> headerAuthenticators = findAll(HeaderAuthenticator.class, name());
+        List<HeaderAuthenticator<HTTPRequestEntry, ?>> headerAuthenticators = findAll(
+            HeaderAuthenticator.class, extractNamedName(this));
         List<HTTPRequestEntry> authRequests = new ArrayList<>();
         HTTPRequestEntry api = requestInput.getApi();
 
@@ -156,7 +155,8 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         defaults.putAll(request.getDefaults());
         request.setDefaults(defaults);
 
-        List<HeaderAuthenticator<HTTPRequestEntry, ?>> headerAuthenticators = findAll(HeaderAuthenticator.class, name());
+        List<HeaderAuthenticator<HTTPRequestEntry, ?>> headerAuthenticators = findAll(
+            HeaderAuthenticator.class, extractNamedName(this));
 
         for(HeaderAuthenticator<HTTPRequestEntry, ?> headerAuthenticator : headerAuthenticators) {
             Optional<? extends AuthenticationEntry> apiAuth = headerAuthenticator.findAuthEntry(api);
@@ -195,7 +195,8 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
 
     @Override
     public void overrideRequestWithFile(Settings settings, HTTPRequestEntry request, String filename) {
-        HTTPRequestParser parser = findOrFail(RequestParser.class, name());
+        HTTPRequestParser parser = findOrFail(
+            RequestParser.class, extractNamedName(this));
         HTTPRequestEntry overrideRequest = parser.parseRequest(settings, Paths.get(filename));
 
         overrideRequest.getDefaults().putAll(request.getDefaults());

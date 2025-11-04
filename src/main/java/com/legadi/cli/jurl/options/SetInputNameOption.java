@@ -3,18 +3,10 @@ package com.legadi.cli.jurl.options;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_INPUT_NAME;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 
+@Named(name = "--name", alias = "-n")
 public class SetInputNameOption extends Option {
-
-    @Override
-    public String name() {
-        return "--name";
-    }
-
-    @Override
-    public String alias() {
-        return "-n";
-    }
 
     @Override
     public String[] getArgs() {

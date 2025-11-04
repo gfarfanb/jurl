@@ -1,13 +1,15 @@
 package com.legadi.cli.jurl.modifiers;
 
+import static com.legadi.cli.jurl.common.annotations.Evaluable.Operation.STARTS_WITH;
+
 import java.util.function.Function;
 
-public class SuffixValueModifier implements ValueModifier {
+import com.legadi.cli.jurl.common.annotations.Evaluable;
+import com.legadi.cli.jurl.common.annotations.Named;
 
-    @Override
-    public String name() {
-        return "suffix";
-    }
+@Named(name = "suffix")
+@Evaluable(values = { "suffix" }, op = STARTS_WITH)
+public class SuffixValueModifier implements ValueModifier {
 
     @Override
     public String[] getArgs() {

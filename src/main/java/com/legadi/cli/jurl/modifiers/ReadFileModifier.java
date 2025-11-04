@@ -1,15 +1,17 @@
 package com.legadi.cli.jurl.modifiers;
 
+import static com.legadi.cli.jurl.common.annotations.Evaluable.Operation.STARTS_WITH;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.util.function.Function;
 
-public class ReadFileModifier implements ValueModifier {
+import com.legadi.cli.jurl.common.annotations.Evaluable;
+import com.legadi.cli.jurl.common.annotations.Named;
 
-    @Override
-    public String name() {
-        return "read-file";
-    }
+@Named(name = "read_file")
+@Evaluable(values = { "read_file" }, op = STARTS_WITH)
+public class ReadFileModifier implements ValueModifier {
 
     @Override
     public String[] getArgs() {

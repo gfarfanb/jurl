@@ -5,6 +5,7 @@ import static com.legadi.cli.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.containsName;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findByNameOrFail;
+import static com.legadi.cli.jurl.common.ObjectsRegistry.findByTypeName;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.register;
 
 import java.util.Arrays;
@@ -51,7 +52,8 @@ public class AssertionsResolver {
                 } else {
                     String assertionClass = stringExpander.replaceAllInContent(values,
                         assertionEntry.getAssertionClass());
-                    function = register(AssertionFunction.class, assertionClass);
+                    register(AssertionFunction.class, assertionClass);
+                    function = findByTypeName(assertionClass);
                 }
 
                 if(isNotBlank(assertionEntry.getMessage())) {

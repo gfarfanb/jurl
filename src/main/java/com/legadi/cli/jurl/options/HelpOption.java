@@ -1,5 +1,7 @@
 package com.legadi.cli.jurl.options;
 
+import static com.legadi.cli.jurl.common.AnnotationsUtils.extractConfigReplaceableProperties;
+import static com.legadi.cli.jurl.common.AnnotationsUtils.extractNamedName;
 import static com.legadi.cli.jurl.common.CommonUtils.ARGS_SEPARATOR;
 import static com.legadi.cli.jurl.common.CommonUtils.TABS_FOR_COMPLEMENT;
 import static com.legadi.cli.jurl.common.CommonUtils.splitInLinesByLength;
@@ -14,22 +16,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import com.legadi.cli.jurl.common.ConfigReplaceable;
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 
+@Named(name = "--help", alias = "-h")
 public class HelpOption extends Option {
 
     private static final Logger LOGGER = Logger.getLogger(HelpOption.class.getName());
-
-    @Override
-    public String name() {
-        return "--help";
-    }
-
-    @Override
-    public String alias() {
-        return "-h";
-    }
 
     @Override
     public String[] getArgs() {
@@ -86,7 +79,7 @@ public class HelpOption extends Option {
         int complementLength = maxLength
             + settings.getConsoleTabLength() * TABS_FOR_COMPLEMENT;
 
-        opts.sort((o1, o2) -> o1.name().compareTo(o2.name()));
+        opts.sort((o1, o2) -> extractNamedName(o1).compareTo(extractNamedName(o2)));
 
         for(Option option : opts) {
             String optionLine = option.toString() + ARGS_SEPARATOR;
@@ -125,15 +118,15 @@ public class HelpOption extends Option {
         }
     }
 
-    private void appendConfig(Settings settings, List<ConfigReplaceable> configs, StringBuilder helpMessage) {
+    private void appendConfig(Settings settings, List<Object> configs, StringBuilder helpMessage) {
         int complementLength = settings.getConsoleTabLength() * TABS_FOR_COMPLEMENT;
 
-        for(ConfigReplaceable config : configs) {
+        for(Object config : configs) {
             helpMessage.append(settings.getTab());
             helpMessage.append(config.getClass().getName() + ARGS_SEPARATOR);
             helpMessage.append("\n");
 
-            String properties = String.join(", ", config.registeredProperties());
+            String properties = String.join(", ", extractConfigReplaceableProperties(config));
             List<String> lines = splitInLinesByLength(settings, properties, TABS_FOR_COMPLEMENT);
 
             for(String line : lines) {

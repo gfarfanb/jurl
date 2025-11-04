@@ -3,18 +3,10 @@ package com.legadi.cli.jurl.options;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_CONDITIONS;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 
+@Named(name = "--no-conditions", alias = "-nc")
 public class SkipConditionsOption extends Option {
-
-    @Override
-    public String name() {
-        return "--no-conditions";
-    }
-
-    @Override
-    public String alias() {
-        return "-nc";
-    }
 
     @Override
     public String[] getArgs() {

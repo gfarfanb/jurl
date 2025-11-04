@@ -1,6 +1,7 @@
 package com.legadi.cli.jurl.modifiers;
 
 import static com.legadi.cli.jurl.common.DateTimeFormatterUtil.getFormatter;
+import static com.legadi.cli.jurl.common.annotations.Evaluable.Operation.STARTS_WITH;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -9,14 +10,13 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.function.Function;
 
+import com.legadi.cli.jurl.common.annotations.Evaluable;
+import com.legadi.cli.jurl.common.annotations.Named;
 import com.legadi.cli.jurl.exception.CommandException;
 
+@Named(name = "date_epoch")
+@Evaluable(values = { "date_epoch" }, op = STARTS_WITH)
 public class DateEpochValueModifier implements ValueModifier {
-
-    @Override
-    public String name() {
-        return "date-epoch";
-    }
 
     @Override
     public String[] getArgs() {

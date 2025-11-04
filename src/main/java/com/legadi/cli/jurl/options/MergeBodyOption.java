@@ -3,18 +3,10 @@ package com.legadi.cli.jurl.options;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_MERGE_BODY_USING_TYPE;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 
+@Named(name = "--merge-body", alias = "-mb")
 public class MergeBodyOption extends Option {
-
-    @Override
-    public String name() {
-        return "--merge-body";
-    }
-
-    @Override
-    public String alias() {
-        return "-mb";
-    }
 
     @Override
     public String[] getArgs() {

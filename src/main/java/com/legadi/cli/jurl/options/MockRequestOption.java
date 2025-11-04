@@ -3,18 +3,10 @@ package com.legadi.cli.jurl.options;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_MOCK_REQUEST;
 
 import com.legadi.cli.jurl.common.Settings;
+import com.legadi.cli.jurl.common.annotations.Named;
 
+@Named(name = "--mock", alias = "-m")
 public class MockRequestOption extends Option {
-
-    @Override
-    public String name() {
-        return "--mock";
-    }
-
-    @Override
-    public String alias() {
-        return "-m";
-    }
 
     @Override
     public String[] getArgs() {
