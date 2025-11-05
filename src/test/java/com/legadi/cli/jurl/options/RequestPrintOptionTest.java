@@ -19,7 +19,7 @@ import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 public class RequestPrintOptionTest extends OptionAbstractTest<RequestPrintOption> {
 
     public RequestPrintOptionTest() {
-        super("--print", false);
+        super(RequestPrintOption.class, false);
     }
 
     @Test

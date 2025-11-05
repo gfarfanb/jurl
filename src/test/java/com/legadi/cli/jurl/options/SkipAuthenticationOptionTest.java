@@ -17,7 +17,7 @@ import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 public class SkipAuthenticationOptionTest extends OptionAbstractTest<SkipAuthenticationOption> {
 
     public SkipAuthenticationOptionTest() {
-        super("--not-auth", true);
+        super(SkipAuthenticationOption.class, true);
     }
 
     @Test

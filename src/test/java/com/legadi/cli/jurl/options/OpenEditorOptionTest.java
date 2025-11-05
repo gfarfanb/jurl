@@ -15,7 +15,7 @@ import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 public class OpenEditorOptionTest extends OptionAbstractTest<OpenEditorOption> {
 
     public OpenEditorOptionTest() {
-        super("--open-editor", false);
+        super(OpenEditorOption.class, false);
     }
 
     @Test

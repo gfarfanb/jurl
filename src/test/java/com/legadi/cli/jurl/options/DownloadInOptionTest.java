@@ -15,7 +15,7 @@ import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 public class DownloadInOptionTest extends OptionAbstractTest<DownloadInOption> {
 
     public DownloadInOptionTest() {
-        super("--download-in", false);
+        super(DownloadInOption.class, false);
     }
 
     @Test

@@ -12,7 +12,7 @@ import com.legadi.cli.jurl.common.Settings;
 public class SetFilterNameOptionTest extends OptionAbstractTest<SetFilterNameOption> {
 
     public SetFilterNameOptionTest() {
-        super("--filter", false);
+        super(SetFilterNameOption.class, false);
     }
 
     @Test

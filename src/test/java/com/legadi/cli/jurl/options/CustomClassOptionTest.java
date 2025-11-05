@@ -12,7 +12,7 @@ import com.legadi.cli.jurl.exception.CommandException;
 public class CustomClassOptionTest extends OptionAbstractTest<CustomClassOption> {
 
     public CustomClassOptionTest() {
-        super("--custom-class", false);
+        super(CustomClassOption.class, false);
     }
 
     @Test

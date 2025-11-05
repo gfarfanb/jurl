@@ -11,7 +11,7 @@ import com.legadi.cli.jurl.exception.SkipExecutionException;
 public class HelpOptionTest extends OptionAbstractTest<HelpOption> {
 
     public HelpOptionTest() {
-        super("--help", false);
+        super(HelpOption.class, false);
     }
 
     @Test

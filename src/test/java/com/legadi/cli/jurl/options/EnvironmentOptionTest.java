@@ -18,7 +18,7 @@ import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 public class EnvironmentOptionTest extends OptionAbstractTest<EnvironmentOption> {
 
     public EnvironmentOptionTest() {
-        super("--env", false);
+        super(EnvironmentOption.class, false);
     }
 
     @Test

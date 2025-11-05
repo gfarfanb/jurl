@@ -14,7 +14,7 @@ import com.legadi.cli.jurl.common.Settings;
 public class GroupCollectionOptionTest extends OptionAbstractTest<GroupCollectionOption> {
 
     public GroupCollectionOptionTest() {
-        super("--group-coll", false);
+        super(GroupCollectionOption.class, false);
     }
 
     @Test

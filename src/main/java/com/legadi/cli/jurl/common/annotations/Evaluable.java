@@ -20,6 +20,7 @@ public @interface Evaluable {
         CONTAINS,
         STARTS_WITH,
         ENDS_WITH,
-        ALWAYS_TRUE
+        ALWAYS_TRUE,
+        NOTHING
     }
 }

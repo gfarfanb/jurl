@@ -19,7 +19,7 @@ import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 public class CurlPrintOptionTest extends OptionAbstractTest<CurlPrintOption> {
 
     public CurlPrintOptionTest() {
-        super("--curl", false);
+        super(CurlPrintOption.class, false);
     }
 
     @Test

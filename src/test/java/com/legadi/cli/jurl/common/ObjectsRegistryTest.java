@@ -1,6 +1,5 @@
 package com.legadi.cli.jurl.common;
 
-import static com.legadi.cli.jurl.common.AnnotationsUtils.extractNamedName;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.containsName;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.find;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findByName;
@@ -43,38 +42,57 @@ import com.legadi.cli.jurl.parser.RequestParser;
 public class ObjectsRegistryTest {
 
     @Test
-    public void registerEvaluableByClassName() {
-        register(TestEvaluable.class, TestEvaluable.class.getName());
+    public void registerEvaluableAndNamed() {
+        Assertions.assertDoesNotThrow(
+            () -> register(AlwaysTrueEvaluable.class, AlwaysTrueEvaluable.class));
 
-        TestEvaluable evaluable = Assertions.assertDoesNotThrow(
-            () -> findOrFail(TestEvaluable.class, "test"));
+        AlwaysTrueEvaluable named = Assertions.assertDoesNotThrow(
+            () -> findByNameOrFail(AlwaysTrueEvaluable.class, "always-true-evaluable"));
+
+        Assertions.assertNotNull(named);
+
+        AlwaysTrueEvaluable evaluable = Assertions.assertDoesNotThrow(
+            () -> findOrFail(AlwaysTrueEvaluable.class, "any-input"));
 
         Assertions.assertNotNull(evaluable);
-
-        Optional<TestEvaluable> evaluableOptional = Assertions.assertDoesNotThrow(
-            () -> find(TestEvaluable.class, "test"));
-
-        Assertions.assertNotNull(evaluableOptional.isPresent());
-
-        register(TestEvaluable.class, TestEvaluable.class.getName());
-        TestEvaluable testEvaluable = findByNameOrFail(TestEvaluable.class, extractNamedName(evaluable));
-
-        Assertions.assertNotNull(testEvaluable);
     }
 
     @Test
     public void registerEvaluableByClass() {
-        register(TestEvaluable.class, TestEvaluable.class);
+        Assertions.assertDoesNotThrow(
+            () -> register(EndsWithEvaluable.class, EndsWithEvaluable.class));
 
-        TestEvaluable evaluable = Assertions.assertDoesNotThrow(
-            () -> findOrFail(TestEvaluable.class, "test"));
+        Optional<Evaluable> evaluable = Assertions.assertDoesNotThrow(
+            () -> find(EndsWithEvaluable.class, "ends-with-evaluable"));
 
-        Assertions.assertNotNull(evaluable);
+        Assertions.assertTrue(evaluable.isPresent());
+    }
 
-        Optional<Evaluable> evaluableOptional = Assertions.assertDoesNotThrow(
-            () -> find(TestEvaluable.class, "test"));
+    @Test
+    public void registerEvaluableByClassName() {
+        Assertions.assertDoesNotThrow(
+            () -> register(EqualsEvaluable.class, EqualsEvaluable.class.getName()));
 
-        Assertions.assertNotNull(evaluableOptional.isPresent());
+        EqualsEvaluable evaluable1 = Assertions.assertDoesNotThrow(
+            () -> findOrFail(EqualsEvaluable.class, "equals-evaluable"));
+
+        Assertions.assertNotNull(evaluable1);
+
+        EqualsEvaluable evaluable2 = Assertions.assertDoesNotThrow(
+            () -> findOrFail(EqualsEvaluable.class, "equals+evaluable"));
+
+        Assertions.assertNotNull(evaluable2);
+    }
+
+    @Test
+    public void registerEvaluableNothing() {
+        Assertions.assertDoesNotThrow(
+            () -> register(NothingEvaluable.class, NothingEvaluable.class));
+
+        Optional<Evaluable> evaluable = Assertions.assertDoesNotThrow(
+            () -> find(NothingEvaluable.class, "nothing-evaluable"));
+
+        Assertions.assertFalse(evaluable.isPresent());
     }
 
     @Test
@@ -191,15 +209,32 @@ public class ObjectsRegistryTest {
     public static class RegistryClass implements Registry {
     }
 
-    @Evaluable(values = {}, op = Evaluable.Operation.ALWAYS_TRUE)
+    @Evaluable(values = {}, op = Evaluable.Operation.EQUALS)
     public static class NotRegistered {
 
     }
 
-    @Named(name = "test-evaluable", allowOverride = true)
-    @Evaluable(values = { "test" }, op = Evaluable.Operation.EQUALS)
-    public static class TestEvaluable {
+    @Named(name = "always-true-evaluable", allowOverride = true)
+    @Evaluable(values = { "always-true-evaluable" }, op = Evaluable.Operation.ALWAYS_TRUE)
+    public static class AlwaysTrueEvaluable {
 
+    }
+
+    @Named(name = "ends-with-evaluable", allowOverride = true)
+    @Evaluable(values = { "ends-with-evaluable" }, op = Evaluable.Operation.ENDS_WITH)
+    public static class EndsWithEvaluable {
+
+    }
+
+    @Named(name = "equals-evaluable", allowOverride = true)
+    @Evaluable(values = { "equals+evaluable", "equals-evaluable" }, op = Evaluable.Operation.EQUALS)
+    public static class EqualsEvaluable {
+
+    }
+
+    @Named(name = "nothing-evaluable", allowOverride = true)
+    @Evaluable(values = { "nothing-evaluable" }, op = Evaluable.Operation.NOTHING)
+    public static class NothingEvaluable {
     }
 
     @Named(name = "test-named-entry")

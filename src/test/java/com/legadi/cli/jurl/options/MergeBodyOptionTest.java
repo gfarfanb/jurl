@@ -20,7 +20,7 @@ import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 public class MergeBodyOptionTest extends OptionAbstractTest<MergeBodyOption> {
 
     public MergeBodyOptionTest() {
-        super("--merge-body", false);
+        super(MergeBodyOption.class, false);
     }
 
     @Test

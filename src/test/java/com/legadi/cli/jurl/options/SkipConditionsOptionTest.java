@@ -18,7 +18,7 @@ import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 public class SkipConditionsOptionTest extends OptionAbstractTest<SkipConditionsOption> {
 
     public SkipConditionsOptionTest() {
-        super("--no-conditions", false);
+        super(SkipConditionsOption.class, false);
     }
 
     @Test

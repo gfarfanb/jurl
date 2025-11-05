@@ -14,7 +14,7 @@ import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 public class SetValueOptionTest extends OptionAbstractTest<SetValueOption> {
 
     public SetValueOptionTest() {
-        super("--set", true);
+        super(SetValueOption.class, true);
     }
 
     @Test

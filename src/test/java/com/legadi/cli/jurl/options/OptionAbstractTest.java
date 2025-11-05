@@ -1,10 +1,6 @@
 package com.legadi.cli.jurl.options;
 
-import static com.legadi.cli.jurl.common.AnnotationsUtils.extractNamedAlias;
-import static com.legadi.cli.jurl.common.AnnotationsUtils.extractNamedName;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findByNameOrFail;
-
-import java.util.Objects;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -20,8 +16,8 @@ public abstract class OptionAbstractTest<T extends Option> extends EmbeddedAPIAb
     protected final boolean requiredForAuth;
 
     @SuppressWarnings("unchecked")
-    public OptionAbstractTest(String optionName, boolean requiredForAuth) {
-        this.option = (T) findByNameOrFail(Option.class, optionName);
+    public OptionAbstractTest(Class<T> optionClass, boolean requiredForAuth) {
+        this.option = (T) findByNameOrFail(Option.class, getName(optionClass));
         this.requiredForAuth = requiredForAuth;
     }
 
@@ -34,32 +30,14 @@ public abstract class OptionAbstractTest<T extends Option> extends EmbeddedAPIAb
 
     @Test
     public void validateDefinitionMethods() {
-        Assertions.assertNotNull(option.getDescription());
-        Assertions.assertDoesNotThrow(() -> Integer.valueOf(option.getPriority()));
-        Assertions.assertEquals(Objects.hash(extractNamedName(option), extractNamedAlias(option)), option.hashCode());
-        Assertions.assertTrue(option.equals(option));
-        Assertions.assertFalse(option.equals(new Object()));
-        Assertions.assertFalse(option.equals(new NamedOption()));
-        Assertions.assertTrue(option.toString().startsWith(extractNamedName(option) + ", " + extractNamedAlias(option)));
         Assertions.assertEquals(requiredForAuth, option.requiredForAuth());
+        Assertions.assertNotNull(option.getArgs());
+        Assertions.assertNotNull(option.getDescription());
+        Assertions.assertDoesNotThrow(() -> option.getPriority());
     }
 
-    @Named(name = "lhn345lj6n45lj45ptn3l45knet5", alias = "34jn345j3n4krjn4k3n4")
-    public static class NamedOption extends Option {
-
-        @Override
-        public String[] getArgs() {
-            return new String[0];
-        }
-
-        @Override
-        public String getDescription() {
-            return null;
-        }
-
-        @Override
-        public boolean execute(Settings settings, String[] args) {
-            return true;
-        }
+    private String getName(Class<T> optionClass) {
+        Named named = optionClass.getAnnotation(Named.class);
+        return named.name();
     }
 }

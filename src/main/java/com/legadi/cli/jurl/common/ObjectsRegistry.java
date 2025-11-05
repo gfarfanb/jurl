@@ -376,11 +376,11 @@ public class ObjectsRegistry {
                 break;
             case EQUALS:
                 evaluation = input -> Arrays.stream(evaluable.values())
-                    .anyMatch(v -> v.toLowerCase().equals(input.toLowerCase()));
+                    .anyMatch(v -> v.equals(input));
                 break;
             case EQUALS_IGNORE_CASE:
                 evaluation = input -> Arrays.stream(evaluable.values())
-                    .anyMatch(v -> v.toLowerCase().equals(input.toLowerCase()));
+                    .anyMatch(v -> v.equalsIgnoreCase(input));
                 break;
             case STARTS_WITH:
                 evaluation = input -> Arrays.stream(evaluable.values())
@@ -388,6 +388,9 @@ public class ObjectsRegistry {
                 break;
             case ALWAYS_TRUE:
                 evaluation = input -> true;
+                break;
+            default:
+                evaluation = input -> false;
                 break;
         }
 

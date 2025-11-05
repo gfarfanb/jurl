@@ -28,7 +28,7 @@ import com.legadi.cli.jurl.parser.RequestParser;
 public class RequestTypeOptionTest extends OptionAbstractTest<RequestTypeOption> {
 
     public RequestTypeOptionTest() {
-        super("--request-type", false);
+        super(RequestTypeOption.class, false);
     }
 
     @Test

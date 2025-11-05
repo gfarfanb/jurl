@@ -17,7 +17,7 @@ import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 public class UseAuthenticationOptionTest extends OptionAbstractTest<UseAuthenticationOption> {
 
     public UseAuthenticationOptionTest() {
-        super("--use-auth", true);
+        super(UseAuthenticationOption.class, true);
     }
 
     @Test

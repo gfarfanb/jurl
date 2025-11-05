@@ -18,7 +18,7 @@ import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 public class MockRequestOptionTest extends OptionAbstractTest<MockRequestOption> {
 
     public MockRequestOptionTest() {
-        super("--mock", false);
+        super(MockRequestOption.class, false);
     }
 
     @Test

@@ -12,7 +12,7 @@ import com.legadi.cli.jurl.common.Settings;
 public class SetInputNameOptionTest extends OptionAbstractTest<SetInputNameOption> {
 
     public SetInputNameOptionTest() {
-        super("--name", false);
+        super(SetInputNameOption.class, false);
     }
 
     @Test
