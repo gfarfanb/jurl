@@ -249,27 +249,30 @@ public class HTTPRequestModifierTest {
 
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
 
-        Assertions.assertThrows(CommandException.class, () ->
-            modifier.getAuthenticationIfExists(requestName, requestInput, settings, null));
+        Assertions.assertThrows(CommandException.class,
+            () -> modifier.getAuthenticationIfExists(requestName, requestInput, settings, null));
 
         requestAuth.setTokenUrl("http://localhost:555555/oauth/token");
-        Assertions.assertThrows(CommandException.class, () ->
-            modifier.getAuthenticationIfExists(requestName, requestInput, settings, null));
+        Assertions.assertThrows(CommandException.class,
+            () -> modifier.getAuthenticationIfExists(requestName, requestInput, settings, null));
 
         requestAuth.setClientId("api-flow-spec-client-id");
-        Assertions.assertThrows(CommandException.class, () ->
-            modifier.getAuthenticationIfExists(requestName, requestInput, settings, null));
+        Assertions.assertThrows(CommandException.class,
+            () -> modifier.getAuthenticationIfExists(requestName, requestInput, settings, null));
 
         requestAuth.setClientSecret(secret);
-        Assertions.assertThrows(CommandException.class, () ->
-            modifier.getAuthenticationIfExists(requestName, requestInput, settings, null));
+
+        List<?> authRequestsA = Assertions.assertDoesNotThrow(
+            () -> modifier.getAuthenticationIfExists(requestName, requestInput, settings, null));
+
+        Assertions.assertFalse(authRequestsA.isEmpty());
 
         requestAuth.setScope("test");
 
-        List<?> authRequests = modifier.getAuthenticationIfExists(requestName,
-            requestInput, settings, null);
+        List<?> authRequestsB = Assertions.assertDoesNotThrow(
+            () -> modifier.getAuthenticationIfExists(requestName, requestInput, settings, null));
 
-        Assertions.assertFalse(authRequests.isEmpty());
+        Assertions.assertFalse(authRequestsB.isEmpty());
     }
 
     @Test

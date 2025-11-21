@@ -143,8 +143,10 @@ public class HTTPTokenHeaderAuthenticatorTest {
 
         HTTPRequestEntry requestD = new HTTPRequestEntry();
 
-        Assertions.assertThrows(CommandException.class,
+        Optional<HTTPRequestEntry> authRequestD = Assertions.assertDoesNotThrow(
             () -> authenticator.createAuthRequest(settings, apiD, requestD, new HashMap<>()));
+
+        Assertions.assertTrue(authRequestD.isPresent());
 
         HTTPRequestEntry apiE = new HTTPRequestEntry();
         apiAuthEntry = authenticator.instanceAuthEntry(settings);
@@ -156,10 +158,10 @@ public class HTTPTokenHeaderAuthenticatorTest {
 
         HTTPRequestEntry requestE = new HTTPRequestEntry();
 
-        Optional<HTTPRequestEntry> authRequest = Assertions.assertDoesNotThrow(
+        Optional<HTTPRequestEntry> authRequestE = Assertions.assertDoesNotThrow(
             () -> authenticator.createAuthRequest(settings, apiE, requestE, new HashMap<>()));
 
-        Assertions.assertTrue(authRequest.isPresent());
+        Assertions.assertTrue(authRequestE.isPresent());
     }
 
     @Test

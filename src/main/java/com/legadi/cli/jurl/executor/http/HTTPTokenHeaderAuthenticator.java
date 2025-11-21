@@ -3,6 +3,7 @@ package com.legadi.cli.jurl.executor.http;
 import static com.legadi.cli.jurl.common.AnnotationsUtils.extractTypedType;
 import static com.legadi.cli.jurl.common.CommonUtils.getAllFields;
 import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
+import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.toGeneratedParam;
 import static com.legadi.cli.jurl.common.JsonUtils.removeJsonProperties;
 import static com.legadi.cli.jurl.common.annotations.Evaluable.Operation.EQUALS_IGNORE_CASE;
@@ -113,9 +114,6 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
         }
         if(isBlank(requestAuthEntry.get().getClientSecret())) {
             throw new CommandException("'clientSecret' is required for token authorization");
-        }
-        if(isBlank(requestAuthEntry.get().getScope())) {
-            throw new CommandException("'scope' is required for token authorization");
         }
 
         return Optional.of(instanceRequest(settings, request.getName(), requestAuthEntry.get()));
@@ -292,7 +290,10 @@ public class HTTPTokenHeaderAuthenticator implements HeaderAuthenticator<HTTPReq
         bodyParams.put(getGrantTypeFieldName(settings), authEntry.getGrantType());
         bodyParams.put(getClientIdFieldName(settings), authEntry.getClientId());
         bodyParams.put(getClientSecretFieldName(settings), authEntry.getClientSecret());
-        bodyParams.put(getScopeFieldName(settings), authEntry.getScope());
+
+        if(isNotBlank(authEntry.getScope())) {
+            bodyParams.put(getScopeFieldName(settings), authEntry.getScope());
+        }
 
         for(String fieldName : authEntry.getFieldNames()) {
             bodyParams.put(fieldName, authEntry.getField(fieldName));

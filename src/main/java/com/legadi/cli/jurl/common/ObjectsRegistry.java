@@ -368,23 +368,23 @@ public class ObjectsRegistry {
         switch(evaluable.op()) {
             case CONTAINS:
                 evaluation = input -> Arrays.stream(evaluable.values())
-                    .anyMatch(v -> v.toLowerCase().contains(input.toLowerCase()));
+                    .anyMatch(v -> input.toLowerCase().contains(v.toLowerCase()));
                 break;
             case ENDS_WITH:
                 evaluation = input -> Arrays.stream(evaluable.values())
-                    .anyMatch(v -> v.toLowerCase().endsWith(input.toLowerCase()));
+                    .anyMatch(v -> input.toLowerCase().endsWith(v.toLowerCase()));
                 break;
             case EQUALS:
                 evaluation = input -> Arrays.stream(evaluable.values())
-                    .anyMatch(v -> v.equals(input));
+                    .anyMatch(v -> input.equals(v));
                 break;
             case EQUALS_IGNORE_CASE:
                 evaluation = input -> Arrays.stream(evaluable.values())
-                    .anyMatch(v -> v.equalsIgnoreCase(input));
+                    .anyMatch(v -> input.equalsIgnoreCase(v));
                 break;
             case STARTS_WITH:
                 evaluation = input -> Arrays.stream(evaluable.values())
-                    .anyMatch(v -> v.toLowerCase().startsWith(input.toLowerCase()));
+                    .anyMatch(v -> input.toLowerCase().startsWith(v.toLowerCase()));
                 break;
             case ALWAYS_TRUE:
                 evaluation = input -> true;
