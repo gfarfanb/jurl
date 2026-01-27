@@ -3,6 +3,7 @@ package com.legadi.cli.jurl.executor.http;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findByNameOrFail;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_REQUEST_BEHAVIOUR;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_ASSERTIONS;
+import static com.legadi.cli.jurl.embedded.util.FilenameUtils.toSystemSeparator;
 import static com.legadi.cli.jurl.model.AssertionType.ASSERTION;
 import static com.legadi.cli.jurl.model.RequestBehaviour.CURL_ONLY;
 import static com.legadi.cli.jurl.model.RequestBehaviour.PRINT_ONLY;
@@ -70,10 +71,14 @@ public class HTTPResponseProcessorTest {
         Assertions.assertEquals(0, assertionResult.get().getFailures());
         Assertions.assertTrue(assertionResult.get().isPassed());
 
+        String expectedResponsePath = toSystemSeparator(
+            "src/test/resources/json-response.output.gz.out"
+        );
+
         Assertions.assertEquals("http://localhost/path", settings.get("HTTP/url"));
         Assertions.assertEquals("curl http://localhost/path", settings.get("HTTP/curl"));
         Assertions.assertEquals("200", settings.get("HTTP/status"));
-        Assertions.assertEquals("src/test/resources/json-response.output.gz.out", settings.get("HTTP/response.path"));
+        Assertions.assertEquals(expectedResponsePath, settings.get("HTTP/response.path"));
         Assertions.assertEquals("application/json", settings.get("HTTP/header.Content-Type"));
     }
 
@@ -125,10 +130,14 @@ public class HTTPResponseProcessorTest {
 
         Assertions.assertFalse(assertionResult.isPresent());
 
+        String expectedResponsePath = toSystemSeparator(
+            "src/test/resources/json-response.output.gz.out"
+        );
+
         Assertions.assertEquals("http://localhost/path", settings.get("HTTP/url"));
         Assertions.assertEquals("curl http://localhost/path", settings.get("HTTP/curl"));
         Assertions.assertEquals("200", settings.get("HTTP/status"));
-        Assertions.assertEquals("src/test/resources/json-response.output.gz.out", settings.get("HTTP/response.path"));
+        Assertions.assertEquals(expectedResponsePath, settings.get("HTTP/response.path"));
         Assertions.assertEquals("application/json", settings.get("HTTP/header.Content-Type"));
     }
 
@@ -222,10 +231,19 @@ public class HTTPResponseProcessorTest {
         HTTPResponseProcessor processor = findByNameOrFail(ResponseProcessor.class, "http");
         Map<String, Object> details = Assertions.assertDoesNotThrow(
             () -> processor.getDetails(response));
+        String expectedBodyPath = toSystemSeparator(
+            "src/test/resources/json-object.input.json"
+        );
+        String expectedSendFilePath = toSystemSeparator(
+            "src/test/resources/file.csv"
+        );
+        String expectedResponsePath = toSystemSeparator(
+            "src/test/resources/json-response.output.gz.out"
+        );
 
-        Assertions.assertEquals("src/test/resources/json-object.input.json", details.get("bodyPath"));
-        Assertions.assertEquals(Arrays.asList("src/test/resources/file.csv"), details.get("sentFilePaths"));
-        Assertions.assertEquals("src/test/resources/json-response.output.gz.out", details.get("responsePath"));
+        Assertions.assertEquals(expectedBodyPath, details.get("bodyPath"));
+        Assertions.assertEquals(Arrays.asList(expectedSendFilePath), details.get("sentFilePaths"));
+        Assertions.assertEquals(expectedResponsePath, details.get("responsePath"));
         Assertions.assertEquals(200, details.get("statusCode"));
         Assertions.assertNotNull(details.get("responseHeaders"));
         Assertions.assertEquals("application/json", ((Map<String, String>) details.get("responseHeaders")).get("Content-Type"));

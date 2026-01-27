@@ -373,8 +373,8 @@ public class HTTPRequestParserTest {
             () -> parser.parseInput(settings, requestPath));
         HTTPRequestEntry request = requestInput.getRequests().get("request");
         String expectedBody = "# This is a normal line"
-            + "\n# Another line"
-            + "\n\\# It doesn't required ESCAPED generator \\";
+            + System.lineSeparator() + "# Another line"
+            + System.lineSeparator() + "\\# It doesn't required ESCAPED generator \\";
         StringExpander stringExpander = new StringExpander(settings);
 
         Assertions.assertNotNull(request);
@@ -451,10 +451,10 @@ public class HTTPRequestParserTest {
             () -> parser.parseInput(settings, requestPath));
         HTTPRequestEntry request = requestInput.getRequests().get("request");
         String expectedBody = "Composing request with envs"
-            + "\n: This is a normal line"
-            + "\nEnv labeled with regex"
-            + "\n"
-            + "\nEOF\n";
+            + System.lineSeparator() + ": This is a normal line"
+            + System.lineSeparator() + "Env labeled with regex"
+            + System.lineSeparator()
+            + System.lineSeparator() + "EOF" + System.lineSeparator();
 
         Assertions.assertNotNull(request);
         Assertions.assertEquals("POST", request.getMethod());

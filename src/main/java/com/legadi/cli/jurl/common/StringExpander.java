@@ -97,7 +97,7 @@ public class StringExpander {
                 String paramRegex = settings.getSettingsParamRegexBegin()
                     + paramTagEscaped + settings.getSettingsParamRegexEnd();
 
-                content = content.replaceAll(paramRegex, value);
+                content = content.replaceAll(paramRegex, Matcher.quoteReplacement(value));
 
                 paramTags.add(paramTag);
             }

@@ -2,6 +2,7 @@ package com.legadi.cli.jurl.api;
 
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_DOWNLOADS_LOCATION;
 import static com.legadi.cli.jurl.embedded.util.FileLoader.readLines;
+import static com.legadi.cli.jurl.embedded.util.FilenameUtils.toSystemSeparator;
 import static com.legadi.cli.jurl.embedded.util.ObjectName.ASSERTIONS_RESULT;
 import static com.legadi.cli.jurl.embedded.util.ObjectName.BODY;
 import static com.legadi.cli.jurl.embedded.util.ObjectName.REQUEST;
@@ -12,7 +13,6 @@ import static com.legadi.cli.jurl.executor.http.HTTPRequestExecutor.REQUEST_FILE
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
@@ -60,6 +60,11 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
         FileFormEntity uploadEntity = (FileFormEntity) requestCatcher
             .getLastSaved(BODY)
             .getRight();
+        String expectedResponsePath = toSystemSeparator(
+            "./executions/src/test/resources/file_spec_http/upload/"
+            + uploadSettings.getTimestamp().toLocalDate() + "/"
+            + uploadSettings.getExecutionTag() + ".response"
+        );
 
         Assertions.assertEquals("http://localhost:" + port + "/file", uploadResponse.getRequestUrl());
         Assertions.assertTrue(uploadResponse.getCurlCommand().contains("-X POST"));
@@ -73,10 +78,7 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
         Assertions.assertTrue(uploadResponse.getCurlCommand().contains(uploadEntity.getType()));
         Assertions.assertTrue(uploadResponse.getCurlCommand().contains(uploadEntity.getField()));
         Assertions.assertEquals("HTTP/1.1 201", uploadResponse.getResult());
-        Assertions.assertEquals("./executions/src/test/resources/file_spec_http/upload/"
-            + uploadSettings.getTimestamp().toLocalDate() + "/"
-            + uploadSettings.getExecutionTag() + ".response",
-            uploadResponse.getResponsePath().toString());
+        Assertions.assertEquals(expectedResponsePath, uploadResponse.getResponsePath().toString());
         Assertions.assertEquals(201, uploadResponse.getStatusCode());
         Assertions.assertFalse(uploadResponse.getResponseHeaders().isEmpty());
         Assertions.assertTrue(uploadResponse.getResponseHeaders().containsKey("Resource-ID"));
@@ -124,6 +126,11 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
         FileFormEntity uploadEntity = (FileFormEntity) requestCatcher
             .getLastSaved(BODY)
             .getRight();
+        String expectedResponsePath = toSystemSeparator(
+            "./executions/src/test/resources/file_spec_http/uploadWithoutForm/"
+            + uploadSettings.getTimestamp().toLocalDate() + "/"
+            + uploadSettings.getExecutionTag() + ".response"
+        );
 
         Assertions.assertEquals("http://localhost:" + port + "/file", uploadResponse.getRequestUrl());
         Assertions.assertTrue(uploadResponse.getCurlCommand().contains("-X POST"));
@@ -137,10 +144,7 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
         Assertions.assertNull(uploadEntity.getType());
         Assertions.assertTrue(uploadResponse.getCurlCommand().contains(uploadEntity.getField()));
         Assertions.assertEquals("HTTP/1.1 201", uploadResponse.getResult());
-        Assertions.assertEquals("./executions/src/test/resources/file_spec_http/uploadWithoutForm/"
-            + uploadSettings.getTimestamp().toLocalDate() + "/"
-            + uploadSettings.getExecutionTag() + ".response",
-            uploadResponse.getResponsePath().toString());
+        Assertions.assertEquals(expectedResponsePath, uploadResponse.getResponsePath().toString());
         Assertions.assertEquals(201, uploadResponse.getStatusCode());
         Assertions.assertFalse(uploadResponse.getResponseHeaders().isEmpty());
         Assertions.assertTrue(uploadResponse.getResponseHeaders().containsKey("Resource-ID"));
@@ -184,15 +188,17 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
 
         HTTPResponseEntry downloadResponse = requestCatcher.getLast(downloadCorrelationId, RESPONSE);
         Settings downloadSettings = requestCatcher.getLast(downloadCorrelationId, SETTINGS);
+        String expectedResponsePath = toSystemSeparator(
+            "./executions/src/test/resources/file_spec_http/download/"
+            + downloadSettings.getTimestamp().toLocalDate() + "/downloaded.csv"
+        );
 
         Assertions.assertTrue(downloadResponse.getRequestUrl().startsWith("http://localhost:" + port + "/file"));
         Assertions.assertTrue(downloadResponse.getRequestUrl().contains("file=src/test/resources/file.csv"));
         Assertions.assertTrue(downloadResponse.getRequestUrl().contains("name=downloaded.csv"));
         Assertions.assertTrue(downloadResponse.getCurlCommand().contains("-X GET"));
         Assertions.assertEquals("HTTP/1.1 200", downloadResponse.getResult());
-        Assertions.assertEquals("./executions/src/test/resources/file_spec_http/download/"
-            + downloadSettings.getTimestamp().toLocalDate() + "/downloaded.csv",
-            downloadResponse.getResponsePath().toString());
+        Assertions.assertEquals(expectedResponsePath, downloadResponse.getResponsePath().toString());
         Assertions.assertEquals(200, downloadResponse.getStatusCode());
         Assertions.assertFalse(downloadResponse.getResponseHeaders().isEmpty());
         Assertions.assertTrue(downloadResponse.getResponseHeaders().containsKey("Content-Disposition"));
@@ -234,15 +240,17 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
 
         HTTPResponseEntry downloadResponse = requestCatcher.getLast(downloadCorrelationId, RESPONSE);
         Settings downloadSettings = requestCatcher.getLast(downloadCorrelationId, SETTINGS);
+        String expectedResponsePath = toSystemSeparator(
+            "./executions/src/test/resources/file_spec_http/downloadWithoutName/"
+            + downloadSettings.getTimestamp().toLocalDate() + "/"
+            + downloadSettings.getExecutionTag() + ".response"
+        );
 
         Assertions.assertTrue(downloadResponse.getRequestUrl().startsWith("http://localhost:" + port + "/file"));
         Assertions.assertTrue(downloadResponse.getRequestUrl().contains("file=src/test/resources/file.csv"));
         Assertions.assertTrue(downloadResponse.getCurlCommand().contains("-X GET"));
         Assertions.assertEquals("HTTP/1.1 200", downloadResponse.getResult());
-        Assertions.assertEquals("./executions/src/test/resources/file_spec_http/downloadWithoutName/"
-            + downloadSettings.getTimestamp().toLocalDate() + "/"
-            + downloadSettings.getExecutionTag() + ".response",
-            downloadResponse.getResponsePath().toString());
+        Assertions.assertEquals(expectedResponsePath, downloadResponse.getResponsePath().toString());
         Assertions.assertEquals(200, downloadResponse.getStatusCode());
         Assertions.assertFalse(downloadResponse.getResponseHeaders().isEmpty());
         Assertions.assertTrue(downloadResponse.getResponseHeaders().containsKey("Content-Disposition"));
@@ -290,12 +298,15 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
         Assertions.assertEquals(1, downloadRequest.getAssertions().size());
 
         HTTPResponseEntry downloadResponse = requestCatcher.getLast(downloadCorrelationId, RESPONSE);
+        String expectedResponsePath = toSystemSeparator(
+            downloadsLocation + "/saved.csv"
+        );
 
         Assertions.assertTrue(downloadResponse.getRequestUrl().startsWith("http://localhost:" + port + "/file"));
         Assertions.assertTrue(downloadResponse.getRequestUrl().contains("file=src/test/resources/file.csv"));
         Assertions.assertTrue(downloadResponse.getCurlCommand().contains("-X GET"));
         Assertions.assertEquals("HTTP/1.1 200", downloadResponse.getResult());
-        Assertions.assertEquals(downloadsLocation + "/saved.csv", downloadResponse.getResponsePath().toString());
+        Assertions.assertEquals(expectedResponsePath, downloadResponse.getResponsePath().toString());
         Assertions.assertEquals(200, downloadResponse.getStatusCode());
         Assertions.assertFalse(downloadResponse.getResponseHeaders().isEmpty());
         Assertions.assertTrue(downloadResponse.getResponseHeaders().containsKey("Content-Disposition"));
@@ -315,8 +326,6 @@ public class FileAPITest extends EmbeddedAPIAbstractTest {
         Assertions.assertTrue(downloadedFile.length() > 0);
         Assertions.assertTrue(downloadedFile.delete());
         Assertions.assertFalse(downloadedFile.exists());
-
-        Files.delete(Paths.get(downloadsLocation));
 
         properties.put(PROP_DOWNLOADS_LOCATION, "");
 

@@ -1,6 +1,7 @@
 package com.legadi.cli.jurl.api;
 
 import static com.legadi.cli.jurl.common.JsonUtils.loadJsonFile;
+import static com.legadi.cli.jurl.embedded.util.FilenameUtils.toSystemSeparator;
 import static com.legadi.cli.jurl.embedded.util.ObjectName.ASSERTIONS_RESULT;
 import static com.legadi.cli.jurl.embedded.util.ObjectName.BODY;
 import static com.legadi.cli.jurl.embedded.util.ObjectName.REQUEST;
@@ -10,6 +11,7 @@ import static com.legadi.cli.jurl.embedded.util.ObjectName.SETTINGS;
 import static com.legadi.cli.jurl.executor.http.HTTPRequestModifier.BODY_TEMPORAL_PATH;
 
 import java.math.BigDecimal;
+import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Optional;
@@ -29,14 +31,7 @@ import com.legadi.cli.jurl.model.http.HTTPResponseEntry;
 public class CrudAPITest extends EmbeddedAPIAbstractTest {
 
     @Test
-    public void crud() {
-        UUID id = post();
-        get(id);
-        put(id);
-        delete(id);
-    }
-
-    private UUID post() {
+    public void post() {
         UUID createCorrelationId = jurl("-n", "create", "src/test/resources/basic-functions.spec.http");
         String requestInputPath = requestCatcher.getLast(createCorrelationId, REQUEST_INPUT_PATH);
         HTTPRequestEntry createRequest = requestCatcher.getLast(createCorrelationId, REQUEST);
@@ -57,6 +52,11 @@ public class CrudAPITest extends EmbeddedAPIAbstractTest {
 
         HTTPResponseEntry createResponse = requestCatcher.getLast(createCorrelationId, RESPONSE);
         Settings createSettings = requestCatcher.getLast(createCorrelationId, SETTINGS);
+        String expectedResponsePath = toSystemSeparator(
+            "./executions/src/test/resources/basic-functions_spec_http/create/"
+            + createSettings.getTimestamp().toLocalDate() + "/"
+            + createSettings.getExecutionTag() + ".response"
+        );
 
         Assertions.assertEquals("http://localhost:" + port + "/basic/body", createResponse.getRequestUrl());
         Assertions.assertTrue(createResponse.getCurlCommand().contains("-X POST"));
@@ -65,10 +65,7 @@ public class CrudAPITest extends EmbeddedAPIAbstractTest {
         Assertions.assertTrue(createResponse.getCurlCommand().contains("--data-binary"));
         Assertions.assertTrue(createResponse.getCurlCommand().contains("@" + createResponse.getBodyPath()));
         Assertions.assertEquals("HTTP/1.1 201", createResponse.getResult());
-        Assertions.assertEquals("./executions/src/test/resources/basic-functions_spec_http/create/"
-            + createSettings.getTimestamp().toLocalDate() + "/"
-            + createSettings.getExecutionTag() + ".response",
-            createResponse.getResponsePath().toString());
+        Assertions.assertEquals(expectedResponsePath, createResponse.getResponsePath().toString());
         Assertions.assertEquals(201, createResponse.getStatusCode());
         Assertions.assertFalse(createResponse.getResponseHeaders().isEmpty());
         Assertions.assertTrue(createResponse.getResponseHeaders().containsKey("Resource-ID"));
@@ -81,12 +78,20 @@ public class CrudAPITest extends EmbeddedAPIAbstractTest {
         Assertions.assertEquals(1, createAssertionResult.get().getAssertions());
         Assertions.assertEquals(0, createAssertionResult.get().getFailures());
         Assertions.assertTrue(createAssertionResult.get().isPassed());
-
-        return UUID.fromString(createSettings.get("basic.functions.id"));
+        Assertions.assertDoesNotThrow(
+            () -> UUID.fromString(createSettings.get("basic.functions.id")));
     }
 
-    private void get(UUID id) {
-        UUID obtainCorrelationId = jurl("-n", "obtain", "src/test/resources/basic-functions.spec.http");
+    @Test
+    public void get() {
+        UUID id = UUID.randomUUID();
+
+        requestCatcher.add(id, BODY, loadJsonFile(Paths.get("src/test/resources/basic-functions.body.json"),
+            new TypeToken<BasicFunctionsEntity>() {}, null));
+
+        UUID obtainCorrelationId = jurl(
+            "-s", "basic.functions.id", id.toString(),
+            "-n", "obtain", "src/test/resources/basic-functions.spec.http");
         String requestInputPath = requestCatcher.getLast(obtainCorrelationId, REQUEST_INPUT_PATH);
         HTTPRequestEntry obtainRequest = requestCatcher.getLast(obtainCorrelationId, REQUEST);
 
@@ -106,16 +111,18 @@ public class CrudAPITest extends EmbeddedAPIAbstractTest {
 
         HTTPResponseEntry obtainResponse = requestCatcher.getLast(obtainCorrelationId, RESPONSE);
         Settings obtainSettings = requestCatcher.getLast(obtainCorrelationId, SETTINGS);
+        String expectedResponsePath = toSystemSeparator(
+            "./executions/src/test/resources/basic-functions_spec_http/obtain/"
+            + obtainSettings.getTimestamp().toLocalDate() + "/"
+            + obtainSettings.getExecutionTag() + ".response"
+        );
 
         Assertions.assertEquals("http://localhost:" + port + "/basic/body/" + id, obtainResponse.getRequestUrl());
         Assertions.assertTrue(obtainResponse.getCurlCommand().contains("-X GET"));
         Assertions.assertTrue(obtainResponse.getCurlCommand().contains("-H \"Content-Type: application/json\""));
         Assertions.assertTrue(obtainResponse.getCurlCommand().contains("http://localhost:" + port + "/basic/body/" + id));
         Assertions.assertEquals("HTTP/1.1 200", obtainResponse.getResult());
-        Assertions.assertEquals("./executions/src/test/resources/basic-functions_spec_http/obtain/"
-            + obtainSettings.getTimestamp().toLocalDate() + "/"
-            + obtainSettings.getExecutionTag() + ".response",
-            obtainResponse.getResponsePath().toString());
+        Assertions.assertEquals(expectedResponsePath, obtainResponse.getResponsePath().toString());
         Assertions.assertEquals(200, obtainResponse.getStatusCode());
         Assertions.assertFalse(obtainResponse.getResponseHeaders().isEmpty());
         Assertions.assertTrue(obtainResponse.getResponseHeaders().containsKey("Content-Type"));
@@ -142,8 +149,16 @@ public class CrudAPITest extends EmbeddedAPIAbstractTest {
         Assertions.assertTrue(obtainAssertionResult.get().isPassed());
     }
 
-    private void put(UUID id) {
-        UUID updateCorrelationId = jurl("-n", "update", "-mb", "json", "src/test/resources/basic-functions.spec.http");
+    @Test
+    public void put() {
+        UUID id = UUID.randomUUID();
+
+        requestCatcher.add(id, BODY, loadJsonFile(Paths.get("src/test/resources/basic-functions.body.json"),
+            new TypeToken<BasicFunctionsEntity>() {}, null));
+
+        UUID updateCorrelationId = jurl(
+            "-s", "basic.functions.id", id.toString(),
+            "-n", "update", "-mb", "json", "src/test/resources/basic-functions.spec.http");
         Settings updateSettings = requestCatcher.getLast(updateCorrelationId, SETTINGS);
         String requestInputPath = requestCatcher.getLast(updateCorrelationId, REQUEST_INPUT_PATH);
         HTTPRequestEntry updateRequest = requestCatcher.getLast(updateCorrelationId, REQUEST);
@@ -200,8 +215,16 @@ public class CrudAPITest extends EmbeddedAPIAbstractTest {
         Assertions.assertEquals(updateEntity.getTimestamp(), updateBody.getTimestamp());
     }
 
-    private void delete(UUID id) {
-        UUID removeCorrelationId = jurl("-n", "remove", "src/test/resources/basic-functions.spec.http");
+    @Test
+    public void delete() {
+        UUID id = UUID.randomUUID();
+
+        requestCatcher.add(id, BODY, loadJsonFile(Paths.get("src/test/resources/basic-functions.body.json"),
+            new TypeToken<BasicFunctionsEntity>() {}, null));
+
+        UUID removeCorrelationId = jurl(
+            "-s", "basic.functions.id", id.toString(),
+            "-n", "remove", "src/test/resources/basic-functions.spec.http");
         String requestInputPath = requestCatcher.getLast(removeCorrelationId, REQUEST_INPUT_PATH);
         HTTPRequestEntry removeRequest = requestCatcher.getLast(removeCorrelationId, REQUEST);
 

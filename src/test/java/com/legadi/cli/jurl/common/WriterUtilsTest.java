@@ -2,6 +2,7 @@ package com.legadi.cli.jurl.common;
 
 import static com.legadi.cli.jurl.common.JsonUtils.jsonToObject;
 import static com.legadi.cli.jurl.common.JsonUtils.loadJsonFile;
+import static com.legadi.cli.jurl.common.SettingsConstants.EXTERNAL_OS_NAME;
 import static com.legadi.cli.jurl.common.WriterUtils.appendToFile;
 import static com.legadi.cli.jurl.common.WriterUtils.cleanDirectory;
 import static com.legadi.cli.jurl.common.WriterUtils.createDirectories;
@@ -24,6 +25,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 
@@ -55,7 +57,7 @@ public class WriterUtilsTest {
         try(ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                 DataOutputStream dataOutputStream = new DataOutputStream(outputStream)) {
 
-            writeLine(dataOutputStream, "Test line...", null);
+            writeLine(dataOutputStream, "Test line...", StandardCharsets.UTF_8.name());
 
             Assertions.assertEquals("Test line...", outputStream.toString());
         }
@@ -79,7 +81,7 @@ public class WriterUtilsTest {
             writeLine(bufferedWriter, "Test line...");
             bufferedWriter.flush();
 
-            Assertions.assertEquals("Test line...\n", writer.toString());
+            Assertions.assertEquals("Test line..." + System.lineSeparator(), writer.toString());
         }
     }
 
@@ -391,16 +393,20 @@ public class WriterUtilsTest {
 
         createDirectories(deletePath);
 
-        Path targetPath = deletePath.resolve("file.txt");
-        Path linkPath = deletePath.resolve("symbolic_link.txt");
+        String os = System.getProperty(EXTERNAL_OS_NAME).toLowerCase(Locale.ROOT);
 
-        Files.createSymbolicLink(linkPath, targetPath);
+        if(os.contains("linux")) {
+            Path targetPath = deletePath.resolve("file.txt");
+            Path linkPath = deletePath.resolve("symbolic_link.txt");
 
-        Assertions.assertDoesNotThrow(() -> cleanDirectory(deletePath, new DeleteFileVisitor(null)));
+            Files.createSymbolicLink(linkPath, targetPath);
 
-        Assertions.assertTrue(deletePath.toFile().exists());
-        Assertions.assertFalse(targetPath.toFile().exists());
-        Assertions.assertTrue(linkPath.toFile().delete());
+            Assertions.assertDoesNotThrow(() -> cleanDirectory(deletePath, new DeleteFileVisitor(null)));
+
+            Assertions.assertTrue(deletePath.toFile().exists());
+            Assertions.assertFalse(targetPath.toFile().exists());
+            Assertions.assertTrue(linkPath.toFile().delete());
+        }
 
         Assertions.assertDoesNotThrow(() -> cleanDirectory(deletePath, new DeleteFileVisitor(null)));
 

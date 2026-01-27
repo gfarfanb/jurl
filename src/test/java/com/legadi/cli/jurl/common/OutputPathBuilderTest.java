@@ -79,9 +79,9 @@ public class OutputPathBuilderTest {
         Path downloadLocation = new OutputPathBuilder(settings)
             .setFilename("output")
             .setExtension("csv")
-            .buildFilePath(Paths.get("$HOME/Downloads"), null);
+            .buildFilePath(Paths.get("./executions/Downloads"), null);
 
-        Assertions.assertEquals(Paths.get("$HOME/Downloads/output.csv"), downloadLocation);
+        Assertions.assertEquals(Paths.get("./executions/Downloads/output.csv"), downloadLocation);
     }
 
     @Test

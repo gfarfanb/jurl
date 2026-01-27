@@ -6,6 +6,7 @@ import static com.legadi.cli.jurl.common.SettingsConstants.PROP_MOCK_REQUEST;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_REQUEST_BEHAVIOUR;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_SKIP_CONDITIONS;
 import static com.legadi.cli.jurl.common.WriterUtils.writeFile;
+import static com.legadi.cli.jurl.embedded.util.FilenameUtils.toSystemSeparator;
 import static com.legadi.cli.jurl.executor.http.HTTPRequestModifier.BODY_TEMPORAL_PATH;
 import static com.legadi.cli.jurl.model.AssertionType.CONDITION;
 import static com.legadi.cli.jurl.model.RequestBehaviour.CURL_ONLY;
@@ -331,7 +332,12 @@ public class HTTPRequestExecutorTest extends EmbeddedAPIAbstractTest {
         Assertions.assertEquals("curl -X POST "
             + "-H \"Request-Catcher: " + requestCatcherId + "\" "
             + "-H \"Content-Type: application/json\" "
-            + "--data-binary \"@./executions/src/test/resources/http-request-executor_http/basic-post/" + settings.getTimestamp().toLocalDate() + "/" + settings.getExecutionTag() + ".body\" "
+            + "--data-binary \"@"
+            + toSystemSeparator(
+                "./executions/src/test/resources/http-request-executor_http/basic-post/"
+                + settings.getTimestamp().toLocalDate() + "/" + settings.getExecutionTag()
+                + ".body"
+            ) + "\" "
             + "\"http://localhost:" + port + "/basic/body\"", response.getCurlCommand());
     }
 
@@ -356,7 +362,12 @@ public class HTTPRequestExecutorTest extends EmbeddedAPIAbstractTest {
         Assertions.assertTrue(response.getResponseHeaders().isEmpty());
         Assertions.assertTrue(response.getCurlCommand().contains("curl -X POST"));
         Assertions.assertTrue(response.getCurlCommand().contains("-H \"Content-Type: application/json\""));
-        Assertions.assertTrue(response.getCurlCommand().contains("--data-binary \"@./executions/src/test/resources/http-request-executor_http/basic-post/" + settings.getTimestamp().toLocalDate() + "/" + settings.getExecutionTag() + ".body\""));
+        Assertions.assertTrue(response.getCurlCommand().contains("--data-binary \"@"
+            + toSystemSeparator(
+                "./executions/src/test/resources/http-request-executor_http/basic-post/"
+                + settings.getTimestamp().toLocalDate() + "/" + settings.getExecutionTag() + ".body"
+            )
+            + "\""));
         Assertions.assertTrue(response.getCurlCommand().contains("\"http://localhost:" + port + "/basic/body\""));
     }
 

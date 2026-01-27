@@ -25,6 +25,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -124,14 +126,14 @@ public class HTTPRequestExecutor implements RequestExecutor<HTTPRequestEntry, HT
 
         try {
             generatedUrl = urlBuilder.build();
-            URL url = new URL(generatedUrl);
+            URL url = new URI(generatedUrl).toURL();
 
             curlBuilder.setUrl(url);
 
             log(settings, identifyMethod(request) + " " + url, null);
 
             return createConnection(settings, requestInputPath, request, url);
-        } catch(IOException ex) {
+        } catch(IOException | URISyntaxException | IllegalArgumentException ex) {
             throw new RequestException(request, "Unable to create HTTP connection [" + generatedUrl + "] - " + ex.getMessage());
         }
     }

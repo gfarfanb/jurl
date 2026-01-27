@@ -15,7 +15,7 @@ public class LogFormatterTest {
         LogRecord logRecord = new LogRecord(INFO, "Test");
         LogFormatter logFormatter = new LogFormatter();
 
-        Assertions.assertEquals("Test\n", logFormatter.format(logRecord));
+        Assertions.assertEquals("Test" + System.lineSeparator(), logFormatter.format(logRecord));
 
         logRecord.setThrown(new Exception());
 

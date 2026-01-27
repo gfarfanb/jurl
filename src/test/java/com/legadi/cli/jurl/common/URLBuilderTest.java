@@ -1,7 +1,7 @@
 package com.legadi.cli.jurl.common;
 
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,7 +16,7 @@ public class URLBuilderTest {
             .setUrl("http://localhost:1234/api/v1");
 
         Assertions.assertEquals("http://localhost:1234/api/v1", builder.build());
-        Assertions.assertDoesNotThrow(() -> new URL(builder.build()));
+        Assertions.assertDoesNotThrow(() -> new URI(builder.build()).toURL());
     }
 
     @Test
@@ -24,8 +24,8 @@ public class URLBuilderTest {
         URLBuilder builder = new URLBuilder();
 
         Assertions.assertTrue(builder.build().isEmpty());
-        Assertions.assertThrows(MalformedURLException.class,
-            () -> new URL(builder.build()));
+        Assertions.assertThrows(IllegalArgumentException.class,
+            () -> new URI(builder.build()).toURL());
     }
 
     @Test
@@ -39,7 +39,7 @@ public class URLBuilderTest {
         Assertions.assertTrue(builder.build().startsWith("http://localhost:1234/api/v1?"));
         Assertions.assertTrue(builder.build().contains("id=82hr2o3eij23r8"));
         Assertions.assertTrue(builder.build().contains("name=Test"));
-        Assertions.assertDoesNotThrow(() -> new URL(builder.build()));
+        Assertions.assertDoesNotThrow(() -> new URI(builder.build()).toURL());
     }
 
     @Test
@@ -54,7 +54,7 @@ public class URLBuilderTest {
         Assertions.assertTrue(builder.build().startsWith("http://localhost:1234/api/v1?"));
         Assertions.assertTrue(builder.build().contains("id=82hr2o3eij23r8"));
         Assertions.assertTrue(builder.build().contains("name=Test"));
-        Assertions.assertDoesNotThrow(() -> new URL(builder.build()));
+        Assertions.assertDoesNotThrow(() -> new URI(builder.build()).toURL());
     }
 
     @Test
@@ -64,6 +64,6 @@ public class URLBuilderTest {
 
         Assertions.assertEquals("http-://localhost:1234:1234/api/v1/", builder.build());
         Assertions.assertThrows(MalformedURLException.class,
-            () -> new URL(builder.build()));
+            () -> new URI(builder.build()).toURL());
     }
 }

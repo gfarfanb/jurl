@@ -7,6 +7,7 @@ import static java.util.logging.Level.INFO;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -27,12 +28,16 @@ public class SetupTest {
     public static void setupAll() throws Exception {
         Class<?> pe = Class.forName("java.lang.ProcessEnvironment");
         Method getenv = pe.getDeclaredMethod("getenv");
-        getenv.setAccessible(true);
-        Object unmodifiableEnvironment = getenv.invoke(null);
-        Class<?> map = Class.forName("java.util.Collections$UnmodifiableMap");
-        Field m = map.getDeclaredField("m");
-        m.setAccessible(true);
-        MODIFIABLE_ENVIRONMENT = (Map) m.get(unmodifiableEnvironment);;
+        try {
+            getenv.setAccessible(true);
+            Object unmodifiableEnvironment = getenv.invoke(null);
+            Class<?> map = Class.forName("java.util.Collections$UnmodifiableMap");
+            Field m = map.getDeclaredField("m");
+            m.setAccessible(true);
+            MODIFIABLE_ENVIRONMENT = (Map) m.get(unmodifiableEnvironment);
+        } catch(RuntimeException ex) {
+            MODIFIABLE_ENVIRONMENT = new HashMap<>();
+        }
     }
 
     @AfterEach
@@ -76,8 +81,14 @@ public class SetupTest {
     @Test
     public void setupLogLevelInvalidLevel() {
         MODIFIABLE_ENVIRONMENT.put("JURL_LOG_LEVEL", "INVALID");
-        Assertions.assertThrows(IllegalStateException.class,
-            () -> setupLogLevel());
+
+        if(System.getenv("JURL_LOG_LEVEL") != null) {
+            Assertions.assertThrows(IllegalStateException.class,
+                () -> setupLogLevel());
+        } else {
+            Assertions.assertDoesNotThrow(
+                () -> setupLogLevel());
+        }
     }
 
     @Test

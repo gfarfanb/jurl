@@ -42,7 +42,7 @@ public class EscapedGenerator implements Generator {
         EXCLAMATION("!"),
         GT(">"),
         LT("<"),
-        LF("\n");
+        LF(System.lineSeparator());
 
         private final String replacement;
 

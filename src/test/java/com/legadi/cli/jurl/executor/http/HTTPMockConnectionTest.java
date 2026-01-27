@@ -9,6 +9,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -29,9 +31,9 @@ import com.legadi.cli.jurl.model.http.HTTPMockEntry;
 public class HTTPMockConnectionTest {
 
     @Test
-    public void mockConnection() throws MalformedURLException {
+    public void mockConnection() throws MalformedURLException, URISyntaxException {
         Settings settings = new Settings();
-        URL local = new URL("http://localhost:0/base");
+        URL local = new URI("http://localhost:0/base").toURL();
         HTTPMockConnection connection = new HTTPMockConnection(local, settings,
             "src/test/resources/http-mock-connection-test", "test", new HashMap<>(), null);
 
@@ -85,7 +87,7 @@ public class HTTPMockConnectionTest {
     }
 
     @Test
-    public void mockConnectionWithResponseFile() throws IOException {
+    public void mockConnectionWithResponseFile() throws IOException, URISyntaxException {
         Settings settings = new Settings();
         OutputPathBuilder pathBuilder = new OutputPathBuilder(settings)
                 .setRequestPath("src/test/resources/http-mock-connection.http")
@@ -95,7 +97,7 @@ public class HTTPMockConnectionTest {
 
         writeFile(responsePath, "Created");
 
-        URL local = new URL("http://localhost:0/base");
+        URL local = new URI("http://localhost:0/base").toURL();
         HTTPMockEntry mock = new HTTPMockEntry();
 
         mock.setResponseFilePath(responsePath.toString());
