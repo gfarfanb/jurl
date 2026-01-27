@@ -2,20 +2,18 @@
 ### [api]
 
 token @tokenUrl = http://localhost:{{local.server.port}}/oauth/token
-token @clientId = {{UUID:}}
 token @clientSecret = {{UUID:}}
 token @scope = test
 token @child_key = {{UUID:}}
 token @child_secret = {{UUID:}}
-
-opt -s clientId {{UUID:}}
-opt -s clientSecret {{UUID:}}
 
 Content-Type: application/json
 
 
 ### [request] create: Create with authorization
 POST http://localhost:{{local.server.port}}/basic/body
+
+token @clientId = {{UUID:}}
 
 {
     "access": "{{UUID:}}",
@@ -37,4 +35,31 @@ assert EQUALS_TO 201 {{HTTP/status}}
 
 ### [flow] createInFlow: Create with authorization within a flow
 
+token @clientId = {{UUID:}}
+
 step -n create
+
+
+### [request] create-auth: Create with authorization (every request call)
+POST http://localhost:{{local.server.port}}/basic/body
+
+token @clientId = {{UUID:}}
+
+opt -ua
+
+{
+    "access": "{{UUID:}}",
+    "name": "{{FULL_NAME:}}",
+    "email": "{{EMAIL:}}",
+    "nickname": "{{ALPHA_NUMERIC:}}",
+    "amount": {{DECIMAL:}},
+    "active": {{BOOLEAN:}},
+    "coins": {{INTEGER:}},
+    "bio": "{{LOREM_IPSUM:}}",
+    "type": "{{PICK_ANY:A,B,C}}",
+    "timestamp": "{{DATE_TIME:}}"
+}
+
+output basic.functions.id = {{HTTP/header.Resource-ID}}
+
+assert EQUALS_TO 201 {{HTTP/status}}

@@ -6,6 +6,7 @@ import static com.legadi.cli.jurl.embedded.util.ObjectName.RESPONSE;
 import java.util.List;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -17,6 +18,11 @@ public class StartInStepOptionTest extends OptionAbstractTest<StartInStepOption>
 
     public StartInStepOptionTest() {
         super(StartInStepOption.class, false);
+    }
+
+    @AfterEach
+    public void cleanup() {
+        AuthenticationCleaner.cleanup();
     }
 
     @Test
@@ -39,8 +45,6 @@ public class StartInStepOptionTest extends OptionAbstractTest<StartInStepOption>
         Assertions.assertEquals("obtain", requests.get(2).getName());
         Assertions.assertEquals("update", requests.get(3).getName());
         Assertions.assertEquals("remove", requests.get(4).getName());
-
-        AuthenticationCleaner.cleanup(requestCatcher, correlationId);
     }
 
     @Test
@@ -79,8 +83,6 @@ public class StartInStepOptionTest extends OptionAbstractTest<StartInStepOption>
         Assertions.assertEquals("obtain", requests.get(2).getName());
         Assertions.assertEquals("update", requests.get(3).getName());
         Assertions.assertEquals("remove", requests.get(4).getName());
-
-        AuthenticationCleaner.cleanup(requestCatcher, correlationId);
     }
 
     @Test

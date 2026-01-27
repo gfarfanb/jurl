@@ -44,7 +44,7 @@ public abstract class EmbeddedAPIAbstractTest {
 
     public UUID jurl(Map<String, String> overrides, String... args) {
         UUID correlationId = UUID.randomUUID();
-        return jurl(correlationId, new HashMap<>(), args);
+        return jurl(correlationId, overrides, args);
     }
 
     public UUID jurl(UUID correlationId, String... args) {
@@ -55,7 +55,7 @@ public abstract class EmbeddedAPIAbstractTest {
         Map<String, String> properties = new HashMap<>();
         properties.put("local.server.port", Integer.toString(port));
         properties.put("request.catcher.identifier", requestCatcherId);
-        properties.putAll(overrides);
+
         Settings.mergeProperties(DEFAULT_ENVIRONMENT, properties);
 
         ObjectsRegistry.register(RequestExecutor.class, 
@@ -63,7 +63,9 @@ public abstract class EmbeddedAPIAbstractTest {
         ObjectsRegistry.register(ResponseProcessor.class,
             HTTPResponseTestProcessor.class, correlationId, requestCatcher);
 
-        new RequestCommand(args).execute();
+        properties.putAll(overrides);
+
+        new RequestCommand(args).execute(properties);
 
         return correlationId;
     }

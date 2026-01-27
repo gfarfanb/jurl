@@ -7,6 +7,7 @@ import static com.legadi.cli.jurl.embedded.util.ObjectName.SETTINGS;
 import java.util.List;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +19,11 @@ public class UseAuthenticationOptionTest extends OptionAbstractTest<UseAuthentic
 
     public UseAuthenticationOptionTest() {
         super(UseAuthenticationOption.class, true);
+    }
+
+    @AfterEach
+    public void cleanup() {
+        AuthenticationCleaner.cleanup();
     }
 
     @Test
@@ -36,7 +42,7 @@ public class UseAuthenticationOptionTest extends OptionAbstractTest<UseAuthentic
         Assertions.assertEquals(1, authResponses.size());
         Assertions.assertEquals(201, authResponses.get(0).getStatusCode());
 
-        AuthenticationCleaner.cleanup(requestCatcher, authCorrelationId);
+        AuthenticationCleaner.cleanup();
 
         UUID skipCorrelationId = Assertions.assertDoesNotThrow(
             () -> jurl(
@@ -53,8 +59,6 @@ public class UseAuthenticationOptionTest extends OptionAbstractTest<UseAuthentic
         Assertions.assertEquals(2, skipResponses.size());
         Assertions.assertEquals(200, skipResponses.get(0).getStatusCode());
         Assertions.assertEquals(201, skipResponses.get(1).getStatusCode());
-
-        AuthenticationCleaner.cleanup(requestCatcher, skipCorrelationId);
     }
 
     @Test
@@ -73,8 +77,6 @@ public class UseAuthenticationOptionTest extends OptionAbstractTest<UseAuthentic
         Assertions.assertEquals(2, authResponses.size());
         Assertions.assertEquals(200, authResponses.get(0).getStatusCode());
         Assertions.assertEquals(201, authResponses.get(1).getStatusCode());
-
-        AuthenticationCleaner.cleanup(requestCatcher, authCorrelationId);
     }
 
     @Test
@@ -93,7 +95,5 @@ public class UseAuthenticationOptionTest extends OptionAbstractTest<UseAuthentic
         Assertions.assertEquals(2, authResponses.size());
         Assertions.assertEquals(200, authResponses.get(0).getStatusCode());
         Assertions.assertEquals(201, authResponses.get(1).getStatusCode());
-
-        AuthenticationCleaner.cleanup(requestCatcher, authCorrelationId);
     }
 }

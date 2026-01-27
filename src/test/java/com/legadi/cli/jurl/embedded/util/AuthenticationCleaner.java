@@ -1,60 +1,44 @@
 package com.legadi.cli.jurl.embedded.util;
 
-import static com.legadi.cli.jurl.common.CommonUtils.toGeneratedParam;
+import static com.legadi.cli.jurl.common.JsonUtils.loadJsonProperties;
 import static com.legadi.cli.jurl.common.JsonUtils.removeJsonProperties;
-import static com.legadi.cli.jurl.common.ObjectsRegistry.findAll;
-import static com.legadi.cli.jurl.embedded.util.ObjectName.REQUEST;
-import static com.legadi.cli.jurl.embedded.util.ObjectName.SETTINGS;
 
+import java.nio.file.Path;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.legadi.cli.jurl.common.Settings;
-import com.legadi.cli.jurl.executor.HeaderAuthenticator;
-import com.legadi.cli.jurl.executor.http.HTTPTokenHeaderAuthenticator;
-import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
-import com.legadi.cli.jurl.model.http.auth.HTTPTokenAuthEntry;
 
 public class AuthenticationCleaner {
 
     private AuthenticationCleaner() {}
 
-    public static void cleanup(RequestCatcher requestCatcher, UUID correlationId) {
-        Settings settings = requestCatcher.getLast(correlationId, SETTINGS);
-        Set<String> clientIds = requestCatcher.<HTTPRequestEntry>getAll(correlationId, REQUEST)
+    public static void cleanup() {
+        Settings settings = new Settings();
+        Path overridePath = settings.getOverrideFilePath();
+        Map<String, String> overrideProperties = loadJsonProperties(overridePath);
+        Set<String> authParams = overrideProperties.keySet()
             .stream()
-            .map(HTTPRequestEntry::getAuthEntries)
-            .map(Map::values)
-            .flatMap(Collection::stream)
-            .filter(auth -> HTTPTokenAuthEntry.class.isAssignableFrom(auth.getClass()))
-            .map(auth -> (HTTPTokenAuthEntry) auth)
-            .map(HTTPTokenAuthEntry::getClientId)
+            .filter(AuthenticationCleaner::isAuthParam)
             .collect(Collectors.toSet());
-        List<String> timeUnits = findAll(HeaderAuthenticator.class, settings.getRequestType())
-            .stream()
-            .filter(auth -> HTTPTokenHeaderAuthenticator.class.isAssignableFrom(auth.getClass()))
-            .map(auth -> (HTTPTokenHeaderAuthenticator) auth)
-            .map(auth -> auth.getExpiresInTimeUnit(settings))
-            .collect(Collectors.toList());
 
-        for(String clientId : clientIds) {
-            List<String> params = timeUnits
-                .stream()
-                .map(unit -> toGeneratedParam(settings.getRequestType(), clientId, "expires-in." + unit))
-                .collect(Collectors.toList());
+        removeProperties(settings, authParams);
+    }
 
-            params.add(toGeneratedParam(settings.getRequestType(), clientId, "expiration-millis"));
-            params.add(toGeneratedParam(settings.getRequestType(), clientId, "access-token"));
-            params.add(toGeneratedParam(settings.getRequestType(), clientId, "token-type"));
-            params.add(toGeneratedParam(settings.getRequestType(), clientId, "expiration-date"));
+    private static void removeProperties(Settings settings, Collection<String> keys) {
+        String[] authParams = keys.toArray(new String[keys.size()]);
 
-            removeJsonProperties(
-                settings.getOverrideFilePath(),
-                params.toArray(new String[params.size()]));
-        }
-}
+        removeJsonProperties(settings.getOverrideFilePath(), authParams);
+        settings.removeProperties(authParams);
+    }
+
+    private static boolean isAuthParam(String key) {
+        return key.contains("expires-in.")
+            || key.contains("expiration-millis")
+            || key.contains("access-token")
+            || key.contains("token-type")
+            || key.contains("expiration-date");
+    }
 }

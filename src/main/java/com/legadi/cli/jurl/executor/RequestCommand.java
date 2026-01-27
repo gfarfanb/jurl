@@ -19,7 +19,9 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -72,7 +74,13 @@ public class RequestCommand {
     }
 
     public void execute() {
+        execute(new HashMap<>());
+    }
+
+    public void execute(Map<String, String> overrides) {
         Settings settings = new Settings();
+
+        overrides.entrySet().forEach(e -> settings.putOverride(e.getKey(), e.getValue()));
 
         executeOptions(settings, optionsReader.getOptionEntries());
         executeInputPath(new ExecutionTrace(settings), settings, null, optionsReader.getRequestInputPath(), null);
@@ -131,7 +139,6 @@ public class RequestCommand {
 
         try {
             IntStream.range(0, times)
-                .parallel()
                 .mapToObj(index -> new ExecutionIndex(index, index + 1, times))
                 .forEach(index -> {
                     if(isExecutionAsFlow) {

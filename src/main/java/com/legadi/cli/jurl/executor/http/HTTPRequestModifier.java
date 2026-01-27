@@ -49,7 +49,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
             String requestName, RequestInput<HTTPRequestEntry> requestInput,
             Settings settings, BiConsumer<Settings, List<OptionEntry>> optionsProcessor) {
         HTTPRequestEntry request = requestInput.getRequests().get(requestName);
-        
+
         processOptionFlags(settings, request, optionsProcessor);
 
         if(settings.isSkipAuthentication()) {

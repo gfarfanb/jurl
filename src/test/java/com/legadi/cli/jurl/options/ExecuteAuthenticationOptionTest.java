@@ -5,6 +5,7 @@ import static com.legadi.cli.jurl.embedded.util.ObjectName.SETTINGS;
 
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +16,11 @@ public class ExecuteAuthenticationOptionTest extends OptionAbstractTest<ExecuteA
 
     public ExecuteAuthenticationOptionTest() {
         super(ExecuteAuthenticationOption.class, true);
+    }
+
+    @AfterEach
+    public void cleanup() {
+        AuthenticationCleaner.cleanup();
     }
 
     @Test
@@ -28,7 +34,5 @@ public class ExecuteAuthenticationOptionTest extends OptionAbstractTest<ExecuteA
         Settings settings = requestCatcher.getLast(correlationId, SETTINGS);
 
         Assertions.assertEquals(Boolean.TRUE.toString(), settings.get(PROP_EXECUTE_AUTHENTICATION));
-
-        AuthenticationCleaner.cleanup(requestCatcher, correlationId);
     }
 }

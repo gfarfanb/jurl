@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -22,6 +23,11 @@ import com.legadi.cli.jurl.model.http.HTTPRequestEntry;
 import com.legadi.cli.jurl.model.http.auth.HTTPTokenAuthEntry;
 
 public class FlowAPITest extends EmbeddedAPIAbstractTest {
+
+    @AfterEach
+    public void cleanup() {
+        AuthenticationCleaner.cleanup();
+    }
 
     @Test
     public void authorization() {
@@ -58,8 +64,6 @@ public class FlowAPITest extends EmbeddedAPIAbstractTest {
             () -> authSettings.get(expirationDateParam));
         Assertions.assertDoesNotThrow(
             () -> authSettings.get(expirationTimeUnitParam));
-
-        AuthenticationCleaner.cleanup(requestCatcher, authCorrelationId);
     }
 
     @Test
@@ -92,8 +96,6 @@ public class FlowAPITest extends EmbeddedAPIAbstractTest {
             Assertions.assertEquals(0, assertion.get().getFailures());
             Assertions.assertTrue(assertion.get().isPassed());
         }
-
-        AuthenticationCleaner.cleanup(requestCatcher, commonCorrelationId);
     }
 
     @Test

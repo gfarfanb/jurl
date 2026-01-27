@@ -7,6 +7,7 @@ import static com.legadi.cli.jurl.embedded.util.ObjectName.SETTINGS;
 import java.util.List;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +19,11 @@ public class SkipAuthenticationOptionTest extends OptionAbstractTest<SkipAuthent
 
     public SkipAuthenticationOptionTest() {
         super(SkipAuthenticationOption.class, true);
+    }
+
+    @AfterEach
+    public void cleanup() {
+        AuthenticationCleaner.cleanup();
     }
 
     @Test
@@ -36,7 +42,7 @@ public class SkipAuthenticationOptionTest extends OptionAbstractTest<SkipAuthent
         Assertions.assertEquals(200, authResponses.get(0).getStatusCode());
         Assertions.assertEquals(201, authResponses.get(1).getStatusCode());
 
-        AuthenticationCleaner.cleanup(requestCatcher, authCorrelationId);
+        AuthenticationCleaner.cleanup();
 
         UUID skipCorrelationId = Assertions.assertDoesNotThrow(
             () -> jurl(
@@ -51,8 +57,6 @@ public class SkipAuthenticationOptionTest extends OptionAbstractTest<SkipAuthent
         Assertions.assertEquals(Boolean.TRUE.toString(), skipSettings.get(PROP_SKIP_AUTHENTICATION));
         Assertions.assertEquals(1, skipResponses.size());
         Assertions.assertEquals(201, skipResponses.get(0).getStatusCode());
-
-        AuthenticationCleaner.cleanup(requestCatcher, skipCorrelationId);
     }
 
     @Test
@@ -69,8 +73,6 @@ public class SkipAuthenticationOptionTest extends OptionAbstractTest<SkipAuthent
         Assertions.assertEquals(Boolean.TRUE.toString(), authSettings.get(PROP_SKIP_AUTHENTICATION));
         Assertions.assertEquals(1, authResponses.size());
         Assertions.assertEquals(201, authResponses.get(0).getStatusCode());
-
-        AuthenticationCleaner.cleanup(requestCatcher, authCorrelationId);
     }
 
     @Test
@@ -88,7 +90,5 @@ public class SkipAuthenticationOptionTest extends OptionAbstractTest<SkipAuthent
         Assertions.assertEquals(Boolean.TRUE.toString(), authSettings.get(PROP_SKIP_AUTHENTICATION));
         Assertions.assertEquals(1, authResponses.size());
         Assertions.assertEquals(201, authResponses.get(0).getStatusCode());
-
-        AuthenticationCleaner.cleanup(requestCatcher, authCorrelationId);
     }
 }
