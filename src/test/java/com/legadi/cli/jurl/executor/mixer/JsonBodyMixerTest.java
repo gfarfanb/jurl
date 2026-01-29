@@ -77,7 +77,7 @@ public class JsonBodyMixerTest {
         BodyMixer mixer = findOrFail(BodyMixer.class, "json");
         Settings settings = new Settings();
         Path mergedPath = mixer.apply(settings, new HashMap<>(), new MixerEntry()
-            .setBodyBasePath("src/test/resources/mixer/json-list.input.json")
+            .setBodyBasePath("src/test/resources/json-list.input.json")
             .setBodyComparePath("src/test/resources/mixer/list-replace.json")
             .setRequestPath("src/test/resources/json-body-mixer.json")
             .setRequestName("mixer-list"));
@@ -98,7 +98,7 @@ public class JsonBodyMixerTest {
         BodyMixer mixer = findOrFail(BodyMixer.class, "json");
         Settings settings = new Settings();
         Path mergedPath = mixer.apply(settings, new HashMap<>(), new MixerEntry()
-            .setBodyBasePath("src/test/resources/mixer/json-list.input.json")
+            .setBodyBasePath("src/test/resources/json-list.input.json")
             .setBodyComparePath("src/test/resources/mixer/list-replace-explicit.json")
             .setRequestPath("src/test/resources/json-body-mixer.json")
             .setRequestName("mixer-list"));
@@ -119,7 +119,7 @@ public class JsonBodyMixerTest {
         BodyMixer mixer = findOrFail(BodyMixer.class, "json");
         Settings settings = new Settings();
         Path mergedPath = mixer.apply(settings, new HashMap<>(), new MixerEntry()
-            .setBodyBasePath("src/test/resources/mixer/json-list.input.json")
+            .setBodyBasePath("src/test/resources/json-list.input.json")
             .setBodyComparePath("src/test/resources/mixer/list-replace-empty.json")
             .setRequestPath("src/test/resources/json-body-mixer.json")
             .setRequestName("mixer-list"));
@@ -134,7 +134,7 @@ public class JsonBodyMixerTest {
         BodyMixer mixer = findOrFail(BodyMixer.class, "json");
         Settings settings = new Settings();
         Path mergedPath = mixer.apply(settings, new HashMap<>(), new MixerEntry()
-            .setBodyBasePath("src/test/resources/mixer/json-list.input.json")
+            .setBodyBasePath("src/test/resources/json-list.input.json")
             .setBodyComparePath("src/test/resources/mixer/list-add-begin-explicit.json")
             .setRequestPath("src/test/resources/json-body-mixer.json")
             .setRequestName("mixer-list"));
@@ -161,7 +161,7 @@ public class JsonBodyMixerTest {
         BodyMixer mixer = findOrFail(BodyMixer.class, "json");
         Settings settings = new Settings();
         Path mergedPath = mixer.apply(settings, new HashMap<>(), new MixerEntry()
-            .setBodyBasePath("src/test/resources/mixer/json-list.input.json")
+            .setBodyBasePath("src/test/resources/json-list.input.json")
             .setBodyComparePath("src/test/resources/mixer/list-add-end-explicit.json")
             .setRequestPath("src/test/resources/json-body-mixer.json")
             .setRequestName("mixer-list"));
@@ -188,7 +188,7 @@ public class JsonBodyMixerTest {
         BodyMixer mixer = findOrFail(BodyMixer.class, "json");
         Settings settings = new Settings();
         Path mergedPath = mixer.apply(settings, new HashMap<>(), new MixerEntry()
-            .setBodyBasePath("src/test/resources/mixer/json-list.input.json")
+            .setBodyBasePath("src/test/resources/json-list.input.json")
             .setBodyComparePath("src/test/resources/mixer/list-merge-explicit.json")
             .setRequestPath("src/test/resources/json-body-mixer.json")
             .setRequestName("mixer-list"));
@@ -209,7 +209,7 @@ public class JsonBodyMixerTest {
         BodyMixer mixer = findOrFail(BodyMixer.class, "json");
         Settings settings = new Settings();
         Path mergedPath = mixer.apply(settings, new HashMap<>(), new MixerEntry()
-            .setBodyBasePath("src/test/resources/mixer/json-list.input.json")
+            .setBodyBasePath("src/test/resources/json-list.input.json")
             .setBodyComparePath("src/test/resources/mixer/list-merge-key-not-found.json")
             .setRequestPath("src/test/resources/json-body-mixer.json")
             .setRequestName("mixer-list"));
@@ -244,7 +244,7 @@ public class JsonBodyMixerTest {
 
         Assertions.assertThrows(InvalidInputEntryException.class,
             () -> mixer.apply(settings, new HashMap<>(), new MixerEntry()
-                .setBodyBasePath("src/test/resources/mixer/json-list.input.json")
+                .setBodyBasePath("src/test/resources/json-list.input.json")
                 .setBodyComparePath("src/test/resources/mixer/list-unknown-rule.json")
                 .setRequestPath("src/test/resources/json-body-mixer.json")
                 .setRequestName("mixer-list"))
@@ -256,7 +256,7 @@ public class JsonBodyMixerTest {
         BodyMixer mixer = findOrFail(BodyMixer.class, "json");
         Settings settings = new Settings();
         Path mergedPath = mixer.apply(settings, new HashMap<>(), new MixerEntry()
-            .setBodyBasePath("src/test/resources/mixer/json-list.input.json")
+            .setBodyBasePath("src/test/resources/json-list.input.json")
             .setBodyComparePath("src/test/resources/mixer/list-empty-first-element.json")
             .setRequestPath("src/test/resources/json-body-mixer.json")
             .setRequestName("mixer-list"));
@@ -284,7 +284,7 @@ public class JsonBodyMixerTest {
 
         Assertions.assertThrows(InvalidInputEntryException.class,
             () -> mixer.apply(settings, new HashMap<>(), new MixerEntry()
-                .setBodyBasePath("src/test/resources/mixer/json-list.input.json")
+                .setBodyBasePath("src/test/resources/json-list.input.json")
                 .setBodyComparePath("src/test/resources/mixer/list-missing-list-merge-rule.json")
                 .setRequestPath("src/test/resources/json-body-mixer.json")
                 .setRequestName("mixer-list"))
@@ -296,7 +296,7 @@ public class JsonBodyMixerTest {
         BodyMixer mixer = findOrFail(BodyMixer.class, "json");
         Settings settings = new Settings();
         Path mergedPath = mixer.apply(settings, new HashMap<>(), new MixerEntry()
-            .setBodyBasePath("src/test/resources/mixer/json-list.input.json")
+            .setBodyBasePath("src/test/resources/json-list.input.json")
             .setBodyComparePath("src/test/resources/mixer/list-key-fields-null.json")
             .setRequestPath("src/test/resources/json-body-mixer.json")
             .setRequestName("mixer-list"));
@@ -317,7 +317,7 @@ public class JsonBodyMixerTest {
         BodyMixer mixer = findOrFail(BodyMixer.class, "json");
         Settings settings = new Settings();
         Path mergedPath = mixer.apply(settings, new HashMap<>(), new MixerEntry()
-            .setBodyBasePath("src/test/resources/mixer/json-array.input.json")
+            .setBodyBasePath("src/test/resources/json-array.input.json")
             .setBodyComparePath("src/test/resources/mixer/list-array-values.json")
             .setRequestPath("src/test/resources/json-body-mixer.json")
             .setRequestName("mixer-list"));

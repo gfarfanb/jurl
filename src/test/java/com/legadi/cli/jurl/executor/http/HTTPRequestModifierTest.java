@@ -693,14 +693,15 @@ public class HTTPRequestModifierTest {
 
         HTTPRequestEntry request = new HTTPRequestEntry();
         request.setName("merge-body");
-        request.setBodyContent("{\"name\": \"body-content\"}");
         request.setBodyFilePath(bodyPath.toString());
+        request.setBodyMergePath("src/test/resources/json-body-content.input.json");
 
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
         modifier.mergeBody(settings, "src/test/resources/http-request-modifier.http", request);
 
         Assertions.assertNull(request.getBodyContent());
         Assertions.assertNull(request.getBodyFilePath());
+        Assertions.assertNull(request.getBodyMergePath());
 
         String bodyTemporalPath = settings.get(BODY_TEMPORAL_PATH);
 

@@ -146,6 +146,12 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         if(isBlank(request.getBodyFilePath())) {
             request.setBodyFilePath(api.getBodyFilePath());
         }
+        if(isBlank(request.getBodyMergePath())) {
+            request.setBodyMergePath(api.getBodyMergePath());
+        }
+        if(isBlank(request.getBodyMergeAsBase())) {
+            request.setBodyMergeAsBase(api.getBodyMergeAsBase());
+        }
 
         mergeRequestFiles(api.getRequestFiles(), request.getRequestFiles());
 
@@ -235,6 +241,12 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         if(isNotBlank(overrideRequest.getBodyFilePath())) {
             request.setBodyFilePath(overrideRequest.getBodyFilePath());
         }
+        if(isNotBlank(overrideRequest.getBodyMergePath())) {
+            request.setBodyMergePath(overrideRequest.getBodyMergePath());
+        }
+        if(isNotBlank(overrideRequest.getBodyMergeAsBase())) {
+            request.setBodyMergeAsBase(overrideRequest.getBodyMergeAsBase());
+        }
     }
 
     @Override
@@ -267,6 +279,8 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         request.setBodyCharset(stringExpander.replaceAllInContent(request.getBodyCharset()));
         request.setBodyContent(stringExpander.replaceAllInContent(request.getBodyContent()));
         request.setBodyFilePath(stringExpander.replaceAllInContent(request.getBodyFilePath()));
+        request.setBodyMergePath(stringExpander.replaceAllInContent(request.getBodyMergePath()));
+        request.setBodyMergeAsBase(stringExpander.replaceAllInContent(request.getBodyMergeAsBase()));
         request.getRequestFiles().forEach(requestFile -> expandRequestFile(stringExpander, requestFile));
         expandMap(stringExpander, request.getFormData());
     }
