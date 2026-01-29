@@ -5,6 +5,7 @@ import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findAll;
 import static com.legadi.cli.jurl.common.ObjectsRegistry.findOrFail;
+import static com.legadi.cli.jurl.common.WriterUtils.writeFile;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,6 +18,7 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
+import com.legadi.cli.jurl.common.OutputPathBuilder;
 import com.legadi.cli.jurl.common.Pair;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.common.StringExpander;
@@ -172,25 +174,46 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
 
     @Override
     public void mergeBodyFileWithBodyContent(Settings settings, String requestPath, HTTPRequestEntry request) {
-        if(isBlank(request.getBodyFilePath())) {
-            throw new RequestException(request, "request.bodyFilePath is null or empty");
+        if(isBlank(request.getBodyContent()) && isBlank(request.getBodyFilePath())) {
+            throw new RequestException(request, "request.bodyContent or request.bodyFilePath is null or empty");
         }
-        if(isBlank(request.getBodyContent())) {
-            throw new RequestException(request, "request.bodyContent is null or empty");
+        if(isBlank(request.getBodyMergePath())) {
+            throw new RequestException(request, "request.bodyMergePath is null or empty");
+        }
+
+        if(isNotBlank(request.getBodyContent())) {
+            OutputPathBuilder pathBuilder = new OutputPathBuilder(settings)
+                .setRequestPath(requestPath)
+                .setRequestName(request.getName())
+                .setExtension("body");
+            Path temporalBodyPath = pathBuilder.buildCommandPath();
+
+            writeFile(temporalBodyPath, request.getBodyContent());
+            request.setBodyFilePath(temporalBodyPath.toString());
         }
 
         BodyMixer mixer = findOrFail(BodyMixer.class, settings.getMergeBodyUsingType());
-        Path bodyTemporalPath = mixer.apply(settings, request.getDefaults(),
-            new MixerEntry()
+        MixerEntry mixerEntry = new MixerEntry()
                 .setRequestPath(requestPath)
-                .setRequestName(request.getName())
-                .setBodyFilePath(request.getBodyFilePath())
-                .setBodyContent(request.getBodyContent()));
+                .setRequestName(request.getName());
+
+        if(Boolean.parseBoolean(request.getBodyMergeAsBase())) {
+            mixerEntry
+                .setBodyBasePath(request.getBodyMergePath())
+                .setBodyComparePath(request.getBodyFilePath());
+        } else {
+            mixerEntry
+                .setBodyBasePath(request.getBodyFilePath())
+                .setBodyComparePath(request.getBodyMergePath());
+        }
+
+        Path temporalMixedBodyPath = mixer.apply(settings, request.getDefaults(), mixerEntry);
 
         request.setBodyContent(null);
         request.setBodyFilePath(null);
+        request.setBodyMergePath(null);
 
-        settings.putOverride(BODY_TEMPORAL_PATH, bodyTemporalPath.toString());
+        settings.putOverride(BODY_TEMPORAL_PATH, temporalMixedBodyPath.toString());
     }
 
     @Override

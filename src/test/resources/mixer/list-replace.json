@@ -1,0 +1,11 @@
+[
+    {
+        "name": "Json Input Test",
+        "type": "TEST",
+        "value": 0.0,
+        "properties": {
+            "enable": false,
+            "delay": -5
+        }
+    }
+]

@@ -15,8 +15,8 @@ public interface BodyMixer {
 
         private String requestPath;
         private String requestName;
-        private Path bodyFilePath;
-        private String bodyContent;
+        private Path bodyBasePath;
+        private Path bodyComparePath;
 
         public String getRequestPath() {
             return requestPath;
@@ -36,21 +36,21 @@ public interface BodyMixer {
             return this;
         }
 
-        public Path getBodyFilePath() {
-            return bodyFilePath;
+        public Path getBodyBasePath() {
+            return bodyBasePath;
         }
 
-        public MixerEntry setBodyFilePath(String bodyFilePath) {
-            this.bodyFilePath = Paths.get(bodyFilePath);
+        public MixerEntry setBodyBasePath(String bodyBasePath) {
+            this.bodyBasePath = Paths.get(bodyBasePath);
             return this;
         }
 
-        public String getBodyContent() {
-            return bodyContent;
+        public Path getBodyComparePath() {
+            return bodyComparePath;
         }
 
-        public MixerEntry setBodyContent(String bodyContent) {
-            this.bodyContent = bodyContent;
+        public MixerEntry setBodyComparePath(String bodyComparePath) {
+            this.bodyComparePath = Paths.get(bodyComparePath);
             return this;
         }
 

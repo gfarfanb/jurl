@@ -25,6 +25,7 @@ import com.legadi.cli.jurl.common.OutputPathBuilder;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.common.annotations.Evaluable;
 import com.legadi.cli.jurl.common.annotations.Typed;
+import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.executor.mixer.adapter.RuleEntryDeserializer;
 
 @Typed(type = "json")
@@ -38,87 +39,104 @@ public class JsonBodyMixer implements BodyMixer {
 
     @Override
     public Path apply(Settings settings, Map<String, Object> defaults, MixerEntry entry) {
-        Path temporalBodyPath = expandBodyFile(settings, defaults, entry);
+        Path bodyBasePath = expandBodyFile(settings, defaults, entry, "body-base", entry.getBodyBasePath());
+        Path bodyComparePath = expandBodyFile(settings, defaults, entry, "body-compare", entry.getBodyComparePath());
+        boolean isBaseArray = isArrayFile(bodyBasePath);
+        boolean isCompareArray = isArrayFile(bodyComparePath);
+
+        if(isBaseArray != isCompareArray) {
+            throw new CommandException("Body base type "
+                + "[" + (isBaseArray ? "Array" : "Object") + "]"
+                + " is different to body compare type "
+                + "[" + (isCompareArray ? "Array" : "Object") + "]");
+        }
+
         Object json;
 
-        if(isArrayFile(temporalBodyPath)) {
-            List<Object> list = jsonToObject(entry.getBodyContent(), new TypeToken<List<Object>>() {});
-            RuleEntry ruleEntry = extractRuleEntry(list);
+        if(isBaseArray) {
+            List<Object> compareList = loadJsonFile(bodyComparePath, new TypeToken<List<Object>>() {}, null);
+            RuleEntry ruleEntry = extractRuleEntry(compareList);
 
             json = mergeList(
                 ruleEntry,
-                loadJsonFile(temporalBodyPath.toString(),
+                loadJsonFile(bodyBasePath.toString(),
                     new TypeToken<List<Object>>() {}, new ArrayList<>()),
-                list
+                compareList
             );
         } else {
             json = mergeObject(
-                loadJsonFile(temporalBodyPath.toString(),
+                loadJsonFile(bodyBasePath.toString(),
                     new TypeToken<Map<String, Object>>() {}, new HashMap<>()),
-                jsonToObject(entry.getBodyContent(), new TypeToken<Map<String, Object>>() {})
+                loadJsonFile(bodyComparePath, new TypeToken<Map<String, Object>>() {}, null)
             );
         }
 
-        writeJsonFile(temporalBodyPath, json);
+        OutputPathBuilder mixedBodyPathBuilder = new OutputPathBuilder(settings)
+            .setRequestPath(entry.getRequestPath())
+            .setRequestName(entry.getRequestName())
+            .setExtension("body");
+        Path mixedBodyPath = mixedBodyPathBuilder.buildCommandPath();
 
-        return temporalBodyPath;
+        writeJsonFile(mixedBodyPath, json);
+
+        return mixedBodyPath;
     }
 
     @SuppressWarnings("unchecked")
-    private Object mergeObject(Map<String, Object> base, Map<String, Object> update) {
-        for(Map.Entry<String, Object> updateEntry : update.entrySet()) {
-            if(updateEntry.getValue() instanceof Map) {
-                base.put(updateEntry.getKey(), mergeObject(
-                    (Map<String, Object>) base.get(updateEntry.getKey()),
-                    (Map<String, Object>) updateEntry.getValue() 
+    private Object mergeObject(Map<String, Object> base, Map<String, Object> compare) {
+        for(Map.Entry<String, Object> compareEntry : compare.entrySet()) {
+            if(compareEntry.getValue() instanceof Map) {
+                base.put(compareEntry.getKey(), mergeObject(
+                    (Map<String, Object>) base.get(compareEntry.getKey()),
+                    (Map<String, Object>) compareEntry.getValue() 
                 ));
-            } else if(updateEntry.getValue() instanceof List) {
-                List<Object> list = (List<Object>) updateEntry.getValue();
+            } else if(compareEntry.getValue() instanceof List) {
+                List<Object> list = (List<Object>) compareEntry.getValue();
                 RuleEntry ruleEntry = extractRuleEntry(list);
 
-                base.put(updateEntry.getKey(), mergeList(
-                    ruleEntry, (List<Object>) base.get(updateEntry.getKey()), list
+                base.put(compareEntry.getKey(), mergeList(
+                    ruleEntry, (List<Object>) base.get(compareEntry.getKey()), list
                 ));
             } else {
-                base.put(updateEntry.getKey(), updateEntry.getValue());
+                base.put(compareEntry.getKey(), compareEntry.getValue());
             }
         }
         return base;
     }
 
-    private Object mergeList(RuleEntry ruleEntry, List<Object> base, List<Object> update) {
+    private Object mergeList(RuleEntry ruleEntry, List<Object> base, List<Object> compare) {
         switch(ruleEntry.getListMergeRule()) {
             case ADD_BEGIN:
-                update.addAll(base);
-                return update;
+                compare.addAll(base);
+                return compare;
             case ADD_END:
-                base.addAll(update);
+                base.addAll(compare);
                 return base;
             case MERGE:
-                return mergeList(ruleEntry.getKeyFields(), base, update);
+                return mergeList(ruleEntry.getKeyFields(), base, compare);
             default:
-                return update;
+                return compare;
         }
     }
 
     @SuppressWarnings("unchecked")
-    private Object mergeList(Set<String> keyFields, List<Object> base, List<Object> update) {
+    private Object mergeList(Set<String> keyFields, List<Object> base, List<Object> compare) {
         if(isEmpty(keyFields)) {
-            base.addAll(update);
+            base.addAll(compare);
             return base;
         }
 
-        for(Object value : update) {
+        for(Object value : compare) {
             if(!(value instanceof Map)) {
                 base.add(value);
                 continue;
             }
             
-            Map<String, Object> updateObject = (Map<String, Object>) value;
+            Map<String, Object> compareObject = (Map<String, Object>) value;
             Predicate<Map<String, Object>> targetPredicate = target ->
                 keyFields
                     .stream()
-                    .allMatch(key -> Objects.equals(updateObject.get(key), target.get(key)));
+                    .allMatch(key -> Objects.equals(compareObject.get(key), target.get(key)));
             Optional<Map<String, Object>> targetObject = base
                 .stream()
                 .map(object -> (Map<String, Object>) object)
@@ -126,7 +144,7 @@ public class JsonBodyMixer implements BodyMixer {
                 .findFirst();
 
             if(targetObject.isPresent()) {
-                mergeObject(targetObject.get(), updateObject);
+                mergeObject(targetObject.get(), compareObject);
             }
         }
 
@@ -148,14 +166,15 @@ public class JsonBodyMixer implements BodyMixer {
         }
     }
 
-    private Path expandBodyFile(Settings settings, Map<String, Object> defaults, MixerEntry entry) {
+    private Path expandBodyFile(Settings settings, Map<String, Object> defaults, MixerEntry entry,
+            String extension, Path bodyPath) {
         OutputPathBuilder pathBuilder = new OutputPathBuilder(settings)
             .setRequestPath(entry.getRequestPath())
             .setRequestName(entry.getRequestName())
-            .setExtension("body");
+            .setExtension(extension);
         Path temporalBodyPath = pathBuilder.buildCommandPath();
 
-        expandFile(settings, entry.getBodyFilePath(), temporalBodyPath, defaults);
+        expandFile(settings, bodyPath, temporalBodyPath, defaults);
 
         return temporalBodyPath;
     }

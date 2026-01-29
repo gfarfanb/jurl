@@ -15,7 +15,7 @@ public class MergeBodyOption extends Option {
 
     @Override
     public String getDescription() {
-        return "Tells request to merge body file with body content using the specified type.";
+        return "Tells request to combine the request body ('bodyContent' or 'bodyFilePath') with 'bodyMergePath'. Normal behaviour is: request body as base and body merge as compare. Behaviour can be changed by using 'bodyMergeAsBase' as 'true'.";
     }
 
     @Override

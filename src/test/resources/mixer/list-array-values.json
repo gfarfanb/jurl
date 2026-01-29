@@ -1,0 +1,9 @@
+[
+    {
+        "listMergeRule": "MERGE",
+        "keyFields": [
+            "name"
+        ]
+    },
+    "ANOTHER"
+]

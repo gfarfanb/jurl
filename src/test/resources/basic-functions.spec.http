@@ -36,7 +36,8 @@ assert EQUALS_TO 200 {{HTTP/status}}
 
 ### [request] update
 PUT http://localhost:{{local.server.port}}/basic/body/{{basic.functions.id}}
-@bodyFilePath = {{basic.functions.entity}}
+@bodyMergePath = {{basic.functions.entity}}
+@bodyMergeAsBase = true
 
 {
     "email": "jurl@test.com"

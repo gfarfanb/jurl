@@ -1,0 +1,15 @@
+[
+    {
+        "listMergeRule": "MERGE",
+        "keyFields": [
+            "name"
+        ]
+    },
+    {
+        "name": "Json Input [2]",
+        "type": "RETURNED",
+        "properties": {
+            "delay": 5
+        }
+    }
+]

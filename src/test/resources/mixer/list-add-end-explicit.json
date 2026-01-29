@@ -1,0 +1,14 @@
+[
+    {
+        "listMergeRule": "ADD_END"
+    },
+    {
+        "name": "Json Input Test Explicit",
+        "type": "EXPLICIT",
+        "value": 1.5,
+        "properties": {
+            "enable": true,
+            "delay": -1
+        }
+    }
+]

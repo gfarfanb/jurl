@@ -15,6 +15,8 @@ public class HTTPRequestEntry extends RequestEntry<HTTPMockEntry> {
     private String bodyCharset;
     private String bodyContent;
     private String bodyFilePath;
+    private String bodyMergePath;
+    private String bodyMergeAsBase = Boolean.FALSE.toString();
     private List<HTTPRequestFileEntry> requestFiles = new ArrayList<>();
     private Map<String, String> formData = new HashMap<>();
 
@@ -69,6 +71,22 @@ public class HTTPRequestEntry extends RequestEntry<HTTPMockEntry> {
 
     public void setBodyFilePath(String bodyFilePath) {
         this.bodyFilePath = bodyFilePath;
+    }
+
+    public String getBodyMergePath() {
+        return bodyMergePath;
+    }
+
+    public void setBodyMergePath(String bodyMergePath) {
+        this.bodyMergePath = bodyMergePath;
+    }
+
+    public String getBodyMergeAsBase() {
+        return bodyMergeAsBase;
+    }
+
+    public void setBodyMergeAsBase(String bodyMergeAsBase) {
+        this.bodyMergeAsBase = bodyMergeAsBase;
     }
 
     public List<HTTPRequestFileEntry> getRequestFiles() {
