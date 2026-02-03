@@ -17,6 +17,7 @@ import com.google.gson.reflect.TypeToken;
 import com.legadi.cli.jurl.common.Settings;
 import com.legadi.cli.jurl.embedded.model.ListInputEntry;
 import com.legadi.cli.jurl.embedded.model.ObjectInput;
+import com.legadi.cli.jurl.exception.CommandException;
 import com.legadi.cli.jurl.exception.InvalidInputEntryException;
 import com.legadi.cli.jurl.executor.mixer.BodyMixer.MixerEntry;
 
@@ -326,5 +327,29 @@ public class JsonBodyMixerTest {
 
         Assertions.assertEquals(4, entries.size());
         Assertions.assertTrue(entries.contains("ANOTHER"));
+    }
+
+    @Test
+    public void mergeObjectArrayFailed() {
+        BodyMixer mixer = findOrFail(BodyMixer.class, "json");
+        Settings settings = new Settings();
+
+        Assertions.assertThrows(CommandException.class,
+            () -> mixer.apply(settings, new HashMap<>(), new MixerEntry()
+                .setBodyBasePath("src/test/resources/json-list.input.json")
+                .setBodyComparePath("src/test/resources/json-object.input.json")
+                .setRequestPath("src/test/resources/json-body-mixer.json")
+                .setRequestName("mixer-list")
+            )
+        );
+
+        Assertions.assertThrows(CommandException.class,
+            () -> mixer.apply(settings, new HashMap<>(), new MixerEntry()
+                .setBodyBasePath("src/test/resources/json-object.input.json")
+                .setBodyComparePath("src/test/resources/json-list.input.json")
+                .setRequestPath("src/test/resources/json-body-mixer.json")
+                .setRequestName("mixer-list")
+            )
+        );
     }
 }
