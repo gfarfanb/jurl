@@ -695,6 +695,7 @@ public class HTTPRequestModifierTest {
         request.setName("merge-body");
         request.setBodyFilePath(bodyPath.toString());
         request.setBodyMergePath("src/test/resources/json-body-content.input.json");
+        request.setBodyMergeAsBase(Boolean.FALSE.toString());
 
         RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
         modifier.mergeBody(settings, "src/test/resources/http-request-modifier.http", request);
@@ -702,6 +703,7 @@ public class HTTPRequestModifierTest {
         Assertions.assertNull(request.getBodyContent());
         Assertions.assertNull(request.getBodyFilePath());
         Assertions.assertNull(request.getBodyMergePath());
+        Assertions.assertNull(request.getBodyMergeAsBase());
 
         String bodyTemporalPath = settings.get(BODY_TEMPORAL_PATH);
 
@@ -748,6 +750,29 @@ public class HTTPRequestModifierTest {
         Assertions.assertDoesNotThrow(() -> UUID.fromString(request.getQueryParams().get("param")));
         Assertions.assertTrue(request.getBodyContent().contains("\"name\": \"request\""));
         Assertions.assertEquals("overrided/request/path", request.getBodyFilePath());
+    }
+
+    @Test
+    public void overrideRequestWithFileMerge() {
+        Settings settings = new Settings();
+        RequestModifier<?, ?> modifier = findByNameOrFail(RequestModifier.class, "http");
+
+        HTTPRequestEntry requestMergeA = new HTTPRequestEntry();
+        requestMergeA.setBodyMergePath("path/");
+        requestMergeA.setBodyMergeAsBase(Boolean.FALSE.toString());
+
+        modifier.overrideRequest(settings, requestMergeA, "src/test/resources/http-request-modifier.mergeA.txt");
+
+        Assertions.assertEquals("overrided/request/path", requestMergeA.getBodyMergePath());
+        Assertions.assertEquals("true", requestMergeA.getBodyMergeAsBase());
+
+        HTTPRequestEntry requestMergeB = new HTTPRequestEntry();
+        requestMergeB.setBodyMergeAsBase(Boolean.FALSE.toString());
+
+        modifier.overrideRequest(settings, requestMergeB, "src/test/resources/http-request-modifier.mergeB.txt");
+
+        Assertions.assertEquals("overrided/request/path", requestMergeB.getBodyMergePath());
+        Assertions.assertEquals("false", requestMergeB.getBodyMergeAsBase());
     }
 
     @Test

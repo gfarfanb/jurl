@@ -218,6 +218,7 @@ public class HTTPRequestModifier implements RequestModifier<HTTPRequestEntry, HT
         request.setBodyContent(null);
         request.setBodyFilePath(null);
         request.setBodyMergePath(null);
+        request.setBodyMergeAsBase(null);
 
         settings.putOverride(BODY_TEMPORAL_PATH, temporalMixedBodyPath.toString());
     }

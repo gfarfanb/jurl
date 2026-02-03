@@ -1,0 +1,3 @@
+
+@bodyMergePath = overrided/request/path
+@bodyMergeAsBase = true

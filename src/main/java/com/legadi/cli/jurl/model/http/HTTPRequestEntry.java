@@ -16,7 +16,7 @@ public class HTTPRequestEntry extends RequestEntry<HTTPMockEntry> {
     private String bodyContent;
     private String bodyFilePath;
     private String bodyMergePath;
-    private String bodyMergeAsBase = Boolean.FALSE.toString();
+    private String bodyMergeAsBase;
     private List<HTTPRequestFileEntry> requestFiles = new ArrayList<>();
     private Map<String, String> formData = new HashMap<>();
 
