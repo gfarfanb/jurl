@@ -57,7 +57,6 @@ public class Settings implements SettingsDefaults {
                     .resolve(DEFAULT_OVERRIDE_FILE)));
     }
 
-    private final Map<String, String> commandProperties;
     private final Map<String, String> userInputProperties;
     private final Map<String, String> overrideProperties;
     private final LocalDateTime timestamp;
@@ -73,14 +72,13 @@ public class Settings implements SettingsDefaults {
             Map<String, String> userInputProperties,
             Map<String, String> overrideProperties) {
         this.environment = environment;
-        this.commandProperties = new HashMap<>();
         this.userInputProperties = new HashMap<>(userInputProperties);
         this.overrideProperties = new HashMap<>(overrideProperties);
 
         this.timestamp = LocalDateTime.now();
         this.executionTag = TAG_FORMATTER.format(timestamp);
 
-        commandProperties.put(PROP_EXECUTION_TAG, executionTag);
+        userInputProperties.put(PROP_EXECUTION_TAG, executionTag);
     }
 
     public LocalDateTime getTimestamp() {
@@ -131,12 +129,10 @@ public class Settings implements SettingsDefaults {
     @Override
     public String getOrDefaultWithValues(String propertyName, Map<String, String> values,
             String defaultValue) {
-        return commandProperties.getOrDefault(propertyName, 
-                userInputProperties.getOrDefault(propertyName,
-                    overrideProperties.getOrDefault(propertyName,
-                        values.getOrDefault(propertyName,
-                            SETTINGS.getOrDefault(environment, propertyName, defaultValue)
-                        )
+        return userInputProperties.getOrDefault(propertyName,
+                overrideProperties.getOrDefault(propertyName,
+                    values.getOrDefault(propertyName,
+                        SETTINGS.getOrDefault(environment, propertyName, defaultValue)
                     )
                 )
             );
@@ -184,7 +180,6 @@ public class Settings implements SettingsDefaults {
         Set<String> keys = new HashSet<>(Arrays.asList(properties));
         String env = getEnvironment();
 
-        commandProperties.keySet().removeAll(keys);
         userInputProperties.keySet().removeAll(keys);
         overrideProperties.keySet().removeAll(keys);
 
