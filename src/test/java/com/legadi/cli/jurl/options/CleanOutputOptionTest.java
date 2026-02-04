@@ -20,7 +20,7 @@ public class CleanOutputOptionTest extends OptionAbstractTest<CleanOutputOption>
     }
 
     @Test
-    public void cleanAllFileS() {
+    public void cleanAllFiles() {
         Settings settings = new Settings();
         Path file = settings.getExecutionPath().resolve(UUID.randomUUID().toString());
 
@@ -31,6 +31,24 @@ public class CleanOutputOptionTest extends OptionAbstractTest<CleanOutputOption>
         Assertions.assertThrows(SkipExecutionException.class,
             () -> jurl(
                 "-rm", "all",
+                "src/test/resources/basic-functions.spec.http"
+            ));
+
+        Assertions.assertFalse(file.toFile().exists());
+    }
+
+    @Test
+    public void cleanOutputFiles() {
+        Settings settings = new Settings();
+        Path file = settings.getConfigOutputPath().resolve(UUID.randomUUID().toString());
+
+        writeFile(file, "To Delete");
+
+        Assertions.assertTrue(file.toFile().exists());
+
+        Assertions.assertThrows(SkipExecutionException.class,
+            () -> jurl(
+                "-rm", "out",
                 "src/test/resources/basic-functions.spec.http"
             ));
 
