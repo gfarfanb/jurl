@@ -1,19 +1,16 @@
 package com.legadi.cli.jurl.common;
 
 import static com.legadi.cli.jurl.common.Settings.mergeProperties;
-import static com.legadi.cli.jurl.common.Settings.loadPropertiesFromGroupsFile;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_OUTPUT_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_CONFIG_PATH;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_EXECUTION_TIMES;
 import static com.legadi.cli.jurl.common.SettingsConstants.PROP_REQUEST_BEHAVIOUR;
 import static com.legadi.cli.jurl.common.SettingsConstants.TAG_FORMATTER;
 
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -136,19 +133,6 @@ public class SettingsTest {
     }
 
     @Test
-    public void getGroupsFilePathValidation() {
-        Settings settings = new Settings();
-        String configPath = settings.get(PROP_CONFIG_PATH);
-
-        Assertions.assertEquals(Paths.get("./config/groups.json"), settings.getGroupsFilePath());
-
-        settings.setEnvironment("test");
-        settings.putOverride(PROP_CONFIG_PATH, configPath);
-        
-        Assertions.assertEquals(Paths.get("./config/groups.test.json"), settings.getGroupsFilePath());
-    }
-
-    @Test
     public void getOverrideFilePathValidation() {
         Settings settings = new Settings();
         String configOutputPath = settings.get(PROP_CONFIG_OUTPUT_PATH);
@@ -266,22 +250,5 @@ public class SettingsTest {
         Assertions.assertEquals("1", settings.get("property.1"));
         Assertions.assertEquals("2", settings.get("property.2"));
         Assertions.assertEquals("3", settings.get("property.3"));
-    }
-
-    @Test
-    public void loadPropertiesFromGroupsFileValidation() {
-        Path groupsPath = Paths.get("src/test/resources/groups.json");
-        Map<String, String> properties = Assertions.assertDoesNotThrow(
-            () -> loadPropertiesFromGroupsFile(Optional.empty(), groupsPath));
-
-        Assertions.assertFalse(properties.isEmpty());
-
-        Assertions.assertEquals("first/a", properties.get("group.a.property.a"));
-        Assertions.assertEquals("first/b", properties.get("group.a.property.b"));
-        Assertions.assertEquals("first/c", properties.get("group.a.property.c"));
-
-        Assertions.assertEquals("last/a", properties.get("group.b.property.a"));
-        Assertions.assertEquals("last/b", properties.get("group.b.property.b"));
-        Assertions.assertEquals("last/c", properties.get("group.b.property.c"));
     }
 }

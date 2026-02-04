@@ -1,14 +1,12 @@
 package com.legadi.cli.jurl.common;
 
 import java.lang.reflect.Field;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.StringTokenizer;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
@@ -16,14 +14,11 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.legadi.cli.jurl.model.GroupConfig;
-
 public class CommonUtils {
 
     private static final Pattern NUMBER_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
     private static final String DEFAULT_FIELD_INDEX_FORMAT = "%s-default-index";
     private static final String GENERATED_PARAM_FORMAT = "__jurl/requests/%s/context/%s/field/%s__";
-    private static final String GROUP_PARAM_FORMAT = "__jurl/settings/%s/group/%s__";
 
     public static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvxyz0123456789";
     public static final String NUMERIC_STRING = "0123456789";
@@ -48,10 +43,6 @@ public class CommonUtils {
     public static final int TABS_FOR_MARGIN = 2;
     public static final int START_INDEX = 1;
     public static final int INVALID_INDEX = -1;
-
-    public static final String ACTIVE_FIRST = "first";
-    public static final String ACTIVE_LAST = "last";
-    public static final String ACTIVE_ANY = "any";
 
     public static final Map<String, String> EMPTY_MAP = new HashMap<>();
 
@@ -303,54 +294,6 @@ public class CommonUtils {
 
     public static String toGeneratedParam(String requestType, String context, String field) {
         return String.format(GENERATED_PARAM_FORMAT, requestType, context, field);
-    }
-
-    public static Map<String, String> selectActive(Optional<Settings> settings,
-            String groupName, GroupConfig group) {
-        return selectActiveCollection(settings, groupName, group)
-            .entrySet()
-            .stream()
-            .collect(Collectors.toMap(
-                e -> groupName + "." + e.getKey(),
-                Map.Entry::getValue));
-    }
-
-    private static Map<String, String> selectActiveCollection(Optional<Settings> settings,
-            String groupName, GroupConfig groupConfig) {
-        String groupParam = toGroupParam(settings, groupName);
-        String active = settings
-            .map(s -> s.getOrDefault(groupParam, groupConfig.getActive()))
-            .orElse(groupConfig.getActive());
-
-        if(isNumeric(active)) {
-            return isNotEmpty(groupConfig.getCollection())
-                ? groupConfig.getCollection().get(
-                    toIndex(
-                        groupConfig.getCollection().size(),
-                        new BigDecimal(active).intValue()))
-                : EMPTY_MAP;
-        } else if(ACTIVE_FIRST.equalsIgnoreCase(active)) {
-            return groupConfig.getCollection().stream().findFirst().orElse(EMPTY_MAP);
-        } else if(ACTIVE_LAST.equalsIgnoreCase(active)) {
-            return groupConfig.getCollection().stream().reduce((a, b) -> b).orElse(EMPTY_MAP);
-        } else if(ACTIVE_ANY.equalsIgnoreCase(active)) {
-            return isNotEmpty(groupConfig.getCollection())
-                ? groupConfig.getCollection().get(nextIndex(groupConfig.getCollection().size()))
-                : EMPTY_MAP;
-        } else {
-            throw new IllegalStateException("Invalid active value: [" + active
-                + "] - required (" + ACTIVE_FIRST
-                    + "|" + ACTIVE_LAST
-                    + "|" + ACTIVE_ANY
-                    + "|<index>)");
-        }
-    }
-
-    public static String toGroupParam(Optional<Settings> settings, String groupName) {
-        return String.format(GROUP_PARAM_FORMAT, settings
-            .map(Settings::getEnvironment)
-            .orElse("-"),
-            groupName);
     }
 
     public static List<String> splitInLinesByLength(Settings settings, String line, int maxLength) {

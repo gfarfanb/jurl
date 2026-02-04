@@ -13,13 +13,11 @@ import static com.legadi.cli.jurl.common.CommonUtils.isBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isEmpty;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotBlank;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotEmpty;
-import static com.legadi.cli.jurl.common.CommonUtils.toGroupParam;
 import static com.legadi.cli.jurl.common.CommonUtils.isNotNumeric;
 import static com.legadi.cli.jurl.common.CommonUtils.isNumeric;
 import static com.legadi.cli.jurl.common.CommonUtils.nextIndex;
 import static com.legadi.cli.jurl.common.CommonUtils.nextNumber;
 import static com.legadi.cli.jurl.common.CommonUtils.nextString;
-import static com.legadi.cli.jurl.common.CommonUtils.selectActive;
 import static com.legadi.cli.jurl.common.CommonUtils.strip;
 import static com.legadi.cli.jurl.common.CommonUtils.stripEnd;
 import static com.legadi.cli.jurl.common.CommonUtils.stripStart;
@@ -29,16 +27,12 @@ import static com.legadi.cli.jurl.common.SettingsConstants.JURL_FILE_SEPARATOR;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -47,8 +41,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import com.legadi.cli.jurl.model.GroupConfig;
 
 public class CommonUtilsTest {
 
@@ -412,103 +404,5 @@ public class CommonUtilsTest {
         Assertions.assertEquals(1, lines.length);
         Assertions.assertTrue(lines[0].contains("Entry 1"));
         Assertions.assertTrue(lines[0].contains("Entry 2"));
-    }
-
-    @ParameterizedTest
-    @MethodSource("selectActiveValidationArgs")
-    public void selectActiveValidation(String groupName, String active, int expectedIndex) {
-        GroupConfig groupNegative = createGroupConfig(active, 3, "a", "b", "c");
-        Map<String, String> propsIndexNegative = Assertions.assertDoesNotThrow(
-            () -> selectActive(Optional.empty(), groupName, groupNegative));
-
-        Assertions.assertTrue(propsIndexNegative.keySet()
-            .stream()
-            .allMatch(k -> k.startsWith(groupName + "." + expectedIndex + "-")));
-    }
-
-    private static Stream<Arguments> selectActiveValidationArgs() {
-        return Stream.of(
-            Arguments.of("index-negative", "-1", 2),
-            Arguments.of("index-0", "0", 0),
-            Arguments.of("index-1", "1", 1),
-            Arguments.of("index-2", "2", 2),
-            Arguments.of("index-exceeded", "3", 0),
-            Arguments.of("index-first", "FIRST", 0),
-            Arguments.of("index-lasr", "LAST", 2)
-        );
-    }
-
-    @Test
-    public void selectActiveIndexEmpty() {
-        GroupConfig emptyGroup = createGroupConfig("0", 0);
-        Map<String, String> emptyProps = Assertions.assertDoesNotThrow(
-            () -> selectActive(Optional.empty(), "empty", emptyGroup));
-
-        Assertions.assertNotNull(emptyProps);
-        Assertions.assertTrue(emptyProps.isEmpty());
-    }
-
-    @Test
-    public void selectActiveRandom() {
-        GroupConfig group = createGroupConfig("ANY", 3, "a", "b", "c");
-        Map<String, String> props = Assertions.assertDoesNotThrow(
-            () -> selectActive(Optional.empty(), "random", group));
-
-        Pattern pattern = Pattern.compile("random\\.\\d-");
-        Assertions.assertTrue(props.keySet()
-            .stream()
-            .map(k -> pattern.matcher(k))
-            .allMatch(Matcher::find));
-
-        GroupConfig emptyGroup = createGroupConfig("ANY", 0);
-        Map<String, String> emptyProps = Assertions.assertDoesNotThrow(
-            () -> selectActive(Optional.empty(), "empty", emptyGroup));
-
-        Assertions.assertNotNull(emptyProps);
-        Assertions.assertTrue(emptyProps.isEmpty());
-    }
-
-    @Test
-    public void selectActiveConfig() {
-        GroupConfig emptyGroup = createGroupConfig("FIRST", 3, "a", "b", "c");
-        Optional<Settings> settings = Optional.of(new Settings());
-        String groupParam = toGroupParam(settings, "config");
-
-        settings.get().putOverride(groupParam, "LAST");
-
-        Map<String, String> properties = Assertions.assertDoesNotThrow(
-            () -> selectActive(settings, "config", emptyGroup));
-
-        Assertions.assertNotNull(properties);
-        Assertions.assertEquals("2-a", properties.get("config.2-a"));
-        Assertions.assertEquals("2-b", properties.get("config.2-b"));
-        Assertions.assertEquals("2-c", properties.get("config.2-c"));
-    }
-
-    @Test
-    public void selectActiveInvalid() {
-        GroupConfig group = createGroupConfig("INVALID", 3, "a", "b", "c");
-        
-        Assertions.assertThrows(IllegalStateException.class,
-            () -> selectActive(Optional.empty(), "invalid", group));
-    }
-
-    private GroupConfig createGroupConfig(String active, int collections, String... properties) {
-        GroupConfig group = new GroupConfig();
-        group.setActive(active);
-        group.setCollection(new ArrayList<>());
-
-        for(int i = 0; i < collections; i++) {
-            Map<String, String> props = new HashMap<>();
-
-            for(String property : properties) {
-                String value = i + "-" + property;
-                props.put(value, value);
-            }
-
-            group.getCollection().add(props);
-        }
-
-        return group;
     }
 }

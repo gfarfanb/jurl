@@ -1,19 +1,15 @@
 package com.legadi.cli.jurl.common;
 
 import static com.legadi.cli.jurl.common.CommonUtils.EMPTY_MAP;
-import static com.legadi.cli.jurl.common.CommonUtils.selectActive;
 import static com.legadi.cli.jurl.common.JsonUtils.loadInternalJsonProperties;
-import static com.legadi.cli.jurl.common.JsonUtils.loadJsonFile;
 import static com.legadi.cli.jurl.common.JsonUtils.loadJsonProperties;
 import static com.legadi.cli.jurl.common.SettingsConstants.DEFAULT_CONFIG_FILE;
 import static com.legadi.cli.jurl.common.SettingsConstants.DEFAULT_ENVIRONMENT;
-import static com.legadi.cli.jurl.common.SettingsConstants.DEFAULT_GROUPS_FILE;
 import static com.legadi.cli.jurl.common.SettingsConstants.DEFAULT_OVERRIDE_FILE;
 import static com.legadi.cli.jurl.common.SettingsConstants.DEFAULT_SETTINGS_FILE;
 import static com.legadi.cli.jurl.common.SettingsConstants.EXTERNAL_CONSOLE_WIDTH;
 import static com.legadi.cli.jurl.common.SettingsConstants.EXTERNAL_OS_NAME;
 import static com.legadi.cli.jurl.common.SettingsConstants.FORMAT_CONFIG_FILE;
-import static com.legadi.cli.jurl.common.SettingsConstants.FORMAT_GROUPS_FILE;
 import static com.legadi.cli.jurl.common.SettingsConstants.FORMAT_OVERRIDE_FILE;
 import static com.legadi.cli.jurl.common.SettingsConstants.JURL_CONSOLE_WIDTH;
 import static com.legadi.cli.jurl.common.SettingsConstants.JURL_FILE_SEPARATOR;
@@ -36,9 +32,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
-import com.google.gson.reflect.TypeToken;
 import com.legadi.cli.jurl.exception.CommandException;
-import com.legadi.cli.jurl.model.GroupConfig;
 
 public class Settings implements SettingsDefaults {
 
@@ -56,12 +50,6 @@ public class Settings implements SettingsDefaults {
             createDirectories(
                 Paths.get(SETTINGS.get(null, PROP_CONFIG_PATH)))
                     .resolve(DEFAULT_CONFIG_FILE)));
-
-        SETTINGS.putAllInCommon(loadPropertiesFromGroupsFile(
-            Optional.empty(),
-            createDirectories(
-                Paths.get(SETTINGS.get(null, PROP_CONFIG_PATH)))
-                    .resolve(DEFAULT_GROUPS_FILE)));
 
         SETTINGS.putAllInCommon(loadJsonProperties(
             createDirectories(
@@ -158,10 +146,6 @@ public class Settings implements SettingsDefaults {
         return getFilePath(getConfigPath(), DEFAULT_CONFIG_FILE, FORMAT_CONFIG_FILE);
     }
 
-    public Path getGroupsFilePath() {
-        return getFilePath(getConfigPath(), DEFAULT_GROUPS_FILE, FORMAT_GROUPS_FILE);
-    }
-
     public Path getOverrideFilePath() {
         return getFilePath(getConfigOutputPath(), DEFAULT_OVERRIDE_FILE, FORMAT_OVERRIDE_FILE);
     }
@@ -221,19 +205,5 @@ public class Settings implements SettingsDefaults {
 
     public static void mergeProperties(String environment, Map<String, String> properties) {
         SETTINGS.putAll(environment, properties);
-    }
-
-    public static Map<String, String> loadPropertiesFromGroupsFile(
-            Optional<Settings> settings, Path filePath) {
-        return loadJsonFile(filePath,
-            new TypeToken<Map<String, GroupConfig>>() {}, new HashMap<>())
-            .entrySet()
-            .stream()
-            .map(e -> selectActive(settings, e.getKey(), e.getValue()))
-            .reduce((a, b) -> {
-                a.putAll(b);
-                return a;
-            })
-            .orElse(new HashMap<>());
     }
 }
