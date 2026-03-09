@@ -1,11 +1,13 @@
 package com.legadi.cli.jurl.common;
 
 import static com.legadi.cli.jurl.embedded.util.FilenameUtils.toSystemSeparator;
+import static java.time.format.DateTimeFormatter.ISO_INSTANT;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.time.Instant;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -48,15 +50,16 @@ public class CurlBuilderTest extends EmbeddedAPIAbstractTest {
 
     @Test
     public void buildPostFile() throws IOException, URISyntaxException {
+        Instant now = Instant.now();
         CurlBuilder curlBuilder = new CurlBuilder()
             .setUrl(new URI("http://localhost:" + port + "/file").toURL())
             .setMethod("POST")
-            .addForm("timestamp", "2023-10-13T03:50:54.792")
+            .addForm("timestamp", ISO_INSTANT.format(now))
             .addFile("file", "src/test/resources/file.csv", "uploaded.csv", "text/csv")
             .addHeader("Content-Type", "multipart/form-data");
         String expected = "curl -X POST"
             + " -H \"Content-Type: multipart/form-data\""
-            + " -F \"timestamp=2023-10-13T03:50:54.792\""
+            + " -F \"timestamp=" + ISO_INSTANT.format(now) + "\""
             + " -F \"file=@src/test/resources/file.csv;filename=uploaded.csv;type=text/csv\""
             + " \"http://localhost:" + port + "/file\"";
 

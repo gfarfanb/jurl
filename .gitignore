@@ -65,5 +65,5 @@ replay_pid*
 /$HOME/
 /ECHO is on/
 
-/api/**/executions/
-/api/**/history/
+/**/executions/
+/**/history/

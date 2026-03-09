@@ -66,27 +66,23 @@ jurl -h
 
 Define a spec file (no specific extension is required)
 
-**pokemon-api**
 ```text
-@default-request = pokemon
+@default-request = details
 
 
-### [request] pokemon
+### [request] details: Moves, species, base stats, abilities, typings an so on
 GET https://pokeapi.co/api/v2/pokemon/{{name}}
 
 output pokemonId = {{OUT/id}}
 
 
-### [request] encounters
-@method = GET
-@host = https://pokeapi.co
-@basePath = /api/v2
-@endpoint = /pokemon/{{pokemonId}}/encounters
+### [request] encounters: Location where Pokémon can be found
+GET https://pokeapi.co/api/v2/pokemon/{{pokemonId}}/encounters
 
 
-### [flow] pokemon-details
+### [flow] details+encounters: All previous steps
 
-step -n pokemon
+step -n details
 step -n encounters
 ```
 > [PokéAPI - The RESTful Pokémon API](https://pokeapi.co/)
@@ -112,6 +108,8 @@ jurl pokemon-api
 3) pokemon-details [flow]
 Select request index [default: 2]>
 ```
+
+You can see more examples on [jurl-apis](https://github.com/gfarfanb/jurl-apis) repo.
 
 
 ### Config tricks
@@ -139,5 +137,5 @@ Follow this project's [Contribution guidelines](.github/CONTRIBUTING.md).
 
 ## License
 
-Copyright © 2023-2025, [Giovanni Farfán B.](https://github.com/gfarfanb). Released under the 
+Copyright © 2023-2026, [Giovanni Farfán B.](https://github.com/gfarfanb). Released under the 
 [MIT License](./LICENSE).
