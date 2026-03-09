@@ -1,0 +1,31 @@
+
+source meta
+
+@default-request = response
+
+
+### [request] response
+POST {{ollamaHost}}/api/generate
+
+{
+    "model": "{{model}}",
+    "prompt": "{{prompt}}",
+    "stream": {{stream}}
+}
+
+
+### [request] chat
+POST {{ollamaHost}}/api/chat
+
+{
+    "model": "{{model}}",
+    "messages": [
+        "role": "{{role}}",
+        "content": "{{content}}"
+    ]
+    "stream": {{stream}}
+}
+
+
+### [request] version
+GET {{ollamaHost}}/api/version

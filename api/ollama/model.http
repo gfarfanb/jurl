@@ -1,0 +1,38 @@
+
+source meta
+
+@default-request = models
+
+
+### [request] models
+GET {{ollamaHost}}/api/tags
+
+
+### [request] running
+GET {{ollamaHost}}/api/ps
+
+
+### [request] details
+POST {{ollamaHost}}/api/show
+
+{
+    "model": "{{model}}",
+    "verbose": {{verbose}}
+}
+
+
+### [request] pull
+POST {{ollamaHost}}/api/pull
+
+{
+    "model": "{{model}}",
+    "stream": {{stream}}
+}
+
+
+### [request] delete
+DELETE {{ollamaHost}}/api/delete
+
+{
+    "model": "{{model}}"
+}

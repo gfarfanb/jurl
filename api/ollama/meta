@@ -1,0 +1,25 @@
+
+### [api]
+# https://docs.ollama.com/api
+
+@list-model = cogito:8b
+@list-model = qwen2.5-coder:14b
+@list-model = rnj-1:8b
+@list-model = qwen3.5:9b
+@list*-model = gemma3:12b
+@list-model = granite4:7b-a1b-h
+@list-model = qwen3:8b
+@list-model = qwen3-vl:8b
+@list-model = deepseek-r1:8b
+@list-model = mistral:7b
+
+@list-role = system
+@list*-role = user
+@list-role = assistant
+@list-role = tool
+
+@list*-verbose = false
+@list-verbose = true
+
+@list*-stream = false
+@list-stream = true

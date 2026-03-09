@@ -1,0 +1,5 @@
+{
+    "model": "gemma3:12b",
+    "prompt": "give me your name?"
+    "stream": false
+}

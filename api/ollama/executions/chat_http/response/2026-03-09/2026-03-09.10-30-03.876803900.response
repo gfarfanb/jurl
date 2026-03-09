@@ -1,0 +1,32 @@
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:46.260411409Z","response":"My","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:46.364226817Z","response":" name","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:46.440521693Z","response":" is","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:46.51466619Z","response":" Gemma","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:46.589406472Z","response":".","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:46.667328717Z","response":" I","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:46.742926209Z","response":"'","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:46.816164826Z","response":"m","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:46.889453575Z","response":" a","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:46.961428479Z","response":" large","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:47.033648014Z","response":" language","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:47.107140219Z","response":" model","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:47.180388068Z","response":" created","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:47.253408883Z","response":" by","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:47.331713327Z","response":" the","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:47.402867408Z","response":" Gemma","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:47.491186388Z","response":" team","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:47.574060454Z","response":" at","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:47.646845565Z","response":" Google","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:47.725098759Z","response":" Deep","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:47.798233685Z","response":"Mind","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:47.87156771Z","response":".","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:47.94696065Z","response":" ","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:48.027145155Z","response":"\n\n","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:48.103661132Z","response":"Nice","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:48.181900103Z","response":" to","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:48.260210262Z","response":" meet","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:48.341309157Z","response":" you","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:48.483183006Z","response":"!","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:48.562195693Z","response":" 😊","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:48.641720873Z","response":"\n","done":false}
+{"model":"gemma3:12b","created_at":"2026-03-09T16:30:48.721092805Z","response":"","done":true,"done_reason":"stop","context":[105,2364,107,47724,786,822,1463,236881,106,107,105,4368,107,4754,1463,563,147224,236761,564,236789,236757,496,2455,5192,2028,4464,684,506,147224,2434,657,6475,22267,65153,236761,236743,108,41294,531,2874,611,236888,103453,107],"total_duration":14720101313,"load_duration":8552137711,"prompt_eval_count":14,"prompt_eval_duration":3596595006,"eval_count":32,"eval_duration":2355969057}

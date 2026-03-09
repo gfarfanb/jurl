@@ -13,10 +13,8 @@ output pokemonId = {{OUT/id}}
 
 ### [request] encounters
 @description = All encounters for specified pokémon
-@method = GET
-@host = https://pokeapi.co
-@basePath = /api/v2
-@endpoint = /pokemon/{{pokemonId}}/encounters
+
+GET https://pokeapi.co/api/v2/pokemon/{{pokemonId}}/encounters
 
 
 ### [flow] pokemon-details: All previous steps
